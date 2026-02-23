@@ -1,0 +1,194 @@
+<!doctype html>
+<html lang="it">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title data-i18n="app.title">Editor Grafi Orientati</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <div class="app">
+      <header class="menu-bar" id="topMenuBar">
+        <div class="menu-root">
+          <button class="menu-title" type="button" data-menu="fileMenu" data-i18n="menu.file">File</button>
+          <div class="menu-panel" id="fileMenu">
+            <button id="newGraphBtn" class="menu-command" type="button"><span data-i18n="menu.file.new">Nuovo grafo</span><span class="menu-shortcut">Ctrl+N</span></button>
+            <hr class="menu-sep" />
+            <button id="saveJsonBtn" class="menu-command" type="button"><span data-i18n="menu.file.save">Salva</span><span class="menu-shortcut">Ctrl+S</span></button>
+            <button id="saveAsJsonBtn" class="menu-command" type="button"><span data-i18n="menu.file.saveAs">Salva con nome...</span><span class="menu-shortcut">Ctrl+Shift+S</span></button>
+            <button id="loadJsonBtn" class="menu-command" type="button"><span data-i18n="menu.file.load">Carica JSON...</span><span class="menu-shortcut">Ctrl+O</span></button>
+            <input id="loadJsonInput" type="file" accept="application/json" class="hidden-file" />
+          </div>
+        </div>
+
+        <div class="menu-root">
+          <button class="menu-title" type="button" data-menu="editMenu" data-i18n="menu.edit">Modifica</button>
+          <div class="menu-panel" id="editMenu">
+            <button id="cutBtn" class="menu-command" type="button"><span data-i18n="menu.edit.cut">Taglia</span><span class="menu-shortcut">Ctrl+X</span></button>
+            <button id="copyBtn" class="menu-command" type="button"><span data-i18n="menu.edit.copy">Copia</span><span class="menu-shortcut">Ctrl+C</span></button>
+            <button id="pasteBtn" class="menu-command" type="button"><span data-i18n="menu.edit.paste">Incolla</span><span class="menu-shortcut">Ctrl+V</span></button>
+            <hr class="menu-sep" />
+            <button id="undoBtn" class="menu-command" type="button"><span data-i18n="menu.edit.undo">Undo</span><span class="menu-shortcut">Ctrl+Z</span></button>
+            <button id="redoBtn" class="menu-command" type="button"><span data-i18n="menu.edit.redo">Redo</span><span class="menu-shortcut">Ctrl+Y</span></button>
+            <button id="deleteBtn" class="menu-command" type="button"><span data-i18n="menu.edit.delete">Elimina selezione</span><span class="menu-shortcut">Del</span></button>
+          </div>
+        </div>
+
+        <div class="menu-root">
+          <button class="menu-title" type="button" data-menu="insertMenu" data-i18n="menu.insert">Inserisci</button>
+          <div class="menu-panel" id="insertMenu">
+            <button id="addRectNodeItem" class="menu-command" type="button" data-i18n="menu.insert.rect">Nuova variabile di stato</button>
+            <button id="addEllipseNodeItem" class="menu-command" type="button" data-i18n="menu.insert.ellipse">Nuova variabile algebrica</button>
+            <button id="addDiamondNodeItem" class="menu-command" type="button" data-i18n="menu.insert.diamond">Nuovo rombo</button>
+            <hr class="menu-sep" />
+            <button id="addTableWidgetItem" class="menu-command" type="button" data-i18n="menu.insert.tableWidget">Nuova tabella valori</button>
+            <button id="addXYChartWidgetItem" class="menu-command" type="button" data-i18n="menu.insert.xyChartWidget">Nuovo grafico x-y</button>
+          </div>
+        </div>
+
+        <div class="menu-root">
+          <button class="menu-title" type="button" data-menu="viewMenu" data-i18n="menu.view">Vista</button>
+          <div class="menu-panel" id="viewMenu">
+            <button id="fitContentItem" class="menu-command" type="button"><span data-i18n="menu.view.fit">Adatta al contenuto</span><span class="menu-shortcut">Ctrl+Shift+F</span></button>
+            <hr class="menu-sep" />
+            <button id="zoomInItem" class="menu-command" type="button"><span data-i18n="menu.view.zoomIn">Zoom avanti</span><span class="menu-shortcut">Ctrl++</span></button>
+            <button id="zoomOutItem" class="menu-command" type="button"><span data-i18n="menu.view.zoomOut">Zoom indietro</span><span class="menu-shortcut">Ctrl+-</span></button>
+            <button id="zoomResetItem" class="menu-command" type="button"><span data-i18n="menu.view.zoomReset">Zoom 100%</span><span class="menu-shortcut">Ctrl+0</span></button>
+            <hr class="menu-sep" />
+            <button id="toggleGraphItem" class="menu-command" type="button" data-i18n="menu.view.toggleGraph">Mostra/Nascondi grafo</button>
+            <button id="toggleWidgetsItem" class="menu-command" type="button" data-i18n="menu.view.toggleWidgets">Mostra/Nascondi widget</button>
+            <hr class="menu-sep" />
+            <label class="menu-check" for="snapToGridInput">
+              <input id="snapToGridInput" type="checkbox" checked />
+              <span data-i18n="menu.view.snap">Snap griglia</span>
+            </label>
+            <label class="menu-field" for="gridSizeInput" data-i18n="menu.view.gridStep">Passo griglia</label>
+            <input id="gridSizeInput" type="number" min="5" max="100" step="1" value="20" />
+          </div>
+        </div>
+
+        <div class="menu-root">
+          <button class="menu-title" type="button" data-menu="runMenu" data-i18n="menu.run">Esegui</button>
+          <div class="menu-panel" id="runMenu">
+            <button id="runEvalBtn" class="menu-command" type="button"><span data-i18n="menu.run.execute">Completo</span><span class="menu-shortcut">F7</span></button>
+            <button id="runStepBtn" class="menu-command" type="button"><span data-i18n="menu.run.step">Un passo</span><span class="menu-shortcut">F8</span></button>
+            <button id="runTimedToggleBtn" class="menu-command" type="button"><span data-i18n="menu.run.timedToggle">Temporizzato</span><span class="menu-shortcut">F9</span></button>
+            <button id="runResetBtn" class="menu-command" type="button"><span data-i18n="menu.run.reset">Reset</span><span class="menu-shortcut">F10</span></button>
+          </div>
+        </div>
+
+        <div class="menu-file-status" id="fileStatusText">File: (non salvato)</div>
+        <div class="menu-status" id="statusText" data-i18n="status.ready">Pronto.</div>
+      </header>
+
+      <main class="layout">
+        <section class="canvas-wrap" id="graphViewport">
+          <div class="canvas-content" id="canvasContent">
+            <svg id="graphCanvas" viewBox="0 0 1200 800" role="img" aria-label="Canvas grafo"></svg>
+            <div id="widgetLayer" class="widget-layer"></div>
+          </div>
+        </section>
+
+        <aside class="sidebar" id="sidebar">
+          <div id="noSelection" class="hidden"></div>
+          <div id="globalPanel" class="panel hidden">
+            <h3 data-i18n="panel.model">Modello</h3>
+
+            <label for="modelTitleInput" data-i18n="label.modelTitle">Titolo modello</label>
+            <input id="modelTitleInput" type="text" />
+
+            <div class="time-row3">
+              <div>
+                <label for="timeStartInput" data-i18n="label.timeStart">t0</label>
+                <input id="timeStartInput" type="number" step="any" />
+              </div>
+              <div>
+                <label for="timeStepInput" data-i18n="label.timeStep">delta t</label>
+                <input id="timeStepInput" type="number" step="any" />
+              </div>
+              <div>
+                <label for="timeEndInput" data-i18n="label.timeEnd">t1</label>
+                <input id="timeEndInput" type="number" step="any" />
+              </div>
+            </div>
+
+            <label for="timeDelayInput" data-i18n="label.timeDelayMs">Ritardo (ms)</label>
+            <input id="timeDelayInput" type="number" min="1" step="1" />
+
+            <label for="decimalDigitsInput" data-i18n="label.decimals">Cifre decimali max</label>
+            <input id="decimalDigitsInput" type="number" min="0" max="12" step="1" />
+
+            <label for="timeCurrentOutput" data-i18n="label.timeCurrent">Tempo corrente</label>
+            <pre id="timeCurrentOutput" class="value-output">-</pre>
+
+            <div class="run-icons-row">
+              <button id="runFullModelBtn" class="icon-btn" type="button" title="Completo (F7)">▶▶</button>
+              <button id="manualStepBtn" class="icon-btn" type="button" title="Un passo (F8)">▶</button>
+              <button id="timedToggleBtn" class="icon-btn" type="button" title="Temporizzato (F9)">⏱</button>
+              <button id="resetExecBtn" class="icon-btn" type="button" title="Reset (F10)">↺</button>
+            </div>
+            <div class="row2-exec">
+              <button id="toggleGraphBtn" class="small-btn" type="button" data-i18n="view.btn.showGraph">Mostra grafo</button>
+              <button id="toggleWidgetsBtn" class="small-btn" type="button" data-i18n="view.btn.showWidgets">Mostra widget</button>
+            </div>
+          </div>
+
+          <div id="nodePanel" class="panel hidden">
+            <h3 data-i18n="panel.node">Nodo</h3>
+
+            <label for="nodeNameInput" data-i18n="label.name">Nome</label>
+            <input id="nodeNameInput" type="text" />
+
+            <label for="nodeShapeInput" data-i18n="label.shape">Tipo</label>
+            <div class="node-type-row">
+              <select id="nodeShapeInput">
+                <option value="rect" data-i18n="shape.rect">Variabile di stato</option>
+                <option value="ellipse" data-i18n="shape.ellipse">Variabile algebrica</option>
+                <option value="diamond" data-i18n="shape.diamond">Rombo</option>
+              </select>
+
+              <label class="menu-check" for="nodeOutputInput">
+                <input id="nodeOutputInput" type="checkbox" />
+                <span data-i18n="label.output">Nodo di output</span>
+              </label>
+            </div>
+
+            <label id="nodeValueExprLabel" for="nodeValueExprInput" data-i18n="label.behaviorFunction">Funzione comportamento</label>
+            <input id="nodeValueExprInput" type="text" placeholder="1, [1,2,3], [[1,2],[3,4]]" />
+
+            <label id="nodeInitialStateLabel" for="nodeInitialStateInput" data-i18n="label.initialState">Stato iniziale</label>
+            <input id="nodeInitialStateInput" type="text" placeholder="0" />
+
+            <label for="nodeValueOutput" data-i18n="label.valueComputed">Valore calcolato</label>
+            <pre id="nodeValueOutput" class="value-output">-</pre>
+
+            <h4 data-i18n="panel.propertiesList">Lista proprieta</h4>
+            <div id="propsList" class="props-list"></div>
+            <button id="addPropBtn" class="small-btn" data-i18n="action.addProperty">Aggiungi proprieta</button>
+          </div>
+
+          <div id="edgePanel" class="panel hidden">
+            <h3 data-i18n="panel.edge">Freccia</h3>
+            <div id="edgeInfo" class="edge-info"></div>
+
+            <div class="hint">
+              <span data-i18n="hint.edge.1">Clic sulla linea selezionata: aggiungi punto controllo.</span><br />
+              <span data-i18n="hint.edge.2">Drag punto: sposta.</span><br />
+              <span data-i18n="hint.edge.3">Doppio click punto: rimuovi.</span><br />
+              <span data-i18n="hint.edge.4">Trascina dal centro di un nodo a un altro nodo per creare frecce.</span>
+            </div>
+          </div>
+
+          <div id="widgetPanel" class="panel hidden">
+            <h3 id="widgetPanelTitle" data-i18n="panel.widget">Widget</h3>
+            <div id="widgetConfig"></div>
+          </div>
+        </aside>
+      </main>
+    </div>
+    <div id="contextMenu" class="context-menu hidden"></div>
+
+    <script src="semantic.js"></script>
+    <script src="app.js"></script>
+  </body>
+</html>
