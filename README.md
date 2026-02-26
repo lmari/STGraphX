@@ -1,8 +1,8 @@
 # STGraphX: un esperimento
 
-Un esperimento: di reimplementazione "moderna" di STGraph (da Java a JavaScript), di implementazione interamente in "vibe coding" (con GPT-Codex-5.3).
+Un esperimento: di reimplementazione "moderna" di STGraph (da Java a JavaScript), realizzata interamente in "vibe coding" (con GPT-Codex-5.3, in febbraio 2026).
 
-(da provare <a href="https://lmari.github.io/STGraphX" target="_blank" rel="noopener noreferrer">qui</a>)
+(si può provare <a href="https://lmari.github.io/STGraphX" target="_blank" rel="noopener noreferrer">qui</a>)
 
 Al momento implementati:
 * editor per il grafo, con nodi di forme diverse, frecce spline, gestione di ridimensionamento, spostamento, cancellazione, anche per selezioni multiple, zoom, griglia, clipboard, undo, ...;
