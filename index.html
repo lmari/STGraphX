@@ -41,6 +41,8 @@
             <button id="addEllipseNodeItem" class="menu-command" type="button" data-i18n="menu.insert.ellipse">Nuova variabile algebrica</button>
             <button id="addDiamondNodeItem" class="menu-command" type="button" data-i18n="menu.insert.diamond">Parametro</button>
             <hr class="menu-sep" />
+            <button id="addSliderWidgetItem" class="menu-command" type="button" data-i18n="menu.insert.sliderWidget">Slider</button>
+            <hr class="menu-sep" />
             <button id="addTableWidgetItem" class="menu-command" type="button" data-i18n="menu.insert.tableWidget">Nuova tabella valori</button>
             <button id="addXYChartWidgetItem" class="menu-command" type="button" data-i18n="menu.insert.xyChartWidget">Nuovo grafico x-y</button>
           </div>
@@ -147,10 +149,17 @@
                 <option value="diamond" data-i18n="shape.diamond">Parametro</option>
               </select>
 
-              <label class="menu-check" for="nodeOutputInput">
-                <input id="nodeOutputInput" type="checkbox" />
-                <span data-i18n="label.output">Nodo di output</span>
-              </label>
+              <div class="node-flags-col">
+                <label class="menu-check" for="nodeInputInput">
+                  <input id="nodeInputInput" type="checkbox" />
+                  <span data-i18n="label.input">input</span>
+                </label>
+
+                <label class="menu-check" for="nodeOutputInput">
+                  <input id="nodeOutputInput" type="checkbox" />
+                  <span data-i18n="label.output">Nodo di output</span>
+                </label>
+              </div>
             </div>
 
             <label id="nodeValueExprLabel" for="nodeValueExprInput" data-i18n="label.behaviorFunction">Funzione comportamento</label>

@@ -10,6 +10,7 @@ const menuCommands = Array.from(document.querySelectorAll(".menu-command"));
 const addRectNodeItem = document.getElementById("addRectNodeItem");
 const addEllipseNodeItem = document.getElementById("addEllipseNodeItem");
 const addDiamondNodeItem = document.getElementById("addDiamondNodeItem");
+const addSliderWidgetItem = document.getElementById("addSliderWidgetItem");
 const addTableWidgetItem = document.getElementById("addTableWidgetItem");
 const addXYChartWidgetItem = document.getElementById("addXYChartWidgetItem");
 const fitContentItem = document.getElementById("fitContentItem");
@@ -58,6 +59,8 @@ const resetExecBtn = document.getElementById("resetExecBtn");
 
 const nodeNameInput = document.getElementById("nodeNameInput");
 const nodeShapeInput = document.getElementById("nodeShapeInput");
+const nodeInputInput = document.getElementById("nodeInputInput");
+const nodeInputLabel = nodeInputInput?.closest("label");
 const nodeOutputInput = document.getElementById("nodeOutputInput");
 const nodeValueExprLabel = document.getElementById("nodeValueExprLabel");
 const nodeValueExprInput = document.getElementById("nodeValueExprInput");
@@ -80,6 +83,7 @@ const BASE_CANVAS_HEIGHT = 800;
 const MIN_ZOOM = 0.25;
 const MAX_ZOOM = 3;
 const SUPPORTED_LANGS = new Set(["it", "en"]);
+const CHART_SERIES_PALETTE = ["#0e7ac4", "#e67e22", "#27ae60", "#8e44ad", "#c0392b", "#16a085"];
 
 let nodeCounter = 1;
 let edgeCounter = 1;
@@ -126,6 +130,7 @@ const ui = {
   timedRunHandle: null,
   widgetDrag: null,
   widgetResize: null,
+  sliderInteraction: null,
   showGraph: true,
   showWidgets: true,
 };
@@ -410,6 +415,9 @@ function propagateNodeRenameInExpressions(oldName, newName) {
         }));
       }
     }
+    if (widget.type === "slider" && widget.source === oldName) {
+      widget.source = newName;
+    }
   });
 }
 
@@ -429,12 +437,51 @@ function removeNodeFromAllWidgetDisplays(nodeName) {
   });
 }
 
+function removeNodeFromSliderBindings(nodeName) {
+  if (!nodeName) {
+    return;
+  }
+  graph.widgets.forEach((widget) => {
+    if (widget.type === "slider" && widget.source === nodeName) {
+      widget.source = "";
+    }
+  });
+}
+
 function clampZoom(value) {
   return Math.min(MAX_ZOOM, Math.max(MIN_ZOOM, value));
 }
 
 function isStateNode(node) {
   return node?.shape === "rect";
+}
+
+function isAlgebraicNode(node) {
+  return node?.shape === "ellipse";
+}
+
+function nodeHasIncomingEdges(nodeId) {
+  return graph.edges.some((edge) => edge.to === nodeId);
+}
+
+function canMarkNodeAsInput(node) {
+  return isAlgebraicNode(node) && !nodeHasIncomingEdges(node.id);
+}
+
+function canBindSliderToNode(node) {
+  return Boolean(node && (node.shape === "diamond" || node.input));
+}
+
+function normalizeInputNodeFlags() {
+  graph.nodes.forEach((node) => {
+    if (!canMarkNodeAsInput(node)) {
+      node.input = false;
+    }
+  });
+}
+
+function sliderBindableNodeNames() {
+  return graph.nodes.filter((node) => canBindSliderToNode(node)).map((node) => node.name);
 }
 
 function serializeNodeType(shape) {
@@ -653,6 +700,12 @@ function showContextMenu(clientX, clientY, items) {
   closeTopMenus();
   contextMenu.innerHTML = "";
   items.forEach((item) => {
+    if (item?.separator) {
+      const sep = document.createElement("hr");
+      sep.className = "context-menu-sep";
+      contextMenu.appendChild(sep);
+      return;
+    }
     const btn = document.createElement("button");
     btn.type = "button";
     btn.textContent = item.label;
@@ -783,6 +836,7 @@ function exportGraphData() {
     nodes: graph.nodes.map((n) => ({
       id: n.id,
       name: n.name,
+      input: Boolean(n.input),
       output: Boolean(n.output),
       type: serializeNodeType(n.shape),
       x: n.x,
@@ -815,11 +869,19 @@ function exportGraphData() {
       yMin: Number.isFinite(Number(w.yMin)) ? Number(w.yMin) : null,
       yMax: Number.isFinite(Number(w.yMax)) ? Number(w.yMax) : null,
       showGrid: w.showGrid !== false,
+      source: String(w.source ?? ""),
+      min: Number.isFinite(Number(w.min)) ? Number(w.min) : 0,
+      max: Number.isFinite(Number(w.max)) ? Number(w.max) : 100,
+      step: Number.isFinite(Number(w.step)) ? Number(w.step) : 1,
+      value: Number.isFinite(Number(w.value)) ? Number(w.value) : 0,
       columns: Array.isArray(w.columns) ? w.columns.map((c) => String(c)) : [],
       xyPairs: Array.isArray(w.xyPairs)
-        ? w.xyPairs.map((pair) => ({
+        ? w.xyPairs.map((pair, idx) => ({
           xSource: String(pair.xSource ?? "time"),
           ySource: String(pair.ySource ?? ""),
+          color: /^#[0-9a-fA-F]{6}$/.test(String(pair?.color ?? "")) ? String(pair.color) : defaultChartSeriesColor(idx),
+          showLine: pair?.showLine !== false,
+          showPoints: pair?.showPoints !== false,
         }))
         : [],
     })),
@@ -857,6 +919,7 @@ function applyGraphData(data) {
     return {
       id: n.id,
       name: n.name,
+      input: Boolean(n.input),
       output: Boolean(n.output),
       shape,
       x: n.x,
@@ -876,8 +939,6 @@ function applyGraphData(data) {
       properties: n.properties.map((p) => ({ key: p.key, value: p.value })),
     };
   });
-  initializeStateNodes(graph.execution.t0);
-
   graph.edges = data.edges.map((e) => ({
     id: e.id,
     from: e.from,
@@ -886,7 +947,7 @@ function applyGraphData(data) {
   }));
   graph.widgets = Array.isArray(data.widgets)
     ? data.widgets
-      .filter((w) => Number.isInteger(w.id) && (w.type === "table" || w.type === "xychart"))
+      .filter((w) => Number.isInteger(w.id) && (w.type === "table" || w.type === "xychart" || w.type === "slider"))
       .map((w) => ({
         id: w.id,
         type: w.type,
@@ -903,12 +964,20 @@ function applyGraphData(data) {
         yMin: Number.isFinite(Number(w.yMin)) ? Number(w.yMin) : null,
         yMax: Number.isFinite(Number(w.yMax)) ? Number(w.yMax) : null,
         showGrid: w.showGrid !== false,
+        source: String(w.source ?? ""),
+        min: Number.isFinite(Number(w.min)) ? Number(w.min) : 0,
+        max: Number.isFinite(Number(w.max)) ? Number(w.max) : 100,
+        step: Number.isFinite(Number(w.step)) ? Number(w.step) : 1,
+        value: Number.isFinite(Number(w.value)) ? Number(w.value) : 0,
         rows: [],
         columns: Array.isArray(w.columns) ? w.columns.map((c) => String(c)) : [],
         xyPairs: Array.isArray(w.xyPairs)
-          ? w.xyPairs.map((pair) => ({
+          ? w.xyPairs.map((pair, idx) => ({
             xSource: String(pair.xSource ?? "time"),
             ySource: String(pair.ySource ?? ""),
+            color: /^#[0-9a-fA-F]{6}$/.test(String(pair?.color ?? "")) ? String(pair.color) : defaultChartSeriesColor(idx),
+            showLine: pair?.showLine !== false,
+            showPoints: pair?.showPoints !== false,
             points: [],
           }))
           : (() => {
@@ -919,6 +988,9 @@ function applyGraphData(data) {
             return legacyYNodes.map((yNode, idx) => ({
               xSource: legacyX,
               ySource: yNode,
+              color: defaultChartSeriesColor(idx),
+              showLine: true,
+              showPoints: true,
               points: [],
             }));
           })(),
@@ -928,6 +1000,8 @@ function applyGraphData(data) {
   nodeCounter = Number(data.nodeCounter) || 1;
   edgeCounter = Number(data.edgeCounter) || 1;
   widgetCounter = Number(data.widgetCounter) || 1;
+  normalizeInputNodeFlags();
+  initializeStateNodes(graph.execution.t0);
 
   ui.drag = null;
   ui.resize = null;
@@ -999,6 +1073,7 @@ function collectSelectedForClipboard() {
     .map((n) => ({
       id: n.id,
       name: n.name,
+      input: Boolean(n.input),
       output: Boolean(n.output),
       shape: n.shape,
       x: n.x,
@@ -1063,6 +1138,7 @@ function pasteFromClipboard() {
       const node = {
         id: newId,
         name: uniqueName,
+        input: Boolean(n.input),
         output: Boolean(n.output),
         shape: n.shape,
         x: snap(n.x + offset),
@@ -1099,6 +1175,7 @@ function pasteFromClipboard() {
       });
     });
 
+    normalizeInputNodeFlags();
     setNodeSelection(newNodeIds, false);
     pastedCount = newNodeIds.length;
   });
@@ -1227,6 +1304,7 @@ function addNode(shape, atPoint = null) {
   const node = {
     id,
     name: defaultName,
+    input: false,
     output: false,
     shape,
     x: px,
@@ -1270,6 +1348,10 @@ function addEdge(fromId, toId) {
     controlPoints: [],
   };
   graph.edges.push(edge);
+  if (targetNode?.input) {
+    removeNodeFromSliderBindings(targetNode.name);
+    targetNode.input = false;
+  }
   selectEdge(edge.id);
   return edge;
 }
@@ -1292,6 +1374,33 @@ function addTableWidget(at = null) {
     showHistory: false,
     rows: [],
     columns: [],
+  });
+}
+
+function addSliderWidget(at = null) {
+  const id = widgetCounter++;
+  const z = Math.max(0.0001, ui.zoom || 1);
+  const x = at?.x ?? (graphViewport.scrollLeft + 80) / z;
+  const y = at?.y ?? (graphViewport.scrollTop + 80) / z;
+  const bindableNames = sliderBindableNodeNames();
+  graph.widgets.push({
+    id,
+    type: "slider",
+    customTitle: "",
+    x,
+    y,
+    width: 340,
+    height: 120,
+    minimized: false,
+    outputOnly: false,
+    source: bindableNames[0] || "",
+    min: 0,
+    max: 100,
+    step: 1,
+    value: 0,
+    rows: [],
+    columns: [],
+    xyPairs: [],
   });
 }
 
@@ -1320,6 +1429,9 @@ function addXYChartWidget(at = null) {
       {
         xSource: "time",
         ySource: nodeNames[0] || "",
+        color: defaultChartSeriesColor(0),
+        showLine: true,
+        showPoints: true,
         points: [],
       },
     ],
@@ -1329,6 +1441,10 @@ function addXYChartWidget(at = null) {
 
 function getNodeByName(name) {
   return graph.nodes.find((n) => n.name === name);
+}
+
+function defaultChartSeriesColor(index = 0) {
+  return CHART_SERIES_PALETTE[Math.abs(Number(index) || 0) % CHART_SERIES_PALETTE.length];
 }
 
 function sanitizeWidgetColumns(widget) {
@@ -1349,9 +1465,12 @@ function sanitizeWidgetXYPairs(widget) {
     widget.xyPairs = [];
   }
   widget.xyPairs = widget.xyPairs
-    .map((pair) => ({
+    .map((pair, idx) => ({
       xSource: String(pair?.xSource ?? "time"),
       ySource: String(pair?.ySource ?? ""),
+      color: /^#[0-9a-fA-F]{6}$/.test(String(pair?.color ?? "")) ? String(pair.color) : defaultChartSeriesColor(idx),
+      showLine: pair?.showLine !== false,
+      showPoints: pair?.showPoints !== false,
       points: Array.isArray(pair?.points)
         ? pair.points
           .map((p) => ({ x: Number(p?.x), y: Number(p?.y) }))
@@ -1373,6 +1492,86 @@ function sanitizeXYChartOptions(widget) {
   widget.showGrid = widget.showGrid !== false;
 }
 
+function sanitizeSliderWidgetOptions(widget) {
+  const parseFinite = (value, fallback) => {
+    const n = Number(value);
+    return Number.isFinite(n) ? n : fallback;
+  };
+  const allowedNames = new Set(sliderBindableNodeNames());
+  widget.source = String(widget.source ?? "");
+  if (widget.source && !allowedNames.has(widget.source)) {
+    widget.source = "";
+  }
+  widget.min = parseFinite(widget.min, 0);
+  widget.max = parseFinite(widget.max, 100);
+  if (widget.max < widget.min) {
+    const tmp = widget.min;
+    widget.min = widget.max;
+    widget.max = tmp;
+  }
+  widget.step = Math.abs(parseFinite(widget.step, 1));
+  if (!Number.isFinite(widget.step) || widget.step <= 0) {
+    widget.step = 1;
+  }
+  widget.value = parseFinite(widget.value, widget.min);
+  if (widget.value < widget.min) {
+    widget.value = widget.min;
+  }
+  if (widget.value > widget.max) {
+    widget.value = widget.max;
+  }
+}
+
+function snapSliderValue(value, min, max, step) {
+  const raw = Number(value);
+  const minVal = Number(min);
+  const maxVal = Number(max);
+  const stepVal = Math.abs(Number(step));
+  if (!Number.isFinite(raw) || !Number.isFinite(minVal) || !Number.isFinite(maxVal)) {
+    return 0;
+  }
+  const clamped = clamp(raw, minVal, maxVal);
+  if (!Number.isFinite(stepVal) || stepVal <= 0) {
+    return clamped;
+  }
+  const snapped = minVal + Math.round((clamped - minVal) / stepVal) * stepVal;
+  const stepText = String(stepVal);
+  const dotIndex = stepText.indexOf(".");
+  const decimals = dotIndex >= 0 ? stepText.length - dotIndex - 1 : 0;
+  return Number(clamp(snapped, minVal, maxVal).toFixed(Math.min(10, decimals)));
+}
+
+function applyWidgetDrivenNodeValues() {
+  graph.nodes.forEach((node) => {
+    node.externalValueEnabled = false;
+    node.externalValue = null;
+  });
+  graph.widgets.forEach((widget) => {
+    if (widget.type === "slider") {
+      applySliderWidgetValueToNode(widget);
+    }
+  });
+}
+
+function applySliderWidgetValueToNode(widget) {
+  if (!widget || widget.type !== "slider") {
+    return;
+  }
+  sanitizeSliderWidgetOptions(widget);
+  if (!widget.source) {
+    return;
+  }
+  const node = getNodeByName(widget.source);
+  if (!canBindSliderToNode(node)) {
+    return;
+  }
+  const value = Number(widget.value);
+  node.externalValueEnabled = true;
+  node.externalValue = value;
+  node.computedValue = value;
+  node.computedError = "";
+}
+
 function drawXYChart(canvas, seriesList = [], options = null) {
   const ctx = canvas.getContext("2d");
   if (!ctx) {
@@ -1391,15 +1590,18 @@ function drawXYChart(canvas, seriesList = [], options = null) {
   ctx.strokeRect(pad, pad, plotW, plotH);
 
   const activeSeries = (Array.isArray(seriesList) ? seriesList : [])
-    .map((s) => ({
+    .map((s, idx) => ({
       label: String(s?.label ?? ""),
+      color: /^#[0-9a-fA-F]{6}$/.test(String(s?.color ?? "")) ? String(s.color) : defaultChartSeriesColor(idx),
+      showLine: s?.showLine !== false,
+      showPoints: s?.showPoints !== false,
       points: Array.isArray(s?.points)
         ? s.points
           .map((p) => ({ x: Number(p?.x), y: Number(p?.y) }))
           .filter((p) => Number.isFinite(p.x) && Number.isFinite(p.y))
         : [],
     }))
-    .filter((s) => s.points.length > 0);
+    .filter((s) => s.points.length > 0 && (s.showLine || s.showPoints));
 
   if (activeSeries.length < 1) {
     return;
@@ -1463,34 +1665,37 @@ function drawXYChart(canvas, seriesList = [], options = null) {
     }
   }
 
-  const palette = ["#0e7ac4", "#e67e22", "#27ae60", "#8e44ad", "#c0392b", "#16a085"];
   activeSeries.forEach((series, s) => {
-    const color = palette[s % palette.length];
+    const color = series.color || defaultChartSeriesColor(s);
     ctx.strokeStyle = color;
     ctx.lineWidth = 2;
-    ctx.beginPath();
-    let moved = false;
-    series.points.forEach((p) => {
-      const x = sx(p.x);
-      const y = sy(p.y);
-      if (!moved) {
-        ctx.moveTo(x, y);
-        moved = true;
-      } else {
-        ctx.lineTo(x, y);
-      }
-    });
-    if (moved) {
-      ctx.stroke();
-    }
-    ctx.fillStyle = color;
-    series.points.forEach((p) => {
-      const x = sx(p.x);
-      const y = sy(p.y);
+    if (series.showLine) {
       ctx.beginPath();
-      ctx.arc(x, y, 2.4, 0, Math.PI * 2);
-      ctx.fill();
-    });
+      let moved = false;
+      series.points.forEach((p) => {
+        const x = sx(p.x);
+        const y = sy(p.y);
+        if (!moved) {
+          ctx.moveTo(x, y);
+          moved = true;
+        } else {
+          ctx.lineTo(x, y);
+        }
+      });
+      if (moved) {
+        ctx.stroke();
+      }
+    }
+    if (series.showPoints) {
+      ctx.fillStyle = color;
+      series.points.forEach((p) => {
+        const x = sx(p.x);
+        const y = sy(p.y);
+        ctx.beginPath();
+        ctx.arc(x, y, 2.4, 0, Math.PI * 2);
+        ctx.fill();
+      });
+    }
   });
 
   ctx.fillStyle = "#4e6072";
@@ -1501,7 +1706,7 @@ function drawXYChart(canvas, seriesList = [], options = null) {
   ctx.fillText(formatNumberValue(minY), 2, height - pad);
 
   activeSeries.slice(0, 10).forEach((series, idx) => {
-    ctx.fillStyle = palette[idx % palette.length];
+    ctx.fillStyle = series.color || defaultChartSeriesColor(idx);
     ctx.fillRect(width - 120, 8 + idx * 14, 8, 8);
     ctx.fillStyle = "#334b60";
     ctx.fillText(series.label || `s${idx + 1}`, width - 108, 16 + idx * 14);
@@ -1613,9 +1818,13 @@ function clearAllTableWidgetRows() {
 }
 
 function widgetDefaultTitle(widget) {
-  return widget.type === "xychart"
-    ? t("widget.chartTitle", { id: widget.id })
-    : t("widget.tableTitle", { id: widget.id });
+  if (widget.type === "xychart") {
+    return t("widget.chartTitle", { id: widget.id });
+  }
+  if (widget.type === "slider") {
+    return t("widget.sliderTitle", { id: widget.id });
+  }
+  return t("widget.tableTitle", { id: widget.id });
 }
 
 function widgetDisplayTitle(widget) {
@@ -1625,17 +1834,20 @@ function widgetDisplayTitle(widget) {
 
 function renderWidgets() {
   widgetLayer.innerHTML = "";
+  applyWidgetDrivenNodeValues();
 
   graph.widgets.forEach((widget) => {
-    if (widget.type !== "table" && widget.type !== "xychart") {
+    if (widget.type !== "table" && widget.type !== "xychart" && widget.type !== "slider") {
       return;
     }
     if (widget.type === "table") {
       sanitizeWidgetColumns(widget);
       sanitizeTableWidgetOptions(widget);
-    } else {
+    } else if (widget.type === "xychart") {
       sanitizeWidgetXYPairs(widget);
       sanitizeXYChartOptions(widget);
+    } else {
+      sanitizeSliderWidgetOptions(widget);
     }
     const root = document.createElement("div");
     root.className = "value-widget";
@@ -1782,7 +1994,7 @@ function renderWidgets() {
           body.scrollTop = body.scrollHeight;
         });
       }
-    } else {
+    } else if (widget.type === "xychart") {
       const canvasWrap = document.createElement("div");
       canvasWrap.className = "xy-chart-canvas-wrap";
       const canvas = document.createElement("canvas");
@@ -1800,11 +2012,132 @@ function renderWidgets() {
         : widget.xyPairs;
       const seriesList = displayedPairs.map((pair) => ({
         label: `${pair.xSource} -> ${pair.ySource}`,
+        color: pair.color,
+        showLine: pair.showLine,
+        showPoints: pair.showPoints,
         points: pair.points || [],
       }));
       drawXYChart(canvas, seriesList, widget);
       canvasWrap.appendChild(canvas);
       body.appendChild(canvasWrap);
+    } else {
+      const sliderWrap = document.createElement("div");
+      sliderWrap.className = "slider-widget-wrap";
+
+      const sourceLine = document.createElement("div");
+      sourceLine.className = "slider-widget-source";
+      sourceLine.textContent = widget.source || t("text.unnamed");
+      const sourceNode = getNodeByName(widget.source);
+      const lockedForRun = sourceNode?.shape === "diamond" && graph.execution.currentTime != null;
+
+      const slider = document.createElement("input");
+      slider.type = "range";
+      slider.min = String(widget.min);
+      slider.max = String(widget.max);
+      slider.step = String(widget.step);
+      slider.value = String(widget.value);
+      slider.disabled = lockedForRun;
+      slider.addEventListener("pointerdown", (evt) => {
+        if (lockedForRun) {
+          return;
+        }
+        evt.stopPropagation();
+        ui.sliderInteraction = { widgetId: widget.id, mode: "range" };
+        if (!(ui.selected?.type === "widget" && ui.selected.id === widget.id)) {
+          selectWidget(widget.id);
+        }
+      });
+      slider.addEventListener("mousedown", (evt) => {
+        evt.stopPropagation();
+      });
+
+      const minLabel = document.createElement("span");
+      minLabel.className = "slider-bound slider-bound-min";
+      minLabel.textContent = formatNumberValue(Number(widget.min));
+
+      const maxLabel = document.createElement("span");
+      maxLabel.className = "slider-bound slider-bound-max";
+      maxLabel.textContent = formatNumberValue(Number(widget.max));
+
+      const valueInput = document.createElement("input");
+      valueInput.type = "number";
+      valueInput.step = String(widget.step);
+      valueInput.min = String(widget.min);
+      valueInput.max = String(widget.max);
+      valueInput.value = String(widget.value);
+      valueInput.className = "slider-widget-number";
+      valueInput.disabled = lockedForRun;
+      valueInput.addEventListener("pointerdown", (evt) => {
+        if (lockedForRun) {
+          return;
+        }
+        evt.stopPropagation();
+        ui.sliderInteraction = { widgetId: widget.id, mode: "number" };
+      });
+      valueInput.addEventListener("mousedown", (evt) => {
+        evt.stopPropagation();
+      });
+      valueInput.addEventListener("focus", () => {
+        if (lockedForRun) {
+          return;
+        }
+        ui.sliderInteraction = { widgetId: widget.id, mode: "number" };
+      });
+
+      const rangeLine = document.createElement("div");
+      rangeLine.className = "slider-range-line";
+      rangeLine.appendChild(minLabel);
+      rangeLine.appendChild(slider);
+      rangeLine.appendChild(valueInput);
+      rangeLine.appendChild(maxLabel);
+
+      const syncSliderDisplay = (nextValue = slider.value, commit = false) => {
+        const snapped = snapSliderValue(nextValue, widget.min, widget.max, widget.step);
+        widget.value = snapped;
+        slider.value = String(snapped);
+        valueInput.value = String(snapped);
+        applySliderWidgetValueToNode(widget);
+        if (commit) {
+          refreshSidebar();
+          scheduleFileStatusRefresh();
+        }
+      };
+
+      slider.addEventListener("input", (evt) => {
+        evt.stopPropagation();
+        syncSliderDisplay();
+      });
+      slider.addEventListener("change", (evt) => {
+        evt.stopPropagation();
+        syncSliderDisplay(slider.value, true);
+      });
+      slider.addEventListener("pointerup", (evt) => {
+        evt.stopPropagation();
+        ui.sliderInteraction = null;
+        render();
+      });
+      slider.addEventListener("pointercancel", () => {
+        ui.sliderInteraction = null;
+        render();
+      });
+      valueInput.addEventListener("input", (evt) => {
+        evt.stopPropagation();
+        syncSliderDisplay(valueInput.value);
+      });
+      valueInput.addEventListener("change", (evt) => {
+        evt.stopPropagation();
+        syncSliderDisplay(valueInput.value, true);
+        render();
+      });
+      valueInput.addEventListener("blur", () => {
+        ui.sliderInteraction = null;
+        syncSliderDisplay(valueInput.value, true);
+        render();
+      });
+
+      sliderWrap.appendChild(sourceLine);
+      sliderWrap.appendChild(rangeLine);
+      body.appendChild(sliderWrap);
     }
 
     const resize = document.createElement("div");
@@ -1915,6 +2248,9 @@ function removeSelected() {
   if (ui.selectedNodes.size > 0) {
     runAction(() => {
       const selectedIds = new Set(ui.selectedNodes);
+      graph.nodes
+        .filter((n) => selectedIds.has(n.id))
+        .forEach((n) => removeNodeFromSliderBindings(n.name));
       graph.nodes = graph.nodes.filter((n) => !selectedIds.has(n.id));
       graph.edges = graph.edges.filter((e) => !selectedIds.has(e.from) && !selectedIds.has(e.to));
       clearAllSelection();
@@ -2038,20 +2374,29 @@ function openBackgroundContextMenu(evt) {
         setStatusKey("status.nodeCreated");
       },
     },
+    { separator: true },
     {
-      label: t("menu.insert.tableWidget"),
+      label: t("context.bg.newSliderWidget"),
+      action: () => {
+        runAction(() => addSliderWidget({ x: p.x, y: p.y }));
+        setStatusKey("status.widgetSliderCreated");
+      },
+    },
+    {
+      label: t("context.bg.newTableWidget"),
       action: () => {
         runAction(() => addTableWidget({ x: p.x, y: p.y }));
         setStatusKey("status.widgetCreated");
       },
     },
     {
-      label: t("menu.insert.xyChartWidget"),
+      label: t("context.bg.newXYChartWidget"),
       action: () => {
         runAction(() => addXYChartWidget({ x: p.x, y: p.y }));
         setStatusKey("status.widgetChartCreated");
       },
     },
+    { separator: true },
     {
       label: t("context.bg.deselect"),
       action: () => {
@@ -2104,6 +2449,7 @@ function openNodeContextMenu(evt, node) {
       label: t("context.node.delete"),
       action: () => {
         runAction(() => {
+          removeNodeFromSliderBindings(node.name);
           graph.nodes = graph.nodes.filter((n) => n.id !== node.id);
           graph.edges = graph.edges.filter((e) => e.from !== node.id && e.to !== node.id);
           clearAllSelection();
@@ -2196,6 +2542,80 @@ function refreshWidgetConfigPanel(widget) {
 
   const outputNodeNames = graph.nodes.filter((n) => n.output).map((n) => n.name);
   const nodeNames = outputNodeNames;
+
+  if (widget.type === "slider") {
+    sanitizeSliderWidgetOptions(widget);
+    const sourceLabel = document.createElement("label");
+    sourceLabel.textContent = t("widget.sliderSourceLabel");
+    const sourceSelect = document.createElement("select");
+    const sliderChoices = ["", ...sliderBindableNodeNames()];
+    sliderChoices.forEach((name) => {
+      const opt = document.createElement("option");
+      opt.value = name;
+      opt.textContent = name || t("widget.noneOption");
+      sourceSelect.appendChild(opt);
+    });
+    sourceSelect.value = sliderChoices.includes(widget.source) ? widget.source : "";
+    sourceSelect.addEventListener("change", () => {
+      runAction(() => {
+        widget.source = sourceSelect.value;
+      });
+    });
+    widgetConfig.appendChild(sourceLabel);
+    widgetConfig.appendChild(sourceSelect);
+
+    const limitsLabel = document.createElement("label");
+    limitsLabel.textContent = t("widget.sliderRangeLabel");
+    widgetConfig.appendChild(limitsLabel);
+
+    const rangeRow = document.createElement("div");
+    rangeRow.className = "row3-exec";
+    const createRangeField = (labelKey, inputEl) => {
+      const wrap = document.createElement("label");
+      wrap.className = "compact-field";
+      const text = document.createElement("span");
+      text.textContent = t(labelKey);
+      wrap.appendChild(text);
+      wrap.appendChild(inputEl);
+      return wrap;
+    };
+    const minInput = document.createElement("input");
+    minInput.type = "number";
+    minInput.step = "any";
+    minInput.value = String(widget.min);
+    minInput.addEventListener("change", () => {
+      runAction(() => {
+        widget.min = Number(minInput.value);
+        sanitizeSliderWidgetOptions(widget);
+      });
+    });
+    const stepInput = document.createElement("input");
+    stepInput.type = "number";
+    stepInput.step = "any";
+    stepInput.min = "0.0000001";
+    stepInput.value = String(widget.step);
+    stepInput.addEventListener("change", () => {
+      runAction(() => {
+        widget.step = Number(stepInput.value);
+        sanitizeSliderWidgetOptions(widget);
+      });
+    });
+    const maxInput = document.createElement("input");
+    maxInput.type = "number";
+    maxInput.step = "any";
+    maxInput.value = String(widget.max);
+    maxInput.addEventListener("change", () => {
+      runAction(() => {
+        widget.max = Number(maxInput.value);
+        sanitizeSliderWidgetOptions(widget);
+      });
+    });
+    rangeRow.appendChild(createRangeField("widget.sliderMin", minInput));
+    rangeRow.appendChild(createRangeField("widget.sliderStep", stepInput));
+    rangeRow.appendChild(createRangeField("widget.sliderMax", maxInput));
+    widgetConfig.appendChild(rangeRow);
+    return;
+  }
 
   if (widget.type === "table") {
     sanitizeWidgetColumns(widget);
@@ -2311,7 +2731,7 @@ function refreshWidgetConfigPanel(widget) {
   widget.xyPairs.forEach((pair, idx) => {
     const row = document.createElement("div");
     row.className = "prop-row";
-    row.style.gridTemplateColumns = "1fr 1fr auto";
+    row.style.gridTemplateColumns = "1fr 1fr auto auto auto auto";
 
     const xSel = document.createElement("select");
     choices.forEach((name) => {
@@ -2345,6 +2765,48 @@ function refreshWidgetConfigPanel(widget) {
       });
     });
 
+    const colorInput = document.createElement("input");
+    colorInput.type = "color";
+    colorInput.value = /^#[0-9a-fA-F]{6}$/.test(String(pair.color ?? "")) ? String(pair.color) : defaultChartSeriesColor(idx);
+    colorInput.title = t("widget.seriesColor");
+    colorInput.addEventListener("change", () => {
+      runAction(() => {
+        widget.xyPairs[idx].color = colorInput.value;
+      });
+    });
+
+    const lineLabel = document.createElement("label");
+    lineLabel.className = "menu-check";
+    lineLabel.title = t("widget.seriesLine");
+    const lineInput = document.createElement("input");
+    lineInput.type = "checkbox";
+    lineInput.checked = pair.showLine !== false;
+    lineInput.addEventListener("change", () => {
+      runAction(() => {
+        widget.xyPairs[idx].showLine = lineInput.checked;
+      });
+    });
+    const lineText = document.createElement("span");
+    lineText.textContent = t("widget.seriesLineShort");
+    lineLabel.appendChild(lineInput);
+    lineLabel.appendChild(lineText);
+
+    const pointsLabel = document.createElement("label");
+    pointsLabel.className = "menu-check";
+    pointsLabel.title = t("widget.seriesPoints");
+    const pointsInput = document.createElement("input");
+    pointsInput.type = "checkbox";
+    pointsInput.checked = pair.showPoints !== false;
+    pointsInput.addEventListener("change", () => {
+      runAction(() => {
+        widget.xyPairs[idx].showPoints = pointsInput.checked;
+      });
+    });
+    const pointsText = document.createElement("span");
+    pointsText.textContent = t("widget.seriesPointsShort");
+    pointsLabel.appendChild(pointsInput);
+    pointsLabel.appendChild(pointsText);
+
     const del = document.createElement("button");
     del.type = "button";
     del.textContent = "-";
@@ -2359,6 +2821,9 @@ function refreshWidgetConfigPanel(widget) {
 
     row.appendChild(xSel);
     row.appendChild(ySel);
+    row.appendChild(colorInput);
+    row.appendChild(lineLabel);
+    row.appendChild(pointsLabel);
     row.appendChild(del);
     pairList.appendChild(row);
   });
@@ -2371,7 +2836,14 @@ function refreshWidgetConfigPanel(widget) {
   addBtn.addEventListener("click", () => {
     runAction(() => {
       const defaultY = nodeNames[0] || "time";
-      widget.xyPairs.push({ xSource: "time", ySource: defaultY, points: [] });
+      widget.xyPairs.push({
+        xSource: "time",
+        ySource: defaultY,
+        color: defaultChartSeriesColor(widget.xyPairs.length),
+        showLine: true,
+        showPoints: true,
+        points: [],
+      });
     });
   });
   widgetConfig.appendChild(addBtn);
@@ -2499,7 +2971,7 @@ function refreshSidebar() {
     if (widgetPanelTitle) {
       widgetPanelTitle.textContent = widget.type === "xychart"
         ? t("panel.widgetChart")
-        : t("panel.widgetTable");
+        : (widget.type === "slider" ? t("panel.widgetSlider") : t("panel.widgetTable"));
     }
     refreshWidgetConfigPanel(widget);
     return;
@@ -2526,7 +2998,13 @@ function refreshSidebar() {
     if (document.activeElement !== nodeShapeInput) {
       nodeShapeInput.value = node.shape;
     }
+    const showInputToggle = canMarkNodeAsInput(node);
+    nodeInputInput.checked = Boolean(node.input);
     nodeOutputInput.checked = Boolean(node.output);
+    if (nodeInputLabel) {
+      nodeInputLabel.classList.toggle("hidden", !showInputToggle);
+    }
+    nodeInputInput.disabled = !showInputToggle;
     const stateNode = isStateNode(node);
     const parameterNode = node.shape === "diamond";
     if (nodeValueExprLabel) {
@@ -2611,6 +3089,11 @@ function refreshSidebar() {
   if (nodeValueExprLabel) {
     nodeValueExprLabel.textContent = t("label.behaviorFunction");
   }
+  nodeInputInput.checked = false;
+  if (nodeInputLabel) {
+    nodeInputLabel.classList.add("hidden");
+  }
+  nodeInputInput.disabled = true;
   if (nodeInitialStateLabel) {
     nodeInitialStateLabel.classList.add("hidden");
   }
@@ -2898,6 +3381,21 @@ function render() {
     label.setAttribute("y", node.y);
     label.textContent = node.name;
 
+    let inputBadge = null;
+    let inputBadgeLabel = null;
+    if (node.input) {
+      inputBadge = document.createElementNS(SVG_NS, "circle");
+      inputBadge.classList.add("node-input-badge");
+      inputBadge.setAttribute("cx", node.x - node.width / 2 + 9);
+      inputBadge.setAttribute("cy", node.y - node.height / 2 + 9);
+      inputBadge.setAttribute("r", "7");
+      inputBadgeLabel = document.createElementNS(SVG_NS, "text");
+      inputBadgeLabel.classList.add("node-input-badge-label");
+      inputBadgeLabel.setAttribute("x", node.x - node.width / 2 + 9);
+      inputBadgeLabel.setAttribute("y", node.y - node.height / 2 + 9);
+      inputBadgeLabel.textContent = "I";
+    }
+
     let outputBadge = null;
     let outputBadgeLabel = null;
     if (node.output) {
@@ -2945,6 +3443,10 @@ function render() {
 
     g.appendChild(shapeEl);
     g.appendChild(label);
+    if (inputBadge && inputBadgeLabel) {
+      g.appendChild(inputBadge);
+      g.appendChild(inputBadgeLabel);
+    }
     if (outputBadge && outputBadgeLabel) {
       g.appendChild(outputBadge);
       g.appendChild(outputBadgeLabel);
@@ -2955,7 +3457,11 @@ function render() {
   });
 
   updateCanvasSize();
-  renderWidgets();
+  if (ui.sliderInteraction == null) {
+    renderWidgets();
+  } else {
+    applyWidgetDrivenNodeValues();
+  }
   refreshSidebar();
   updateHistoryButtons();
   scheduleFileStatusRefresh();
@@ -2980,6 +3486,7 @@ function importGraphData(data) {
       return {
         id: n.id,
         name: typeof n.name === "string" ? n.name : t("node.defaultName", { id: n.id }),
+        input: Boolean(n.input),
         output: Boolean(n.output),
         type: serializeNodeType(shape),
         x: Number.isFinite(n.x) ? n.x : 200,
@@ -3026,10 +3533,10 @@ function importGraphData(data) {
   const maxEdgeId = edges.reduce((max, e) => Math.max(max, e.id), 0);
   const widgets = Array.isArray(data.widgets)
     ? data.widgets
-      .filter((w) => Number.isInteger(w.id) && (w.type === "table" || w.type === "xychart"))
+      .filter((w) => Number.isInteger(w.id) && (w.type === "table" || w.type === "xychart" || w.type === "slider"))
       .map((w) => ({
         id: w.id,
-        type: w.type === "xychart" ? "xychart" : "table",
+        type: w.type === "xychart" ? "xychart" : (w.type === "slider" ? "slider" : "table"),
         customTitle: String(w.customTitle ?? ""),
         x: Number.isFinite(Number(w.x)) ? Number(w.x) : 40,
         y: Number.isFinite(Number(w.y)) ? Number(w.y) : 40,
@@ -3043,12 +3550,20 @@ function importGraphData(data) {
         yMin: Number.isFinite(Number(w.yMin)) ? Number(w.yMin) : null,
         yMax: Number.isFinite(Number(w.yMax)) ? Number(w.yMax) : null,
         showGrid: w.showGrid !== false,
+        source: String(w.source ?? ""),
+        min: Number.isFinite(Number(w.min)) ? Number(w.min) : 0,
+        max: Number.isFinite(Number(w.max)) ? Number(w.max) : 100,
+        step: Number.isFinite(Number(w.step)) ? Number(w.step) : 1,
+        value: Number.isFinite(Number(w.value)) ? Number(w.value) : 0,
         rows: [],
         columns: Array.isArray(w.columns) ? w.columns.map((c) => String(c)) : [],
         xyPairs: Array.isArray(w.xyPairs)
-          ? w.xyPairs.map((pair) => ({
+          ? w.xyPairs.map((pair, idx) => ({
             xSource: String(pair.xSource ?? "time"),
             ySource: String(pair.ySource ?? ""),
+            color: /^#[0-9a-fA-F]{6}$/.test(String(pair?.color ?? "")) ? String(pair.color) : defaultChartSeriesColor(idx),
+            showLine: pair?.showLine !== false,
+            showPoints: pair?.showPoints !== false,
             points: [],
           }))
           : (() => {
@@ -3059,6 +3574,9 @@ function importGraphData(data) {
             return legacyYNodes.map((yNode, idx) => ({
               xSource: legacyX,
               ySource: yNode,
+              color: defaultChartSeriesColor(idx),
+              showLine: true,
+              showPoints: true,
               points: [],
             }));
           })(),
@@ -3415,6 +3933,7 @@ function promotePendingStateNodes() {
 }
 
 function evaluateAtTime(timeValue) {
+  applyWidgetDrivenNodeValues();
   const evalResults = semantics.evaluateStatefulGraphStep(graph.nodes, graph.edges, { time: timeValue });
   let successCount = 0;
   let errorCount = 0;
@@ -3546,15 +4065,26 @@ function executeNodeExpressions() {
   if (!cfg) {
     return;
   }
-  runAction(() => {
-    clearAllXYChartPoints();
-    clearAllTableWidgetRows();
-  });
+
+  const continuing = graph.execution.currentTime != null;
+  if (continuing && isExecutionEnded(cfg)) {
+    setStatusKey("status.timeEndReached", {
+      time: formatNumberValue(Number(graph.execution.currentTime)),
+    });
+    return;
+  }
+
+  if (!continuing) {
+    runAction(() => {
+      clearAllXYChartPoints();
+      clearAllTableWidgetRows();
+    });
+  }
 
   const maxSteps = 100000;
   const epsilon = Math.max(1e-12, Math.abs(cfg.dt) * 1e-9);
   const timeValues = [];
-  let current = cfg.t0;
+  let current = continuing ? graph.execution.currentTime + cfg.dt : cfg.t0;
   for (let i = 0; i < maxSteps; i += 1) {
     if ((cfg.dt > 0 && current > cfg.t1 + epsilon) || (cfg.dt < 0 && current < cfg.t1 - epsilon)) {
       break;
@@ -3582,7 +4112,7 @@ function executeNodeExpressions() {
 
   runAction(() => {
     timeValues.forEach((timeValue, idx) => {
-      if (idx === 0) {
+      if (!continuing && idx === 0) {
         initializeStateNodes(timeValue);
       } else {
         promotePendingStateNodes();
@@ -3875,6 +4405,11 @@ window.addEventListener("pointerup", (evt) => {
     needsRender = true;
   }
 
+  if (ui.sliderInteraction?.mode === "range") {
+    ui.sliderInteraction = null;
+    needsRender = true;
+  }
+
   if (needsRender) {
     render();
   }
@@ -3998,6 +4533,13 @@ addDiamondNodeItem.addEventListener("click", () => {
     addNode("diamond");
   });
   setStatusKey("status.nodeCreated");
+});
+
+addSliderWidgetItem.addEventListener("click", () => {
+  runAction(() => {
+    addSliderWidget();
+  });
+  setStatusKey("status.widgetSliderCreated");
 });
 
 addTableWidgetItem.addEventListener("click", () => {
@@ -4215,6 +4757,7 @@ nodeShapeInput.addEventListener("change", () => {
     return;
   }
   runAction(() => {
+    const wasSliderBindable = canBindSliderToNode(node);
     node.shape = nodeShapeInput.value;
     if (isStateNode(node) && !String(node.initialStateExpression || "").trim()) {
       node.initialStateExpression = "0";
@@ -4226,6 +4769,32 @@ nodeShapeInput.addEventListener("change", () => {
       node.initialStateExpression = "";
       node.pendingStateValue = null;
       node.pendingStateError = "";
+    }
+    normalizeInputNodeFlags();
+    if (wasSliderBindable && !canBindSliderToNode(node)) {
+      removeNodeFromSliderBindings(node.name);
+    }
+  });
+});
+
+nodeInputInput.addEventListener("change", () => {
+  if (ui.selectedNodes.size !== 1) {
+    return;
+  }
+  const nodeId = [...ui.selectedNodes][0];
+  const node = getNodeById(nodeId);
+  if (!node) {
+    return;
+  }
+  if (!canMarkNodeAsInput(node)) {
+    nodeInputInput.checked = false;
+    return;
+  }
+  const wasInput = Boolean(node.input);
+  runAction(() => {
+    node.input = nodeInputInput.checked;
+    if (wasInput && !node.input) {
+      removeNodeFromSliderBindings(node.name);
     }
   });
 });

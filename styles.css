@@ -296,6 +296,53 @@ body {
   background: #fff;
 }
 
+.slider-widget-wrap {
+  display: grid;
+  gap: 10px;
+}
+
+.slider-widget-source {
+  font-size: 12px;
+  color: #4e6072;
+}
+
+.slider-widget-wrap input[type="range"] {
+  width: 100%;
+  margin: 0;
+}
+
+.slider-range-line {
+  display: grid;
+  grid-template-columns: auto 1fr 96px auto;
+  gap: 8px;
+  align-items: center;
+}
+
+.slider-bound {
+  font-size: 12px;
+  color: #4e6072;
+  white-space: nowrap;
+}
+
+.slider-widget-value {
+  text-align: center;
+  font-size: 13px;
+  font-weight: 600;
+  color: #1f3e58;
+}
+
+.slider-value-row {
+  display: grid;
+  grid-template-columns: 1fr 96px;
+  gap: 8px;
+  align-items: center;
+}
+
+.slider-widget-number {
+  margin-top: 0;
+  width: 100%;
+}
+
 .value-widget-resize {
   position: absolute;
   right: 0;
@@ -355,6 +402,24 @@ h4 {
 
 .time-row3 label {
   margin-top: 0;
+}
+
+.row3-exec {
+  margin-top: 10px;
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 8px;
+}
+
+.compact-field {
+  display: grid;
+  gap: 4px;
+  margin-top: 0;
+}
+
+.compact-field span {
+  font-size: 12px;
+  color: #4e6072;
 }
 
 .run-icons-row {
@@ -478,12 +543,19 @@ button:disabled {
   display: grid;
   grid-template-columns: 1fr auto;
   gap: 8px;
-  align-items: center;
+  align-items: start;
+}
+
+.node-flags-col {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 2px;
 }
 
 .node-type-row .menu-check {
   margin: 0;
-  padding: 6px 0;
+  padding: 2px 0;
   white-space: nowrap;
 }
 
@@ -533,6 +605,14 @@ button:disabled {
   pointer-events: none;
 }
 
+.node-input-badge {
+  fill: #2aa876;
+  stroke: #1e7251;
+  stroke-width: 1;
+  pointer-events: none;
+}
+
+.node-input-badge-label,
 .node-output-badge-label {
   font-size: 9px;
   font-weight: 700;
@@ -601,12 +681,18 @@ button:disabled {
 .context-menu {
   position: fixed;
   z-index: 1000;
-  min-width: 190px;
+  min-width: 156px;
   background: #ffffff;
   border: 1px solid var(--line);
   border-radius: 8px;
   box-shadow: 0 12px 30px rgba(18, 33, 47, 0.14);
-  padding: 6px;
+  padding: 5px;
+}
+
+.context-menu-sep {
+  border: 0;
+  border-top: 1px solid #d9e2ea;
+  margin: 4px 2px;
 }
 
 .context-menu button {
@@ -615,7 +701,7 @@ button:disabled {
   border: 0;
   background: transparent;
   color: var(--text);
-  padding: 8px 10px;
+  padding: 7px 9px;
   border-radius: 6px;
 }
 

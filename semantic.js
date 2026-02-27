@@ -373,6 +373,10 @@
     return String(node?.shape || "") === "diamond";
   }
 
+  function hasExternalValue(node) {
+    return Boolean(node?.externalValueEnabled);
+  }
+
   function evaluateStatefulGraphStep(nodes, edges, globals = {}) {
     const nodeById = new Map(nodes.map((node) => [node.id, node]));
     const incoming = new Map();
@@ -383,11 +387,17 @@
       }
     });
 
-    const parameterNodes = nodes.filter((node) => isParameterNode(node));
-    const algebraicNodes = nodes.filter((node) => !isStateNode(node) && !isParameterNode(node));
+    const fixedNodes = nodes.filter((node) => !isStateNode(node) && hasExternalValue(node));
+    const parameterNodes = nodes.filter((node) => isParameterNode(node) && !hasExternalValue(node));
+    const algebraicNodes = nodes.filter((node) => !isStateNode(node) && !isParameterNode(node) && !hasExternalValue(node));
+    const fixedResults = new Map();
     const stateNodes = nodes.filter((node) => isStateNode(node));
     const parameterResults = new Map();
     const algebraicResults = new Map();
+
+    fixedNodes.forEach((node) => {
+      fixedResults.set(node.id, { ok: true, value: node.externalValue });
+    });
 
     parameterNodes.forEach((node) => {
       if (node.computedError) {
@@ -425,6 +435,15 @@
           }
           if (isStateNode(fromNode)) {
             context[fromNode.name] = fromNode.computedValue;
+            return;
+          }
+          if (hasExternalValue(fromNode)) {
+            const depResult = fixedResults.get(fromId);
+            if (!depResult || !depResult.ok) {
+              dependenciesReady = false;
+              return;
+            }
+            context[fromNode.name] = depResult.value;
             return;
           }
           if (isParameterNode(fromNode)) {
@@ -477,6 +496,15 @@
           context[fromNode.name] = fromNode.computedValue;
           return;
         }
+        if (hasExternalValue(fromNode)) {
+          const depResult = fixedResults.get(fromId);
+          if (!depResult || !depResult.ok) {
+            dependenciesReady = false;
+            return;
+          }
+          context[fromNode.name] = depResult.value;
+          return;
+        }
         if (isParameterNode(fromNode)) {
           const depResult = parameterResults.get(fromId);
           if (!depResult || !depResult.ok) {
@@ -503,6 +531,10 @@
 
     return {
       algebraic: [
+        ...fixedNodes.map((node) => ({
+          id: node.id,
+          result: fixedResults.get(node.id) || { ok: false, reason: "dependency" },
+        })),
         ...parameterNodes.map((node) => ({
           id: node.id,
           result: parameterResults.get(node.id) || { ok: false, reason: "dependency" },
