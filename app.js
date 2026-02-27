@@ -437,6 +437,26 @@ function isStateNode(node) {
   return node?.shape === "rect";
 }
 
+function serializeNodeType(shape) {
+  if (shape === "ellipse") {
+    return "algebraic";
+  }
+  if (shape === "diamond") {
+    return "parameter";
+  }
+  return "state";
+}
+
+function deserializeNodeType(type) {
+  if (type === "algebraic") {
+    return "ellipse";
+  }
+  if (type === "parameter") {
+    return "diamond";
+  }
+  return "rect";
+}
+
 function graphBounds() {
   let minX = 0;
   let minY = 0;
@@ -764,7 +784,7 @@ function exportGraphData() {
       id: n.id,
       name: n.name,
       output: Boolean(n.output),
-      shape: n.shape,
+      type: serializeNodeType(n.shape),
       x: n.x,
       y: n.y,
       width: n.width,
@@ -832,27 +852,30 @@ function applyGraphData(data) {
     currentTime: null,
   };
 
-  graph.nodes = data.nodes.map((n) => ({
-    id: n.id,
-    name: n.name,
-    output: Boolean(n.output),
-    shape: n.shape,
-    x: n.x,
-    y: n.y,
-    width: n.width,
-    height: n.height,
-    valueExpression: n.shape === "rect"
-      ? String(n.valueExpression ?? "state") || "state"
-      : String(n.valueExpression ?? ""),
-    initialStateExpression: n.shape === "rect"
-      ? String(n.initialStateExpression ?? "0")
-      : String(n.initialStateExpression ?? ""),
-    computedValue: null,
-    computedError: "",
-    pendingStateValue: null,
-    pendingStateError: "",
-    properties: n.properties.map((p) => ({ key: p.key, value: p.value })),
-  }));
+  graph.nodes = data.nodes.map((n) => {
+    const shape = deserializeNodeType(n.type);
+    return {
+      id: n.id,
+      name: n.name,
+      output: Boolean(n.output),
+      shape,
+      x: n.x,
+      y: n.y,
+      width: n.width,
+      height: n.height,
+      valueExpression: shape === "rect"
+        ? String(n.valueExpression ?? "this") || "this"
+        : String(n.valueExpression ?? ""),
+      initialStateExpression: shape === "rect"
+        ? String(n.initialStateExpression ?? "0")
+        : String(n.initialStateExpression ?? ""),
+      computedValue: null,
+      computedError: "",
+      pendingStateValue: null,
+      pendingStateError: "",
+      properties: n.properties.map((p) => ({ key: p.key, value: p.value })),
+    };
+  });
   initializeStateNodes(graph.execution.t0);
 
   graph.edges = data.edges.map((e) => ({
@@ -1210,7 +1233,7 @@ function addNode(shape, atPoint = null) {
     y: py,
     width: 120,
     height: 70,
-    valueExpression: shape === "rect" ? "state" : "",
+    valueExpression: shape === "rect" ? "this" : "",
     initialStateExpression: shape === "rect" ? "0" : "",
     computedValue: shape === "rect" ? 0 : null,
     computedError: "",
@@ -1225,6 +1248,12 @@ function addNode(shape, atPoint = null) {
 function addEdge(fromId, toId) {
   if (fromId === toId) {
     setStatusKey("error.edgeDifferentNodes");
+    return null;
+  }
+
+  const targetNode = getNodeById(toId);
+  if (targetNode?.shape === "diamond") {
+    setStatusKey("error.parameterIncomingEdge");
     return null;
   }
 
@@ -2499,8 +2528,11 @@ function refreshSidebar() {
     }
     nodeOutputInput.checked = Boolean(node.output);
     const stateNode = isStateNode(node);
+    const parameterNode = node.shape === "diamond";
     if (nodeValueExprLabel) {
-      nodeValueExprLabel.textContent = stateNode ? t("label.stateTransition") : t("label.behaviorFunction");
+      nodeValueExprLabel.textContent = parameterNode
+        ? t("label.value")
+        : (stateNode ? t("label.stateTransition") : t("label.behaviorFunction"));
     }
     if (document.activeElement !== nodeValueExprInput) {
       nodeValueExprInput.value = node.valueExpression || "";
@@ -2940,35 +2972,47 @@ function importGraphData(data) {
 
   const nodes = data.nodes
     .filter((n) => Number.isInteger(n.id))
-    .map((n) => ({
-      id: n.id,
-      name: typeof n.name === "string" ? n.name : t("node.defaultName", { id: n.id }),
-      output: Boolean(n.output),
-      shape: ["rect", "ellipse", "diamond"].includes(n.shape) ? n.shape : "rect",
-      x: Number.isFinite(n.x) ? n.x : 200,
-      y: Number.isFinite(n.y) ? n.y : 200,
-      width: clamp(Number(n.width) || 120, 40, 500),
-      height: clamp(Number(n.height) || 70, 30, 500),
-      valueExpression: (["rect", "ellipse", "diamond"].includes(n.shape) ? n.shape : "rect") === "rect"
-        ? String(n.valueExpression ?? "state") || "state"
-        : String(n.valueExpression ?? ""),
-      initialStateExpression: (["rect", "ellipse", "diamond"].includes(n.shape) ? n.shape : "rect") === "rect"
-        ? String(n.initialStateExpression ?? "0")
-        : String(n.initialStateExpression ?? ""),
-      computedValue: null,
-      computedError: "",
-      pendingStateValue: null,
-      pendingStateError: "",
-      properties: Array.isArray(n.properties)
-        ? n.properties.map((p) => ({ key: String(p?.key ?? ""), value: String(p?.value ?? "") }))
-        : [],
-    }));
+    .map((n) => {
+      if (!["state", "algebraic", "parameter"].includes(n.type)) {
+        throw new Error(t("error.invalidJson"));
+      }
+      const shape = deserializeNodeType(n.type);
+      return {
+        id: n.id,
+        name: typeof n.name === "string" ? n.name : t("node.defaultName", { id: n.id }),
+        output: Boolean(n.output),
+        type: serializeNodeType(shape),
+        x: Number.isFinite(n.x) ? n.x : 200,
+        y: Number.isFinite(n.y) ? n.y : 200,
+        width: clamp(Number(n.width) || 120, 40, 500),
+        height: clamp(Number(n.height) || 70, 30, 500),
+        valueExpression: shape === "rect"
+          ? String(n.valueExpression ?? "this") || "this"
+          : String(n.valueExpression ?? ""),
+        initialStateExpression: shape === "rect"
+          ? String(n.initialStateExpression ?? "0")
+          : String(n.initialStateExpression ?? ""),
+        computedValue: null,
+        computedError: "",
+        pendingStateValue: null,
+        pendingStateError: "",
+        properties: Array.isArray(n.properties)
+          ? n.properties.map((p) => ({ key: String(p?.key ?? ""), value: String(p?.value ?? "") }))
+          : [],
+      };
+    });
   const nodesWithValidNames = semantics.sanitizeNodeNames(nodes, "n");
 
   const nodeIds = new Set(nodesWithValidNames.map((n) => n.id));
 
   const edges = data.edges
-    .filter((e) => Number.isInteger(e.id) && nodeIds.has(e.from) && nodeIds.has(e.to) && e.from !== e.to)
+    .filter((e) => {
+      if (!Number.isInteger(e.id) || !nodeIds.has(e.from) || !nodeIds.has(e.to) || e.from === e.to) {
+        return false;
+      }
+      const targetNode = nodesWithValidNames.find((n) => n.id === e.to);
+      return targetNode?.type !== "parameter";
+    })
     .map((e) => ({
       id: e.id,
       from: e.from,
@@ -4117,6 +4161,8 @@ nodeNameInput.addEventListener("input", () => {
   nodeNameInput.classList.add("invalid");
   if (attempt.reason === "duplicate") {
     setStatusKey("error.duplicateNodeName");
+  } else if (attempt.reason === "function") {
+    setStatusKey("error.functionNodeName");
   } else if (attempt.reason === "reserved") {
     setStatusKey("error.reservedNodeName");
   } else {
@@ -4174,7 +4220,7 @@ nodeShapeInput.addEventListener("change", () => {
       node.initialStateExpression = "0";
     }
     if (isStateNode(node) && !String(node.valueExpression || "").trim()) {
-      node.valueExpression = "state";
+      node.valueExpression = "this";
     }
     if (!isStateNode(node)) {
       node.initialStateExpression = "";
