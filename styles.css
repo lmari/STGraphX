@@ -367,6 +367,8 @@ body {
   isolation: isolate;
   z-index: 2;
   pointer-events: auto;
+  display: flex;
+  flex-direction: column;
 }
 
 h2,
@@ -381,10 +383,13 @@ h4 {
   border: 1px solid var(--line);
   border-radius: 8px;
   background: #f8fbfe;
+  max-height: 100%;
+  overflow: auto;
 }
 
 #globalPanel {
   margin-top: 10px;
+  padding: 8px;
 }
 
 .row2-exec {
@@ -427,6 +432,47 @@ h4 {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
   gap: 8px;
+}
+
+.model-compact-row {
+  margin-top: 8px;
+}
+
+#globalPanel h3 {
+  margin-bottom: 8px;
+}
+
+#globalPanel h4 {
+  margin-top: 10px;
+  margin-bottom: 6px;
+}
+
+#globalPanel label {
+  margin-top: 6px;
+  margin-bottom: 3px;
+}
+
+#globalPanel input,
+#globalPanel select {
+  padding: 5px 7px;
+}
+
+#globalPanel .run-icons-row,
+#globalPanel .row2-exec {
+  margin-top: 8px;
+}
+
+#globalPanel .small-btn {
+  margin-top: 8px;
+}
+
+#globalPanel .props-list {
+  gap: 6px;
+}
+
+#globalPanel .value-output {
+  margin: 3px 0 8px;
+  min-height: 30px;
 }
 
 .icon-btn {
@@ -493,6 +539,37 @@ button:disabled {
 
 .small-btn {
   margin-top: 10px;
+}
+
+.expr-inline-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 6px;
+  align-items: start;
+}
+
+.expr-inline-row input {
+  min-width: 0;
+}
+
+.expr-edit-btn {
+  margin-top: 0;
+  white-space: nowrap;
+  padding: 6px 10px;
+}
+
+.expr-status {
+  margin: 4px 0 8px;
+  font-size: 0.8rem;
+  line-height: 1.3;
+}
+
+.expr-status.ok {
+  color: #1f7a38;
+}
+
+.expr-status.error {
+  color: var(--danger);
 }
 
 .value-output {
@@ -563,6 +640,138 @@ button:disabled {
   fill: none;
   stroke: #3b4e61;
   stroke-width: 2;
+}
+
+.modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(18, 33, 47, 0.28);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  z-index: 1400;
+}
+
+.modal-backdrop.hidden {
+  display: none;
+}
+
+.modal-card {
+  width: min(760px, calc(100vw - 40px));
+  max-height: calc(100vh - 40px);
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 14px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: var(--surface);
+  box-shadow: 0 18px 36px rgba(18, 33, 47, 0.22);
+}
+
+.modal-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.modal-head h3 {
+  margin: 0;
+  font-size: 1rem;
+}
+
+.modal-close-btn {
+  width: 34px;
+  min-width: 34px;
+  padding: 6px 0;
+  font-size: 1.1rem;
+}
+
+.expression-editor-card {
+  width: min(820px, calc(100vw - 40px));
+}
+
+.expression-editor-textarea {
+  width: 100%;
+  min-height: min(42vh, 320px);
+  resize: vertical;
+  padding: 10px 12px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: #fff;
+  color: var(--text);
+  font: 0.95rem/1.45 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  white-space: pre;
+  overflow: auto;
+}
+
+.expression-autocomplete {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  max-height: 160px;
+  overflow: auto;
+  padding: 6px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: #f8fbfe;
+}
+
+.expression-autocomplete button {
+  margin: 0;
+  padding: 6px 8px;
+  border: 0;
+  border-radius: 6px;
+  text-align: left;
+  background: transparent;
+  color: var(--text);
+}
+
+.expression-autocomplete button:hover,
+.expression-autocomplete button.active {
+  background: #e5f1fb;
+}
+
+.expr-suggest-name {
+  display: inline-block;
+  min-width: 120px;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+}
+
+.expr-suggest-meta {
+  color: var(--muted);
+  font-size: 0.8rem;
+}
+
+.expression-help {
+  padding: 8px 10px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: #fbfcfe;
+  color: var(--muted);
+  font-size: 0.84rem;
+  line-height: 1.35;
+  white-space: pre-wrap;
+}
+
+.expression-editor-hint {
+  margin-top: -2px;
+  color: var(--muted);
+  font-size: 0.8rem;
+  line-height: 1.3;
+}
+
+.expression-editor-textarea.invalid {
+  border-color: var(--danger);
+  box-shadow: 0 0 0 1px rgba(186, 31, 54, 0.18);
+}
+
+.modal-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
 }
 
 .edge-hit {

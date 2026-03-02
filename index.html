@@ -114,11 +114,16 @@
               </div>
             </div>
 
-            <label for="timeDelayInput" data-i18n="label.timeDelayMs">Ritardo (ms)</label>
-            <input id="timeDelayInput" type="number" min="1" step="1" />
-
-            <label for="decimalDigitsInput" data-i18n="label.decimals">Cifre decimali max</label>
-            <input id="decimalDigitsInput" type="number" min="0" max="12" step="1" />
+            <div class="row2-exec model-compact-row">
+              <div>
+                <label for="timeDelayInput" data-i18n="label.timeDelayMs">Ritardo (ms)</label>
+                <input id="timeDelayInput" type="number" min="1" step="1" />
+              </div>
+              <div>
+                <label for="decimalDigitsInput" data-i18n="label.decimals">Cifre decimali max</label>
+                <input id="decimalDigitsInput" type="number" min="0" max="12" step="1" />
+              </div>
+            </div>
 
             <label for="timeCurrentOutput" data-i18n="label.timeCurrent">Tempo corrente</label>
             <pre id="timeCurrentOutput" class="value-output">-</pre>
@@ -133,6 +138,10 @@
               <button id="toggleGraphBtn" class="small-btn" type="button" data-i18n="view.btn.showGraph">Mostra grafo</button>
               <button id="toggleWidgetsBtn" class="small-btn" type="button" data-i18n="view.btn.showWidgets">Mostra widget</button>
             </div>
+
+            <h4 data-i18n="panel.propertiesList">Lista proprieta</h4>
+            <div id="modelPropsList" class="props-list"></div>
+            <button id="addModelPropBtn" class="small-btn" data-i18n="action.addProperty">Aggiungi proprieta</button>
           </div>
 
           <div id="nodePanel" class="panel hidden">
@@ -163,10 +172,18 @@
             </div>
 
             <label id="nodeValueExprLabel" for="nodeValueExprInput" data-i18n="label.behaviorFunction">Funzione comportamento</label>
-            <input id="nodeValueExprInput" type="text" placeholder="1, [1,2,3], [[1,2],[3,4]]" />
+            <div class="expr-inline-row">
+              <input id="nodeValueExprInput" type="text" placeholder="1, [1,2,3], [[1,2],[3,4]]" />
+              <button id="editNodeValueExprBtn" class="small-btn expr-edit-btn" type="button" data-i18n="action.editExpression">Modifica...</button>
+            </div>
+            <div id="nodeValueExprStatus" class="expr-status hidden"></div>
 
             <label id="nodeInitialStateLabel" for="nodeInitialStateInput" data-i18n="label.initialState">Stato iniziale</label>
-            <input id="nodeInitialStateInput" type="text" placeholder="0" />
+            <div class="expr-inline-row">
+              <input id="nodeInitialStateInput" type="text" placeholder="0" />
+              <button id="editNodeInitialStateBtn" class="small-btn expr-edit-btn" type="button" data-i18n="action.editExpression">Modifica...</button>
+            </div>
+            <div id="nodeInitialStateStatus" class="expr-status hidden"></div>
 
             <label for="nodeValueOutput" data-i18n="label.valueComputed">Valore calcolato</label>
             <pre id="nodeValueOutput" class="value-output">-</pre>
@@ -196,7 +213,25 @@
       </main>
     </div>
     <div id="contextMenu" class="context-menu hidden"></div>
+    <div id="expressionEditorModal" class="modal-backdrop hidden">
+      <div class="modal-card expression-editor-card" role="dialog" aria-modal="true" aria-labelledby="expressionEditorTitle">
+        <div class="modal-head">
+          <h3 id="expressionEditorTitle">Espressione</h3>
+          <button id="expressionEditorCloseBtn" class="icon-btn modal-close-btn" type="button" aria-label="Chiudi">×</button>
+        </div>
+        <textarea id="expressionEditorTextarea" class="expression-editor-textarea" spellcheck="false"></textarea>
+        <div id="expressionAutocomplete" class="expression-autocomplete hidden"></div>
+        <div id="expressionHelp" class="expression-help" data-i18n="expr.help.empty">Seleziona o scrivi un simbolo per vedere l'help contestuale.</div>
+        <div id="expressionEditorHint" class="expression-editor-hint" data-i18n="expr.hint">Tab: indentazione, Shift+Tab: riduci, Ctrl+Enter: applica.</div>
+        <div id="expressionEditorStatus" class="expr-status hidden"></div>
+        <div class="modal-actions">
+          <button id="expressionEditorCancelBtn" type="button" data-i18n="action.cancel">Annulla</button>
+          <button id="expressionEditorApplyBtn" type="button" data-i18n="action.apply">Applica</button>
+        </div>
+      </div>
+    </div>
 
+    <script src="probability.js"></script>
     <script src="semantic.js"></script>
     <script src="app.js"></script>
   </body>

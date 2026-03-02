@@ -52,6 +52,8 @@ const timeEndInput = document.getElementById("timeEndInput");
 const timeDelayInput = document.getElementById("timeDelayInput");
 const decimalDigitsInput = document.getElementById("decimalDigitsInput");
 const timeCurrentOutput = document.getElementById("timeCurrentOutput");
+const modelPropsList = document.getElementById("modelPropsList");
+const addModelPropBtn = document.getElementById("addModelPropBtn");
 const runFullModelBtn = document.getElementById("runFullModelBtn");
 const manualStepBtn = document.getElementById("manualStepBtn");
 const timedToggleBtn = document.getElementById("timedToggleBtn");
@@ -64,8 +66,12 @@ const nodeInputLabel = nodeInputInput?.closest("label");
 const nodeOutputInput = document.getElementById("nodeOutputInput");
 const nodeValueExprLabel = document.getElementById("nodeValueExprLabel");
 const nodeValueExprInput = document.getElementById("nodeValueExprInput");
+const editNodeValueExprBtn = document.getElementById("editNodeValueExprBtn");
+const nodeValueExprStatus = document.getElementById("nodeValueExprStatus");
 const nodeInitialStateLabel = document.getElementById("nodeInitialStateLabel");
 const nodeInitialStateInput = document.getElementById("nodeInitialStateInput");
+const editNodeInitialStateBtn = document.getElementById("editNodeInitialStateBtn");
+const nodeInitialStateStatus = document.getElementById("nodeInitialStateStatus");
 const nodeValueOutput = document.getElementById("nodeValueOutput");
 const propsList = document.getElementById("propsList");
 const addPropBtn = document.getElementById("addPropBtn");
@@ -75,6 +81,16 @@ const widgetConfig = document.getElementById("widgetConfig");
 const contextMenu = document.getElementById("contextMenu");
 const canvasContent = document.getElementById("canvasContent");
 const widgetLayer = document.getElementById("widgetLayer");
+const expressionEditorModal = document.getElementById("expressionEditorModal");
+const expressionEditorTitle = document.getElementById("expressionEditorTitle");
+const expressionEditorTextarea = document.getElementById("expressionEditorTextarea");
+const expressionAutocomplete = document.getElementById("expressionAutocomplete");
+const expressionHelp = document.getElementById("expressionHelp");
+const expressionEditorHint = document.getElementById("expressionEditorHint");
+const expressionEditorStatus = document.getElementById("expressionEditorStatus");
+const expressionEditorCloseBtn = document.getElementById("expressionEditorCloseBtn");
+const expressionEditorCancelBtn = document.getElementById("expressionEditorCancelBtn");
+const expressionEditorApplyBtn = document.getElementById("expressionEditorApplyBtn");
 
 const SVG_NS = "http://www.w3.org/2000/svg";
 const MAX_HISTORY = 100;
@@ -98,6 +114,7 @@ let fileStatusRefreshTimer = null;
 
 const graph = {
   modelTitle: "",
+  properties: [],
   nodes: [],
   edges: [],
   widgets: [],
@@ -133,6 +150,7 @@ const ui = {
   sliderInteraction: null,
   showGraph: true,
   showWidgets: true,
+  expressionEditor: null,
 };
 
 const history = {
@@ -254,6 +272,539 @@ function t(key, vars = null) {
   return vars ? fillTemplate(value, vars) : value;
 }
 
+function hideExpressionStatus(statusEl) {
+  if (!statusEl) {
+    return;
+  }
+  statusEl.textContent = "";
+  statusEl.classList.add("hidden");
+  statusEl.classList.remove("ok", "error");
+}
+
+function showExpressionStatus(statusEl, syntaxResult, showOk = true) {
+  if (!statusEl) {
+    return;
+  }
+  if (!syntaxResult || syntaxResult.empty) {
+    hideExpressionStatus(statusEl);
+    return;
+  }
+  statusEl.classList.remove("hidden", "ok", "error");
+  if (syntaxResult.ok) {
+    if (!showOk) {
+      hideExpressionStatus(statusEl);
+      return;
+    }
+    statusEl.classList.add("ok");
+    statusEl.textContent = t("expr.syntaxOk");
+    return;
+  }
+  statusEl.classList.add("error");
+  statusEl.textContent = t("expr.syntaxError", {
+    message: localizeExpressionErrorMessage(syntaxResult.message || t("error.evalReason.syntax")),
+  });
+}
+
+function localizeExpressionErrorMessage(message) {
+  const raw = String(message ?? "").trim();
+  if (!raw) {
+    return t("error.evalReason.syntax");
+  }
+  const lower = raw.toLowerCase();
+  if (lower === "'this' is only available in state transitions") {
+    return t("expr.error.thisOnlyState");
+  }
+  if (lower === "'integral' is only available in state transitions") {
+    return t("expr.error.integralOnlyState");
+  }
+  if (lower.includes("missing ) after argument list") || lower.includes("missing ) in parenthetical")) {
+    return t("expr.error.missingCloseParen");
+  }
+  if (lower.includes("missing ] after element list")) {
+    return t("expr.error.missingCloseBracket");
+  }
+  if (lower.includes("missing } after property list")) {
+    return t("expr.error.missingCloseBrace");
+  }
+  if (lower.includes("unexpected end of input")) {
+    return t("expr.error.unexpectedEnd");
+  }
+  if (lower.includes("unexpected token")) {
+    return t("expr.error.unexpectedToken");
+  }
+  if (lower.includes("invalid or unexpected token")) {
+    return t("expr.error.invalidToken");
+  }
+  if (lower.includes("unterminated string") || lower.includes("string literal contains an unescaped line break")) {
+    return t("expr.error.unterminatedString");
+  }
+  if (lower.includes("missing : after property id")) {
+    return t("expr.error.objectColon");
+  }
+  return raw;
+}
+
+function validateExpressionDraft(value, fieldKey = null) {
+  const text = String(value ?? "");
+  if (!text.trim()) {
+    return { ok: true, empty: true };
+  }
+  const modalMeta = ui.expressionEditor ? expressionEditorMeta() : null;
+  const meta = modalMeta || (fieldKey ? expressionFieldMeta(fieldKey) : null);
+  const node = modalMeta
+    ? getNodeById(ui.expressionEditor.nodeId)
+    : selectedNodeForSidebar();
+  const allowStateTransitionOnly = Boolean(meta && meta.key === "value" && node && isStateNode(node));
+  const result = semantics.validateExpressionSyntax(text, [], {
+    allowThisAlias: allowStateTransitionOnly,
+    allowIntegral: allowStateTransitionOnly,
+  });
+  return result.ok
+    ? { ok: true, empty: false }
+    : { ok: false, empty: false, message: localizeExpressionErrorMessage(result.message || t("error.evalReason.syntax")) };
+}
+
+function updateExpressionFieldState(inputEl, statusEl, value, showOk = false, fieldKey = null) {
+  if (!inputEl) {
+    return { ok: true, empty: true };
+  }
+  const syntaxResult = validateExpressionDraft(value, fieldKey);
+  inputEl.classList.toggle("invalid", !syntaxResult.ok);
+  showExpressionStatus(statusEl, syntaxResult, showOk);
+  return syntaxResult;
+}
+
+function selectedNodeForSidebar() {
+  if (ui.selectedNodes.size !== 1) {
+    return null;
+  }
+  const nodeId = [...ui.selectedNodes][0];
+  return getNodeById(nodeId) || null;
+}
+
+function expressionFieldMeta(fieldKey, node = selectedNodeForSidebar()) {
+  if (!node) {
+    return null;
+  }
+  if (fieldKey === "value") {
+    const title = node.shape === "diamond"
+      ? t("label.value")
+      : (isStateNode(node) ? t("label.stateTransition") : t("label.behaviorFunction"));
+    return {
+      key: "value",
+      title,
+      value: String(node.valueExpression ?? ""),
+      setValue: (nextValue) => {
+        node.valueExpression = String(nextValue ?? "");
+      },
+      inputEl: nodeValueExprInput,
+      statusEl: nodeValueExprStatus,
+    };
+  }
+  if (fieldKey === "initial" && isStateNode(node)) {
+    return {
+      key: "initial",
+      title: t("label.initialState"),
+      value: String(node.initialStateExpression ?? "0"),
+      setValue: (nextValue) => {
+        node.initialStateExpression = String(nextValue ?? "");
+      },
+      inputEl: nodeInitialStateInput,
+      statusEl: nodeInitialStateStatus,
+    };
+  }
+  return null;
+}
+
+function expressionEditorMeta() {
+  if (!ui.expressionEditor) {
+    return null;
+  }
+  const node = getNodeById(ui.expressionEditor.nodeId);
+  return expressionFieldMeta(ui.expressionEditor.fieldKey, node);
+}
+
+function expressionDocMap() {
+  return {
+    this: { kind: "variable", signature: "this", description: t("expr.help.this") },
+    time: { kind: "variable", signature: "time", description: t("expr.help.time") },
+    t0: { kind: "variable", signature: "t0", description: t("expr.help.t0") },
+    t1: { kind: "variable", signature: "t1", description: t("expr.help.t1") },
+    dt: { kind: "variable", signature: "dt", description: t("expr.help.dt") },
+    if: { kind: "function", signature: "if(condition, whenTrue, whenFalse)", description: t("expr.help.if"), insertText: "if()", cursorOffset: 3 },
+    integral: { kind: "function", signature: "integral(x)", description: t("expr.help.integral"), insertText: "integral()", cursorOffset: 9 },
+    getProperty: { kind: "property", signature: "getProperty(name, fallback)", description: t("expr.help.getProperty"), insertText: "getProperty()", cursorOffset: 12 },
+    setProperty: { kind: "property", signature: "setProperty(name, value)", description: t("expr.help.setProperty"), insertText: "setProperty()", cursorOffset: 12 },
+    getModelProperty: { kind: "property", signature: "getModelProperty(name, fallback)", description: t("expr.help.getModelProperty"), insertText: "getModelProperty()", cursorOffset: 17 },
+    setModelProperty: { kind: "property", signature: "setModelProperty(name, value)", description: t("expr.help.setModelProperty"), insertText: "setModelProperty()", cursorOffset: 17 },
+    gaussian: { kind: "function", signature: "gaussian([params], x, mode)", description: t("expr.help.gaussian"), insertText: "gaussian()", cursorOffset: 9 },
+    uniform: { kind: "function", signature: "uniform([params], x, mode)", description: t("expr.help.uniform"), insertText: "uniform()", cursorOffset: 8 },
+    exponential: { kind: "function", signature: "exponential([params], x, mode)", description: t("expr.help.exponential"), insertText: "exponential()", cursorOffset: 12 },
+    rand: { kind: "function", signature: "rand()", description: t("expr.help.rand"), insertText: "rand()", cursorOffset: 4 },
+    random: { kind: "function", signature: "random()", description: t("expr.help.rand"), insertText: "random()", cursorOffset: 6 },
+    sin: { kind: "math", signature: "sin(x)", description: t("expr.help.sin"), insertText: "sin()", cursorOffset: 4 },
+    cos: { kind: "math", signature: "cos(x)", description: t("expr.help.cos"), insertText: "cos()", cursorOffset: 4 },
+    tan: { kind: "math", signature: "tan(x)", description: t("expr.help.tan"), insertText: "tan()", cursorOffset: 4 },
+    asin: { kind: "math", signature: "asin(x)", description: t("expr.help.asin"), insertText: "asin()", cursorOffset: 5 },
+    acos: { kind: "math", signature: "acos(x)", description: t("expr.help.acos"), insertText: "acos()", cursorOffset: 5 },
+    atan: { kind: "math", signature: "atan(x)", description: t("expr.help.atan"), insertText: "atan()", cursorOffset: 5 },
+    atan2: { kind: "math", signature: "atan2(y, x)", description: t("expr.help.atan2"), insertText: "atan2()", cursorOffset: 6 },
+    sinh: { kind: "math", signature: "sinh(x)", description: t("expr.help.sinh"), insertText: "sinh()", cursorOffset: 5 },
+    cosh: { kind: "math", signature: "cosh(x)", description: t("expr.help.cosh"), insertText: "cosh()", cursorOffset: 5 },
+    tanh: { kind: "math", signature: "tanh(x)", description: t("expr.help.tanh"), insertText: "tanh()", cursorOffset: 5 },
+    exp: { kind: "math", signature: "exp(x)", description: t("expr.help.exp"), insertText: "exp()", cursorOffset: 4 },
+    log: { kind: "math", signature: "log(x)", description: t("expr.help.log"), insertText: "log()", cursorOffset: 4 },
+    log10: { kind: "math", signature: "log10(x)", description: t("expr.help.log10"), insertText: "log10()", cursorOffset: 6 },
+    log2: { kind: "math", signature: "log2(x)", description: t("expr.help.log2"), insertText: "log2()", cursorOffset: 5 },
+    sqrt: { kind: "math", signature: "sqrt(x)", description: t("expr.help.sqrt"), insertText: "sqrt()", cursorOffset: 5 },
+    pow: { kind: "math", signature: "pow(base, exp)", description: t("expr.help.pow"), insertText: "pow()", cursorOffset: 4 },
+    abs: { kind: "math", signature: "abs(x)", description: t("expr.help.abs"), insertText: "abs()", cursorOffset: 4 },
+    min: { kind: "math", signature: "min(a, b, ...)", description: t("expr.help.min"), insertText: "min()", cursorOffset: 4 },
+    max: { kind: "math", signature: "max(a, b, ...)", description: t("expr.help.max"), insertText: "max()", cursorOffset: 4 },
+    round: { kind: "math", signature: "round(x)", description: t("expr.help.round"), insertText: "round()", cursorOffset: 6 },
+    floor: { kind: "math", signature: "floor(x)", description: t("expr.help.floor"), insertText: "floor()", cursorOffset: 6 },
+    ceil: { kind: "math", signature: "ceil(x)", description: t("expr.help.ceil"), insertText: "ceil()", cursorOffset: 5 },
+    trunc: { kind: "math", signature: "trunc(x)", description: t("expr.help.trunc"), insertText: "trunc()", cursorOffset: 6 },
+    int: { kind: "math", signature: "int(x)", description: t("expr.help.int"), insertText: "int()", cursorOffset: 4 },
+    sign: { kind: "math", signature: "sign(x)", description: t("expr.help.sign"), insertText: "sign()", cursorOffset: 5 },
+  };
+}
+
+function expressionCatalogForEditor() {
+  const meta = expressionEditorMeta();
+  if (!meta) {
+    return [];
+  }
+  const docs = expressionDocMap();
+  const node = getNodeById(ui.expressionEditor.nodeId);
+  const allowStateAliases = Boolean(meta.key === "value" && node && isStateNode(node));
+  const out = [];
+  const seen = new Set();
+  const pushEntry = (name, entry) => {
+    if (!name || seen.has(name)) {
+      return;
+    }
+    seen.add(name);
+    out.push({ name, ...entry });
+  };
+
+  Object.entries(docs).forEach(([name, entry]) => {
+    if (name === "integral" && !allowStateAliases) {
+      return;
+    }
+    if (name === "this" && !allowStateAliases) {
+      return;
+    }
+    pushEntry(name, entry);
+  });
+
+  if (meta.key === "value" && node) {
+    graph.edges
+      .filter((edge) => edge.to === node.id)
+      .map((edge) => getNodeById(edge.from))
+      .filter(Boolean)
+      .forEach((depNode) => {
+        pushEntry(depNode.name, {
+          kind: "node",
+          signature: depNode.name,
+          description: depNode.name,
+          insertText: depNode.name,
+          cursorOffset: depNode.name.length,
+        });
+      });
+  }
+
+  return out.sort((a, b) => a.name.localeCompare(b.name));
+}
+
+function identifierPrefixAtCaret(text, caret) {
+  const src = String(text ?? "");
+  const pos = Math.max(0, Math.min(caret, src.length));
+  let start = pos;
+  while (start > 0 && /[A-Za-z0-9_$]/.test(src[start - 1])) {
+    start -= 1;
+  }
+  const prefix = src.slice(start, pos);
+  return /^[A-Za-z_$][A-Za-z0-9_$]*$/.test(prefix) ? { start, end: pos, prefix } : null;
+}
+
+function identifierAtCaret(text, caret) {
+  const src = String(text ?? "");
+  const pos = Math.max(0, Math.min(caret, src.length));
+  let start = pos;
+  while (start > 0 && /[A-Za-z0-9_$]/.test(src[start - 1])) {
+    start -= 1;
+  }
+  let end = pos;
+  while (end < src.length && /[A-Za-z0-9_$]/.test(src[end])) {
+    end += 1;
+  }
+  const name = src.slice(start, end);
+  return /^[A-Za-z_$][A-Za-z0-9_$]*$/.test(name) ? name : "";
+}
+
+function setExpressionHelp(entry = null) {
+  if (!expressionHelp) {
+    return;
+  }
+  if (!entry) {
+    expressionHelp.textContent = t("expr.help.empty");
+    return;
+  }
+  const kindKey = `expr.help.kind.${entry.kind || "function"}`;
+  const kindLabel = t(kindKey);
+  const lines = [
+    `${entry.name}  (${kindLabel})`,
+    entry.signature || entry.name,
+    entry.description || "",
+  ].filter(Boolean);
+  expressionHelp.textContent = lines.join("\n");
+}
+
+function renderExpressionAutocomplete() {
+  if (!expressionAutocomplete || !expressionEditorTextarea) {
+    return;
+  }
+  if (!ui.expressionEditor) {
+    expressionAutocomplete.innerHTML = "";
+    expressionAutocomplete.classList.add("hidden");
+    setExpressionHelp(null);
+    return;
+  }
+
+  const caret = expressionEditorTextarea.selectionStart ?? 0;
+  const tokenInfo = identifierPrefixAtCaret(expressionEditorTextarea.value, caret);
+  const exactToken = identifierAtCaret(expressionEditorTextarea.value, caret);
+  const allEntries = expressionCatalogForEditor();
+  ui.expressionEditor.catalog = allEntries;
+
+  let helpEntry = null;
+  if (tokenInfo && tokenInfo.prefix.length > 0) {
+    const prefixLower = tokenInfo.prefix.toLowerCase();
+    const suggestions = allEntries.filter((entry) => entry.name.toLowerCase().startsWith(prefixLower) && entry.name !== tokenInfo.prefix);
+    ui.expressionEditor.completion = {
+      tokenStart: tokenInfo.start,
+      tokenEnd: tokenInfo.end,
+      entries: suggestions.slice(0, 8),
+      activeIndex: 0,
+    };
+    if (ui.expressionEditor.completion.entries.length > 0) {
+      expressionAutocomplete.innerHTML = "";
+      ui.expressionEditor.completion.entries.forEach((entry, idx) => {
+        const btn = document.createElement("button");
+        btn.type = "button";
+        btn.classList.toggle("active", idx === ui.expressionEditor.completion.activeIndex);
+        btn.innerHTML = `<span class="expr-suggest-name">${entry.name}</span><span class="expr-suggest-meta">${entry.signature || ""}</span>`;
+        btn.addEventListener("mouseenter", () => {
+          if (!ui.expressionEditor?.completion) {
+            return;
+          }
+          ui.expressionEditor.completion.activeIndex = idx;
+          renderExpressionAutocomplete();
+        });
+        btn.addEventListener("mousedown", (evt) => {
+          evt.preventDefault();
+          acceptExpressionAutocomplete(idx);
+        });
+        expressionAutocomplete.appendChild(btn);
+      });
+      expressionAutocomplete.classList.remove("hidden");
+      if (!exactToken) {
+        helpEntry = ui.expressionEditor.completion.entries[ui.expressionEditor.completion.activeIndex] || null;
+      }
+    } else {
+      expressionAutocomplete.innerHTML = "";
+      expressionAutocomplete.classList.add("hidden");
+    }
+  } else {
+    ui.expressionEditor.completion = null;
+    expressionAutocomplete.innerHTML = "";
+    expressionAutocomplete.classList.add("hidden");
+  }
+
+  if (!helpEntry) {
+    if (exactToken) {
+      helpEntry = allEntries.find((entry) => entry.name === exactToken) || null;
+    }
+  }
+  setExpressionHelp(helpEntry);
+}
+
+function acceptExpressionAutocomplete(index = null) {
+  if (!ui.expressionEditor?.completion || !expressionEditorTextarea) {
+    return false;
+  }
+  const { entries, activeIndex, tokenStart, tokenEnd } = ui.expressionEditor.completion;
+  if (!entries.length) {
+    return false;
+  }
+  const chosen = entries[index == null ? activeIndex : index];
+  if (!chosen) {
+    return false;
+  }
+  const replacement = chosen.insertText || chosen.name;
+  const before = expressionEditorTextarea.value.slice(0, tokenStart);
+  const after = expressionEditorTextarea.value.slice(tokenEnd);
+  expressionEditorTextarea.value = `${before}${replacement}${after}`;
+  const caret = tokenStart + (chosen.cursorOffset == null ? replacement.length : chosen.cursorOffset);
+  expressionEditorTextarea.focus();
+  expressionEditorTextarea.setSelectionRange(caret, caret);
+  refreshExpressionEditorValidation();
+  renderExpressionAutocomplete();
+  return true;
+}
+
+function closeExpressionEditor() {
+  if (!expressionEditorModal) {
+    return;
+  }
+  expressionEditorModal.classList.add("hidden");
+  ui.expressionEditor = null;
+  if (expressionEditorTextarea) {
+    expressionEditorTextarea.value = "";
+    expressionEditorTextarea.classList.remove("invalid");
+  }
+  if (expressionAutocomplete) {
+    expressionAutocomplete.innerHTML = "";
+    expressionAutocomplete.classList.add("hidden");
+  }
+  setExpressionHelp(null);
+  hideExpressionStatus(expressionEditorStatus);
+}
+
+function refreshExpressionEditorValidation() {
+  if (!ui.expressionEditor || !expressionEditorTextarea || !expressionEditorApplyBtn) {
+    return { ok: true, empty: true };
+  }
+  if (expressionEditorTitle) {
+    const dirty = expressionEditorTextarea.value !== String(ui.expressionEditor.initialValue ?? "");
+    expressionEditorTitle.textContent = `${ui.expressionEditor.baseTitle}${dirty ? " *" : ""}`;
+  }
+  const syntaxResult = updateExpressionFieldState(
+    expressionEditorTextarea,
+    expressionEditorStatus,
+    expressionEditorTextarea.value,
+    true,
+    null,
+  );
+  expressionEditorApplyBtn.disabled = !syntaxResult.ok;
+  ui.expressionEditor.syntaxOk = syntaxResult.ok;
+  renderExpressionAutocomplete();
+  return syntaxResult;
+}
+
+function lineRangeAroundSelection(textarea) {
+  const start = textarea.selectionStart ?? 0;
+  const end = textarea.selectionEnd ?? start;
+  const value = textarea.value;
+  const lineStart = value.lastIndexOf("\n", Math.max(0, start - 1)) + 1;
+  let lineEnd = value.indexOf("\n", end);
+  if (lineEnd < 0) {
+    lineEnd = value.length;
+  }
+  return { start, end, lineStart, lineEnd };
+}
+
+function indentExpressionSelection(textarea, outdent = false) {
+  if (!textarea) {
+    return;
+  }
+  const { start, end, lineStart, lineEnd } = lineRangeAroundSelection(textarea);
+  const value = textarea.value;
+  const block = value.slice(lineStart, lineEnd);
+  const lines = block.split("\n");
+  let removedBeforeStart = 0;
+  let removedTotal = 0;
+  const nextLines = lines.map((line, idx) => {
+    if (!outdent) {
+      return `  ${line}`;
+    }
+    let removed = 0;
+    if (line.startsWith("  ")) {
+      removed = 2;
+    } else if (line.startsWith("\t")) {
+      removed = 1;
+    } else if (line.startsWith(" ")) {
+      removed = 1;
+    }
+    if (idx === 0) {
+      removedBeforeStart = removed;
+    }
+    removedTotal += removed;
+    return line.slice(removed);
+  });
+  const replacement = nextLines.join("\n");
+  textarea.value = `${value.slice(0, lineStart)}${replacement}${value.slice(lineEnd)}`;
+  if (start === end && !outdent) {
+    const caret = start + 2;
+    textarea.setSelectionRange(caret, caret);
+  } else {
+    const nextStart = Math.max(lineStart, start + (outdent ? -removedBeforeStart : 2));
+    const delta = outdent ? -removedTotal : (2 * lines.length);
+    const nextEnd = Math.max(nextStart, end + delta);
+    textarea.setSelectionRange(nextStart, nextEnd);
+  }
+}
+
+function insertExpressionNewlineWithIndent(textarea) {
+  if (!textarea) {
+    return;
+  }
+  const start = textarea.selectionStart ?? 0;
+  const end = textarea.selectionEnd ?? start;
+  const value = textarea.value;
+  const lineStart = value.lastIndexOf("\n", Math.max(0, start - 1)) + 1;
+  const currentLine = value.slice(lineStart, start);
+  const indent = (currentLine.match(/^[ \t]*/) || [""])[0];
+  const extraIndent = /[(\[{]$/.test(currentLine.trimEnd()) ? "  " : "";
+  const insertion = `\n${indent}${extraIndent}`;
+  textarea.value = `${value.slice(0, start)}${insertion}${value.slice(end)}`;
+  const caret = start + insertion.length;
+  textarea.setSelectionRange(caret, caret);
+}
+
+function openExpressionEditor(fieldKey) {
+  const node = selectedNodeForSidebar();
+  const meta = expressionFieldMeta(fieldKey, node);
+  if (!node || !meta || !expressionEditorModal || !expressionEditorTextarea || !expressionEditorTitle) {
+    return;
+  }
+  ui.expressionEditor = {
+    nodeId: node.id,
+    fieldKey: meta.key,
+    syntaxOk: true,
+    baseTitle: meta.title,
+    initialValue: meta.value,
+  };
+  expressionEditorTitle.textContent = meta.title;
+  expressionEditorTextarea.value = meta.value;
+  expressionEditorModal.classList.remove("hidden");
+  refreshExpressionEditorValidation();
+  expressionEditorTextarea.focus();
+  expressionEditorTextarea.select();
+}
+
+function applyExpressionEditor() {
+  if (!ui.expressionEditor || !ui.expressionEditor.syntaxOk) {
+    return;
+  }
+  const node = getNodeById(ui.expressionEditor.nodeId);
+  const meta = expressionFieldMeta(ui.expressionEditor.fieldKey, node);
+  if (!node || !meta || !expressionEditorTextarea) {
+    closeExpressionEditor();
+    return;
+  }
+  const nextValue = expressionEditorTextarea.value;
+  runAction(() => {
+    meta.setValue(nextValue);
+  });
+  if (meta.inputEl && document.activeElement !== meta.inputEl) {
+    meta.inputEl.value = nextValue;
+  }
+  updateExpressionFieldState(meta.inputEl, meta.statusEl, nextValue, false, meta.key);
+  closeExpressionEditor();
+}
+
 function isFirefoxBrowser() {
   return /firefox/i.test(navigator.userAgent || "");
 }
@@ -297,6 +848,9 @@ async function loadI18n() {
     }
   }
   applyI18nToDom();
+  if (!expressionEditorModal?.classList.contains("hidden")) {
+    refreshExpressionEditorValidation();
+  }
 }
 
 function setStatus(text) {
@@ -823,6 +1377,7 @@ function exportGraphData() {
   return {
     version: 1,
     modelTitle: String(graph.modelTitle ?? ""),
+    modelProperties: graph.properties.map((p) => ({ key: String(p.key), value: String(p.value) })),
     nodeCounter,
     edgeCounter,
     widgetCounter,
@@ -833,20 +1388,30 @@ function exportGraphData() {
       delayMs: graph.execution.delayMs,
       decimals: clampDisplayDecimals(graph.execution.decimals),
     },
-    nodes: graph.nodes.map((n) => ({
-      id: n.id,
-      name: n.name,
-      input: Boolean(n.input),
-      output: Boolean(n.output),
-      type: serializeNodeType(n.shape),
-      x: n.x,
-      y: n.y,
-      width: n.width,
-      height: n.height,
-      valueExpression: String(n.valueExpression ?? ""),
-      initialStateExpression: String(n.initialStateExpression ?? ""),
-      properties: n.properties.map((p) => ({ key: String(p.key), value: String(p.value) })),
-    })),
+    nodes: graph.nodes.map((n) => {
+      const type = serializeNodeType(n.shape);
+      const out = {
+        id: n.id,
+        name: n.name,
+        output: Boolean(n.output),
+        type,
+        x: n.x,
+        y: n.y,
+        width: n.width,
+        height: n.height,
+        properties: n.properties.map((p) => ({ key: String(p.key), value: String(p.value) })),
+      };
+      if (type === "algebraic") {
+        out.input = Boolean(n.input);
+        out.valueExpression = String(n.valueExpression ?? "");
+      } else if (type === "state") {
+        out.stateTransition = String(n.valueExpression ?? "");
+        out.initialState = String(n.initialStateExpression ?? "");
+      } else {
+        out.valueExpression = String(n.valueExpression ?? "");
+      }
+      return out;
+    }),
     edges: graph.edges.map((e) => ({
       id: e.id,
       from: e.from,
@@ -905,6 +1470,9 @@ function hasUnsavedChanges() {
 function applyGraphData(data) {
   const execCfg = normalizeExecutionConfig(data.execution);
   graph.modelTitle = String(data?.modelTitle ?? "");
+  graph.properties = Array.isArray(data?.modelProperties)
+    ? data.modelProperties.map((p) => ({ key: String(p?.key ?? ""), value: String(p?.value ?? "") }))
+    : [];
   graph.execution = {
     t0: execCfg.t0,
     dt: execCfg.dt,
@@ -919,7 +1487,7 @@ function applyGraphData(data) {
     return {
       id: n.id,
       name: n.name,
-      input: Boolean(n.input),
+      input: shape === "ellipse" ? Boolean(n.input) : false,
       output: Boolean(n.output),
       shape,
       x: n.x,
@@ -927,10 +1495,10 @@ function applyGraphData(data) {
       width: n.width,
       height: n.height,
       valueExpression: shape === "rect"
-        ? String(n.valueExpression ?? "this") || "this"
+        ? String(n.stateTransition ?? "this") || "this"
         : String(n.valueExpression ?? ""),
       initialStateExpression: shape === "rect"
-        ? String(n.initialStateExpression ?? "0")
+        ? String(n.initialState ?? "0")
         : String(n.initialStateExpression ?? ""),
       computedValue: null,
       computedError: "",
@@ -2523,6 +3091,61 @@ function nodesInRect(rect) {
     .map((n) => n.id);
 }
 
+function renderPropertiesEditor(container, items, ownerKey, deleteHandler) {
+  const activeEl = document.activeElement;
+  const activeInPropsEditor =
+    container.contains(activeEl) &&
+    (activeEl?.tagName === "INPUT" || activeEl?.tagName === "TEXTAREA" || activeEl?.tagName === "SELECT");
+  if (activeInPropsEditor && container.dataset.ownerKey === ownerKey) {
+    return true;
+  }
+
+  container.innerHTML = "";
+  container.dataset.ownerKey = ownerKey;
+  if (!Array.isArray(items) || items.length === 0) {
+    const msg = document.createElement("div");
+    msg.className = "empty-props";
+    msg.textContent = t("text.noneProps");
+    container.appendChild(msg);
+    return false;
+  }
+
+  items.forEach((prop, idx) => {
+    const row = document.createElement("div");
+    row.className = "prop-row";
+
+    const keyInput = document.createElement("input");
+    keyInput.placeholder = t("prop.keyPlaceholder");
+    keyInput.value = prop.key;
+    keyInput.addEventListener("input", () => {
+      prop.key = keyInput.value;
+    });
+
+    const valueInput = document.createElement("input");
+    valueInput.placeholder = t("prop.valuePlaceholder");
+    valueInput.value = prop.value;
+    valueInput.addEventListener("input", () => {
+      prop.value = valueInput.value;
+    });
+
+    const delBtn = document.createElement("button");
+    delBtn.type = "button";
+    delBtn.textContent = "X";
+    delBtn.addEventListener("click", () => {
+      delete container.dataset.ownerKey;
+      runAction(() => {
+        deleteHandler(idx);
+      });
+    });
+
+    row.appendChild(keyInput);
+    row.appendChild(valueInput);
+    row.appendChild(delBtn);
+    container.appendChild(row);
+  });
+  return false;
+}
+
 function refreshWidgetConfigPanel(widget) {
   widgetConfig.innerHTML = "";
 
@@ -2934,7 +3557,7 @@ function refreshSidebar() {
   syncNodeSelectionFocus();
 
   if (ui.selected?.type === "edge") {
-    delete propsList.dataset.nodeId;
+    delete propsList.dataset.ownerKey;
     noSelection.classList.add("hidden");
     globalPanel.classList.add("hidden");
     widgetPanel.classList.add("hidden");
@@ -2956,7 +3579,7 @@ function refreshSidebar() {
   }
 
   if (ui.selected?.type === "widget") {
-    delete propsList.dataset.nodeId;
+    delete propsList.dataset.ownerKey;
     noSelection.classList.add("hidden");
     globalPanel.classList.add("hidden");
     nodePanel.classList.add("hidden");
@@ -3015,13 +3638,26 @@ function refreshSidebar() {
     if (document.activeElement !== nodeValueExprInput) {
       nodeValueExprInput.value = node.valueExpression || "";
     }
+    updateExpressionFieldState(nodeValueExprInput, nodeValueExprStatus, node.valueExpression || "", false, "value");
     if (nodeInitialStateLabel) {
       nodeInitialStateLabel.classList.toggle("hidden", !stateNode);
     }
     if (nodeInitialStateInput) {
       nodeInitialStateInput.classList.toggle("hidden", !stateNode);
+      if (editNodeInitialStateBtn) {
+        editNodeInitialStateBtn.classList.toggle("hidden", !stateNode);
+      }
+      if (nodeInitialStateStatus) {
+        nodeInitialStateStatus.classList.toggle("hidden", !stateNode);
+      }
       if (stateNode && document.activeElement !== nodeInitialStateInput) {
         nodeInitialStateInput.value = node.initialStateExpression || "0";
+      }
+      if (stateNode) {
+        updateExpressionFieldState(nodeInitialStateInput, nodeInitialStateStatus, node.initialStateExpression || "0", false, "initial");
+      } else {
+        nodeInitialStateInput.classList.remove("invalid");
+        hideExpressionStatus(nodeInitialStateStatus);
       }
     }
     if (node.computedError) {
@@ -3030,55 +3666,15 @@ function refreshSidebar() {
       nodeValueOutput.textContent = formatComputedValue(node.computedValue);
     }
 
-    const activeEl = document.activeElement;
-    const activeInPropsEditor =
-      propsList.contains(activeEl) &&
-      (activeEl?.tagName === "INPUT" || activeEl?.tagName === "TEXTAREA" || activeEl?.tagName === "SELECT");
-    if (activeInPropsEditor && propsList.dataset.nodeId === String(node.id)) {
+    if (renderPropertiesEditor(
+      propsList,
+      node.properties,
+      `node:${node.id}`,
+      (idx) => {
+        node.properties.splice(idx, 1);
+      },
+    )) {
       return;
-    }
-
-    propsList.innerHTML = "";
-    propsList.dataset.nodeId = String(node.id);
-    if (node.properties.length === 0) {
-      const msg = document.createElement("div");
-      msg.className = "empty-props";
-      msg.textContent = t("text.noneProps");
-      propsList.appendChild(msg);
-    } else {
-      node.properties.forEach((prop, idx) => {
-        const row = document.createElement("div");
-        row.className = "prop-row";
-
-        const keyInput = document.createElement("input");
-        keyInput.placeholder = t("prop.keyPlaceholder");
-        keyInput.value = prop.key;
-        keyInput.addEventListener("input", () => {
-          prop.key = keyInput.value;
-        });
-
-        const valueInput = document.createElement("input");
-        valueInput.placeholder = t("prop.valuePlaceholder");
-        valueInput.value = prop.value;
-        valueInput.addEventListener("input", () => {
-          prop.value = valueInput.value;
-        });
-
-        const delBtn = document.createElement("button");
-        delBtn.type = "button";
-        delBtn.textContent = "X";
-        delBtn.addEventListener("click", () => {
-          delete propsList.dataset.nodeId;
-          runAction(() => {
-            node.properties.splice(idx, 1);
-          });
-        });
-
-        row.appendChild(keyInput);
-        row.appendChild(valueInput);
-        row.appendChild(delBtn);
-        propsList.appendChild(row);
-      });
     }
     return;
   }
@@ -3089,6 +3685,10 @@ function refreshSidebar() {
   if (nodeValueExprLabel) {
     nodeValueExprLabel.textContent = t("label.behaviorFunction");
   }
+  nodeValueExprInput.classList.remove("invalid");
+  nodeInitialStateInput.classList.remove("invalid");
+  hideExpressionStatus(nodeValueExprStatus);
+  hideExpressionStatus(nodeInitialStateStatus);
   nodeInputInput.checked = false;
   if (nodeInputLabel) {
     nodeInputLabel.classList.add("hidden");
@@ -3103,7 +3703,7 @@ function refreshSidebar() {
   if (widgetPanelTitle) {
     widgetPanelTitle.textContent = t("panel.widget");
   }
-  delete propsList.dataset.nodeId;
+  delete propsList.dataset.ownerKey;
 
   if (ui.selectedNodes.size > 1) {
     globalPanel.classList.add("hidden");
@@ -3134,6 +3734,14 @@ function refreshSidebar() {
       graph.execution.currentTime == null
         ? formatNumberValue(Number(graph.execution.t0))
         : formatNumberValue(Number(graph.execution.currentTime));
+    renderPropertiesEditor(
+      modelPropsList,
+      graph.properties,
+      "model",
+      (idx) => {
+        graph.properties.splice(idx, 1);
+      },
+    );
     updateModelRunButtons();
   }
 }
@@ -3486,19 +4094,20 @@ function importGraphData(data) {
       return {
         id: n.id,
         name: typeof n.name === "string" ? n.name : t("node.defaultName", { id: n.id }),
-        input: Boolean(n.input),
+        input: shape === "ellipse" ? Boolean(n.input) : false,
         output: Boolean(n.output),
         type: serializeNodeType(shape),
         x: Number.isFinite(n.x) ? n.x : 200,
         y: Number.isFinite(n.y) ? n.y : 200,
         width: clamp(Number(n.width) || 120, 40, 500),
         height: clamp(Number(n.height) || 70, 30, 500),
-        valueExpression: shape === "rect"
-          ? String(n.valueExpression ?? "this") || "this"
-          : String(n.valueExpression ?? ""),
-        initialStateExpression: shape === "rect"
-          ? String(n.initialStateExpression ?? "0")
-          : String(n.initialStateExpression ?? ""),
+        valueExpression: shape === "rect" ? "" : String(n.valueExpression ?? ""),
+        stateTransition: shape === "rect"
+          ? String(n.stateTransition ?? "this") || "this"
+          : "",
+        initialState: shape === "rect"
+          ? String(n.initialState ?? "0")
+          : "",
         computedValue: null,
         computedError: "",
         pendingStateValue: null,
@@ -3587,6 +4196,9 @@ function importGraphData(data) {
   applyGraphData({
     version: 1,
     modelTitle: String(data.modelTitle ?? ""),
+    modelProperties: Array.isArray(data.modelProperties)
+      ? data.modelProperties.map((p) => ({ key: String(p?.key ?? ""), value: String(p?.value ?? "") }))
+      : [],
     nodeCounter: Math.max(Number(data.nodeCounter) || 0, maxNodeId) + 1,
     edgeCounter: Math.max(Number(data.edgeCounter) || 0, maxEdgeId) + 1,
     widgetCounter: Math.max(Number(data.widgetCounter) || 0, maxWidgetId) + 1,
@@ -3842,6 +4454,7 @@ async function createNewGraph() {
   }
 
   graph.modelTitle = "";
+  graph.properties = [];
   graph.nodes = [];
   graph.edges = [];
   graph.widgets = [];
@@ -3888,6 +4501,86 @@ function isExecutionEnded(cfg) {
   return !isTimeWithinBounds(nextTime, cfg.t0, cfg.dt, cfg.t1);
 }
 
+function parseModelPropertyStoredValue(raw) {
+  const text = String(raw ?? "");
+  const trimmed = text.trim();
+  if (!trimmed) {
+    return "";
+  }
+  if (trimmed === "true") {
+    return 1;
+  }
+  if (trimmed === "false") {
+    return 0;
+  }
+  const numeric = Number(trimmed);
+  if (Number.isFinite(numeric)) {
+    return numeric;
+  }
+  if (
+    (trimmed.startsWith("[") && trimmed.endsWith("]")) ||
+    (trimmed.startsWith("{") && trimmed.endsWith("}"))
+  ) {
+    try {
+      return JSON.parse(trimmed);
+    } catch (err) {
+      return text;
+    }
+  }
+  return text;
+}
+
+function serializeModelPropertyStoredValue(value) {
+  if (value === true) {
+    return "1";
+  }
+  if (value === false) {
+    return "0";
+  }
+  if (value === null || value === undefined) {
+    return "";
+  }
+  if (typeof value === "number") {
+    return String(value);
+  }
+  if (Array.isArray(value) || typeof value === "object") {
+    return JSON.stringify(value);
+  }
+  return String(value);
+}
+
+function getModelPropertyValue(key, fallback = null) {
+  const name = String(key ?? "");
+  const found = graph.properties.find((prop) => String(prop?.key ?? "") === name);
+  if (!found) {
+    return fallback;
+  }
+  return parseModelPropertyStoredValue(found.value);
+}
+
+function setModelPropertyValue(key, value) {
+  const name = String(key ?? "");
+  const stored = serializeModelPropertyStoredValue(value);
+  const found = graph.properties.find((prop) => String(prop?.key ?? "") === name);
+  if (found) {
+    found.value = stored;
+  } else {
+    graph.properties.push({ key: name, value: stored });
+  }
+  return value;
+}
+
+function buildExecutionGlobals(timeValue) {
+  return {
+    time: timeValue,
+    t0: Number(graph.execution.t0),
+    t1: Number(graph.execution.t1),
+    dt: Number(graph.execution.dt),
+    getModelProperty: getModelPropertyValue,
+    setModelProperty: setModelPropertyValue,
+  };
+}
+
 function initializeStateNodes(timeValue) {
   graph.nodes.forEach((node) => {
     if (!isStateNode(node)) {
@@ -3898,7 +4591,7 @@ function initializeStateNodes(timeValue) {
       return;
     }
     const initExpr = String(node.initialStateExpression ?? "0");
-    const initResult = semantics.evaluateValueExpression(initExpr, { time: timeValue });
+    const initResult = semantics.evaluateValueExpression(initExpr, buildExecutionGlobals(timeValue));
     if (initResult.ok) {
       node.computedValue = initResult.value;
       node.computedError = "";
@@ -3934,7 +4627,11 @@ function promotePendingStateNodes() {
 
 function evaluateAtTime(timeValue) {
   applyWidgetDrivenNodeValues();
-  const evalResults = semantics.evaluateStatefulGraphStep(graph.nodes, graph.edges, { time: timeValue });
+  const evalResults = semantics.evaluateStatefulGraphStep(
+    graph.nodes,
+    graph.edges,
+    buildExecutionGlobals(timeValue),
+  );
   let successCount = 0;
   let errorCount = 0;
   let firstErrorNode = null;
@@ -4066,16 +4763,14 @@ function executeNodeExpressions() {
     return;
   }
 
-  const continuing = graph.execution.currentTime != null;
+  let continuing = graph.execution.currentTime != null;
   if (continuing && isExecutionEnded(cfg)) {
-    setStatusKey("status.timeEndReached", {
-      time: formatNumberValue(Number(graph.execution.currentTime)),
-    });
-    return;
+    continuing = false;
   }
 
   if (!continuing) {
     runAction(() => {
+      graph.execution.currentTime = null;
       clearAllXYChartPoints();
       clearAllTableWidgetRows();
     });
@@ -4822,31 +5517,112 @@ timedToggleBtn.addEventListener("click", toggleTimedExecution);
 resetExecBtn.addEventListener("click", resetExecution);
 
 nodeValueExprInput.addEventListener("input", () => {
-  if (ui.selectedNodes.size !== 1) {
+  const meta = expressionFieldMeta("value");
+  if (!meta) {
     return;
   }
-  const nodeId = [...ui.selectedNodes][0];
-  const node = getNodeById(nodeId);
-  if (!node) {
-    return;
-  }
-  node.valueExpression = nodeValueExprInput.value;
+  meta.setValue(nodeValueExprInput.value);
+  updateExpressionFieldState(nodeValueExprInput, nodeValueExprStatus, nodeValueExprInput.value, false, "value");
+  scheduleFileStatusRefresh();
 });
 
 nodeInitialStateInput.addEventListener("input", () => {
-  if (ui.selectedNodes.size !== 1) {
+  const meta = expressionFieldMeta("initial");
+  if (!meta) {
     return;
   }
-  const nodeId = [...ui.selectedNodes][0];
-  const node = getNodeById(nodeId);
-  if (!node || !isStateNode(node)) {
-    return;
-  }
-  node.initialStateExpression = nodeInitialStateInput.value;
+  meta.setValue(nodeInitialStateInput.value);
+  updateExpressionFieldState(nodeInitialStateInput, nodeInitialStateStatus, nodeInitialStateInput.value, false, "initial");
+  scheduleFileStatusRefresh();
 });
+
+if (editNodeValueExprBtn) {
+  editNodeValueExprBtn.addEventListener("click", () => {
+    openExpressionEditor("value");
+  });
+}
+
+if (editNodeInitialStateBtn) {
+  editNodeInitialStateBtn.addEventListener("click", () => {
+    openExpressionEditor("initial");
+  });
+}
+
+if (expressionEditorTextarea) {
+  expressionEditorTextarea.addEventListener("input", () => {
+    refreshExpressionEditorValidation();
+  });
+  expressionEditorTextarea.addEventListener("keydown", (evt) => {
+    if (ui.expressionEditor?.completion?.entries?.length) {
+      if (evt.key === "ArrowDown") {
+        evt.preventDefault();
+        const completion = ui.expressionEditor.completion;
+        completion.activeIndex = (completion.activeIndex + 1) % completion.entries.length;
+        renderExpressionAutocomplete();
+        return;
+      }
+      if (evt.key === "ArrowUp") {
+        evt.preventDefault();
+        const completion = ui.expressionEditor.completion;
+        completion.activeIndex = (completion.activeIndex - 1 + completion.entries.length) % completion.entries.length;
+        renderExpressionAutocomplete();
+        return;
+      }
+      if (evt.key === "Tab" && !evt.shiftKey) {
+        evt.preventDefault();
+        acceptExpressionAutocomplete();
+        return;
+      }
+      if (evt.key === "Enter" && !evt.ctrlKey && !evt.metaKey) {
+        evt.preventDefault();
+        acceptExpressionAutocomplete();
+        return;
+      }
+    }
+    if (evt.key === "Tab") {
+      evt.preventDefault();
+      indentExpressionSelection(expressionEditorTextarea, evt.shiftKey);
+      refreshExpressionEditorValidation();
+      return;
+    }
+    if (evt.key === "Enter" && !evt.ctrlKey && !evt.metaKey) {
+      evt.preventDefault();
+      insertExpressionNewlineWithIndent(expressionEditorTextarea);
+      refreshExpressionEditorValidation();
+    }
+  });
+  ["click", "keyup", "mouseup"].forEach((eventName) => {
+    expressionEditorTextarea.addEventListener(eventName, () => {
+      renderExpressionAutocomplete();
+    });
+  });
+}
+
+if (expressionEditorCloseBtn) {
+  expressionEditorCloseBtn.addEventListener("click", closeExpressionEditor);
+}
+if (expressionEditorCancelBtn) {
+  expressionEditorCancelBtn.addEventListener("click", closeExpressionEditor);
+}
+if (expressionEditorApplyBtn) {
+  expressionEditorApplyBtn.addEventListener("click", applyExpressionEditor);
+}
+if (expressionEditorModal) {
+  expressionEditorModal.addEventListener("pointerdown", (evt) => {
+    if (evt.target === expressionEditorModal) {
+      closeExpressionEditor();
+    }
+  });
+}
 
 modelTitleInput.addEventListener("input", () => {
   graph.modelTitle = modelTitleInput.value;
+});
+
+addModelPropBtn.addEventListener("click", () => {
+  runAction(() => {
+    graph.properties.push({ key: "", value: "" });
+  });
 });
 
 addPropBtn.addEventListener("click", () => {
@@ -4864,6 +5640,17 @@ addPropBtn.addEventListener("click", () => {
 });
 
 document.addEventListener("keydown", (evt) => {
+  if (!expressionEditorModal?.classList.contains("hidden")) {
+    if (evt.key === "Escape") {
+      evt.preventDefault();
+      closeExpressionEditor();
+    } else if ((evt.ctrlKey || evt.metaKey) && evt.key === "Enter") {
+      evt.preventDefault();
+      applyExpressionEditor();
+    }
+    return;
+  }
+
   if (evt.key === "F7") {
     evt.preventDefault();
     executeNodeExpressions();
