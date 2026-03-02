@@ -102,6 +102,13 @@
     return { params, valueArg, mode };
   }
 
+  function mapDistributionValue(value, scalarFn) {
+    if (Array.isArray(value)) {
+      return value.map((item) => mapDistributionValue(item, scalarFn));
+    }
+    return scalarFn(value);
+  }
+
   function gaussianPdf(x, mean, sigma) {
     const xv = toFiniteNumber(x, "x");
     const mu = toFiniteNumber(mean, "mean");
@@ -156,12 +163,12 @@
       return gaussianSample(mean, sigma);
     }
     if (mode === 1) {
-      return gaussianCdf(valueArg, mean, sigma);
+      return mapDistributionValue(valueArg, (item) => gaussianCdf(item, mean, sigma));
     }
     if (mode === 2) {
-      return gaussianIcdf(valueArg, mean, sigma);
+      return mapDistributionValue(valueArg, (item) => gaussianIcdf(item, mean, sigma));
     }
-    return gaussianPdf(valueArg, mean, sigma);
+    return mapDistributionValue(valueArg, (item) => gaussianPdf(item, mean, sigma));
   }
 
   function uniformPdf(x, minValue, maxValue) {
@@ -219,12 +226,12 @@
       return uniformSample(minValue, maxValue);
     }
     if (mode === 1) {
-      return uniformCdf(valueArg, minValue, maxValue);
+      return mapDistributionValue(valueArg, (item) => uniformCdf(item, minValue, maxValue));
     }
     if (mode === 2) {
-      return uniformIcdf(valueArg, minValue, maxValue);
+      return mapDistributionValue(valueArg, (item) => uniformIcdf(item, minValue, maxValue));
     }
-    return uniformPdf(valueArg, minValue, maxValue);
+    return mapDistributionValue(valueArg, (item) => uniformPdf(item, minValue, maxValue));
   }
 
   function exponentialPdf(x, rate) {
@@ -282,12 +289,12 @@
       return exponentialSample(rate);
     }
     if (mode === 1) {
-      return exponentialCdf(valueArg, rate);
+      return mapDistributionValue(valueArg, (item) => exponentialCdf(item, rate));
     }
     if (mode === 2) {
-      return exponentialIcdf(valueArg, rate);
+      return mapDistributionValue(valueArg, (item) => exponentialIcdf(item, rate));
     }
-    return exponentialPdf(valueArg, rate);
+    return mapDistributionValue(valueArg, (item) => exponentialPdf(item, rate));
   }
 
   global.GraphProbability = Object.freeze({

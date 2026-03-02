@@ -36,33 +36,64 @@
     };
   }
 
+  function sameArrayShape(left, right) {
+    if (Array.isArray(left) !== Array.isArray(right)) {
+      return false;
+    }
+    if (!Array.isArray(left)) {
+      return true;
+    }
+    if (left.length !== right.length) {
+      return false;
+    }
+    return left.every((item, idx) => sameArrayShape(item, right[idx]));
+  }
+
+  function mapFunctionArgs(args, scalarFn) {
+    const ref = args.find((arg) => Array.isArray(arg));
+    if (!ref) {
+      return scalarFn(...args);
+    }
+    if (!args.every((arg) => !Array.isArray(arg) || sameArrayShape(ref, arg))) {
+      throw new Error("function arguments must have matching shapes");
+    }
+    return ref.map((_, idx) => mapFunctionArgs(
+      args.map((arg) => (Array.isArray(arg) ? arg[idx] : arg)),
+      scalarFn,
+    ));
+  }
+
+  function vectorizeFunction(fn) {
+    return (...args) => mapFunctionArgs(args, (...scalarArgs) => fn(...scalarArgs));
+  }
+
   const MATH_SCOPE = Object.freeze({
-    __if: (condition, whenTrue, whenFalse) => (condition ? whenTrue : whenFalse),
-    sin: Math.sin,
-    cos: Math.cos,
-    tan: Math.tan,
-    asin: Math.asin,
-    acos: Math.acos,
-    atan: Math.atan,
-    atan2: Math.atan2,
-    sinh: Math.sinh,
-    cosh: Math.cosh,
-    tanh: Math.tanh,
-    exp: Math.exp,
-    log: Math.log,
-    log10: Math.log10,
-    log2: Math.log2,
-    sqrt: Math.sqrt,
-    pow: Math.pow,
-    abs: Math.abs,
-    min: Math.min,
-    max: Math.max,
-    round: Math.round,
-    floor: Math.floor,
-    ceil: Math.ceil,
-    trunc: Math.trunc,
-    int: Math.trunc,
-    sign: Math.sign,
+    __if: vectorizeFunction((condition, whenTrue, whenFalse) => (condition ? whenTrue : whenFalse)),
+    sin: vectorizeFunction(Math.sin),
+    cos: vectorizeFunction(Math.cos),
+    tan: vectorizeFunction(Math.tan),
+    asin: vectorizeFunction(Math.asin),
+    acos: vectorizeFunction(Math.acos),
+    atan: vectorizeFunction(Math.atan),
+    atan2: vectorizeFunction(Math.atan2),
+    sinh: vectorizeFunction(Math.sinh),
+    cosh: vectorizeFunction(Math.cosh),
+    tanh: vectorizeFunction(Math.tanh),
+    exp: vectorizeFunction(Math.exp),
+    log: vectorizeFunction(Math.log),
+    log10: vectorizeFunction(Math.log10),
+    log2: vectorizeFunction(Math.log2),
+    sqrt: vectorizeFunction(Math.sqrt),
+    pow: vectorizeFunction(Math.pow),
+    abs: vectorizeFunction(Math.abs),
+    min: vectorizeFunction(Math.min),
+    max: vectorizeFunction(Math.max),
+    round: vectorizeFunction(Math.round),
+    floor: vectorizeFunction(Math.floor),
+    ceil: vectorizeFunction(Math.ceil),
+    trunc: vectorizeFunction(Math.trunc),
+    int: vectorizeFunction(Math.trunc),
+    sign: vectorizeFunction(Math.sign),
     rand: Math.random,
     random: Math.random,
     gaussian: typeof probability.gaussian === "function" ? probability.gaussian : unavailableDistribution("gaussian"),
@@ -391,6 +422,417 @@
     return String(expression ?? "").replace(/(^|[^A-Za-z0-9_$])if\s*\(/g, "$1__if(");
   }
 
+  function vectorizedBinaryOperation(left, right, scalarFn) {
+    if (Array.isArray(left) || Array.isArray(right)) {
+      if (Array.isArray(left) && Array.isArray(right)) {
+        if (!sameArrayShape(left, right)) {
+          throw new Error("operator arguments must have matching shapes");
+        }
+        return left.map((item, idx) => vectorizedBinaryOperation(item, right[idx], scalarFn));
+      }
+      const arr = Array.isArray(left) ? left : right;
+      const scalar = Array.isArray(left) ? right : left;
+      return arr.map((item) => vectorizedBinaryOperation(
+        Array.isArray(left) ? item : scalar,
+        Array.isArray(left) ? scalar : item,
+        scalarFn,
+      ));
+    }
+    return scalarFn(left, right);
+  }
+
+  function vectorizedUnaryOperation(value, scalarFn) {
+    if (Array.isArray(value)) {
+      return value.map((item) => vectorizedUnaryOperation(item, scalarFn));
+    }
+    return scalarFn(value);
+  }
+
+  function buildNumericRange(startValue, endValue, stepValue = null) {
+    const start = Number(startValue);
+    const end = Number(endValue);
+    if (!Number.isFinite(start) || !Number.isFinite(end)) {
+      throw new Error("range bounds must be finite numbers");
+    }
+    let step = stepValue == null ? (end >= start ? 1 : -1) : Number(stepValue);
+    if (!Number.isFinite(step) || step === 0) {
+      throw new Error("range step must be a non-zero finite number");
+    }
+    if ((end > start && step < 0) || (end < start && step > 0)) {
+      throw new Error("range step does not reach the end value");
+    }
+    const out = [];
+    const epsilon = Math.abs(step) * 1e-9;
+    const maxItems = 100000;
+    if (step > 0) {
+      for (let value = start; value <= end + epsilon; value += step) {
+        out.push(Number(value.toFixed(12)));
+        if (out.length > maxItems) {
+          throw new Error("range is too large");
+        }
+      }
+    } else {
+      for (let value = start; value >= end - epsilon; value += step) {
+        out.push(Number(value.toFixed(12)));
+        if (out.length > maxItems) {
+          throw new Error("range is too large");
+        }
+      }
+    }
+    return out;
+  }
+
+  function tokenizeExpression(source) {
+    const tokens = [];
+    let i = 0;
+    while (i < source.length) {
+      const ch = source[i];
+      if (/\s/.test(ch)) {
+        i += 1;
+        continue;
+      }
+      const three = source.slice(i, i + 3);
+      const two = source.slice(i, i + 2);
+      if (three === "===" || three === "!==") {
+        tokens.push({ type: "op", value: three });
+        i += 3;
+        continue;
+      }
+      if (["&&", "||", "==", "!=", "<=", ">=", "**"].includes(two)) {
+        tokens.push({ type: "op", value: two });
+        i += 2;
+        continue;
+      }
+      if ("+-*/%<>()[],!:".includes(ch)) {
+        tokens.push({ type: "op", value: ch });
+        i += 1;
+        continue;
+      }
+      if (ch === "'" || ch === "\"") {
+        const quote = ch;
+        let out = "";
+        i += 1;
+        while (i < source.length) {
+          const cur = source[i];
+          if (cur === "\\") {
+            if (i + 1 >= source.length) {
+              throw new SyntaxError("Unterminated string");
+            }
+            const next = source[i + 1];
+            const map = { n: "\n", r: "\r", t: "\t", "\\": "\\", "'": "'", "\"": "\"" };
+            out += Object.prototype.hasOwnProperty.call(map, next) ? map[next] : next;
+            i += 2;
+            continue;
+          }
+          if (cur === quote) {
+            i += 1;
+            break;
+          }
+          out += cur;
+          i += 1;
+        }
+        if (source[i - 1] !== quote) {
+          throw new SyntaxError("Unterminated string");
+        }
+        tokens.push({ type: "string", value: out });
+        continue;
+      }
+      if (/[0-9.]/.test(ch)) {
+        let j = i;
+        while (j < source.length && /[0-9.]/.test(source[j])) {
+          j += 1;
+        }
+        if (/[eE]/.test(source[j])) {
+          j += 1;
+          if (/[+-]/.test(source[j])) {
+            j += 1;
+          }
+          while (j < source.length && /[0-9]/.test(source[j])) {
+            j += 1;
+          }
+        }
+        const text = source.slice(i, j);
+        const value = Number(text);
+        if (!Number.isFinite(value)) {
+          throw new SyntaxError("Invalid number");
+        }
+        tokens.push({ type: "number", value });
+        i = j;
+        continue;
+      }
+      if (/[A-Za-z_$]/.test(ch)) {
+        let j = i + 1;
+        while (j < source.length && /[A-Za-z0-9_$]/.test(source[j])) {
+          j += 1;
+        }
+        tokens.push({ type: "identifier", value: source.slice(i, j) });
+        i = j;
+        continue;
+      }
+      throw new SyntaxError(`Unexpected token ${ch}`);
+    }
+    tokens.push({ type: "eof", value: "" });
+    return tokens;
+  }
+
+  function parseExpressionAst(source) {
+    const tokens = tokenizeExpression(source);
+    let index = 0;
+    const peek = () => tokens[index];
+    const next = () => tokens[index++];
+    const match = (...values) => {
+      const token = peek();
+      if (token && values.includes(token.value)) {
+        index += 1;
+        return token;
+      }
+      return null;
+    };
+    const expect = (value) => {
+      const token = next();
+      if (!token || token.value !== value) {
+        throw new SyntaxError(`Expected '${value}'`);
+      }
+      return token;
+    };
+
+    function parsePrimary() {
+      const token = peek();
+      if (!token) {
+        throw new SyntaxError("Unexpected end of input");
+      }
+      if (match("(")) {
+        const expr = parseLogicalOr();
+        expect(")");
+        return expr;
+      }
+      if (match("[")) {
+        if (match("]")) {
+          return { type: "array", elements: [] };
+        }
+        const first = parseLogicalOr();
+        if (match(":")) {
+          const second = parseLogicalOr();
+          if (match(":")) {
+            const third = parseLogicalOr();
+            expect("]");
+            return { type: "range", start: first, step: second, end: third };
+          }
+          expect("]");
+          return { type: "range", start: first, step: null, end: second };
+        }
+        const elements = [first];
+        while (match(",")) {
+          elements.push(parseLogicalOr());
+        }
+        expect("]");
+        return { type: "array", elements };
+      }
+      if (token.type === "number") {
+        next();
+        return { type: "literal", value: token.value };
+      }
+      if (token.type === "string") {
+        next();
+        return { type: "literal", value: token.value };
+      }
+      if (token.type === "identifier") {
+        next();
+        const name = token.value;
+        if (match("(")) {
+          const args = [];
+          if (!match(")")) {
+            do {
+              args.push(parseLogicalOr());
+            } while (match(","));
+            expect(")");
+          }
+          return { type: "call", name, args };
+        }
+        if (name === "true") {
+          return { type: "literal", value: true };
+        }
+        if (name === "false") {
+          return { type: "literal", value: false };
+        }
+        if (name === "null") {
+          return { type: "literal", value: null };
+        }
+        return { type: "identifier", name };
+      }
+      throw new SyntaxError(`Unexpected token ${token.value}`);
+    }
+
+    function parseUnary() {
+      const token = peek();
+      if (token && token.type === "op" && ["+", "-", "!"].includes(token.value)) {
+        next();
+        return { type: "unary", op: token.value, argument: parseUnary() };
+      }
+      return parsePrimary();
+    }
+
+    function parsePower() {
+      let left = parseUnary();
+      if (match("**")) {
+        left = { type: "binary", op: "**", left, right: parsePower() };
+      }
+      return left;
+    }
+
+    function parseMultiplicative() {
+      let left = parsePower();
+      while (true) {
+        const op = match("*", "/", "%");
+        if (!op) {
+          return left;
+        }
+        left = { type: "binary", op: op.value, left, right: parsePower() };
+      }
+    }
+
+    function parseAdditive() {
+      let left = parseMultiplicative();
+      while (true) {
+        const op = match("+", "-");
+        if (!op) {
+          return left;
+        }
+        left = { type: "binary", op: op.value, left, right: parseMultiplicative() };
+      }
+    }
+
+    function parseComparison() {
+      let left = parseAdditive();
+      while (true) {
+        const op = match("<", ">", "<=", ">=");
+        if (!op) {
+          return left;
+        }
+        left = { type: "binary", op: op.value, left, right: parseAdditive() };
+      }
+    }
+
+    function parseEquality() {
+      let left = parseComparison();
+      while (true) {
+        const op = match("==", "!=", "===", "!==");
+        if (!op) {
+          return left;
+        }
+        left = { type: "binary", op: op.value, left, right: parseComparison() };
+      }
+    }
+
+    function parseLogicalAnd() {
+      let left = parseEquality();
+      while (match("&&")) {
+        left = { type: "binary", op: "&&", left, right: parseEquality() };
+      }
+      return left;
+    }
+
+    function parseLogicalOr() {
+      let left = parseLogicalAnd();
+      while (match("||")) {
+        left = { type: "binary", op: "||", left, right: parseLogicalAnd() };
+      }
+      return left;
+    }
+
+    const ast = parseLogicalOr();
+    if (peek().type !== "eof") {
+      throw new SyntaxError(`Unexpected token ${peek().value}`);
+    }
+    return ast;
+  }
+
+  function evaluateAstNode(node, scope) {
+    switch (node.type) {
+      case "literal":
+        return node.value;
+      case "array":
+        return node.elements.map((item) => evaluateAstNode(item, scope));
+      case "range":
+        return buildNumericRange(
+          evaluateAstNode(node.start, scope),
+          evaluateAstNode(node.end, scope),
+          node.step == null ? null : evaluateAstNode(node.step, scope),
+        );
+      case "identifier":
+        if (!Object.prototype.hasOwnProperty.call(scope, node.name)) {
+          throw new ReferenceError(`${node.name} is not defined`);
+        }
+        return scope[node.name];
+      case "call": {
+        if (!Object.prototype.hasOwnProperty.call(scope, node.name)) {
+          throw new ReferenceError(`${node.name} is not defined`);
+        }
+        const fn = scope[node.name];
+        if (typeof fn !== "function") {
+          throw new Error(`${node.name} is not callable`);
+        }
+        const args = node.args.map((arg) => evaluateAstNode(arg, scope));
+        return fn(...args);
+      }
+      case "unary": {
+        const value = evaluateAstNode(node.argument, scope);
+        if (node.op === "+") {
+          return vectorizedUnaryOperation(value, (item) => +item);
+        }
+        if (node.op === "-") {
+          return vectorizedUnaryOperation(value, (item) => -item);
+        }
+        if (node.op === "!") {
+          return vectorizedUnaryOperation(value, (item) => !item);
+        }
+        throw new Error(`Unsupported operator ${node.op}`);
+      }
+      case "binary": {
+        const left = evaluateAstNode(node.left, scope);
+        const right = evaluateAstNode(node.right, scope);
+        switch (node.op) {
+          case "+":
+            return vectorizedBinaryOperation(left, right, (a, b) => a + b);
+          case "-":
+            return vectorizedBinaryOperation(left, right, (a, b) => a - b);
+          case "*":
+            return vectorizedBinaryOperation(left, right, (a, b) => a * b);
+          case "/":
+            return vectorizedBinaryOperation(left, right, (a, b) => a / b);
+          case "%":
+            return vectorizedBinaryOperation(left, right, (a, b) => a % b);
+          case "**":
+            return vectorizedBinaryOperation(left, right, (a, b) => a ** b);
+          case "<":
+            return vectorizedBinaryOperation(left, right, (a, b) => a < b);
+          case ">":
+            return vectorizedBinaryOperation(left, right, (a, b) => a > b);
+          case "<=":
+            return vectorizedBinaryOperation(left, right, (a, b) => a <= b);
+          case ">=":
+            return vectorizedBinaryOperation(left, right, (a, b) => a >= b);
+          case "==":
+            return vectorizedBinaryOperation(left, right, (a, b) => a == b);
+          case "!=":
+            return vectorizedBinaryOperation(left, right, (a, b) => a != b);
+          case "===":
+            return vectorizedBinaryOperation(left, right, (a, b) => a === b);
+          case "!==":
+            return vectorizedBinaryOperation(left, right, (a, b) => a !== b);
+          case "&&":
+            return vectorizedBinaryOperation(left, right, (a, b) => a && b);
+          case "||":
+            return vectorizedBinaryOperation(left, right, (a, b) => a || b);
+          default:
+            throw new Error(`Unsupported operator ${node.op}`);
+        }
+      }
+      default:
+        throw new Error(`Unsupported AST node ${node.type}`);
+    }
+  }
+
   function evaluateValueExpression(expression, context = {}, options = {}) {
     const source = String(expression ?? "").trim();
     if (!source) {
@@ -405,11 +847,9 @@
 
     let raw;
     try {
-      const evalScope = { ...MATH_SCOPE, ...context };
-      const names = Object.keys(evalScope);
-      const values = names.map((name) => evalScope[name]);
       const normalizedSource = rewriteThisAlias(rewriteConditionalIfCalls(source));
-      raw = Function(...names, `"use strict"; return (${normalizedSource});`)(...values);
+      const ast = parseExpressionAst(normalizedSource);
+      raw = evaluateAstNode(ast, { ...MATH_SCOPE, ...context });
     } catch (err) {
       if (err && err.name === "ReferenceError") {
         return { ok: false, reason: "reference", message: String(err.message || "") };
@@ -443,10 +883,10 @@
       ...Object.keys(MATH_SCOPE),
       ...extraNames.map((name) => String(name ?? "").trim()).filter(Boolean),
     ];
-    const names = Array.from(new Set(scopeNames));
+    void scopeNames;
     try {
       const normalizedSource = rewriteThisAlias(rewriteConditionalIfCalls(source));
-      Function(...names, `"use strict"; return (${normalizedSource});`);
+      parseExpressionAst(normalizedSource);
       return { ok: true };
     } catch (err) {
       if (err && err.name === "SyntaxError") {
