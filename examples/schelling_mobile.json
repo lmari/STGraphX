@@ -758,760 +758,570 @@
       "id": 1,
       "from": 1,
       "to": 5,
-      "sourcePort": "",
-      "targetPort": "",
       "controlPoints": []
     },
     {
       "id": 2,
       "from": 2,
       "to": 5,
-      "sourcePort": "",
-      "targetPort": "",
       "controlPoints": []
     },
     {
       "id": 3,
       "from": 5,
       "to": 6,
-      "sourcePort": "",
-      "targetPort": "",
       "controlPoints": []
     },
     {
       "id": 4,
       "from": 5,
       "to": 7,
-      "sourcePort": "",
-      "targetPort": "",
       "controlPoints": []
     },
     {
       "id": 5,
       "from": 5,
       "to": 8,
-      "sourcePort": "",
-      "targetPort": "",
       "controlPoints": []
     },
     {
       "id": 6,
       "from": 6,
       "to": 8,
-      "sourcePort": "",
-      "targetPort": "",
       "controlPoints": []
     },
     {
       "id": 7,
       "from": 7,
       "to": 8,
-      "sourcePort": "",
-      "targetPort": "",
       "controlPoints": []
     },
     {
       "id": 8,
       "from": 8,
       "to": 9,
-      "sourcePort": "",
-      "targetPort": "",
       "controlPoints": []
     },
     {
       "id": 9,
       "from": 3,
       "to": 9,
-      "sourcePort": "",
-      "targetPort": "",
       "controlPoints": []
     },
     {
       "id": 10,
       "from": 5,
       "to": 9,
-      "sourcePort": "",
-      "targetPort": "",
       "controlPoints": []
     },
     {
       "id": 11,
       "from": 5,
       "to": 10,
-      "sourcePort": "",
-      "targetPort": "",
       "controlPoints": []
     },
     {
       "id": 12,
       "from": 9,
       "to": 11,
-      "sourcePort": "",
-      "targetPort": "",
       "controlPoints": []
     },
     {
       "id": 13,
       "from": 10,
       "to": 12,
-      "sourcePort": "",
-      "targetPort": "",
       "controlPoints": []
     },
     {
       "id": 14,
       "from": 4,
       "to": 13,
-      "sourcePort": "",
-      "targetPort": "",
       "controlPoints": []
     },
     {
       "id": 15,
       "from": 9,
       "to": 13,
-      "sourcePort": "",
-      "targetPort": "",
       "controlPoints": []
     },
     {
       "id": 16,
       "from": 10,
       "to": 13,
-      "sourcePort": "",
-      "targetPort": "",
       "controlPoints": []
     },
     {
       "id": 17,
       "from": 11,
       "to": 14,
-      "sourcePort": "",
-      "targetPort": "",
       "controlPoints": []
     },
     {
       "id": 18,
       "from": 13,
       "to": 14,
-      "sourcePort": "",
-      "targetPort": "",
       "controlPoints": []
     },
     {
       "id": 19,
       "from": 12,
       "to": 15,
-      "sourcePort": "",
-      "targetPort": "",
       "controlPoints": []
     },
     {
       "id": 20,
       "from": 13,
       "to": 15,
-      "sourcePort": "",
-      "targetPort": "",
       "controlPoints": []
     },
     {
       "id": 21,
       "from": 11,
       "to": 16,
-      "sourcePort": "",
-      "targetPort": "",
       "controlPoints": []
     },
     {
       "id": 22,
       "from": 13,
       "to": 16,
-      "sourcePort": "",
-      "targetPort": "",
       "controlPoints": []
     },
     {
       "id": 23,
       "from": 12,
       "to": 17,
-      "sourcePort": "",
-      "targetPort": "",
       "controlPoints": []
     },
     {
       "id": 24,
       "from": 13,
       "to": 17,
-      "sourcePort": "",
-      "targetPort": "",
       "controlPoints": []
     },
     {
       "id": 25,
       "from": 11,
       "to": 18,
-      "sourcePort": "",
-      "targetPort": "",
       "controlPoints": []
     },
     {
       "id": 26,
       "from": 13,
       "to": 18,
-      "sourcePort": "",
-      "targetPort": "",
       "controlPoints": []
     },
     {
       "id": 27,
       "from": 12,
       "to": 19,
-      "sourcePort": "",
-      "targetPort": "",
       "controlPoints": []
     },
     {
       "id": 28,
       "from": 13,
       "to": 19,
-      "sourcePort": "",
-      "targetPort": "",
       "controlPoints": []
     },
     {
       "id": 29,
       "from": 11,
       "to": 20,
-      "sourcePort": "",
-      "targetPort": "",
       "controlPoints": []
     },
     {
       "id": 30,
       "from": 13,
       "to": 20,
-      "sourcePort": "",
-      "targetPort": "",
       "controlPoints": []
     },
     {
       "id": 31,
       "from": 12,
       "to": 21,
-      "sourcePort": "",
-      "targetPort": "",
       "controlPoints": []
     },
     {
       "id": 32,
       "from": 13,
       "to": 21,
-      "sourcePort": "",
-      "targetPort": "",
       "controlPoints": []
     },
     {
       "id": 33,
       "from": 11,
       "to": 22,
-      "sourcePort": "",
-      "targetPort": "",
       "controlPoints": []
     },
     {
       "id": 34,
       "from": 13,
       "to": 22,
-      "sourcePort": "",
-      "targetPort": "",
       "controlPoints": []
     },
     {
       "id": 35,
       "from": 12,
       "to": 23,
-      "sourcePort": "",
-      "targetPort": "",
       "controlPoints": []
     },
     {
       "id": 36,
       "from": 13,
       "to": 23,
-      "sourcePort": "",
-      "targetPort": "",
       "controlPoints": []
     },
     {
       "id": 37,
       "from": 5,
       "to": 24,
-      "sourcePort": "",
-      "targetPort": "",
       "controlPoints": []
     },
     {
       "id": 38,
       "from": 14,
       "to": 24,
-      "sourcePort": "",
-      "targetPort": "",
       "controlPoints": []
     },
     {
       "id": 39,
       "from": 15,
       "to": 24,
-      "sourcePort": "",
-      "targetPort": "",
       "controlPoints": []
     },
     {
       "id": 40,
       "from": 13,
       "to": 24,
-      "sourcePort": "",
-      "targetPort": "",
       "controlPoints": []
     },
     {
       "id": 41,
       "from": 24,
       "to": 25,
-      "sourcePort": "",
-      "targetPort": "",
       "controlPoints": []
     },
     {
       "id": 42,
       "from": 16,
       "to": 25,
-      "sourcePort": "",
-      "targetPort": "",
       "controlPoints": []
     },
     {
       "id": 43,
       "from": 17,
       "to": 25,
-      "sourcePort": "",
-      "targetPort": "",
       "controlPoints": []
     },
     {
       "id": 44,
       "from": 13,
       "to": 25,
-      "sourcePort": "",
-      "targetPort": "",
       "controlPoints": []
     },
     {
       "id": 45,
       "from": 25,
       "to": 26,
-      "sourcePort": "",
-      "targetPort": "",
       "controlPoints": []
     },
     {
       "id": 46,
       "from": 18,
       "to": 26,
-      "sourcePort": "",
-      "targetPort": "",
       "controlPoints": []
     },
     {
       "id": 47,
       "from": 19,
       "to": 26,
-      "sourcePort": "",
-      "targetPort": "",
       "controlPoints": []
     },
     {
       "id": 48,
       "from": 13,
       "to": 26,
-      "sourcePort": "",
-      "targetPort": "",
       "controlPoints": []
     },
     {
       "id": 49,
       "from": 26,
       "to": 27,
-      "sourcePort": "",
-      "targetPort": "",
       "controlPoints": []
     },
     {
       "id": 50,
       "from": 20,
       "to": 27,
-      "sourcePort": "",
-      "targetPort": "",
       "controlPoints": []
     },
     {
       "id": 51,
       "from": 21,
       "to": 27,
-      "sourcePort": "",
-      "targetPort": "",
       "controlPoints": []
     },
     {
       "id": 52,
       "from": 13,
       "to": 27,
-      "sourcePort": "",
-      "targetPort": "",
       "controlPoints": []
     },
     {
       "id": 53,
       "from": 27,
       "to": 28,
-      "sourcePort": "",
-      "targetPort": "",
       "controlPoints": []
     },
     {
       "id": 54,
       "from": 22,
       "to": 28,
-      "sourcePort": "",
-      "targetPort": "",
       "controlPoints": []
     },
     {
       "id": 55,
       "from": 23,
       "to": 28,
-      "sourcePort": "",
-      "targetPort": "",
       "controlPoints": []
     },
     {
       "id": 56,
       "from": 13,
       "to": 28,
-      "sourcePort": "",
-      "targetPort": "",
       "controlPoints": []
     },
     {
       "id": 57,
       "from": 28,
       "to": 5,
-      "sourcePort": "",
-      "targetPort": "",
       "controlPoints": []
     },
     {
       "id": 58,
       "from": 5,
       "to": 29,
-      "sourcePort": "",
-      "targetPort": "",
       "controlPoints": []
     },
     {
       "id": 59,
       "from": 5,
       "to": 30,
-      "sourcePort": "",
-      "targetPort": "",
       "controlPoints": []
     },
     {
       "id": 60,
       "from": 9,
       "to": 31,
-      "sourcePort": "",
-      "targetPort": "",
       "controlPoints": []
     },
     {
       "id": 61,
       "from": 13,
       "to": 33,
-      "sourcePort": "",
-      "targetPort": "",
       "controlPoints": []
     },
     {
       "id": 62,
       "from": 5,
       "to": 33,
-      "sourcePort": "",
-      "targetPort": "",
       "controlPoints": []
     },
     {
       "id": 63,
       "from": 14,
       "to": 33,
-      "sourcePort": "",
-      "targetPort": "",
       "controlPoints": []
     },
     {
       "id": 64,
       "from": 3,
       "to": 33,
-      "sourcePort": "",
-      "targetPort": "",
       "controlPoints": []
     },
     {
       "id": 65,
       "from": 13,
       "to": 34,
-      "sourcePort": "",
-      "targetPort": "",
       "controlPoints": []
     },
     {
       "id": 66,
       "from": 24,
       "to": 34,
-      "sourcePort": "",
-      "targetPort": "",
       "controlPoints": []
     },
     {
       "id": 67,
       "from": 16,
       "to": 34,
-      "sourcePort": "",
-      "targetPort": "",
       "controlPoints": []
     },
     {
       "id": 68,
       "from": 3,
       "to": 34,
-      "sourcePort": "",
-      "targetPort": "",
       "controlPoints": []
     },
     {
       "id": 69,
       "from": 13,
       "to": 35,
-      "sourcePort": "",
-      "targetPort": "",
       "controlPoints": []
     },
     {
       "id": 70,
       "from": 25,
       "to": 35,
-      "sourcePort": "",
-      "targetPort": "",
       "controlPoints": []
     },
     {
       "id": 71,
       "from": 18,
       "to": 35,
-      "sourcePort": "",
-      "targetPort": "",
       "controlPoints": []
     },
     {
       "id": 72,
       "from": 3,
       "to": 35,
-      "sourcePort": "",
-      "targetPort": "",
       "controlPoints": []
     },
     {
       "id": 73,
       "from": 13,
       "to": 36,
-      "sourcePort": "",
-      "targetPort": "",
       "controlPoints": []
     },
     {
       "id": 74,
       "from": 26,
       "to": 36,
-      "sourcePort": "",
-      "targetPort": "",
       "controlPoints": []
     },
     {
       "id": 75,
       "from": 20,
       "to": 36,
-      "sourcePort": "",
-      "targetPort": "",
       "controlPoints": []
     },
     {
       "id": 76,
       "from": 3,
       "to": 36,
-      "sourcePort": "",
-      "targetPort": "",
       "controlPoints": []
     },
     {
       "id": 77,
       "from": 13,
       "to": 37,
-      "sourcePort": "",
-      "targetPort": "",
       "controlPoints": []
     },
     {
       "id": 78,
       "from": 27,
       "to": 37,
-      "sourcePort": "",
-      "targetPort": "",
       "controlPoints": []
     },
     {
       "id": 79,
       "from": 22,
       "to": 37,
-      "sourcePort": "",
-      "targetPort": "",
       "controlPoints": []
     },
     {
       "id": 80,
       "from": 3,
       "to": 37,
-      "sourcePort": "",
-      "targetPort": "",
       "controlPoints": []
     },
     {
       "id": 81,
       "from": 32,
       "to": 15,
-      "sourcePort": "",
-      "targetPort": "",
       "controlPoints": []
     },
     {
       "id": 82,
       "from": 33,
       "to": 15,
-      "sourcePort": "",
-      "targetPort": "",
       "controlPoints": []
     },
     {
       "id": 83,
       "from": 5,
       "to": 15,
-      "sourcePort": "",
-      "targetPort": "",
       "controlPoints": []
     },
     {
       "id": 84,
       "from": 32,
       "to": 17,
-      "sourcePort": "",
-      "targetPort": "",
       "controlPoints": []
     },
     {
       "id": 85,
       "from": 34,
       "to": 17,
-      "sourcePort": "",
-      "targetPort": "",
       "controlPoints": []
     },
     {
       "id": 86,
       "from": 24,
       "to": 17,
-      "sourcePort": "",
-      "targetPort": "",
       "controlPoints": []
     },
     {
       "id": 87,
       "from": 32,
       "to": 19,
-      "sourcePort": "",
-      "targetPort": "",
       "controlPoints": []
     },
     {
       "id": 88,
       "from": 35,
       "to": 19,
-      "sourcePort": "",
-      "targetPort": "",
       "controlPoints": []
     },
     {
       "id": 89,
       "from": 25,
       "to": 19,
-      "sourcePort": "",
-      "targetPort": "",
       "controlPoints": []
     },
     {
       "id": 90,
       "from": 32,
       "to": 21,
-      "sourcePort": "",
-      "targetPort": "",
       "controlPoints": []
     },
     {
       "id": 91,
       "from": 36,
       "to": 21,
-      "sourcePort": "",
-      "targetPort": "",
       "controlPoints": []
     },
     {
       "id": 92,
       "from": 26,
       "to": 21,
-      "sourcePort": "",
-      "targetPort": "",
       "controlPoints": []
     },
     {
       "id": 93,
       "from": 32,
       "to": 23,
-      "sourcePort": "",
-      "targetPort": "",
       "controlPoints": []
     },
     {
       "id": 94,
       "from": 37,
       "to": 23,
-      "sourcePort": "",
-      "targetPort": "",
       "controlPoints": []
     },
     {
       "id": 95,
       "from": 27,
       "to": 23,
-      "sourcePort": "",
-      "targetPort": "",
       "controlPoints": []
     }
   ],

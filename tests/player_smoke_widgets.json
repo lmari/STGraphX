@@ -30,8 +30,14 @@
       "fillColor": "",
       "strokeColor": "",
       "properties": [
-        { "key": "note formula", "value": "" },
-        { "key": "descrizione", "value": "Nodo algebrico di input pilotato dallo slider" }
+        {
+          "key": "note formula",
+          "value": ""
+        },
+        {
+          "key": "descrizione",
+          "value": "Nodo algebrico di input pilotato dallo slider"
+        }
       ],
       "input": true,
       "valueExpression": "1"
@@ -48,8 +54,14 @@
       "fillColor": "",
       "strokeColor": "",
       "properties": [
-        { "key": "note formula", "value": "" },
-        { "key": "descrizione", "value": "0 = avanti, 1 = indietro" }
+        {
+          "key": "note formula",
+          "value": ""
+        },
+        {
+          "key": "descrizione",
+          "value": "0 = avanti, 1 = indietro"
+        }
       ],
       "valueExpression": "0"
     },
@@ -65,8 +77,14 @@
       "fillColor": "",
       "strokeColor": "",
       "properties": [
-        { "key": "note formula", "value": "" },
-        { "key": "descrizione", "value": "Interruttore di abilitazione" }
+        {
+          "key": "note formula",
+          "value": ""
+        },
+        {
+          "key": "descrizione",
+          "value": "Interruttore di abilitazione"
+        }
       ],
       "valueExpression": "0"
     },
@@ -82,8 +100,14 @@
       "fillColor": "",
       "strokeColor": "",
       "properties": [
-        { "key": "note formula", "value": "" },
-        { "key": "descrizione", "value": "Stato integrato" }
+        {
+          "key": "note formula",
+          "value": ""
+        },
+        {
+          "key": "descrizione",
+          "value": "Stato integrato"
+        }
       ],
       "stateTransition": "integral(dx)",
       "initialState": "0"
@@ -100,8 +124,14 @@
       "fillColor": "",
       "strokeColor": "",
       "properties": [
-        { "key": "note formula", "value": "" },
-        { "key": "descrizione", "value": "Derivata corrente" }
+        {
+          "key": "note formula",
+          "value": ""
+        },
+        {
+          "key": "descrizione",
+          "value": "Derivata corrente"
+        }
       ],
       "input": false,
       "valueExpression": "gate * if(mode==0, gain, -gain)"
@@ -118,19 +148,50 @@
       "fillColor": "",
       "strokeColor": "",
       "properties": [
-        { "key": "note formula", "value": "" },
-        { "key": "descrizione", "value": "Segnale booleano di soglia" }
+        {
+          "key": "note formula",
+          "value": ""
+        },
+        {
+          "key": "descrizione",
+          "value": "Segnale booleano di soglia"
+        }
       ],
       "input": false,
       "valueExpression": "x > 2"
     }
   ],
   "edges": [
-    { "id": 1, "from": 1, "to": 5, "sourcePort": "", "targetPort": "", "controlPoints": [] },
-    { "id": 2, "from": 2, "to": 5, "sourcePort": "", "targetPort": "", "controlPoints": [] },
-    { "id": 3, "from": 3, "to": 5, "sourcePort": "", "targetPort": "", "controlPoints": [] },
-    { "id": 4, "from": 5, "to": 4, "sourcePort": "", "targetPort": "", "controlPoints": [] },
-    { "id": 5, "from": 4, "to": 6, "sourcePort": "", "targetPort": "", "controlPoints": [] }
+    {
+      "id": 1,
+      "from": 1,
+      "to": 5,
+      "controlPoints": []
+    },
+    {
+      "id": 2,
+      "from": 2,
+      "to": 5,
+      "controlPoints": []
+    },
+    {
+      "id": 3,
+      "from": 3,
+      "to": 5,
+      "controlPoints": []
+    },
+    {
+      "id": 4,
+      "from": 5,
+      "to": 4,
+      "controlPoints": []
+    },
+    {
+      "id": 5,
+      "from": 4,
+      "to": 6,
+      "controlPoints": []
+    }
   ],
   "textItems": [
     {
@@ -249,8 +310,14 @@
       "step": 1,
       "value": 0,
       "options": [
-        { "label": "Forward", "value": 0 },
-        { "label": "Reverse", "value": 1 }
+        {
+          "label": "Forward",
+          "value": 0
+        },
+        {
+          "label": "Reverse",
+          "value": 1
+        }
       ],
       "mappings": [],
       "columns": [],
@@ -325,8 +392,14 @@
       "value": 0,
       "options": [],
       "mappings": [
-        { "value": 0, "label": "Forward" },
-        { "value": 1, "label": "Reverse" }
+        {
+          "value": 0,
+          "label": "Forward"
+        },
+        {
+          "value": 1,
+          "label": "Reverse"
+        }
       ],
       "columns": [],
       "xyPairs": []
@@ -364,7 +437,11 @@
       "value": 0,
       "options": [],
       "mappings": [],
-      "columns": ["time", "x", "dx"],
+      "columns": [
+        "time",
+        "x",
+        "dx"
+      ],
       "xyPairs": []
     },
     {
@@ -402,8 +479,28 @@
       "mappings": [],
       "columns": [],
       "xyPairs": [
-        { "label": "x", "xSource": "time", "ySource": "x", "color": "#2d7ff9", "showLine": true, "lineWidth": 2, "lineStyle": "solid", "pointMode": "none", "pointSize": 2 },
-        { "label": "dx", "xSource": "time", "ySource": "dx", "color": "#d97a20", "showLine": true, "lineWidth": 2, "lineStyle": "dashed", "pointMode": "last", "pointSize": 3 }
+        {
+          "label": "x",
+          "xSource": "time",
+          "ySource": "x",
+          "color": "#2d7ff9",
+          "showLine": true,
+          "lineWidth": 2,
+          "lineStyle": "solid",
+          "pointMode": "none",
+          "pointSize": 2
+        },
+        {
+          "label": "dx",
+          "xSource": "time",
+          "ySource": "dx",
+          "color": "#d97a20",
+          "showLine": true,
+          "lineWidth": 2,
+          "lineStyle": "dashed",
+          "pointMode": "last",
+          "pointSize": 3
+        }
       ]
     }
   ]

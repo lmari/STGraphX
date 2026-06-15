@@ -1,6 +1,6 @@
 # STGraphX: readme
 
-Luca Mari, versione 28 maggio 2026
+Luca Mari, versione 15 giugno 2026
 
 ## Contesto
 
@@ -25,6 +25,7 @@ __Al momento implementati (senza librerie esterne):__
 
 * editor per grafi orientati, con nodi di forme e colori diversi e tooltip, frecce spline, testi, gestione di ridimensionamento, spostamento, cancellazione dei nodi, anche per selezioni multiple, zoom, griglia, clipboard (anche condivisa tra instanze diverse dell'app), undo e redo, ...;
 * menu, menu contestuale e pannello di configurazione aggiornato dinamicamente, con tooltip;
+* interfaccia a tab per più modelli, con gestione contestuale della relazione tra modelli e sottomodelli;
 * gestione dei testi dell'interfaccia utente in italiano, inglese e portoghese, con scelta via query string nella shell web (`?lang=it|en|pt`) e via parametro `--lang=it|en|pt` nella shell Electron;
 * gestione dei nodi algebrici, di stato, parametri e sottomodelli, con funzioni in sintassi javascript (compresa la gestione locale di `this` come stato attuale); controllo sintattico sul nome dei nodi; controllo sui parametri (valore non cambia dopo la prima esecuzione; frecce entranti non ammesse); controllo sullo stato iniziale: solo espressioni locali o riferimenti a parametri; controllo del numero di cifre decimali visualizzate;
 * variabili globali;
@@ -42,7 +43,8 @@ __Al momento implementati (senza librerie esterne):__
 * gestione di proprietà custom per il modello e i singoli nodi e funzioni `getModelProperty`/`getProperty` e `setModelProperty`/`setProperty`;
 * gestione di nodi di output e di widget di output: grafici, tabelle, matrici, led, testo; pannello di configurazione aggiornato dinamicamente;
 * gestione di nodi di input e di widget di input, anche per parametri: slider, pulsante, selettore di testo; pannello di configurazione aggiornato dinamicamente;
-* gestione dei sottomodelli con file JSON separati, con caricamento dalla stessa cartella del modello, binding dei nodi di input e accesso ai nodi di output con notazione `nomeSottomodello.nomeOutput`; prima gestione in logica ABM dichiarativa / funzionale, mediante variabili di sistema `self` e `$i$`;
+* gestione dei sottomodelli con file JSON separati, con caricamento dalla stessa cartella del modello, binding dei nodi di input e accesso ai nodi di output con notazione `nomeSottomodello.nomeOutput`;
+* prima gestione in logica ABM dichiarativa / funzionale, mediante variabili di sistema `self` e `$i$`;
 * visualizzazione alternata per il grafo e i widget;
 * enfatizzazione delle frecce sul nodo selezionato;
 * editor per testi con formattazione HTML basilare;
@@ -64,7 +66,6 @@ __Al momento non implementati (rispetto a STGraph):__
 * nodi di stato con output;
 * gestione di interrupt;
 * playmode e altre modalità di esecuzione;
-* interfaccia a tab per più modelli;
 * una pagina di esempi;
 * ...
 

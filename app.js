@@ -6,6 +6,8 @@ const fileStatusText = document.getElementById("fileStatusText");
 const modelBreadcrumbText = document.getElementById("modelBreadcrumbText");
 const menuTimeText = document.getElementById("menuTimeText");
 const topMenuBar = document.getElementById("topMenuBar");
+const workspaceTabBar = document.getElementById("workspaceTabBar");
+const newTabBtn = document.getElementById("newTabBtn");
 const menuRoots = Array.from(document.querySelectorAll(".menu-root"));
 const menuTitles = Array.from(document.querySelectorAll(".menu-title"));
 const menuCommands = Array.from(document.querySelectorAll(".menu-command"));
@@ -52,6 +54,7 @@ const deleteBtnLabel = deleteBtn?.querySelector("[data-i18n='menu.edit.delete']"
 const newGraphBtn = document.getElementById("newGraphBtn");
 const saveJsonBtn = document.getElementById("saveJsonBtn");
 const saveAsJsonBtn = document.getElementById("saveAsJsonBtn");
+const closeModelBtn = document.getElementById("closeModelBtn");
 const exportCsvBtn = document.getElementById("exportCsvBtn");
 const loadJsonBtn = document.getElementById("loadJsonBtn");
 const recentModelsMenuRoot = document.getElementById("recentModelsMenuRoot");
@@ -535,6 +538,11 @@ let currentFileName = "";
 let currentModelDirectoryHandle = null;
 let recentModelEntries = [];
 const modelContextStack = [];
+const workspace = {
+  tabs: [],
+  activeTabId: null,
+  nextTabId: 1,
+};
 const submodelTemplateCache = new Map();
 const submodelFileHandleCache = new Map();
 const submodelSourceCache = new Map();
@@ -1940,9 +1948,6 @@ function localizeExpressionErrorMessage(message) {
   if (lower.startsWith("duplicate input binding for ")) {
     return t("expr.error.duplicateInputBinding", { name: raw.replace(/^duplicate input binding for /i, "") });
   }
-  if (lower.startsWith("missing submodel output ")) {
-    return t("expr.error.missingSubmodelOutput", { name: raw.replace(/^missing submodel output /i, "") });
-  }
   if (lower === "missing submodel path") {
     return t("error.submodelMissingPath");
   }
@@ -2515,12 +2520,7 @@ function analyzeModelStaticIssues() {
   graph.edges.forEach((edge) => {
     const fromNode = getNodeById(edge.from);
     const toNode = getNodeById(edge.to);
-    const signature = [
-      edge.from,
-      edge.to,
-      String(edge.sourcePort ?? "").trim(),
-      String(edge.targetPort ?? "").trim(),
-    ].join("|");
+    const signature = [edge.from, edge.to].join("|");
     if (!edgeGroups.has(signature)) {
       edgeGroups.set(signature, []);
     }
@@ -2587,7 +2587,11 @@ function analyzeModelStaticIssues() {
         list.push(edge);
         incomingNameToEdges.set(fromNode.name, list);
       });
-      const availableInputs = new Set(getSubmodelEdgePortChoices(node, "target"));
+      const availableInputs = new Set(
+        Array.isArray(node.interfaceCache?.inputs)
+          ? node.interfaceCache.inputs.map((value) => String(value).trim()).filter(Boolean)
+          : [],
+      );
       const bindingRefs = submodelBindingReferences(node);
       Object.entries(node.inputBindings || {}).forEach(([inputName, expr]) => {
         const normalizedInput = String(inputName || "").trim();
@@ -2637,44 +2641,6 @@ function analyzeModelStaticIssues() {
             );
           }
         });
-      });
-      const portCounts = new Map();
-      incomingEdges.forEach((edge) => {
-        const targetPort = String(edge.targetPort ?? "").trim();
-        if (targetPort) {
-          portCounts.set(targetPort, (portCounts.get(targetPort) || 0) + 1);
-        } else if (availableInputs.size > 1) {
-          const fromNode = getNodeById(edge.from);
-          pushAnalysisIssue(
-            issues,
-            "warning",
-            "analysis.issue.ambiguousSubmodelTargetPort",
-            { name: `${fromNode?.name || edge.from} -> ${node.name}` },
-            { type: "edge", id: edge.id, name: `${fromNode?.name || edge.from} -> ${node.name}` },
-          );
-        }
-        const fromNode = getNodeById(edge.from);
-        const sourceChoices = getSubmodelEdgePortChoices(fromNode, "source");
-        if (isSubmodelNode(fromNode) && sourceChoices.length > 1 && !String(edge.sourcePort ?? "").trim()) {
-          pushAnalysisIssue(
-            issues,
-            "warning",
-            "analysis.issue.ambiguousSubmodelSourcePort",
-            { name: `${fromNode?.name || edge.from} -> ${node.name}` },
-            { type: "edge", id: edge.id, name: `${fromNode?.name || edge.from} -> ${node.name}` },
-          );
-        }
-      });
-      portCounts.forEach((count, portName) => {
-        if (count > 1) {
-          pushAnalysisIssue(
-            issues,
-            "error",
-            "analysis.issue.duplicateSubmodelInputPort",
-            { name: node.name, input: portName },
-            { type: "node", id: node.id, name: node.name },
-          );
-        }
       });
       return;
     }
@@ -3836,9 +3802,6 @@ function modelAnalysisCheckEntries() {
     { severity: "info", nameKey: "analysis.issue.unusedNode", descKey: "analysis.checks.unusedNode" },
     { severity: "error", nameKey: "analysis.issue.invalidSubmodelBinding", descKey: "analysis.checks.invalidSubmodelBinding" },
     { severity: "warning", nameKey: "analysis.issue.unknownSubmodelBinding", descKey: "analysis.checks.unknownSubmodelBinding" },
-    { severity: "error", nameKey: "analysis.issue.duplicateSubmodelInputPort", descKey: "analysis.checks.duplicateSubmodelInputPort" },
-    { severity: "warning", nameKey: "analysis.issue.ambiguousSubmodelTargetPort", descKey: "analysis.checks.ambiguousSubmodelTargetPort" },
-    { severity: "warning", nameKey: "analysis.issue.ambiguousSubmodelSourcePort", descKey: "analysis.checks.ambiguousSubmodelSourcePort" },
     { severity: "warning", nameKey: "analysis.issue.widgetNoSource", descKey: "analysis.checks.widgetNoSource" },
     { severity: "error", nameKey: "analysis.issue.widgetMissingSource", descKey: "analysis.checks.widgetMissingSource" },
     { severity: "warning", nameKey: "analysis.issue.widgetSourceNotOutput", descKey: "analysis.checks.widgetSourceNotOutput" },
@@ -5429,11 +5392,17 @@ async function loadI18n() {
   if (!functionsHelpModal?.classList.contains("hidden")) {
     renderFunctionsHelp();
   }
+  refreshWorkspaceTabBar();
 }
 
 function setStatus(text) {
   statusText.textContent = text;
   refreshActiveTooltip();
+  const activeTab = currentWorkspaceTab();
+  if (activeTab?.state?.context) {
+    activeTab.state.context.statusMessage = String(text ?? "");
+  }
+  syncSubmodelWorkspaceTabsFromActiveParent();
 }
 
 function setStatusKey(key, vars = null) {
@@ -5444,17 +5413,624 @@ function displayFileName() {
   return currentFileName || t("file.unnamed");
 }
 
-window.__stgraphxGetClosePromptData = function __stgraphxGetClosePromptData() {
+function displayFileNameFromContext(context) {
+  const fileName = String(context?.currentFileName || "").trim();
+  if (fileName) {
+    return fileName.replace(/\.json$/i, "");
+  }
+  const modelTitle = String(context?.data?.modelTitle || "").trim();
+  return modelTitle || t("file.unnamed");
+}
+
+function workspaceTabMetaText(tab) {
+  const meta = tab?.meta;
+  if (!meta || meta.kind !== "submodel") {
+    return "";
+  }
+  const parentTab = meta.parentTabId != null ? getWorkspaceTabById(meta.parentTabId) : null;
+  const parentLabel = parentTab
+    ? displayFileNameFromContext(parentTab.state?.context)
+    : String(meta.parentTitle || "").trim();
+  const nodeName = String(meta.parentNodeName || "").trim();
+  if (!nodeName && !parentLabel) {
+    return "";
+  }
+  return t("tab.meta.submodel", {
+    node: nodeName || t("text.unnamed"),
+    parent: parentLabel || t("file.unnamed"),
+  });
+}
+
+function getWorkspaceTabById(tabId) {
+  return workspace.tabs.find((tab) => tab.id === tabId) || null;
+}
+
+function currentWorkspaceTab() {
+  return getWorkspaceTabById(workspace.activeTabId);
+}
+
+function collectWorkspaceDescendantTabIds(tabId) {
+  const descendants = [];
+  const visit = (parentId) => {
+    workspace.tabs
+      .filter((tab) => tab?.meta?.parentTabId === parentId)
+      .forEach((childTab) => {
+        descendants.push(childTab.id);
+        visit(childTab.id);
+      });
+  };
+  visit(tabId);
+  return descendants;
+}
+
+function workspaceContextHasUnsavedChanges(context) {
+  if (!context) {
+    return false;
+  }
+  try {
+    return JSON.stringify(context.data) !== String(context.lastSavedSnapshot || "");
+  } catch (_err) {
+    return Boolean(context.dirtySinceLastSave);
+  }
+}
+
+function cloneRuntimeNodeState(node) {
+  if (!node) {
+    return null;
+  }
   return {
-    hasUnsaved: hasUnsavedChanges(),
+    id: Number(node.id),
+    computedValue: deepClone(node.computedValue),
+    computedError: String(node.computedError || ""),
+    pendingStateValue: deepClone(node.pendingStateValue),
+    pendingStateError: String(node.pendingStateError || ""),
+    submodelError: String(node.submodelError || ""),
+    runtimeSubmodelPath: String(node.__runtimeSubmodelPath || ""),
+    runtimeSubmodel: node.__runtimeSubmodel ? cloneRuntimeModel(node.__runtimeSubmodel) : null,
+  };
+}
+
+function cloneRuntimeWidgetState(widget) {
+  if (!widget) {
+    return null;
+  }
+  const state = {
+    id: Number(widget.id),
+    type: String(widget.type || ""),
+  };
+  if (widget.type === "table") {
+    state.rows = Array.isArray(widget.rows) ? deepClone(widget.rows) : [];
+  }
+  if (widget.type === "matrix") {
+    state.lastMatrixValue = Array.isArray(widget.lastMatrixValue) ? deepClone(widget.lastMatrixValue) : null;
+  }
+  if (widget.type === "xychart") {
+    state.xyPairs = Array.isArray(widget.xyPairs)
+      ? widget.xyPairs.map((pair) => ({
+        xSource: String(pair?.xSource ?? "time"),
+        ySource: String(pair?.ySource ?? ""),
+        points: Array.isArray(pair?.points) ? deepClone(pair.points) : [],
+        seriesData: Array.isArray(pair?.seriesData) ? deepClone(pair.seriesData) : [],
+        instantSeriesData: Array.isArray(pair?.instantSeriesData) ? deepClone(pair.instantSeriesData) : [],
+      }))
+      : [];
+  }
+  return state;
+}
+
+function cloneEmptyRuntimeNodeStateFromDataNode(node) {
+  return {
+    id: Number(node?.id),
+    computedValue: null,
+    computedError: "",
+    pendingStateValue: null,
+    pendingStateError: "",
+    submodelError: "",
+    runtimeSubmodelPath: "",
+    runtimeSubmodel: null,
+  };
+}
+
+function buildNodeMapFromRuntimeNodes(nodes = []) {
+  return new Map((Array.isArray(nodes) ? nodes : []).map((node) => [String(node?.name ?? ""), node]));
+}
+
+function buildChartPairSeriesDefinitionsForSync(pair, xValue, yValue) {
+  const finiteScalar = (value) => typeof value === "number" && Number.isFinite(value);
+  const finiteVector = (value) => Array.isArray(value) && value.every((item) => finiteScalar(item));
+  if (finiteScalar(xValue) && finiteScalar(yValue)) {
+    return [{ label: `${pair.xSource} -> ${pair.ySource}`, point: { x: xValue, y: yValue } }];
+  }
+  if (finiteScalar(xValue) && finiteVector(yValue)) {
+    return yValue.map((item) => ({
+      label: `${pair.xSource} -> ${pair.ySource}`,
+      point: { x: xValue, y: item },
+    }));
+  }
+  if (finiteVector(xValue) && finiteVector(yValue) && xValue.length === yValue.length) {
+    return xValue.map((xItem, idx) => ({
+      label: `${pair.xSource} -> ${pair.ySource}`,
+      point: { x: xItem, y: yValue[idx] },
+    }));
+  }
+  return [];
+}
+
+function buildChartPairInstantSeriesDefinitionsForSync(pair, xValue, yValue) {
+  const finiteScalar = (value) => typeof value === "number" && Number.isFinite(value);
+  const finiteVector = (value) => Array.isArray(value) && value.every((item) => finiteScalar(item));
+  if (finiteScalar(xValue) && finiteVector(yValue)) {
+    return [{
+      label: `${pair.xSource} -> ${pair.ySource}`,
+      points: yValue.map((item) => ({ x: xValue, y: item })),
+    }];
+  }
+  if (finiteVector(xValue) && finiteVector(yValue) && xValue.length === yValue.length) {
+    return [{
+      label: `${pair.xSource} -> ${pair.ySource}`,
+      points: xValue.map((xItem, idx) => ({ x: xItem, y: yValue[idx] })),
+    }];
+  }
+  return [];
+}
+
+function buildSubmodelSimulationHistory(prevHistory, runtimeModel) {
+  const currentTime = Number(runtimeModel?.execution?.currentTime);
+  if (!Number.isFinite(currentTime)) {
+    return [];
+  }
+  const outputNodes = (runtimeModel?.nodes || []).filter((node) => node.output);
+  if (!outputNodes.length) {
+    return [];
+  }
+  const history = Array.isArray(prevHistory) ? deepClone(prevHistory) : [];
+  const lastTime = history.length ? Number(history[history.length - 1]?.time) : null;
+  if (lastTime != null && Math.abs(lastTime - currentTime) < 1e-12) {
+    return history;
+  }
+  history.push({
+    time: currentTime,
+    values: Object.fromEntries(outputNodes.map((node) => [
+      node.name,
+      {
+        value: cloneSimulationOutputValue(node.computedValue),
+        error: String(node.computedError || ""),
+      },
+    ])),
+  });
+  return history;
+}
+
+function buildSyncedWidgetRuntimeStates(widgetDefs, runtimeNodes, timeValue, previousStates = []) {
+  const nodeMap = buildNodeMapFromRuntimeNodes(runtimeNodes);
+  const previousById = new Map((Array.isArray(previousStates) ? previousStates : []).map((state) => [Number(state?.id), state]));
+  return (Array.isArray(widgetDefs) ? widgetDefs : []).map((widget) => {
+    const prev = previousById.get(Number(widget?.id)) || null;
+    if (widget?.type === "table") {
+      const state = cloneRuntimeWidgetState(widget) || { id: Number(widget?.id), type: "table", rows: [] };
+      state.rows = Array.isArray(prev?.rows) ? deepClone(prev.rows) : [];
+      state.lastSyncedTime = Number(prev?.lastSyncedTime);
+      if (widget.showHistory && Number.isFinite(timeValue) && state.lastSyncedTime !== timeValue) {
+        const displayedCols = widget.outputOnly
+          ? (Array.isArray(widget.columns) ? widget.columns.filter((name) => name === "time" || nodeMap.get(name)?.output) : [])
+          : (Array.isArray(widget.columns) ? widget.columns.slice() : []);
+        const values = {};
+        displayedCols.forEach((colName) => {
+          if (colName === "time") {
+            values.time = { value: timeValue };
+            return;
+          }
+          const node = nodeMap.get(colName);
+          if (!node) {
+            values[colName] = { value: null };
+          } else if (node.computedError) {
+            values[colName] = { error: node.computedError };
+          } else {
+            values[colName] = { value: cloneSimulationOutputValue(node.computedValue) };
+          }
+        });
+        state.rows.push({ values });
+        state.lastSyncedTime = timeValue;
+      }
+      return state;
+    }
+    if (widget?.type === "xychart") {
+      const state = cloneRuntimeWidgetState(widget) || { id: Number(widget?.id), type: "xychart", xyPairs: [] };
+      const prevPairs = new Map((Array.isArray(prev?.xyPairs) ? prev.xyPairs : []).map((pair) => [
+        `${String(pair?.xSource ?? "time")}__${String(pair?.ySource ?? "")}`,
+        pair,
+      ]));
+      state.xyPairs = (Array.isArray(widget.xyPairs) ? widget.xyPairs : []).map((pair) => {
+        const pairKey = `${String(pair?.xSource ?? "time")}__${String(pair?.ySource ?? "")}`;
+        const prevPair = prevPairs.get(pairKey) || null;
+        const nextPair = {
+          xSource: String(pair?.xSource ?? "time"),
+          ySource: String(pair?.ySource ?? ""),
+          points: Array.isArray(prevPair?.points) ? deepClone(prevPair.points) : [],
+          seriesData: Array.isArray(prevPair?.seriesData) ? deepClone(prevPair.seriesData) : [],
+          instantSeriesData: [],
+          lastSyncedTime: Number(prevPair?.lastSyncedTime),
+        };
+        const xAllowed = !widget.outputOnly || nextPair.xSource === "time" || nodeMap.get(nextPair.xSource)?.output;
+        const yAllowed = !widget.outputOnly || nextPair.ySource === "time" || nodeMap.get(nextPair.ySource)?.output;
+        const xNode = nextPair.xSource === "time" ? null : nodeMap.get(nextPair.xSource);
+        const yNode = nextPair.ySource === "time" ? null : nodeMap.get(nextPair.ySource);
+        if (!xAllowed || !yAllowed || (xNode && xNode.computedError) || (yNode && yNode.computedError)) {
+          nextPair.instantSeriesData = Array.isArray(prevPair?.instantSeriesData) ? deepClone(prevPair.instantSeriesData) : [];
+          return nextPair;
+        }
+        const xVal = nextPair.xSource === "time" ? timeValue : xNode?.computedValue;
+        const yVal = nextPair.ySource === "time" ? timeValue : yNode?.computedValue;
+        nextPair.instantSeriesData = pair?.showInstantProfile
+          ? buildChartPairInstantSeriesDefinitionsForSync(nextPair, xVal, yVal)
+          : [];
+        if (pair?.showTimeSeries !== false && Number.isFinite(timeValue) && nextPair.lastSyncedTime !== timeValue) {
+          const defs = buildChartPairSeriesDefinitionsForSync(nextPair, xVal, yVal);
+          defs.forEach((seriesDef, idx) => {
+            if (!nextPair.seriesData[idx] || nextPair.seriesData[idx].label !== seriesDef.label) {
+              nextPair.seriesData[idx] = { label: seriesDef.label, points: [] };
+            }
+            nextPair.seriesData[idx].points.push(seriesDef.point);
+          });
+          if (nextPair.seriesData.length > defs.length) {
+            nextPair.seriesData = nextPair.seriesData.slice(0, defs.length);
+          }
+          nextPair.lastSyncedTime = timeValue;
+        } else if (pair?.showTimeSeries === false) {
+          nextPair.seriesData = [];
+        }
+        return nextPair;
+      });
+      return state;
+    }
+    if (widget?.type === "matrix") {
+      const state = cloneRuntimeWidgetState(widget) || { id: Number(widget?.id), type: "matrix", lastMatrixValue: null };
+      const sourceNode = nodeMap.get(String(widget?.source ?? ""));
+      state.lastMatrixValue = Array.isArray(sourceNode?.computedValue) ? deepClone(sourceNode.computedValue) : state.lastMatrixValue;
+      return state;
+    }
+    return cloneRuntimeWidgetState(widget);
+  }).filter(Boolean);
+}
+
+function syncSubmodelWorkspaceTabsFromActiveParent() {
+  const parentTabId = workspace.activeTabId;
+  if (parentTabId == null) {
+    return;
+  }
+  workspace.tabs.forEach((tab) => {
+    if (tab?.meta?.kind !== "submodel" || tab.meta.parentTabId !== parentTabId) {
+      return;
+    }
+    const parentNode = graph.nodes.find((node) => isSubmodelNode(node) && node.name === tab.meta.parentNodeName);
+    const runtimeModel = parentNode?.__runtimeSubmodel;
+    if (!runtimeModel) {
+      return;
+    }
+    const previousRuntimeState = tab.state?.runtimeState || {};
+    const currentTime = Number(runtimeModel.execution?.currentTime);
+    const previousTime = Number(previousRuntimeState.executionCurrentTime);
+    const restartDetected =
+      Number.isFinite(currentTime)
+      && Number.isFinite(previousTime)
+      && currentTime < previousTime - Math.max(1e-12, Math.abs(currentTime) * 1e-9);
+    const widgetPrevStates = restartDetected ? [] : (previousRuntimeState.widgetStates || []);
+    const historyPrev = restartDetected ? [] : (previousRuntimeState.simulationHistory || []);
+    tab.state.runtimeState = {
+      executionCurrentTime: runtimeModel.execution?.currentTime == null ? null : deepClone(runtimeModel.execution.currentTime),
+      simulationHistory: buildSubmodelSimulationHistory(historyPrev, runtimeModel),
+      readDataCache: deepClone(runtimeModel.__readDataCache || Object.create(null)),
+      nodeStates: (runtimeModel.nodes || []).map((node) => cloneRuntimeNodeState(node)),
+      widgetStates: buildSyncedWidgetRuntimeStates(tab.state?.context?.data?.widgets || [], runtimeModel.nodes || [], currentTime, widgetPrevStates),
+    };
+    tab.state.context.statusMessage = String(statusText?.textContent || "");
+    if (tab.state.context?.data?.execution) {
+      tab.state.context.data.execution.currentTime = runtimeModel.execution?.currentTime == null ? null : deepClone(runtimeModel.execution.currentTime);
+    }
+  });
+}
+
+function captureRuntimeStateSnapshot() {
+  return {
+    executionCurrentTime: graph.execution.currentTime == null ? null : deepClone(graph.execution.currentTime),
+    simulationHistory: deepClone(graph.__simulationHistory || []),
+    readDataCache: deepClone(graph.__readDataCache || Object.create(null)),
+    nodeStates: graph.nodes.map((node) => cloneRuntimeNodeState(node)),
+    widgetStates: graph.widgets.map((widget) => cloneRuntimeWidgetState(widget)),
+  };
+}
+
+function applyRuntimeStateSnapshot(snapshot) {
+  if (!snapshot || typeof snapshot !== "object") {
+    return;
+  }
+  graph.execution.currentTime = snapshot.executionCurrentTime == null ? null : deepClone(snapshot.executionCurrentTime);
+  graph.__simulationHistory = Array.isArray(snapshot.simulationHistory) ? deepClone(snapshot.simulationHistory) : [];
+  graph.__readDataCache = snapshot.readDataCache && typeof snapshot.readDataCache === "object"
+    ? deepClone(snapshot.readDataCache)
+    : Object.create(null);
+  const nodeStateById = new Map(
+    Array.isArray(snapshot.nodeStates)
+      ? snapshot.nodeStates.map((entry) => [Number(entry?.id), entry])
+      : [],
+  );
+  const widgetStateById = new Map(
+    Array.isArray(snapshot.widgetStates)
+      ? snapshot.widgetStates.map((entry) => [Number(entry?.id), entry])
+      : [],
+  );
+  graph.nodes.forEach((node) => {
+    const saved = nodeStateById.get(Number(node.id));
+    node.computedValue = saved ? deepClone(saved.computedValue) : null;
+    node.computedError = saved ? String(saved.computedError || "") : "";
+    node.pendingStateValue = saved ? deepClone(saved.pendingStateValue) : null;
+    node.pendingStateError = saved ? String(saved.pendingStateError || "") : "";
+    node.submodelError = saved ? String(saved.submodelError || "") : "";
+    node.__runtimeSubmodelPath = saved ? String(saved.runtimeSubmodelPath || "") : "";
+    node.__runtimeSubmodel = saved?.runtimeSubmodel ? cloneRuntimeModel(saved.runtimeSubmodel) : null;
+  });
+  graph.widgets.forEach((widget) => {
+    const saved = widgetStateById.get(Number(widget.id));
+    if (!saved) {
+      if (widget.type === "table") {
+        widget.rows = [];
+      } else if (widget.type === "matrix") {
+        widget.lastMatrixValue = null;
+      } else if (widget.type === "xychart" && Array.isArray(widget.xyPairs)) {
+        widget.xyPairs.forEach((pair) => {
+          pair.points = [];
+          pair.seriesData = [];
+          pair.instantSeriesData = [];
+        });
+      }
+      return;
+    }
+    if (widget.type === "table") {
+      widget.rows = Array.isArray(saved.rows) ? deepClone(saved.rows) : [];
+    } else if (widget.type === "matrix") {
+      widget.lastMatrixValue = Array.isArray(saved.lastMatrixValue) ? deepClone(saved.lastMatrixValue) : null;
+    } else if (widget.type === "xychart" && Array.isArray(widget.xyPairs)) {
+      const savedPairs = Array.isArray(saved.xyPairs) ? saved.xyPairs : [];
+      const savedPairByKey = new Map(
+        savedPairs.map((pair) => [`${String(pair?.xSource ?? "time")}__${String(pair?.ySource ?? "")}`, pair]),
+      );
+      widget.xyPairs.forEach((pair) => {
+        const pairKey = `${String(pair?.xSource ?? "time")}__${String(pair?.ySource ?? "")}`;
+        const savedPair = savedPairByKey.get(pairKey);
+        pair.points = Array.isArray(savedPair?.points) ? deepClone(savedPair.points) : [];
+        pair.seriesData = Array.isArray(savedPair?.seriesData) ? deepClone(savedPair.seriesData) : [];
+        pair.instantSeriesData = Array.isArray(savedPair?.instantSeriesData) ? deepClone(savedPair.instantSeriesData) : [];
+      });
+    }
+  });
+}
+
+function captureWorkspaceTabState() {
+  return {
+    context: captureCurrentModelContext(),
+    runtimeState: captureRuntimeStateSnapshot(),
+    modelContextStack: deepClone(modelContextStack),
+  };
+}
+
+function restoreWorkspaceTabState(state) {
+  if (!state?.context) {
+    return;
+  }
+  modelContextStack.length = 0;
+  if (Array.isArray(state.modelContextStack)) {
+    modelContextStack.push(...deepClone(state.modelContextStack));
+  }
+  restoreModelContext(state.context);
+  applyRuntimeStateSnapshot(state.runtimeState);
+  updateModelBreadcrumb();
+  render();
+}
+
+function saveActiveWorkspaceTabState() {
+  const tab = currentWorkspaceTab();
+  if (!tab) {
+    return;
+  }
+  tab.state = captureWorkspaceTabState();
+  refreshWorkspaceTabBar();
+}
+
+function createWorkspaceTabFromCurrentState(options = {}) {
+  const tab = {
+    id: workspace.nextTabId++,
+    state: captureWorkspaceTabState(),
+    meta: options.meta ? deepClone(options.meta) : null,
+  };
+  workspace.tabs.push(tab);
+  if (options.activate !== false) {
+    workspace.activeTabId = tab.id;
+  }
+  refreshWorkspaceTabBar();
+  return tab;
+}
+
+function refreshWorkspaceTabBar() {
+  if (!workspaceTabBar) {
+    return;
+  }
+  workspaceTabBar.innerHTML = "";
+  workspace.tabs.forEach((tab) => {
+    const item = document.createElement("div");
+    item.className = `workspace-tab${tab.id === workspace.activeTabId ? " active" : ""}${workspaceContextHasUnsavedChanges(tab.state?.context) ? " workspace-tab-dirty" : ""}`;
+    const tabTitle = displayFileNameFromContext(tab.state?.context);
+    const tabMeta = workspaceTabMetaText(tab);
+    item.title = tabMeta ? `${tabTitle}\n${tabMeta}` : tabTitle;
+
+    const button = document.createElement("button");
+    button.type = "button";
+    button.className = "workspace-tab-btn";
+    button.dataset.tabId = String(tab.id);
+    button.title = item.title;
+
+    const textWrap = document.createElement("span");
+    textWrap.className = "workspace-tab-text";
+
+    const label = document.createElement("span");
+    label.className = "workspace-tab-label";
+    label.textContent = tabTitle;
+    textWrap.appendChild(label);
+    if (tabMeta) {
+      const meta = document.createElement("span");
+      meta.className = "workspace-tab-meta";
+      meta.textContent = tabMeta;
+      textWrap.appendChild(meta);
+    }
+    button.appendChild(textWrap);
+    item.appendChild(button);
+
+    const close = document.createElement("button");
+    close.type = "button";
+    close.className = "workspace-tab-close";
+    close.dataset.tabCloseId = String(tab.id);
+    close.textContent = "×";
+    close.setAttribute("aria-label", t("action.closeTab"));
+    close.title = t("action.closeTab");
+    item.appendChild(close);
+
+    workspaceTabBar.appendChild(item);
+  });
+}
+
+function closeDocumentTransientUi() {
+  closeTopMenus();
+  hideContextMenu();
+  closeExpressionEditor();
+  closeTextEditor();
+  closeFunctionsHelp();
+  closeAboutApp();
+  closeModelAnalysis();
+  closeModelAnalysisChecksHelp();
+  closeWatchDebugger();
+  closeLocalFunctionsEditor();
+}
+
+function switchWorkspaceTab(tabId) {
+  if (tabId === workspace.activeTabId) {
+    return true;
+  }
+  const nextTab = getWorkspaceTabById(tabId);
+  if (!nextTab) {
+    return false;
+  }
+  saveActiveWorkspaceTabState();
+  closeDocumentTransientUi();
+  workspace.activeTabId = nextTab.id;
+  restoreWorkspaceTabState(nextTab.state);
+  refreshWorkspaceTabBar();
+  return true;
+}
+
+async function ensureWorkspaceTabSavedBeforeClose(tabId) {
+  const tab = getWorkspaceTabById(tabId);
+  if (!tab || !workspaceContextHasUnsavedChanges(tab.state?.context)) {
+    return true;
+  }
+  const shouldSave = window.confirm(t("confirm.closeTab.save"));
+  if (!shouldSave) {
+    return true;
+  }
+  if (workspace.activeTabId !== tabId) {
+    switchWorkspaceTab(tabId);
+  }
+  return saveGraphJson(false);
+}
+
+async function ensureWorkspaceTabsSavedBeforeClose(tabIds) {
+  const uniqueIds = [...new Set((Array.isArray(tabIds) ? tabIds : []).map((id) => Number(id)).filter(Number.isFinite))];
+  for (const id of uniqueIds) {
+    const saved = await ensureWorkspaceTabSavedBeforeClose(id);
+    if (!saved) {
+      return false;
+    }
+  }
+  return true;
+}
+
+async function closeWorkspaceTab(tabId) {
+  const tab = getWorkspaceTabById(tabId);
+  if (!tab) {
+    return false;
+  }
+  saveActiveWorkspaceTabState();
+  const descendantIds = collectWorkspaceDescendantTabIds(tabId);
+  const tabsToClose = [tabId, ...descendantIds];
+  const originalTabIds = workspace.tabs.map((entry) => entry.id);
+  const originalCloseIndex = originalTabIds.indexOf(tabId);
+  const saved = await ensureWorkspaceTabsSavedBeforeClose(tabsToClose);
+  if (!saved) {
+    return false;
+  }
+  const activeTabWillClose = tabsToClose.includes(workspace.activeTabId);
+  workspace.tabs = workspace.tabs.filter((entry) => !tabsToClose.includes(entry.id));
+  if (workspace.tabs.length === 0) {
+    resetGraphToEmptyModel();
+    createWorkspaceTabFromCurrentState({ activate: true });
+    setStatusKey("status.newGraph");
+    render();
+    window.requestAnimationFrame(() => {
+      markSavedSnapshot();
+    });
+    return true;
+  }
+  if (!activeTabWillClose) {
+    refreshWorkspaceTabBar();
+    return true;
+  }
+  const remainingIds = new Set(workspace.tabs.map((entry) => entry.id));
+  const rightCandidate = originalTabIds.slice(originalCloseIndex + 1).find((id) => remainingIds.has(id));
+  const leftCandidate = originalTabIds.slice(0, Math.max(0, originalCloseIndex)).reverse().find((id) => remainingIds.has(id));
+  const nextTabId = rightCandidate || leftCandidate || workspace.tabs[0]?.id || null;
+  if (nextTabId == null) {
+    return false;
+  }
+  const nextTab = getWorkspaceTabById(nextTabId) || workspace.tabs[0];
+  workspace.activeTabId = nextTab.id;
+  restoreWorkspaceTabState(nextTab.state);
+  refreshWorkspaceTabBar();
+  setStatusKey("status.tabClosed");
+  return true;
+}
+
+async function closeActiveWorkspaceTab() {
+  const activeTab = currentWorkspaceTab();
+  if (!activeTab) {
+    return false;
+  }
+  return closeWorkspaceTab(activeTab.id);
+}
+
+async function saveAllWorkspaceTabsBeforeClose() {
+  saveActiveWorkspaceTabState();
+  const unsavedTabs = workspace.tabs.filter((tab) => workspaceContextHasUnsavedChanges(tab.state?.context));
+  for (const tab of unsavedTabs) {
+    switchWorkspaceTab(tab.id);
+    const saved = await saveGraphJson(false);
+    if (!saved) {
+      return false;
+    }
+  }
+  return true;
+}
+
+window.__stgraphxGetClosePromptData = function __stgraphxGetClosePromptData() {
+  saveActiveWorkspaceTabState();
+  const unsavedCount = workspace.tabs.filter((tab) => workspaceContextHasUnsavedChanges(tab.state?.context)).length;
+  return {
+    hasUnsaved: unsavedCount > 0,
     message: t("confirm.closeApp.save"),
-    detail: t("confirm.closeApp.detail", { name: displayFileName() }),
+    detail: t("confirm.closeApp.detail", { name: unsavedCount > 1 ? `${displayFileName()} (+${unsavedCount - 1})` : displayFileName() }),
     buttons: [t("action.save"), t("action.discard"), t("action.cancel")],
   };
 };
 
 window.__stgraphxSaveBeforeClose = async function __stgraphxSaveBeforeClose() {
-  return saveGraphJson(false);
+  return saveAllWorkspaceTabsBeforeClose();
 };
 
 function updateFileStatusLabel(dirty = dirtySinceLastSave) {
@@ -5466,6 +6042,14 @@ function updateFileStatusLabel(dirty = dirtySinceLastSave) {
   if (saveJsonBtn) {
     saveJsonBtn.disabled = !dirty;
   }
+  const activeTab = currentWorkspaceTab();
+  if (activeTab?.state?.context) {
+    activeTab.state.context.currentFileName = currentFileName;
+    activeTab.state.context.lastSavedSnapshot = lastSavedSnapshot;
+    activeTab.state.context.dirtySinceLastSave = dirty;
+    activeTab.state.context.data = exportGraphData();
+  }
+  refreshWorkspaceTabBar();
 }
 
 function updateModelBreadcrumb() {
@@ -5972,7 +6556,7 @@ async function chooseSubmodelFileForNode(node) {
     throw new Error(t("error.submodelPathInvalid"));
   }
   node.modelPath = normalizedPath;
-  node.interfaceCache = { inputs: [], outputs: [] };
+  node.interfaceCache = emptySubmodelInterfaceCache();
   node.submodelError = "";
   node.__runtimeSubmodel = null;
   node.__runtimeSubmodelPath = "";
@@ -6029,11 +6613,53 @@ function sanitizeSubmodelBindings(node) {
 }
 
 function sanitizeAllEdgesForNode(nodeId) {
-  graph.edges.forEach((edge) => {
-    if (edge.from === nodeId || edge.to === nodeId) {
-      sanitizeEdgePorts(edge);
+  void nodeId;
+}
+
+function emptySubmodelInterfaceCache() {
+  return { inputs: [], outputs: [], inputDetails: {} };
+}
+
+function normalizeSubmodelInterfaceCache(cache) {
+  const source = cache && typeof cache === "object" ? cache : {};
+  const inputs = Array.isArray(source.inputs) ? source.inputs.map((value) => String(value)) : [];
+  const outputs = Array.isArray(source.outputs) ? source.outputs.map((value) => String(value)) : [];
+  const inputDetails = {};
+  if (source.inputDetails && typeof source.inputDetails === "object") {
+    Object.entries(source.inputDetails).forEach(([name, detail]) => {
+      const key = String(name ?? "").trim();
+      if (!key) {
+        return;
+      }
+      inputDetails[key] = {
+        description: String(detail?.description ?? "").trim(),
+      };
+    });
+  }
+  return { inputs, outputs, inputDetails };
+}
+
+function submodelInputHelpText(node, inputName) {
+  const key = String(inputName ?? "").trim();
+  if (!key) {
+    return "";
+  }
+  return String(node?.interfaceCache?.inputDetails?.[key]?.description ?? "").trim();
+}
+
+function getSubmodelBindingSourceChoices(node) {
+  if (!node || !isSubmodelNode(node)) {
+    return [];
+  }
+  const names = new Set();
+  incomingEdgesForNode(node.id).forEach((edge) => {
+    const fromNode = getNodeById(edge.from);
+    const name = String(fromNode?.name ?? "").trim();
+    if (name) {
+      names.add(name);
     }
   });
+  return [...names].sort((a, b) => a.localeCompare(b, undefined, { sensitivity: "base" }));
 }
 
 function renderSubmodelBindingsEditor(node) {
@@ -6064,6 +6690,7 @@ function renderSubmodelBindingsEditor(node) {
     return;
   }
 
+  const sourceChoices = getSubmodelBindingSourceChoices(node);
   inputs.forEach((inputName) => {
     const row = document.createElement("div");
     row.className = "submodel-binding-row";
@@ -6071,17 +6698,34 @@ function renderSubmodelBindingsEditor(node) {
     const inputId = `submodel-binding-${node.id}-${inputName.replace(/[^a-zA-Z0-9_-]+/g, "_")}`;
     label.htmlFor = inputId;
     label.textContent = inputName;
-    const input = document.createElement("input");
-    input.id = inputId;
-    input.type = "text";
-    input.value = String(node.inputBindings?.[inputName] ?? "");
-    input.placeholder = t("placeholder.submodelBinding");
-    input.setAttribute("data-title-i18n", "tooltip.node.submodelBinding");
-    input.addEventListener("focus", () => {
-      beginTransaction();
+    const helpText = submodelInputHelpText(node, inputName);
+    if (helpText) {
+      setTooltipText(label, helpText);
+    }
+    const select = document.createElement("select");
+    select.id = inputId;
+    select.setAttribute("data-title-i18n", "tooltip.node.submodelBinding");
+    const currentValue = String(node.inputBindings?.[inputName] ?? "").trim();
+    const emptyOption = document.createElement("option");
+    emptyOption.value = "";
+    emptyOption.textContent = t("widget.noneOption");
+    select.appendChild(emptyOption);
+    sourceChoices.forEach((sourceName) => {
+      const option = document.createElement("option");
+      option.value = sourceName;
+      option.textContent = sourceName;
+      select.appendChild(option);
     });
-    input.addEventListener("input", () => {
-      const expr = String(input.value ?? "").trim();
+    if (currentValue && !sourceChoices.includes(currentValue)) {
+      const missingOption = document.createElement("option");
+      missingOption.value = currentValue;
+      missingOption.textContent = currentValue;
+      select.appendChild(missingOption);
+    }
+    select.value = currentValue;
+    select.addEventListener("change", () => {
+      beginTransaction();
+      const expr = String(select.value ?? "").trim();
       if (!node.inputBindings || typeof node.inputBindings !== "object") {
         node.inputBindings = {};
       }
@@ -6093,41 +6737,10 @@ function renderSubmodelBindingsEditor(node) {
       dirtySinceLastSave = true;
       updateFileStatusLabel(true);
       scheduleFileStatusRefresh();
-    });
-    input.addEventListener("blur", () => {
       commitTransaction();
     });
-    const editBtn = document.createElement("button");
-    editBtn.type = "button";
-    editBtn.className = "small-btn expr-edit-btn";
-    editBtn.textContent = t("action.editExpression");
-    setTooltipText(editBtn, t("tooltip.node.editExpression"));
-    editBtn.addEventListener("click", () => {
-      openCustomExpressionEditor(
-        `${t("action.editExpression")} - ${inputName}`,
-        input.value,
-        (nextValue) => {
-          beginTransaction();
-          input.value = String(nextValue ?? "");
-          const expr = String(input.value ?? "").trim();
-          if (!node.inputBindings || typeof node.inputBindings !== "object") {
-            node.inputBindings = {};
-          }
-          if (expr) {
-            node.inputBindings[inputName] = expr;
-          } else {
-            delete node.inputBindings[inputName];
-          }
-          dirtySinceLastSave = true;
-          updateFileStatusLabel(true);
-          scheduleFileStatusRefresh();
-          commitTransaction();
-        },
-      );
-    });
     row.appendChild(label);
-    row.appendChild(input);
-    row.appendChild(editBtn);
+    row.appendChild(select);
     nodeSubmodelBindings.appendChild(row);
   });
 
@@ -6742,6 +7355,8 @@ function exportGraphData() {
       };
       if (type === "algebraic") {
         out.input = Boolean(n.input);
+      }
+      if (type === "algebraic") {
         out.valueExpression = String(n.valueExpression ?? "");
       } else if (type === "state") {
         out.stateTransition = String(n.valueExpression ?? "");
@@ -6755,12 +7370,7 @@ function exportGraphData() {
               .filter(([key]) => key.trim()),
           )
           : {};
-        out.interfaceCache = n.interfaceCache && typeof n.interfaceCache === "object"
-          ? {
-            inputs: Array.isArray(n.interfaceCache.inputs) ? n.interfaceCache.inputs.map((value) => String(value)) : [],
-            outputs: Array.isArray(n.interfaceCache.outputs) ? n.interfaceCache.outputs.map((value) => String(value)) : [],
-          }
-          : { inputs: [], outputs: [] };
+        out.interfaceCache = normalizeSubmodelInterfaceCache(n.interfaceCache);
       } else {
         out.valueExpression = String(n.valueExpression ?? "");
       }
@@ -6770,8 +7380,6 @@ function exportGraphData() {
       id: e.id,
       from: e.from,
       to: e.to,
-      sourcePort: String(e.sourcePort ?? ""),
-      targetPort: String(e.targetPort ?? ""),
       controlPoints: (e.controlPoints || []).map((cp) => ({ x: cp.x, y: cp.y })),
     })),
     textItems: graph.textItems.map((item) => ({
@@ -6864,6 +7472,7 @@ function captureCurrentModelContext(nodeName = "") {
     currentModelDirectoryHandle,
     lastSavedSnapshot,
     dirtySinceLastSave,
+    statusMessage: String(statusText?.textContent || ""),
     history: {
       undo: deepClone(history.undo),
       redo: deepClone(history.redo),
@@ -6899,6 +7508,7 @@ function restoreModelContext(context) {
   ui.showGrid = context.view?.showGrid !== false;
   ui.highlightNodeEdges = context.view?.highlightNodeEdges === true;
   ui.gridSize = clamp(Number(context.view?.gridSize) || ui.gridSize || 20, 5, 100);
+  setStatus(String(context.statusMessage || t("status.ready")));
   updateHistoryButtons();
   updateFileStatusLabel(dirtySinceLastSave);
   updateModelBreadcrumb();
@@ -6978,12 +7588,9 @@ function applyGraphData(data) {
             .filter(([key]) => key.trim()),
         )
         : {},
-      interfaceCache: shape === "submodel" && n.interfaceCache && typeof n.interfaceCache === "object"
-        ? {
-          inputs: Array.isArray(n.interfaceCache.inputs) ? n.interfaceCache.inputs.map((value) => String(value)) : [],
-          outputs: Array.isArray(n.interfaceCache.outputs) ? n.interfaceCache.outputs.map((value) => String(value)) : [],
-        }
-        : { inputs: [], outputs: [] },
+      interfaceCache: shape === "submodel"
+        ? normalizeSubmodelInterfaceCache(n.interfaceCache)
+        : emptySubmodelInterfaceCache(),
       submodelError: "",
       computedValue: null,
       computedError: "",
@@ -7000,11 +7607,8 @@ function applyGraphData(data) {
     id: e.id,
     from: e.from,
     to: e.to,
-    sourcePort: String(e.sourcePort ?? ""),
-    targetPort: String(e.targetPort ?? ""),
     controlPoints: (e.controlPoints || []).map((cp) => ({ x: cp.x, y: cp.y })),
   }));
-  graph.edges.forEach((edge) => sanitizeEdgePorts(edge));
   graph.textItems = Array.isArray(data.textItems)
     ? data.textItems.map((item) => {
       const out = {
@@ -7445,7 +8049,7 @@ function collectSelectedForClipboard() {
     .map((n) => ({
       id: n.id,
       name: n.name,
-      input: Boolean(n.input),
+      input: n.shape === "ellipse" ? Boolean(n.input) : false,
       output: Boolean(n.output),
       global: Boolean(n.global),
       shape: n.shape,
@@ -7459,7 +8063,7 @@ function collectSelectedForClipboard() {
       initialStateExpression: n.initialStateExpression,
       modelPath: n.modelPath,
       inputBindings: deepClone(n.inputBindings || {}),
-      interfaceCache: deepClone(n.interfaceCache || { inputs: [], outputs: [] }),
+      interfaceCache: deepClone(normalizeSubmodelInterfaceCache(n.interfaceCache)),
       computedValue: n.computedValue,
       computedError: n.computedError,
       pendingStateValue: n.pendingStateValue,
@@ -7471,8 +8075,6 @@ function collectSelectedForClipboard() {
     .map((e) => ({
       from: e.from,
       to: e.to,
-      sourcePort: String(e.sourcePort ?? ""),
-      targetPort: String(e.targetPort ?? ""),
       controlPoints: (e.controlPoints || []).map((cp) => ({ x: cp.x, y: cp.y })),
     }));
   return { nodes, edges };
@@ -7525,7 +8127,7 @@ function pasteFromClipboard() {
       const node = {
         id: newId,
         name: uniqueName,
-        input: Boolean(n.input),
+        input: n.shape === "ellipse" ? Boolean(n.input) : false,
         output: Boolean(n.output),
         global: Boolean(n.global),
         shape: n.shape,
@@ -7539,7 +8141,7 @@ function pasteFromClipboard() {
         initialStateExpression: String(n.initialStateExpression ?? ""),
         modelPath: String(n.modelPath ?? ""),
         inputBindings: deepClone(n.inputBindings || {}),
-        interfaceCache: deepClone(n.interfaceCache || { inputs: [], outputs: [] }),
+        interfaceCache: deepClone(normalizeSubmodelInterfaceCache(n.interfaceCache)),
         submodelError: "",
         computedValue: n.computedValue ?? null,
         computedError: String(n.computedError ?? ""),
@@ -7565,14 +8167,11 @@ function pasteFromClipboard() {
         id: edgeCounter++,
         from,
         to,
-        sourcePort: String(e.sourcePort ?? ""),
-        targetPort: String(e.targetPort ?? ""),
         controlPoints: (e.controlPoints || []).map((cp) => ({
           x: snap(cp.x + offset),
           y: snap(cp.y + offset),
         })),
       });
-      sanitizeEdgePorts(graph.edges[graph.edges.length - 1]);
     });
 
     normalizeInputNodeFlags();
@@ -7702,36 +8301,6 @@ function buildEdgeGeometry(edge) {
   return { path, points };
 }
 
-function getSubmodelEdgePortChoices(node, side) {
-  if (!node || !isSubmodelNode(node)) {
-    return [];
-  }
-  const values = side === "target" ? node.interfaceCache?.inputs : node.interfaceCache?.outputs;
-  return Array.isArray(values) ? values.map((value) => String(value).trim()).filter(Boolean) : [];
-}
-
-function sanitizeEdgePorts(edge) {
-  if (!edge) {
-    return;
-  }
-  const sourceChoices = getSubmodelEdgePortChoices(getNodeById(edge.from), "source");
-  const targetChoices = getSubmodelEdgePortChoices(getNodeById(edge.to), "target");
-
-  if (sourceChoices.length === 1 && !String(edge.sourcePort ?? "").trim()) {
-    edge.sourcePort = sourceChoices[0];
-  }
-  if (targetChoices.length === 1 && !String(edge.targetPort ?? "").trim()) {
-    edge.targetPort = targetChoices[0];
-  }
-
-  if (!sourceChoices.includes(String(edge.sourcePort ?? "").trim())) {
-    edge.sourcePort = "";
-  }
-  if (!targetChoices.includes(String(edge.targetPort ?? "").trim())) {
-    edge.targetPort = "";
-  }
-}
-
 function addNode(shape, atPoint = null) {
   const id = nodeCounter++;
   const px = snap(atPoint ? atPoint.x : 180 + (id % 5) * 120);
@@ -7754,7 +8323,7 @@ function addNode(shape, atPoint = null) {
     initialStateExpression: "",
     modelPath: "",
     inputBindings: {},
-    interfaceCache: { inputs: [], outputs: [] },
+    interfaceCache: emptySubmodelInterfaceCache(),
     submodelError: "",
     computedValue: null,
     computedError: "",
@@ -7791,12 +8360,9 @@ function addEdge(fromId, toId) {
     id: edgeCounter++,
     from: fromId,
     to: toId,
-    sourcePort: "",
-    targetPort: "",
     controlPoints: [],
   };
   graph.edges.push(edge);
-  sanitizeEdgePorts(edge);
   if (targetNode?.input) {
     removeNodeFromInputWidgetBindings(targetNode.name);
     targetNode.input = false;
@@ -7831,70 +8397,12 @@ function refreshSidebar() {
 
     const from = getNodeById(edge.from);
     const to = getNodeById(edge.to);
-    sanitizeEdgePorts(edge);
     edgeInfo.innerHTML = "";
 
     const summary = document.createElement("div");
     summary.textContent = `${from?.name || edge.from} -> ${to?.name || edge.to}`;
     edgeInfo.appendChild(summary);
 
-    const sourceChoices = getSubmodelEdgePortChoices(from, "source");
-    if (sourceChoices.length > 0) {
-      const sourceWrap = document.createElement("div");
-      sourceWrap.className = "widget-config-grid";
-      const sourceLabel = document.createElement("label");
-      sourceLabel.textContent = t("label.edgeSourcePort");
-      const sourceSelect = document.createElement("select");
-      const emptyOpt = document.createElement("option");
-      emptyOpt.value = "";
-      emptyOpt.textContent = t("text.edgePortAuto");
-      sourceSelect.appendChild(emptyOpt);
-      sourceChoices.forEach((name) => {
-        const opt = document.createElement("option");
-        opt.value = name;
-        opt.textContent = name;
-        sourceSelect.appendChild(opt);
-      });
-      sourceSelect.value = String(edge.sourcePort ?? "");
-      sourceSelect.addEventListener("change", () => {
-        runAction(() => {
-          edge.sourcePort = String(sourceSelect.value || "");
-          sanitizeEdgePorts(edge);
-        });
-      });
-      sourceWrap.appendChild(sourceLabel);
-      sourceWrap.appendChild(sourceSelect);
-      edgeInfo.appendChild(sourceWrap);
-    }
-
-    const targetChoices = getSubmodelEdgePortChoices(to, "target");
-    if (targetChoices.length > 0) {
-      const targetWrap = document.createElement("div");
-      targetWrap.className = "widget-config-grid";
-      const targetLabel = document.createElement("label");
-      targetLabel.textContent = t("label.edgeTargetPort");
-      const targetSelect = document.createElement("select");
-      const emptyOpt = document.createElement("option");
-      emptyOpt.value = "";
-      emptyOpt.textContent = t("text.edgePortAuto");
-      targetSelect.appendChild(emptyOpt);
-      targetChoices.forEach((name) => {
-        const opt = document.createElement("option");
-        opt.value = name;
-        opt.textContent = name;
-        targetSelect.appendChild(opt);
-      });
-      targetSelect.value = String(edge.targetPort ?? "");
-      targetSelect.addEventListener("change", () => {
-        runAction(() => {
-          edge.targetPort = String(targetSelect.value || "");
-          sanitizeEdgePorts(edge);
-        });
-      });
-      targetWrap.appendChild(targetLabel);
-      targetWrap.appendChild(targetSelect);
-      edgeInfo.appendChild(targetWrap);
-    }
     return;
   }
 
@@ -9076,12 +9584,9 @@ function importGraphData(data) {
               .filter(([key]) => key.trim()),
           )
           : {},
-        interfaceCache: shape === "submodel" && n.interfaceCache && typeof n.interfaceCache === "object"
-          ? {
-            inputs: Array.isArray(n.interfaceCache.inputs) ? n.interfaceCache.inputs.map((value) => String(value)) : [],
-            outputs: Array.isArray(n.interfaceCache.outputs) ? n.interfaceCache.outputs.map((value) => String(value)) : [],
-          }
-          : { inputs: [], outputs: [] },
+        interfaceCache: shape === "submodel"
+          ? normalizeSubmodelInterfaceCache(n.interfaceCache)
+          : emptySubmodelInterfaceCache(),
         submodelError: "",
         computedValue: null,
         computedError: "",
@@ -9112,8 +9617,6 @@ function importGraphData(data) {
       id: e.id,
       from: e.from,
       to: e.to,
-      sourcePort: String(e.sourcePort ?? ""),
-      targetPort: String(e.targetPort ?? ""),
       controlPoints: Array.isArray(e.controlPoints)
         ? e.controlPoints.filter(isValidPoint).map((cp) => ({ x: cp.x, y: cp.y }))
         : [],
@@ -9473,6 +9976,26 @@ async function openPreparedJsonEntry(rootEntry) {
   return true;
 }
 
+async function openPreparedJsonEntryInNewTab(rootEntry) {
+  if (!rootEntry) {
+    return false;
+  }
+  saveActiveWorkspaceTabState();
+  closeDocumentTransientUi();
+  const previousActiveTabId = workspace.activeTabId;
+  workspace.activeTabId = null;
+  modelContextStack.length = 0;
+  const opened = await openPreparedJsonEntry(rootEntry);
+  if (!opened) {
+    workspace.activeTabId = previousActiveTabId;
+    refreshWorkspaceTabBar();
+    return false;
+  }
+  createWorkspaceTabFromCurrentState({ activate: true });
+  refreshWorkspaceTabBar();
+  return true;
+}
+
 async function openRecentModelEntry(entry) {
   try {
     const handle = await resolveRecentModelHandle(entry);
@@ -9480,15 +10003,11 @@ async function openRecentModelEntry(entry) {
       notifyMissingRecentModelEntry(entry);
       return false;
     }
-    const proceed = await maybeSaveUnsavedChangesBeforeModelReplace("confirm.openGraph.save");
-    if (!proceed) {
-      return false;
-    }
     const rootEntry = await prepareSelectedJsonEntries([handle]);
     if (!rootEntry) {
       return false;
     }
-    return openPreparedJsonEntry(rootEntry);
+    return openPreparedJsonEntryInNewTab(rootEntry);
   } catch (_err) {
     notifyMissingRecentModelEntry(entry);
     return false;
@@ -10059,14 +10578,21 @@ function extractSubmodelInterfaceFromData(data) {
   }
   const inputs = [];
   const outputs = [];
+  const inputDetails = {};
   data.nodes.forEach((node) => {
     const nodeType = String(node?.type ?? "");
     const name = String(node?.name ?? "").trim();
     if (!name) {
       return;
     }
-    if (nodeType === "algebraic" && node.input === true) {
+    if (nodeType === "parameter" || (nodeType === "algebraic" && node.input === true)) {
       inputs.push(name);
+      const description = Array.isArray(node?.properties)
+        ? String(
+          (node.properties.find((prop) => descriptionPropertyKeys().has(String(prop?.key ?? "").trim().toLowerCase()))?.value) ?? "",
+        ).trim()
+        : "";
+      inputDetails[name] = { description };
     }
     if (node.output === true) {
       outputs.push(name);
@@ -10075,6 +10601,7 @@ function extractSubmodelInterfaceFromData(data) {
   return {
     inputs: [...new Set(inputs)],
     outputs: [...new Set(outputs)],
+    inputDetails,
   };
 }
 
@@ -10142,8 +10669,15 @@ async function ensureSubmodelTemplatesReady(options = {}) {
       }
       const template = await loadSubmodelTemplateByPath(normalizedPath, new Set(), options);
       node.interfaceCache = {
-        inputs: template.nodes.filter((child) => child.input).map((child) => child.name),
+        inputs: template.nodes
+          .filter((child) => child.shape === "diamond" || child.input)
+          .map((child) => child.name),
         outputs: template.nodes.filter((child) => child.output).map((child) => child.name),
+        inputDetails: Object.fromEntries(
+          template.nodes
+            .filter((child) => child.shape === "diamond" || child.input)
+            .map((child) => [child.name, { description: getNodeDescription(child) }]),
+        ),
       };
       node.submodelError = "";
       sanitizeSubmodelBindings(node);
@@ -10169,7 +10703,7 @@ async function refreshSubmodelInterface(node, updateStatus = true, options = {})
   }
   const modelPath = String(node.modelPath ?? "").trim();
   if (!modelPath) {
-    node.interfaceCache = { inputs: [], outputs: [] };
+    node.interfaceCache = emptySubmodelInterfaceCache();
     node.submodelError = t("error.nodeDefinition.missingSubmodelPath");
     ui.submodelsPrepared = false;
     if (updateStatus) {
@@ -10188,10 +10722,7 @@ async function refreshSubmodelInterface(node, updateStatus = true, options = {})
       directoryPath: String(directoryHandle?.path ?? ""),
     }));
     const iface = extractSubmodelInterfaceFromData(data);
-    node.interfaceCache = {
-      inputs: Array.isArray(iface.inputs) ? iface.inputs.map((value) => String(value)) : [],
-      outputs: Array.isArray(iface.outputs) ? iface.outputs.map((value) => String(value)) : [],
-    };
+    node.interfaceCache = normalizeSubmodelInterfaceCache(iface);
     sanitizeSubmodelBindings(node);
     sanitizeAllEdgesForNode(node.id);
     node.submodelError = "";
@@ -10207,7 +10738,7 @@ async function refreshSubmodelInterface(node, updateStatus = true, options = {})
     if (options.allowPrompt === false && isDeferredSubmodelResolutionError(err)) {
       return false;
     }
-    node.interfaceCache = { inputs: [], outputs: [] };
+    node.interfaceCache = emptySubmodelInterfaceCache();
     node.submodelError = String(err?.message || t("error.load"));
     ui.submodelsPrepared = false;
     sanitizeAllEdgesForNode(node.id);
@@ -10272,6 +10803,56 @@ async function openSubmodelNode(node) {
     setStatusKey("status.submodelOpened", { name: node.name });
     return true;
   } catch (err) {
+    setStatusKey("error.submodelOpenFailed", { message: String(err?.message || t("error.load")) });
+    return false;
+  }
+}
+
+async function openSubmodelNodeInNewTab(node) {
+  if (!node || !isSubmodelNode(node)) {
+    return false;
+  }
+  const modelPath = normalizeSubmodelPath(node.modelPath);
+  if (!modelPath) {
+    setStatusKey("error.submodelMissingPath");
+    return false;
+  }
+  const previousActiveTabId = workspace.activeTabId;
+  try {
+    const { text, fileHandle, file, directoryHandle } = await resolveSubmodelFileByPath(modelPath);
+    submodelTemplateCache.set(modelPath, buildRuntimeModelFromData(JSON.parse(text), {
+      directoryPath: String(directoryHandle?.path ?? ""),
+    }));
+    saveActiveWorkspaceTabState();
+    closeDocumentTransientUi();
+    workspace.activeTabId = null;
+    modelContextStack.length = 0;
+    const effectiveDirectoryHandle = directoryHandle || await deriveDirectoryHandleFromFileHandle(fileHandle) || null;
+    loadGraphFromJsonText(
+      text,
+      (fileHandle && fileHandle.name) || (file && file.name) || modelPath,
+      fileHandle,
+      effectiveDirectoryHandle,
+      true,
+    );
+    await preloadSubmodelsAfterLoad();
+    createWorkspaceTabFromCurrentState({
+      activate: true,
+      meta: {
+        kind: "submodel",
+        parentTabId: previousActiveTabId,
+        parentNodeName: String(node.name || ""),
+        parentTitle: previousActiveTabId != null
+          ? displayFileNameFromContext(getWorkspaceTabById(previousActiveTabId)?.state?.context)
+          : "",
+      },
+    });
+    refreshWorkspaceTabBar();
+    setStatusKey("status.submodelOpened", { name: node.name });
+    return true;
+  } catch (err) {
+    workspace.activeTabId = workspace.activeTabId || previousActiveTabId || null;
+    refreshWorkspaceTabBar();
     setStatusKey("error.submodelOpenFailed", { message: String(err?.message || t("error.load")) });
     return false;
   }
@@ -10557,7 +11138,7 @@ async function loadGraphJsonFile(file) {
     if (!rootEntry) {
       return;
     }
-    await openPreparedJsonEntry(rootEntry);
+    await openPreparedJsonEntryInNewTab(rootEntry);
   } catch (_err) {
     cancelTransaction();
     setStatusKey("status.readError");
@@ -10565,11 +11146,6 @@ async function loadGraphJsonFile(file) {
 }
 
 async function openGraphJson() {
-  const proceed = await maybeSaveUnsavedChangesBeforeModelReplace("confirm.openGraph.save");
-  if (!proceed) {
-    return;
-  }
-  modelContextStack.length = 0;
   if (supportsOpenFilePicker()) {
     try {
       const handles = await showOpenFilePickerCompat({
@@ -10591,7 +11167,7 @@ async function openGraphJson() {
       if (!rootEntry) {
         return;
       }
-      await openPreparedJsonEntry(rootEntry);
+      await openPreparedJsonEntryInNewTab(rootEntry);
       return;
     } catch (err) {
       if (err && err.name === "AbortError") {
@@ -10603,11 +11179,7 @@ async function openGraphJson() {
   loadJsonInput.click();
 }
 
-async function createNewGraph() {
-  const proceed = await maybeSaveUnsavedChangesBeforeModelReplace("confirm.newGraph.save");
-  if (!proceed) {
-    return;
-  }
+function resetGraphToEmptyModel() {
   modelContextStack.length = 0;
 
   graph.modelTitle = "";
@@ -10646,7 +11218,7 @@ async function createNewGraph() {
   history.redo = [];
   updateHistoryButtons();
   currentFileHandle = null;
-  currentFileName = defaultGraphFilename();
+  currentFileName = "";
   currentModelDirectoryHandle = null;
   submodelTemplateCache.clear();
   submodelFileHandleCache.clear();
@@ -10655,6 +11227,13 @@ async function createNewGraph() {
   ui.watchPreviousSnapshot = new Map();
   ui.breakpointLastResult = null;
   ui.localFunctionsEditor = null;
+}
+
+async function createNewGraph() {
+  saveActiveWorkspaceTabState();
+  closeDocumentTransientUi();
+  resetGraphToEmptyModel();
+  createWorkspaceTabFromCurrentState({ activate: true });
   setStatusKey("status.newGraph");
   render();
   window.requestAnimationFrame(() => {
@@ -10768,6 +11347,7 @@ const runtimeSession = globalThis.STGraphXRuntimeSession?.createRuntimeSession({
     updateTableWidgetsFromComputedValues(timeValue, nodeMap);
     updateXYWidgetsFromComputedValues(timeValue, nodeMap);
     recordSimulationOutputSnapshot(timeValue);
+    syncSubmodelWorkspaceTabsFromActiveParent();
   },
 });
 
@@ -11967,10 +12547,16 @@ cutBtn.addEventListener("click", cutSelectionToClipboard);
 copyBtn.addEventListener("click", copySelectionToClipboard);
 pasteBtn.addEventListener("click", pasteFromClipboard);
 newGraphBtn.addEventListener("click", () => {
-  createNewGraph();
+  void createNewGraph();
 });
 saveJsonBtn.addEventListener("click", () => saveGraphJson(false));
 saveAsJsonBtn.addEventListener("click", () => saveGraphJson(true));
+if (closeModelBtn) {
+  closeModelBtn.addEventListener("click", () => {
+    closeTopMenus();
+    void closeActiveWorkspaceTab();
+  });
+}
 if (exportCsvBtn) {
   exportCsvBtn.addEventListener("click", () => {
     closeTopMenus();
@@ -11978,6 +12564,27 @@ if (exportCsvBtn) {
   });
 }
 loadJsonBtn.addEventListener("click", openGraphJson);
+if (newTabBtn) {
+  newTabBtn.addEventListener("click", () => {
+    void createNewGraph();
+  });
+}
+if (workspaceTabBar) {
+  workspaceTabBar.addEventListener("click", (evt) => {
+    const closeBtn = evt.target.closest("[data-tab-close-id]");
+    if (closeBtn) {
+      evt.preventDefault();
+      evt.stopPropagation();
+      void closeWorkspaceTab(Number(closeBtn.dataset.tabCloseId));
+      return;
+    }
+    const tabBtn = evt.target.closest("[data-tab-id]");
+    if (tabBtn) {
+      evt.preventDefault();
+      switchWorkspaceTab(Number(tabBtn.dataset.tabId));
+    }
+  });
+}
 
 if (exitSubmodelBtn) {
   exitSubmodelBtn.addEventListener("click", () => {
@@ -12226,7 +12833,7 @@ nodeShapeInput.addEventListener("change", () => {
     if (!isSubmodelNode(node)) {
       node.modelPath = "";
       node.inputBindings = {};
-      node.interfaceCache = { inputs: [], outputs: [] };
+      node.interfaceCache = emptySubmodelInterfaceCache();
       node.submodelError = "";
     }
     node.__runtimeSubmodel = null;
@@ -12239,11 +12846,43 @@ nodeShapeInput.addEventListener("change", () => {
 });
 
 if (nodeModelPathInput) {
-  ["focus", "mousedown", "mouseup", "click", "select"].forEach((eventName) => {
-    nodeModelPathInput.addEventListener(eventName, (evt) => {
+  nodeModelPathInput.addEventListener("input", () => {
+    if (ui.selectedNodes.size !== 1) {
+      return;
+    }
+    const nodeId = [...ui.selectedNodes][0];
+    const node = getNodeById(nodeId);
+    if (!node || !isSubmodelNode(node)) {
+      return;
+    }
+    node.modelPath = String(nodeModelPathInput.value ?? "");
+    node.submodelError = "";
+    node.interfaceCache = emptySubmodelInterfaceCache();
+    node.inputBindings = {};
+    node.__runtimeSubmodel = null;
+    node.__runtimeSubmodelPath = "";
+    ui.submodelsPrepared = false;
+    render();
+  });
+  nodeModelPathInput.addEventListener("blur", () => {
+    if (ui.selectedNodes.size !== 1) {
+      return;
+    }
+    const nodeId = [...ui.selectedNodes][0];
+    const node = getNodeById(nodeId);
+    if (!node || !isSubmodelNode(node)) {
+      return;
+    }
+    node.modelPath = String(nodeModelPathInput.value ?? "").trim();
+    nodeModelPathInput.value = node.modelPath;
+    scheduleFileStatusRefresh();
+    render();
+  });
+  nodeModelPathInput.addEventListener("keydown", (evt) => {
+    if (evt.key === "Enter") {
       evt.preventDefault();
       nodeModelPathInput.blur();
-    });
+    }
   });
 }
 
@@ -12257,21 +12896,19 @@ if (loadSubmodelBtn) {
     if (!node || !isSubmodelNode(node)) {
       return;
     }
-    if (!String(node.modelPath ?? "").trim()) {
-      try {
-        const chosen = await chooseSubmodelFileForNode(node);
-        if (!chosen) {
-          return;
-        }
-      } catch (err) {
-        if (err && err.name === "AbortError") {
-          return;
-        }
-        setStatus(String(err?.message || t("error.submodelLoadFailed", { message: t("error.load") })));
-        refreshSidebar();
-        render();
+    try {
+      const chosen = await chooseSubmodelFileForNode(node);
+      if (!chosen) {
         return;
       }
+    } catch (err) {
+      if (err && err.name === "AbortError") {
+        return;
+      }
+      setStatus(String(err?.message || t("error.submodelLoadFailed", { message: t("error.load") })));
+      refreshSidebar();
+      render();
+      return;
     }
     await refreshSubmodelInterface(node, true, { allowPrompt: true });
     await preloadSubmodelsAfterLoad();
@@ -12290,7 +12927,7 @@ if (showSubmodelBtn) {
     if (!canShowSubmodelNode(node)) {
       return;
     }
-    await openSubmodelNode(node);
+    await openSubmodelNodeInNewTab(node);
   });
 }
 
@@ -13399,6 +14036,11 @@ document.addEventListener("keydown", (evt) => {
       createNewGraph();
       return;
     }
+    if (key === "w") {
+      evt.preventDefault();
+      void closeActiveWorkspaceTab();
+      return;
+    }
     if (key === "f" && evt.shiftKey) {
       evt.preventDefault();
       fitToContent();
@@ -13499,6 +14141,10 @@ async function boot() {
   updateZoomButtons();
   applyCanvasVisibility();
   markSavedSnapshot();
+  workspace.tabs = [];
+  workspace.activeTabId = null;
+  workspace.nextTabId = 1;
+  createWorkspaceTabFromCurrentState({ activate: true });
   updateModelRunButtons();
   setStatusKey("status.ready");
   render();

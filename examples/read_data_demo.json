@@ -76,8 +76,6 @@
       "id": 6,
       "from": 1,
       "to": 8,
-      "sourcePort": "",
-      "targetPort": "",
       "controlPoints": []
     }
   ],

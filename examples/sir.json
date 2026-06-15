@@ -211,56 +211,42 @@
       "id": 1,
       "from": 1,
       "to": 7,
-      "sourcePort": "",
-      "targetPort": "",
       "controlPoints": []
     },
     {
       "id": 2,
       "from": 3,
       "to": 7,
-      "sourcePort": "",
-      "targetPort": "",
       "controlPoints": []
     },
     {
       "id": 3,
       "from": 4,
       "to": 7,
-      "sourcePort": "",
-      "targetPort": "",
       "controlPoints": []
     },
     {
       "id": 4,
       "from": 5,
       "to": 7,
-      "sourcePort": "",
-      "targetPort": "",
       "controlPoints": []
     },
     {
       "id": 5,
       "from": 2,
       "to": 8,
-      "sourcePort": "",
-      "targetPort": "",
       "controlPoints": []
     },
     {
       "id": 6,
       "from": 5,
       "to": 8,
-      "sourcePort": "",
-      "targetPort": "",
       "controlPoints": []
     },
     {
       "id": 7,
       "from": 7,
       "to": 4,
-      "sourcePort": "",
-      "targetPort": "",
       "controlPoints": [
         {
           "x": 500,
@@ -272,24 +258,18 @@
       "id": 8,
       "from": 7,
       "to": 5,
-      "sourcePort": "",
-      "targetPort": "",
       "controlPoints": []
     },
     {
       "id": 9,
       "from": 8,
       "to": 5,
-      "sourcePort": "",
-      "targetPort": "",
       "controlPoints": []
     },
     {
       "id": 10,
       "from": 8,
       "to": 6,
-      "sourcePort": "",
-      "targetPort": "",
       "controlPoints": []
     }
   ],

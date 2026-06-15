@@ -1,6 +1,6 @@
 /*!
  * STGraphX Embedded Player Bundle
- * Generated: 2026-05-28T13:40:54.118Z
+ * Generated: 2026-06-15T21:17:31.259Z
  */
 
 /* --- i18n-inline.js --- */
@@ -20,6 +20,8 @@ window.STGraphXI18nBundles = {
     "action.discard": "Scarta",
     "action.editExpression": "Modifica...",
     "action.editLocalFunctions": "Funzioni locali...",
+    "action.newTab": "+",
+    "action.closeTab": "Chiudi scheda",
     "action.exitSubmodel": "Torna su",
     "action.loadSubmodel": "Apri",
     "action.resetNodeColors": "Colori automatici",
@@ -50,9 +52,11 @@ window.STGraphXI18nBundles = {
     "confirm.exitSubmodel.save": "Ci sono modifiche non salvate nel sottomodello corrente. Vuoi salvarle prima di tornare al livello superiore?",
     "confirm.closeApp.save": "Ci sono modifiche non salvate. Vuoi salvarle prima di chiudere l'app?",
     "confirm.closeApp.detail": "Modello corrente: {name}",
+    "confirm.closeTab.save": "Ci sono modifiche non salvate in questa scheda. Vuoi salvarle prima di chiuderla?",
     "confirm.newGraph.save": "Ci sono modifiche non salvate. Vuoi salvare prima di creare un nuovo modello?",
     "confirm.openGraph.save": "Ci sono modifiche non salvate. Vuoi salvarle prima di aprire un altro modello?",
     "confirm.selectModelFolder": "Il modello usa sottomodelli. Vuoi selezionare la cartella del modello per consentirne il caricamento automatico?",
+    "menu.file.close": "Chiudi il modello",
     "context.bg.insertTitle": "Inserisci",
     "context.bg.newDiamond": "Parametro",
     "context.bg.newEllipse": "Variabile algebrica",
@@ -391,7 +395,6 @@ window.STGraphXI18nBundles = {
     "expr.error.openPickerUnsupported": "Il selettore file di apertura non è supportato",
     "expr.error.savePickerUnsupported": "Il selettore file di salvataggio non è supportato",
     "expr.error.duplicateInputBinding": "Binding di input duplicato per {name}",
-    "expr.error.missingSubmodelOutput": "Output del sottomodello mancante: {name}",
     "expr.error.submodelNotLoaded": "Il sottomodello non è caricato",
     "expr.switch.title": "Modifiche non applicate",
     "expr.switch.body": "L'espressione corrente ha modifiche non applicate. Vuoi applicarle prima di cambiare selezione?",
@@ -416,7 +419,7 @@ window.STGraphXI18nBundles = {
     "expr.syntaxOk": "Sintassi valida.",
     "file.status.clean": "File: {name}",
     "file.status.dirty": "File: {name} *",
-    "file.unnamed": "(non salvato)",
+    "file.unnamed": "Nuovo modello",
     "help.group.array": "Funzioni per array",
     "help.group.agent": "Funzioni e variabili per agenti",
     "help.group.functions": "Funzioni generali",
@@ -436,8 +439,6 @@ window.STGraphXI18nBundles = {
     "label.decimals": "Cifre decimali max",
     "label.description": "Descrizione",
     "label.formulaNotes": "Note formula",
-    "label.edgeSourcePort": "Porta sorgente",
-    "label.edgeTargetPort": "Porta destinazione",
     "label.height": "Altezza",
     "label.initialState": "Stato iniziale",
     "label.input": "input",
@@ -612,6 +613,7 @@ window.STGraphXI18nBundles = {
     "status.textResized": "Dimensioni del testo nel canvas aggiornate.",
     "status.timedStarted": "Esecuzione temporizzata avviata ({delay} ms).",
     "status.timedStopped": "Esecuzione temporizzata fermata.",
+    "status.tabClosed": "Scheda chiusa.",
     "status.undo": "Undo eseguito.",
     "status.widgetChartCreated": "Widget grafico x-y creato.",
     "status.widgetButtonCreated": "Widget pulsante creato.",
@@ -628,13 +630,12 @@ window.STGraphXI18nBundles = {
     "status.widgetSliderCreated": "Widget slider creato.",
     "status.widgetTextCreated": "Widget testo creato.",
     "status.zoom": "Zoom {value}%.",
-    "text.edgePortAuto": "(automatica)",
     "text.mainModel": "Modello principale",
     "text.noMatches": "Nessun simbolo corrispondente.",
     "text.nodesSelected": "{count} nodi selezionati.",
     "text.noneProps": "Nessuna proprieta",
     "text.defaultCanvasText": "Testo formattato",
-    "text.submodelBindingDefault": "Lascia vuoto per usare il valore o l'espressione definiti nel sottomodello.",
+    "text.submodelBindingDefault": "Seleziona una variabile connessa oppure lascia vuoto per usare il valore definito nel sottomodello.",
     "text.toolbarHeading1": "Titolo 1",
     "text.toolbarHeading2": "Titolo 2",
     "text.toolbarHeading3": "Titolo 3",
@@ -644,6 +645,7 @@ window.STGraphXI18nBundles = {
     "text.submodelInterfaceSummary": "Ingressi: {inputs} | Uscite: {outputs}",
     "text.submodelNoInputs": "Nessun input esposto dal sottomodello.",
     "text.submodelOutputEntry": "Uscita del sottomodello {node}: {output}",
+    "tab.meta.submodel": "da {node} in {parent}",
     "text.vectorSummary": "vettore di dimensione {size}",
     "text.matrixSummary": "matrice {rows} x {cols}",
     "text.unnamed": "(senza nome)",
@@ -657,8 +659,9 @@ window.STGraphXI18nBundles = {
     "tooltip.menu.edit.selectAll": "Seleziona tutti i nodi del modello.",
     "tooltip.menu.edit.undo": "Annulla l'ultima modifica registrata.",
     "tooltip.menu.file": "Operazioni sul file del modello: nuovo, carica e salva.",
-    "tooltip.menu.file.load": "Carica un modello da un file JSON.",
-    "tooltip.menu.file.new": "Crea un nuovo modello vuoto. Se ci sono modifiche non salvate, viene chiesta conferma.",
+    "tooltip.menu.file.load": "Carica un modello da un file JSON in una nuova scheda.",
+    "tooltip.menu.file.new": "Crea un nuovo modello vuoto in una nuova scheda.",
+    "tooltip.menu.file.close": "Chiude il modello nella scheda attiva.",
     "tooltip.menu.file.save": "Salva il modello corrente nel file associato o apre il salvataggio se necessario.",
     "tooltip.menu.file.saveAs": "Sceglie nome e destinazione del file JSON da salvare.",
     "tooltip.menu.file.exportCsv": "Esporta in CSV la storia di simulazione dei nodi marcati come output.",
@@ -684,6 +687,7 @@ window.STGraphXI18nBundles = {
     "tooltip.menu.run.step": "Esegue un solo passo temporale.",
     "tooltip.menu.run.timed": "Avvia o ferma l'esecuzione temporizzata.",
     "tooltip.menu.run.watch": "Apre lo strumento di watch e breakpoint per il debugging del modello.",
+    "tooltip.tab.new": "Apre una nuova scheda modello.",
     "tooltip.menu.view": "Controlli di visualizzazione, zoom e griglia.",
     "tooltip.menu.view.fit": "Adatta zoom e vista al contenuto attuale di grafo e widget.",
     "tooltip.menu.view.gridStep": "Imposta la distanza tra le linee della griglia.",
@@ -720,7 +724,7 @@ window.STGraphXI18nBundles = {
     "tooltip.node.output": "Marca il nodo come uscita da mostrare nei widget di visualizzazione.",
     "tooltip.node.refreshSubmodel": "Legge il file del sottomodello e aggiorna l'interfaccia di input/output.",
     "tooltip.node.showSubmodel": "Mostra il sottomodello gia disponibile.",
-    "tooltip.node.submodelBinding": "Espressione opzionale per alimentare l'input del sottomodello. Se vuota, il sottomodello usa il proprio valore o la propria espressione di default.",
+    "tooltip.node.submodelBinding": "Seleziona quale variabile connessa alimenta questo input del sottomodello. Se vuoto, il sottomodello usa il proprio valore di default.",
     "tooltip.node.submodelPath": "Nome del file JSON del sottomodello, relativo alla cartella del modello corrente.",
     "tooltip.node.type": "Tipo semantico del nodo: stato, algebrico o parametro.",
     "view.btn.hideGraph": "Nascondi grafo",
@@ -866,9 +870,6 @@ window.STGraphXI18nBundles = {
     "analysis.issue.unusedNode": "Il nodo {name} non risulta usato da altri nodi, output o widget.",
     "analysis.issue.invalidSubmodelBinding": "Nel sottomodello {name}, il binding di ingresso {input} non è valido: {reason}",
     "analysis.issue.unknownSubmodelBinding": "Nel sottomodello {name}, il binding per l'ingresso {input} non corrisponde a nessun input esposto.",
-    "analysis.issue.duplicateSubmodelInputPort": "Nel sottomodello {name}, l'ingresso {input} riceve più di una freccia.",
-    "analysis.issue.ambiguousSubmodelTargetPort": "La freccia {name} verso il sottomodello non specifica quale ingresso usare.",
-    "analysis.issue.ambiguousSubmodelSourcePort": "La freccia {name} in uscita dal sottomodello non specifica quale uscita usare.",
     "analysis.issue.widgetNoSource": "Il widget {name} non ha ancora una sorgente assegnata.",
     "analysis.issue.widgetMissingSource": "Il widget {name} punta al nodo {source}, che non esiste più.",
     "analysis.issue.widgetSourceNotOutput": "Il widget {name} usa {source}, ma il nodo non è marcato come output.",
@@ -891,9 +892,6 @@ window.STGraphXI18nBundles = {
     "analysis.checks.unusedNode": "Segnala nodi che non risultano usati da altri nodi, output o widget.",
     "analysis.checks.invalidSubmodelBinding": "Segnala binding di ingresso dei sottomodelli che non sono semanticamente validi.",
     "analysis.checks.unknownSubmodelBinding": "Segnala binding riferiti a ingressi che il sottomodello non espone.",
-    "analysis.checks.duplicateSubmodelInputPort": "Segnala ingressi di sottomodello alimentati da più di una freccia.",
-    "analysis.checks.ambiguousSubmodelTargetPort": "Segnala frecce verso sottomodelli con più ingressi quando la porta target non è specificata.",
-    "analysis.checks.ambiguousSubmodelSourcePort": "Segnala frecce in uscita da sottomodelli con più uscite quando la porta sorgente non è specificata.",
     "analysis.checks.widgetNoSource": "Segnala widget ancora privi di sorgente configurata.",
     "analysis.checks.widgetMissingSource": "Segnala widget che puntano a nodi non più presenti nel modello.",
     "analysis.checks.widgetSourceNotOutput": "Segnala widget di output collegati a nodi non marcati come output.",
@@ -916,6 +914,8 @@ window.STGraphXI18nBundles = {
     "action.discard": "Discard",
     "action.editExpression": "Edit...",
     "action.editLocalFunctions": "Local functions...",
+    "action.newTab": "+",
+    "action.closeTab": "Close tab",
     "action.exitSubmodel": "Up",
     "action.loadSubmodel": "Open",
     "action.resetNodeColors": "Automatic colors",
@@ -946,9 +946,11 @@ window.STGraphXI18nBundles = {
     "confirm.exitSubmodel.save": "There are unsaved changes in the current submodel. Save them before returning to the upper level?",
     "confirm.closeApp.save": "There are unsaved changes. Save them before closing the app?",
     "confirm.closeApp.detail": "Current model: {name}",
+    "confirm.closeTab.save": "There are unsaved changes in this tab. Save them before closing it?",
     "confirm.newGraph.save": "There are unsaved changes. Save before creating a new model?",
     "confirm.openGraph.save": "There are unsaved changes. Save them before opening another model?",
     "confirm.selectModelFolder": "This model uses submodels. Do you want to select the model folder so they can be loaded automatically?",
+    "menu.file.close": "Close model",
     "context.bg.insertTitle": "Insert",
     "context.bg.newDiamond": "Parameter",
     "context.bg.newEllipse": "Algebraic variable",
@@ -1287,7 +1289,6 @@ window.STGraphXI18nBundles = {
     "expr.error.openPickerUnsupported": "Open file picker not supported",
     "expr.error.savePickerUnsupported": "Save file picker not supported",
     "expr.error.duplicateInputBinding": "Duplicate input binding for {name}",
-    "expr.error.missingSubmodelOutput": "Missing submodel output: {name}",
     "expr.error.submodelNotLoaded": "Submodel is not loaded",
     "expr.switch.title": "Unapplied changes",
     "expr.switch.body": "The current expression has unapplied changes. Do you want to apply them before changing selection?",
@@ -1312,7 +1313,7 @@ window.STGraphXI18nBundles = {
     "expr.syntaxOk": "Syntax is valid.",
     "file.status.clean": "File: {name}",
     "file.status.dirty": "File: {name} *",
-    "file.unnamed": "(unsaved)",
+    "file.unnamed": "New model",
     "help.group.array": "Array functions",
     "help.group.agent": "Agent functions and variables",
     "help.group.functions": "General functions",
@@ -1332,8 +1333,6 @@ window.STGraphXI18nBundles = {
     "label.decimals": "Max decimal digits",
     "label.description": "Description",
     "label.formulaNotes": "Formula notes",
-    "label.edgeSourcePort": "Source port",
-    "label.edgeTargetPort": "Target port",
     "label.height": "Height",
     "label.initialState": "Initial state",
     "label.input": "input",
@@ -1508,6 +1507,7 @@ window.STGraphXI18nBundles = {
     "error.recentMissing": "The selected recent file is no longer available.",
     "status.timedStarted": "Timed execution started ({delay} ms).",
     "status.timedStopped": "Timed execution stopped.",
+    "status.tabClosed": "Tab closed.",
     "status.undo": "Undo executed.",
     "status.widgetChartCreated": "x-y chart widget created.",
     "status.widgetButtonCreated": "Button widget created.",
@@ -1524,13 +1524,12 @@ window.STGraphXI18nBundles = {
     "status.widgetSliderCreated": "Slider widget created.",
     "status.widgetTextCreated": "Text widget created.",
     "status.zoom": "Zoom {value}%.",
-    "text.edgePortAuto": "(automatic)",
     "text.mainModel": "Main model",
     "text.noMatches": "No matching symbols.",
     "text.nodesSelected": "{count} nodes selected.",
     "text.noneProps": "No properties",
     "text.defaultCanvasText": "Formatted text",
-    "text.submodelBindingDefault": "Leave blank to use the value or expression defined inside the submodel.",
+    "text.submodelBindingDefault": "Select a connected variable, or leave it blank to use the value defined inside the submodel.",
     "text.toolbarHeading1": "Heading 1",
     "text.toolbarHeading2": "Heading 2",
     "text.toolbarHeading3": "Heading 3",
@@ -1540,6 +1539,7 @@ window.STGraphXI18nBundles = {
     "text.submodelInterfaceSummary": "Inputs: {inputs} | Outputs: {outputs}",
     "text.submodelNoInputs": "The submodel exposes no inputs.",
     "text.submodelOutputEntry": "Output of submodel {node}: {output}",
+    "tab.meta.submodel": "from {node} in {parent}",
     "text.vectorSummary": "vector of size {size}",
     "text.matrixSummary": "matrix {rows} x {cols}",
     "text.unnamed": "(unnamed)",
@@ -1553,8 +1553,9 @@ window.STGraphXI18nBundles = {
     "tooltip.menu.edit.selectAll": "Selects all nodes in the model.",
     "tooltip.menu.edit.undo": "Reverts the last recorded change.",
     "tooltip.menu.file": "Model file operations: create, load, and save.",
-    "tooltip.menu.file.load": "Loads a model from a JSON file.",
-    "tooltip.menu.file.new": "Creates a new empty model. If there are unsaved changes, confirmation is requested.",
+    "tooltip.menu.file.load": "Loads a model from a JSON file in a new tab.",
+    "tooltip.menu.file.new": "Creates a new empty model in a new tab.",
+    "tooltip.menu.file.close": "Closes the model in the active tab.",
     "tooltip.menu.file.save": "Saves the current model to the associated file or opens save flow if needed.",
     "tooltip.menu.file.saveAs": "Chooses file name and destination for the JSON file.",
     "tooltip.menu.file.exportCsv": "Exports CSV simulation history for nodes marked as output.",
@@ -1580,6 +1581,7 @@ window.STGraphXI18nBundles = {
     "tooltip.menu.run.step": "Runs a single time step.",
     "tooltip.menu.run.timed": "Starts or stops timed execution.",
     "tooltip.menu.run.watch": "Opens the watch and breakpoint tool for model debugging.",
+    "tooltip.tab.new": "Opens a new model tab.",
     "tooltip.menu.view": "View, zoom, and grid controls.",
     "tooltip.menu.view.fit": "Fits zoom and viewport to the current graph and widget content.",
     "tooltip.menu.view.gridStep": "Sets the spacing between grid lines.",
@@ -1616,7 +1618,7 @@ window.STGraphXI18nBundles = {
     "tooltip.node.output": "Marks the node as an output for display widgets.",
     "tooltip.node.refreshSubmodel": "Reads the submodel file and updates its input/output interface.",
     "tooltip.node.showSubmodel": "Shows the submodel once it is available.",
-    "tooltip.node.submodelBinding": "Optional expression that feeds the submodel input. If left blank, the submodel uses its own default value or expression.",
+    "tooltip.node.submodelBinding": "Select which connected variable feeds this submodel input. If left blank, the submodel uses its own default value.",
     "tooltip.node.submodelPath": "JSON file name of the submodel, relative to the current model folder.",
     "tooltip.node.type": "Semantic node type: state, algebraic, or parameter.",
     "view.btn.hideGraph": "Hide graph",
@@ -1762,9 +1764,6 @@ window.STGraphXI18nBundles = {
     "analysis.issue.unusedNode": "Node {name} does not appear to be used by other nodes, outputs, or widgets.",
     "analysis.issue.invalidSubmodelBinding": "In submodel {name}, input binding {input} is invalid: {reason}",
     "analysis.issue.unknownSubmodelBinding": "In submodel {name}, binding for input {input} does not match any exposed input.",
-    "analysis.issue.duplicateSubmodelInputPort": "In submodel {name}, input {input} receives more than one incoming edge.",
-    "analysis.issue.ambiguousSubmodelTargetPort": "Edge {name} towards the submodel does not specify which input to use.",
-    "analysis.issue.ambiguousSubmodelSourcePort": "Edge {name} from the submodel does not specify which output to use.",
     "analysis.issue.widgetNoSource": "Widget {name} does not have a source assigned yet.",
     "analysis.issue.widgetMissingSource": "Widget {name} points to node {source}, which no longer exists.",
     "analysis.issue.widgetSourceNotOutput": "Widget {name} uses {source}, but that node is not marked as output.",
@@ -1787,9 +1786,6 @@ window.STGraphXI18nBundles = {
     "analysis.checks.unusedNode": "Reports nodes that do not appear to be used by other nodes, outputs, or widgets.",
     "analysis.checks.invalidSubmodelBinding": "Reports submodel input bindings that are not semantically valid.",
     "analysis.checks.unknownSubmodelBinding": "Reports bindings that refer to inputs not exposed by the submodel.",
-    "analysis.checks.duplicateSubmodelInputPort": "Reports submodel inputs fed by more than one incoming edge.",
-    "analysis.checks.ambiguousSubmodelTargetPort": "Reports edges into submodels with multiple inputs when the target port is not specified.",
-    "analysis.checks.ambiguousSubmodelSourcePort": "Reports edges out of submodels with multiple outputs when the source port is not specified.",
     "analysis.checks.widgetNoSource": "Reports widgets that still have no configured source.",
     "analysis.checks.widgetMissingSource": "Reports widgets that point to nodes no longer present in the model.",
     "analysis.checks.widgetSourceNotOutput": "Reports output widgets connected to nodes not marked as output.",
@@ -1815,6 +1811,8 @@ window.STGraphXI18nBundles.pt = {
   "action.discard": "Descartar",
   "action.editExpression": "Editar...",
   "action.editLocalFunctions": "Funções locais...",
+  "action.newTab": "+",
+  "action.closeTab": "Fechar aba",
   "action.exitSubmodel": "Voltar",
   "action.loadSubmodel": "Abrir",
   "action.resetNodeColors": "Cores automáticas",
@@ -1837,9 +1835,11 @@ window.STGraphXI18nBundles.pt = {
   "confirm.exitSubmodel.save": "Há alterações não salvas no submodelo atual. Deseja salvá-las antes de voltar ao nível superior?",
   "confirm.closeApp.save": "Há alterações não salvas. Deseja salvá-las antes de fechar o aplicativo?",
   "confirm.closeApp.detail": "Modelo atual: {name}",
+  "confirm.closeTab.save": "Há alterações não salvas nesta aba. Deseja salvá-las antes de fechá-la?",
   "confirm.newGraph.save": "Há alterações não salvas. Deseja salvar antes de criar um novo modelo?",
   "confirm.openGraph.save": "Há alterações não salvas. Deseja salvá-las antes de abrir outro modelo?",
   "confirm.selectModelFolder": "O modelo usa submodelos. Deseja selecionar a pasta do modelo para permitir o carregamento automático?",
+  "menu.file.close": "Fechar modelo",
   "context.bg.insertTitle": "Inserir",
   "context.bg.newDiamond": "Parâmetro",
   "context.bg.newEllipse": "Variável algébrica",
@@ -1964,10 +1964,14 @@ window.STGraphXI18nBundles.pt = {
   "status.ready": "Pronto.",
   "status.cancelOp": "Operação cancelada.",
   "status.clipboardTextCopied": "Texto copiado para a área de transferência.",
+  "status.tabClosed": "Aba fechada.",
+  "file.unnamed": "Novo modelo",
   "text.valueError": "Erro: {reason}",
+  "tab.meta.submodel": "de {node} em {parent}",
   "tooltip.menu.file": "Comandos para criar, abrir e salvar modelos.",
-  "tooltip.menu.file.new": "Criar um novo modelo vazio.",
-  "tooltip.menu.file.load": "Abrir um modelo em JSON.",
+  "tooltip.menu.file.new": "Criar um novo modelo vazio em uma nova aba.",
+  "tooltip.menu.file.load": "Abrir um modelo em JSON em uma nova aba.",
+  "tooltip.menu.file.close": "Fecha o modelo na aba ativa.",
   "tooltip.menu.file.save": "Salvar o modelo atual.",
   "tooltip.menu.file.saveAs": "Salvar o modelo atual com outro nome.",
   "tooltip.menu.file.exportCsv": "Exportar os dados de simulação em CSV.",
@@ -2011,6 +2015,7 @@ window.STGraphXI18nBundles.pt = {
   "tooltip.menu.run.reset": "Reiniciar a execução do modelo.",
   "tooltip.menu.run.analyze": "Analisar o modelo em busca de erros e avisos.",
   "tooltip.menu.run.watch": "Abrir a janela watch / breakpoint.",
+  "tooltip.tab.new": "Abre uma nova aba de modelo.",
   "tooltip.menu.help": "Ajuda e informações do aplicativo.",
   "tooltip.menu.help.functions": "Abrir a documentação das funções e variáveis disponíveis.",
   "tooltip.menu.help.about": "Mostrar informações básicas sobre o aplicativo.",
@@ -2028,7 +2033,12 @@ window.STGraphXI18nBundles.pt = {
   "tooltip.node.input": "Marcar o nó como entrada controlável por widget.",
   "tooltip.node.output": "Marcar o nó como saída observável.",
   "tooltip.node.global": "Tornar o parâmetro visível sem necessidade de setas de entrada.",
+  "tooltip.node.submodelBinding": "Selecione qual variável conectada alimenta esta entrada do submodelo. Se vazio, o submodelo usa o seu valor padrão.",
   "tooltip.node.submodelPath": "Arquivo JSON do submodelo associado.",
+  "text.submodelBindingDefault": "Selecione uma variável conectada, ou deixe vazio para usar o valor definido dentro do submodelo.",
+  "text.submodelError": "Erro no submodelo: {reason}",
+  "text.submodelInterfaceSummary": "Entradas: {inputs} | Saídas: {outputs}",
+  "text.submodelNoInputs": "O submodelo não expõe entradas.",
   "view.btn.showGraph": "Mostrar grafo",
   "view.btn.showWidgets": "Mostrar widgets",
   "watch.current": "Atual",
@@ -2149,15 +2159,12 @@ window.STGraphXI18nBundles.pt = {
   "analysis.badge.info": "Informação",
   "analysis.badge.warning": "Aviso",
   "analysis.checks.algebraicCycle": "Indica possíveis ciclos entre nós que não são de estado, o que pode tornar as definições irresolúveis.",
-  "analysis.checks.ambiguousSubmodelSourcePort": "Indica arestas que saem de submodelos com múltiplas saídas quando a porta de origem não está especificada.",
-  "analysis.checks.ambiguousSubmodelTargetPort": "Indica arestas que entram em submodelos com múltiplas entradas quando a porta de destino não está especificada.",
   "analysis.checks.button": "Verificações executadas",
   "analysis.checks.chartMissingSeriesSource": "Indica séries de gráfico que apontam para nós que já não existem.",
   "analysis.checks.chartNoPairs": "Indica widgets de gráfico sem pares X-Y configurados.",
   "analysis.checks.chartSeriesNotOutput": "Indica séries de gráfico ligadas a nós não marcados como saída.",
   "analysis.checks.danglingEdge": "Indica arestas cuja origem ou destino já não está presente no modelo.",
   "analysis.checks.duplicateEdge": "Indica arestas duplicadas com a mesma origem, destino e portas.",
-  "analysis.checks.duplicateSubmodelInputPort": "Indica entradas de submodelo alimentadas por mais de uma aresta de entrada.",
   "analysis.checks.intro": "Esta janela resume as verificações estáticas atualmente executadas por Analisar modelo e explica brevemente quando cada erro, aviso ou info é gerado.",
   "analysis.checks.invalidDelay": "Indica um atraso inválido para execução temporizada, por exemplo zero ou não numérico.",
   "analysis.checks.invalidSubmodelBinding": "Indica bindings de entrada de submodelo semanticamente inválidos.",
@@ -2178,14 +2185,11 @@ window.STGraphXI18nBundles.pt = {
   "analysis.checks.widgetSourceNotOutput": "Indica widgets de saída ligados a nós não marcados como saída.",
   "analysis.empty": "Nenhum problema foi encontrado pelas verificações atualmente ativas.",
   "analysis.issue.algebraicCycle": "Possível ciclo entre nós que não são de estado: {path}.",
-  "analysis.issue.ambiguousSubmodelSourcePort": "A aresta {name} proveniente do submodelo não especifica qual saída usar.",
-  "analysis.issue.ambiguousSubmodelTargetPort": "A aresta {name} dirigida ao submodelo não especifica qual entrada usar.",
   "analysis.issue.chartMissingSeriesSource": "O widget de gráfico {name} usa a origem {source}, mas esse nó já não existe.",
   "analysis.issue.chartNoPairs": "O widget de gráfico {name} não tem pares X-Y configurados.",
   "analysis.issue.chartSeriesNotOutput": "O widget de gráfico {name} usa a origem {source}, mas esse nó não está marcado como saída.",
   "analysis.issue.danglingEdge": "A aresta {name} aponta para um nó em falta ou parte de um nó em falta.",
   "analysis.issue.duplicateEdge": "A aresta {name} está duplicada.",
-  "analysis.issue.duplicateSubmodelInputPort": "No submodelo {name}, a entrada {input} recebe mais de uma aresta de entrada.",
   "analysis.issue.invalidDelay": "Atraso de execução temporizada inválido: {reason}",
   "analysis.issue.invalidSubmodelBinding": "No submodelo {name}, o binding de entrada {input} é inválido: {reason}",
   "analysis.issue.invalidTimeConfig": "Configuração temporal inválida: {reason}",
@@ -2353,7 +2357,6 @@ window.STGraphXI18nBundles.pt = {
   "expr.error.missingCloseBracket": "Falta o colchete de fecho.",
   "expr.error.missingCloseParen": "Falta o parêntese de fecho.",
   "expr.error.missingReduceOperator": "Falta o operador de reduce",
-  "expr.error.missingSubmodelOutput": "Saída do submodelo em falta: {name}",
   "expr.error.mustBeFinite": "{name} deve ser finito",
   "expr.error.notCallable": "{name} não é invocável",
   "expr.error.notDefined": "{name} não está definido",
@@ -7190,8 +7193,6 @@ window.STGraphXI18nBundles.pt = {
           id: e.id,
           from: e.from,
           to: e.to,
-          sourcePort: String(e.sourcePort ?? ""),
-          targetPort: String(e.targetPort ?? ""),
           controlPoints: Array.isArray(e.controlPoints)
             ? e.controlPoints.filter((cp) => Number.isFinite(cp?.x) && Number.isFinite(cp?.y)).map((cp) => ({ x: cp.x, y: cp.y }))
             : [],
@@ -7295,12 +7296,19 @@ window.STGraphXI18nBundles.pt = {
     function evaluateParameterNodesForModel(model, timeValue, rootExecution) {
       const globals = buildExecutionGlobalsForModel(model, rootExecution, timeValue);
       const parameterNodes = (model?.nodes || []).filter((node) => node?.shape === "diamond");
-      const pending = new Set(parameterNodes.map((node) => node.id));
+      const pending = new Set();
       const resolved = new Set();
 
       parameterNodes.forEach((node) => {
         node.pendingStateValue = null;
         node.pendingStateError = "";
+        if (node.externalValueEnabled) {
+          node.computedValue = node.externalValue;
+          node.computedError = "";
+          resolved.add(node.id);
+          return;
+        }
+        pending.add(node.id);
       });
 
       while (pending.size > 0) {
@@ -7585,31 +7593,10 @@ window.STGraphXI18nBundles.pt = {
 
     function buildSubmodelInputOverrides(model, node, parentContext) {
       const overrides = new Map();
-      const assignedPorts = new Set();
-
-      (model?.edges || [])
-        .filter((edge) => edge.to === node.id && String(edge.targetPort ?? "").trim())
-        .forEach((edge) => {
-          const targetPort = String(edge.targetPort ?? "").trim();
-          const fromNode = getModelNodeById(model, edge.from);
-          if (!fromNode) {
-            return;
-          }
-          let value = parentContext[fromNode.name];
-          const sourcePort = String(edge.sourcePort ?? "").trim();
-          if (sourcePort) {
-            if (value === null || typeof value !== "object" || !Object.prototype.hasOwnProperty.call(value, sourcePort)) {
-              throw new Error(`missing submodel output ${sourcePort}`);
-            }
-            value = value[sourcePort];
-          }
-          overrides.set(targetPort, value);
-          assignedPorts.add(targetPort);
-        });
 
       Object.entries(node.inputBindings || {}).forEach(([inputName, expr]) => {
         const name = String(inputName || "").trim();
-        if (!name || assignedPorts.has(name)) {
+        if (!name) {
           return;
         }
         const result = semantics.evaluateValueExpression(String(expr ?? ""), parentContext, {
@@ -8263,6 +8250,8 @@ window.STGraphXI18nBundles.pt = {
       openWatchDebugger,
       clearVisualHistory,
       clearSimulationHistory,
+      onTimedExecutionStarted = null,
+      onTimedExecutionStopped = null,
       hasStrictExecutionBlock = () => false,
       buildEvaluationEnv = null,
       setIntervalFn = global.setInterval?.bind(global),
@@ -8305,7 +8294,7 @@ window.STGraphXI18nBundles.pt = {
       timedState.timedStepLastActivityAt = 0;
     }
 
-    function stopTimedExecution(updateStatus = true) {
+    function stopTimedExecution(updateStatus = true, reason = "stopped") {
       const hadHandle = timedState.timedRunHandle != null;
       const wasRunningStep = timedState.timedStepRunning === true;
       clearTimedExecutionStateSilently();
@@ -8315,6 +8304,7 @@ window.STGraphXI18nBundles.pt = {
           setStatusKey?.("status.timedStopped");
         }
         render?.();
+        onTimedExecutionStopped?.({ reason });
       }
     }
 
@@ -8322,6 +8312,14 @@ window.STGraphXI18nBundles.pt = {
       return typeof buildEvaluationEnv === "function"
         ? buildEvaluationEnv()
         : { rootExecution: getExecution(), stack: [] };
+    }
+
+    function hasReachedExecutionEnd(timeValue, cfg) {
+      const epsilon = Math.max(1e-12, Math.abs(cfg.dt) * 1e-9);
+      if (cfg.dt > 0) {
+        return timeValue >= cfg.t1 - epsilon;
+      }
+      return timeValue <= cfg.t1 + epsilon;
     }
 
     async function ensureExecutionReady() {
@@ -8348,10 +8346,11 @@ window.STGraphXI18nBundles.pt = {
       const hasStateSnapshot = session.hasInitializedStateSnapshot();
       if (isExecutionEnded(cfg)) {
         if (!restartIfEnded) {
-          setStatusKey?.("status.timeEndReached", {
+          setStatusKey?.("status.evalDone", {
+            count: 0,
             time: formatNumberValue?.(Number(execution.currentTime ?? cfg.t0)),
           });
-          return false;
+          return { ok: false, breakpointHit: false, completed: true };
         }
         execution.currentTime = null;
         restarted = true;
@@ -8398,8 +8397,10 @@ window.STGraphXI18nBundles.pt = {
           time: formatNumberValue?.(Number(nextTime)),
         });
         openWatchDebugger?.();
-        return { ok: true, breakpointHit: true };
+        return { ok: true, breakpointHit: true, completed: false };
       }
+
+      const completed = hasReachedExecutionEnd(nextTime, cfg);
 
       if (restarted && stepResult.errorCount === 0) {
         setStatusKey?.("status.executionRestarted", {
@@ -8412,13 +8413,13 @@ window.STGraphXI18nBundles.pt = {
           reason: evalReasonText?.(stepResult.firstErrorReason),
           time: formatNumberValue?.(Number(nextTime)),
         });
-      } else {
-        setStatusKey?.("status.evalStepDone", {
+      } else if (completed) {
+        setStatusKey?.("status.evalDone", {
           count: stepResult.successCount,
           time: formatNumberValue?.(Number(nextTime)),
         });
       }
-      return { ok: true, breakpointHit: false };
+      return { ok: true, breakpointHit: false, completed };
     }
 
     async function executeAll() {
@@ -8569,7 +8570,7 @@ window.STGraphXI18nBundles.pt = {
     async function toggleTimedExecution() {
       const execution = getExecution();
       if (timedState.timedRunHandle != null) {
-        stopTimedExecution(true);
+        stopTimedExecution(true, "stopped");
         return;
       }
 
@@ -8608,19 +8609,21 @@ window.STGraphXI18nBundles.pt = {
         try {
           const outcome = await executeOneStep(false);
           if (!outcome || !outcome.ok) {
-            stopTimedExecution(false);
-            if (!(hasStrictExecutionBlock?.())) {
+            stopTimedExecution(false, outcome?.completed ? "completed" : "stopped");
+            if (!outcome?.completed && !(hasStrictExecutionBlock?.())) {
               setStatusKey?.("status.timedStopped");
             }
+          } else if (outcome.completed) {
+            stopTimedExecution(false, "completed");
           } else if (outcome.breakpointHit) {
-            stopTimedExecution(false);
+            stopTimedExecution(false, "breakpoint");
             setStatusKey?.("status.breakpointHit", {
               time: formatNumberValue?.(Number(execution.currentTime)),
             });
             openWatchDebugger?.();
           }
         } catch (err) {
-          stopTimedExecution(false);
+          stopTimedExecution(false, "error");
           setStatus?.(err?.message || t("error.evalReason.runtime"), true);
         } finally {
           timedState.timedStepRunning = false;
@@ -8631,6 +8634,7 @@ window.STGraphXI18nBundles.pt = {
 
       setStatusKey?.("status.timedStarted", { delay: delayMs });
       render?.();
+      onTimedExecutionStarted?.({ delay: delayMs });
     }
 
     return {
@@ -10986,6 +10990,20 @@ window.STGraphXI18nBundles.pt = {
         openWatchDebugger: () => {},
         clearVisualHistory: () => this.clearWidgetHistory(),
         clearSimulationHistory: () => this.clearWidgetHistory(),
+        onTimedExecutionStarted: ({ delay }) => {
+          this.dispatchPlayerEvent("stgraphx-run-start", {
+            mode: "timed",
+            delay,
+            time: this.currentDisplayTime(),
+          });
+        },
+        onTimedExecutionStopped: ({ reason }) => {
+          this.dispatchPlayerEvent("stgraphx-run-stop", {
+            mode: "timed",
+            reason,
+            time: this.currentDisplayTime(),
+          });
+        },
         hasStrictExecutionBlock: () => false,
         buildEvaluationEnv: () => ({ rootExecution: runtimeModel.execution, stack: [] }),
       });
@@ -11226,11 +11244,6 @@ window.STGraphXI18nBundles.pt = {
       if (!this._state.runtimeController) {
         return;
       }
-      const starting = this._timedState.timedRunHandle == null;
-      this.dispatchPlayerEvent(starting ? "stgraphx-run-start" : "stgraphx-run-stop", {
-        mode: "timed",
-        time: this.currentDisplayTime(),
-      });
       try {
         await this._state.runtimeController.toggleTimedExecution();
       } catch (err) {

@@ -21,6 +21,8 @@
       openWatchDebugger,
       clearVisualHistory,
       clearSimulationHistory,
+      onTimedExecutionStarted = null,
+      onTimedExecutionStopped = null,
       hasStrictExecutionBlock = () => false,
       buildEvaluationEnv = null,
       setIntervalFn = global.setInterval?.bind(global),
@@ -63,7 +65,7 @@
       timedState.timedStepLastActivityAt = 0;
     }
 
-    function stopTimedExecution(updateStatus = true) {
+    function stopTimedExecution(updateStatus = true, reason = "stopped") {
       const hadHandle = timedState.timedRunHandle != null;
       const wasRunningStep = timedState.timedStepRunning === true;
       clearTimedExecutionStateSilently();
@@ -73,6 +75,7 @@
           setStatusKey?.("status.timedStopped");
         }
         render?.();
+        onTimedExecutionStopped?.({ reason });
       }
     }
 
@@ -183,11 +186,6 @@
         });
       } else if (completed) {
         setStatusKey?.("status.evalDone", {
-          count: stepResult.successCount,
-          time: formatNumberValue?.(Number(nextTime)),
-        });
-      } else {
-        setStatusKey?.("status.evalStepDone", {
           count: stepResult.successCount,
           time: formatNumberValue?.(Number(nextTime)),
         });
@@ -343,7 +341,7 @@
     async function toggleTimedExecution() {
       const execution = getExecution();
       if (timedState.timedRunHandle != null) {
-        stopTimedExecution(true);
+        stopTimedExecution(true, "stopped");
         return;
       }
 
@@ -382,21 +380,21 @@
         try {
           const outcome = await executeOneStep(false);
           if (!outcome || !outcome.ok) {
-            stopTimedExecution(false);
+            stopTimedExecution(false, outcome?.completed ? "completed" : "stopped");
             if (!outcome?.completed && !(hasStrictExecutionBlock?.())) {
               setStatusKey?.("status.timedStopped");
             }
           } else if (outcome.completed) {
-            stopTimedExecution(false);
+            stopTimedExecution(false, "completed");
           } else if (outcome.breakpointHit) {
-            stopTimedExecution(false);
+            stopTimedExecution(false, "breakpoint");
             setStatusKey?.("status.breakpointHit", {
               time: formatNumberValue?.(Number(execution.currentTime)),
             });
             openWatchDebugger?.();
           }
         } catch (err) {
-          stopTimedExecution(false);
+          stopTimedExecution(false, "error");
           setStatus?.(err?.message || t("error.evalReason.runtime"), true);
         } finally {
           timedState.timedStepRunning = false;
@@ -407,6 +405,7 @@
 
       setStatusKey?.("status.timedStarted", { delay: delayMs });
       render?.();
+      onTimedExecutionStarted?.({ delay: delayMs });
     }
 
     return {

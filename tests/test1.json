@@ -3,12 +3,12 @@
   "modelTitle": "",
   "localFunctions": [],
   "view": {
-    "zoom": 1,
+    "zoom": 0.85,
     "showGrid": true,
     "highlightNodeEdges": false,
     "gridSize": 20,
-    "scrollLeft": 134,
-    "scrollTop": 136
+    "scrollLeft": 83,
+    "scrollTop": 89
   },
   "debug": {
     "watches": [],
@@ -16,52 +16,28 @@
     "breakpointExpression": ""
   },
   "modelProperties": [],
-  "nodeCounter": 23,
-  "edgeCounter": 26,
-  "widgetCounter": 14,
-  "textItemCounter": 9,
+  "nodeCounter": 9,
+  "edgeCounter": 8,
+  "widgetCounter": 8,
+  "textItemCounter": 6,
   "execution": {
     "t0": 0,
     "dt": 1,
-    "t1": 100,
-    "delayMs": 1,
+    "t1": 10,
+    "delayMs": 100,
     "decimals": 3,
     "integrator": "euler",
     "strictDefinitions": false
   },
   "nodes": [
     {
-      "id": 17,
-      "name": "num_agenti",
-      "output": false,
-      "global": false,
-      "type": "parameter",
-      "x": 60,
-      "y": 180,
-      "width": 120,
-      "height": 70,
-      "fillColor": "",
-      "strokeColor": "",
-      "properties": [
-        {
-          "key": "note formula",
-          "value": ""
-        },
-        {
-          "key": "descrizione",
-          "value": ""
-        }
-      ],
-      "valueExpression": "10"
-    },
-    {
-      "id": 19,
-      "name": "agenti",
+      "id": 1,
+      "name": "n1",
       "output": true,
       "global": false,
       "type": "state",
-      "x": 260,
-      "y": 180,
+      "x": 300,
+      "y": 120,
       "width": 120,
       "height": 70,
       "fillColor": "",
@@ -76,16 +52,40 @@
           "value": ""
         }
       ],
-      "stateTransition": "this",
-      "initialState": "agents([\"X\",\"Y\",\"VX\",\"VY\"],10)"
+      "stateTransition": "integral(in2)",
+      "initialState": "in1"
     },
     {
-      "id": 21,
-      "name": "colX",
-      "output": true,
+      "id": 4,
+      "name": "in1",
+      "output": false,
+      "global": false,
+      "type": "parameter",
+      "x": 100,
+      "y": 60,
+      "width": 120,
+      "height": 70,
+      "fillColor": "",
+      "strokeColor": "",
+      "properties": [
+        {
+          "key": "note formula",
+          "value": ""
+        },
+        {
+          "key": "descrizione",
+          "value": "valore iniziale"
+        }
+      ],
+      "valueExpression": "0"
+    },
+    {
+      "id": 7,
+      "name": "in2",
+      "output": false,
       "global": false,
       "type": "algebraic",
-      "x": 460,
+      "x": 100,
       "y": 180,
       "width": 120,
       "height": 70,
@@ -98,76 +98,40 @@
         },
         {
           "key": "descrizione",
-          "value": ""
+          "value": "incremento"
         }
       ],
-      "input": false,
-      "valueExpression": "col(agenti,\"X\")"
+      "input": true,
+      "valueExpression": "1"
     }
   ],
   "edges": [
     {
-      "id": 22,
-      "from": 17,
-      "to": 19,
+      "id": 3,
+      "from": 4,
+      "to": 1,
       "controlPoints": []
     },
     {
-      "id": 24,
-      "from": 19,
-      "to": 21,
+      "id": 6,
+      "from": 7,
+      "to": 1,
       "controlPoints": []
     }
   ],
   "textItems": [],
   "widgets": [
     {
-      "id": 11,
-      "type": "matrix",
-      "customTitle": "",
-      "x": 580,
-      "y": 20,
-      "width": 220,
-      "height": 400,
-      "minimized": false,
-      "outputOnly": true,
-      "showHistory": false,
-      "xMin": "auto",
-      "xMax": "auto",
-      "yMin": "auto",
-      "yMax": "auto",
-      "showGrid": true,
-      "legendPosition": "top-right",
-      "source": "agenti",
-      "showNumericValues": true,
-      "showIndices": true,
-      "autoFitCells": true,
-      "cellSize": 28,
-      "valueMin": "auto",
-      "valueMax": "auto",
-      "displayRows": null,
-      "displayCols": null,
-      "colorScheme": "blue",
-      "min": 0,
-      "max": 100,
-      "step": 1,
-      "value": 0,
-      "options": [],
-      "mappings": [],
-      "columns": [],
-      "xyPairs": []
-    },
-    {
-      "id": 13,
+      "id": 1,
       "type": "table",
       "customTitle": "",
-      "x": 180,
-      "y": 260,
-      "width": 360,
-      "height": 180,
+      "x": 400,
+      "y": 100,
+      "width": 220,
+      "height": 380,
       "minimized": false,
       "outputOnly": false,
-      "showHistory": false,
+      "showHistory": true,
       "xMin": "auto",
       "xMax": "auto",
       "yMin": "auto",
@@ -191,9 +155,58 @@
       "options": [],
       "mappings": [],
       "columns": [
-        "colX"
+        "n1"
       ],
       "xyPairs": []
+    },
+    {
+      "id": 3,
+      "type": "xychart",
+      "customTitle": "",
+      "x": 0,
+      "y": 240,
+      "width": 380,
+      "height": 240,
+      "minimized": false,
+      "outputOnly": false,
+      "showHistory": false,
+      "xMin": "auto",
+      "xMax": "auto",
+      "yMin": "auto",
+      "yMax": "auto",
+      "showGrid": true,
+      "legendPosition": "top-left",
+      "source": "",
+      "showNumericValues": true,
+      "showIndices": true,
+      "autoFitCells": true,
+      "cellSize": 28,
+      "valueMin": "auto",
+      "valueMax": "auto",
+      "displayRows": null,
+      "displayCols": null,
+      "colorScheme": "blue",
+      "min": 0,
+      "max": 100,
+      "step": 1,
+      "value": 0,
+      "options": [],
+      "mappings": [],
+      "columns": [],
+      "xyPairs": [
+        {
+          "xSource": "time",
+          "ySource": "n1",
+          "showTimeSeries": true,
+          "showInstantProfile": false,
+          "color": "#0e7ac4",
+          "showLine": true,
+          "lineWidth": 2.2,
+          "lineStyle": "solid",
+          "pointMode": "all",
+          "pointSize": 2.4
+        }
+      ]
     }
   ]
 }

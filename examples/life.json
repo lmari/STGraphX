@@ -100,24 +100,18 @@
       "id": 1,
       "from": 3,
       "to": 4,
-      "sourcePort": "",
-      "targetPort": "",
       "controlPoints": []
     },
     {
       "id": 3,
       "from": 4,
       "to": 6,
-      "sourcePort": "",
-      "targetPort": "",
       "controlPoints": []
     },
     {
       "id": 4,
       "from": 6,
       "to": 4,
-      "sourcePort": "",
-      "targetPort": "",
       "controlPoints": []
     }
   ],

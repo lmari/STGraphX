@@ -184,48 +184,36 @@
       "id": 22,
       "from": 17,
       "to": 19,
-      "sourcePort": "",
-      "targetPort": "",
       "controlPoints": []
     },
     {
       "id": 24,
       "from": 19,
       "to": 21,
-      "sourcePort": "",
-      "targetPort": "",
       "controlPoints": []
     },
     {
       "id": 25,
       "from": 19,
       "to": 22,
-      "sourcePort": "",
-      "targetPort": "",
       "controlPoints": []
     },
     {
       "id": 26,
       "from": 21,
       "to": 19,
-      "sourcePort": "",
-      "targetPort": "",
       "controlPoints": []
     },
     {
       "id": 27,
       "from": 22,
       "to": 19,
-      "sourcePort": "",
-      "targetPort": "",
       "controlPoints": []
     },
     {
       "id": 28,
       "from": 19,
       "to": 23,
-      "sourcePort": "",
-      "targetPort": "",
       "controlPoints": []
     }
   ],

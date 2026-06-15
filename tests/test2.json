@@ -1,14 +1,14 @@
 {
   "version": 1,
-  "modelTitle": "Player smoke: matrici e heatmap",
+  "modelTitle": "",
   "localFunctions": [],
   "view": {
-    "zoom": 0.95,
+    "zoom": 1,
     "showGrid": true,
     "highlightNodeEdges": false,
     "gridSize": 20,
-    "scrollLeft": 10,
-    "scrollTop": 0
+    "scrollLeft": 180,
+    "scrollTop": 180
   },
   "debug": {
     "watches": [],
@@ -16,15 +16,15 @@
     "breakpointExpression": ""
   },
   "modelProperties": [],
-  "nodeCounter": 4,
+  "nodeCounter": 5,
   "edgeCounter": 3,
-  "widgetCounter": 5,
+  "widgetCounter": 6,
   "textItemCounter": 2,
   "execution": {
     "t0": 0,
     "dt": 1,
-    "t1": 20,
-    "delayMs": 80,
+    "t1": 10,
+    "delayMs": 100,
     "decimals": 3,
     "integrator": "euler",
     "strictDefinitions": false
@@ -32,12 +32,37 @@
   "nodes": [
     {
       "id": 1,
-      "name": "n",
+      "name": "n1",
+      "output": true,
+      "global": false,
+      "type": "state",
+      "x": 300,
+      "y": 140,
+      "width": 120,
+      "height": 70,
+      "fillColor": "",
+      "strokeColor": "",
+      "properties": [
+        {
+          "key": "note formula",
+          "value": ""
+        },
+        {
+          "key": "descrizione",
+          "value": ""
+        }
+      ],
+      "stateTransition": "1-this",
+      "initialState": "n0"
+    },
+    {
+      "id": 4,
+      "name": "n0",
       "output": false,
       "global": false,
       "type": "parameter",
-      "x": 120,
-      "y": 170,
+      "x": 140,
+      "y": 140,
       "width": 120,
       "height": 70,
       "fillColor": "",
@@ -49,97 +74,30 @@
         },
         {
           "key": "descrizione",
-          "value": "Dimensione della matrice"
-        }
-      ],
-      "valueExpression": "12"
-    },
-    {
-      "id": 2,
-      "name": "matrice",
-      "output": true,
-      "global": false,
-      "type": "algebraic",
-      "x": 340,
-      "y": 170,
-      "width": 140,
-      "height": 76,
-      "fillColor": "",
-      "strokeColor": "",
-      "properties": [
-        {
-          "key": "note formula",
           "value": ""
-        },
-        {
-          "key": "descrizione",
-          "value": "Matrice 12x12 che varia con il tempo senza usare nodi di stato"
         }
       ],
-      "input": false,
-      "valueExpression": "array([n,n],($0+$1+time)%4)"
-    },
-    {
-      "id": 3,
-      "name": "mass",
-      "output": true,
-      "global": false,
-      "type": "algebraic",
-      "x": 340,
-      "y": 310,
-      "width": 120,
-      "height": 70,
-      "fillColor": "",
-      "strokeColor": "",
-      "properties": [
-        {
-          "key": "note formula",
-          "value": ""
-        },
-        {
-          "key": "descrizione",
-          "value": "Somma di tutti i valori della matrice"
-        }
-      ],
-      "input": false,
-      "valueExpression": "sum(matrice)"
+      "valueExpression": "0"
     }
   ],
   "edges": [
     {
-      "id": 1,
-      "from": 1,
-      "to": 2,
-      "controlPoints": []
-    },
-    {
       "id": 2,
-      "from": 2,
-      "to": 3,
+      "from": 4,
+      "to": 1,
       "controlPoints": []
     }
   ],
-  "textItems": [
-    {
-      "id": 1,
-      "x": -10,
-      "y": 0,
-      "width": 500,
-      "height": 80,
-      "fillColor": "",
-      "strokeColor": "",
-      "html": "<h1>Smoke test per widget matrice</h1><p>Heatmap compatta, matrice numerica e storico scalare. La matrice dipende da <code>time</code> per rendere l'esecuzione immediatamente verificabile.</p>"
-    }
-  ],
+  "textItems": [],
   "widgets": [
     {
       "id": 1,
-      "type": "matrix",
-      "customTitle": "Heatmap",
-      "x": 520,
-      "y": 20,
-      "width": 420,
-      "height": 420,
+      "type": "led",
+      "customTitle": "",
+      "x": 400,
+      "y": 80,
+      "width": 240,
+      "height": 140,
       "minimized": false,
       "outputOnly": true,
       "showHistory": false,
@@ -149,51 +107,15 @@
       "yMax": "auto",
       "showGrid": true,
       "legendPosition": "top-right",
-      "source": "matrice",
-      "showNumericValues": false,
-      "showIndices": false,
-      "autoFitCells": true,
-      "cellSize": 16,
-      "valueMin": 0,
-      "valueMax": 3,
-      "displayRows": null,
-      "displayCols": null,
-      "colorScheme": "heat",
-      "min": 0,
-      "max": 100,
-      "step": 1,
-      "value": 0,
-      "options": [],
-      "mappings": [],
-      "columns": [],
-      "xyPairs": []
-    },
-    {
-      "id": 2,
-      "type": "matrix",
-      "customTitle": "Matrice con valori",
-      "x": 960,
-      "y": 20,
-      "width": 300,
-      "height": 420,
-      "minimized": false,
-      "outputOnly": true,
-      "showHistory": false,
-      "xMin": "auto",
-      "xMax": "auto",
-      "yMin": "auto",
-      "yMax": "auto",
-      "showGrid": true,
-      "legendPosition": "top-right",
-      "source": "matrice",
+      "source": "n1",
       "showNumericValues": true,
       "showIndices": true,
       "autoFitCells": true,
-      "cellSize": 18,
-      "valueMin": 0,
-      "valueMax": 3,
-      "displayRows": 8,
-      "displayCols": 8,
+      "cellSize": 28,
+      "valueMin": "auto",
+      "valueMax": "auto",
+      "displayRows": null,
+      "displayCols": null,
       "colorScheme": "blue",
       "min": 0,
       "max": 100,
@@ -205,13 +127,13 @@
       "xyPairs": []
     },
     {
-      "id": 3,
+      "id": 2,
       "type": "table",
-      "customTitle": "Storico della massa",
-      "x": 140,
-      "y": 380,
-      "width": 260,
-      "height": 240,
+      "customTitle": "",
+      "x": 400,
+      "y": 240,
+      "width": 240,
+      "height": 380,
       "minimized": false,
       "outputOnly": false,
       "showHistory": true,
@@ -239,18 +161,63 @@
       "mappings": [],
       "columns": [
         "time",
-        "mass"
+        "n1"
       ],
+      "xyPairs": []
+    },
+    {
+      "id": 3,
+      "type": "text",
+      "customTitle": "",
+      "x": 660,
+      "y": 80,
+      "width": 220,
+      "height": 120,
+      "minimized": false,
+      "outputOnly": true,
+      "showHistory": false,
+      "xMin": "auto",
+      "xMax": "auto",
+      "yMin": "auto",
+      "yMax": "auto",
+      "showGrid": true,
+      "legendPosition": "top-right",
+      "source": "n1",
+      "showNumericValues": true,
+      "showIndices": true,
+      "autoFitCells": true,
+      "cellSize": 28,
+      "valueMin": "auto",
+      "valueMax": "auto",
+      "displayRows": null,
+      "displayCols": null,
+      "colorScheme": "blue",
+      "min": 0,
+      "max": 100,
+      "step": 1,
+      "value": 0,
+      "options": [],
+      "mappings": [
+        {
+          "value": 0,
+          "label": "off"
+        },
+        {
+          "value": 1,
+          "label": "on"
+        }
+      ],
+      "columns": [],
       "xyPairs": []
     },
     {
       "id": 4,
       "type": "xychart",
-      "customTitle": "Massa nel tempo",
-      "x": 440,
-      "y": 440,
-      "width": 300,
-      "height": 220,
+      "customTitle": "",
+      "x": 20,
+      "y": 240,
+      "width": 380,
+      "height": 240,
       "minimized": false,
       "outputOnly": false,
       "showHistory": false,
@@ -280,15 +247,15 @@
       "xyPairs": [
         {
           "xSource": "time",
-          "ySource": "mass",
+          "ySource": "n1",
           "showTimeSeries": true,
           "showInstantProfile": false,
-          "color": "#2d7ff9",
+          "color": "#0e7ac4",
           "showLine": true,
-          "lineWidth": 2,
+          "lineWidth": 2.2,
           "lineStyle": "solid",
           "pointMode": "all",
-          "pointSize": 2
+          "pointSize": 2.4
         }
       ]
     }

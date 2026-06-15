@@ -29,6 +29,7 @@
             <hr class="menu-sep" />
             <button id="saveJsonBtn" class="menu-command" type="button" data-title-i18n="tooltip.menu.file.save"><span data-i18n="menu.file.save"></span><span class="menu-shortcut">Ctrl+S</span></button>
             <button id="saveAsJsonBtn" class="menu-command" type="button" data-title-i18n="tooltip.menu.file.saveAs"><span data-i18n="menu.file.saveAs"></span><span class="menu-shortcut">Ctrl+Shift+S</span></button>
+            <button id="closeModelBtn" class="menu-command" type="button" data-title-i18n="tooltip.menu.file.close"><span data-i18n="menu.file.close"></span><span class="menu-shortcut">Ctrl+W</span></button>
             <button id="exportCsvBtn" class="menu-command" type="button" data-title-i18n="tooltip.menu.file.exportCsv"><span data-i18n="menu.file.exportCsv"></span></button>
             <input id="loadJsonInput" type="file" accept="application/json" class="hidden-file" />
           </div>
@@ -139,6 +140,11 @@
         <div class="menu-file-status" id="fileStatusText"></div>
         <div class="menu-status" id="statusText" data-i18n="status.ready"></div>
       </header>
+
+      <div class="workspace-tabs" id="workspaceTabs">
+        <div class="workspace-tab-strip" id="workspaceTabBar"></div>
+        <button id="newTabBtn" class="workspace-tab workspace-tab-add" type="button" data-i18n="action.newTab" data-title-i18n="tooltip.tab.new"></button>
+      </div>
 
       <main class="layout">
         <section class="canvas-wrap" id="graphViewport">
@@ -258,7 +264,7 @@
 
             <div class="panel-section compact-panel-section">
               <label id="nodeModelPathLabel" for="nodeModelPathInput" class="hidden" data-i18n="label.submodelPath" data-title-i18n="tooltip.node.submodelPath"></label>
-              <input id="nodeModelPathInput" class="hidden display-only-input" type="text" readonly tabindex="-1" data-title-i18n="tooltip.node.submodelPath" />
+              <input id="nodeModelPathInput" class="hidden" type="text" data-title-i18n="tooltip.node.submodelPath" />
               <div id="submodelActionRow" class="row2-exec hidden">
                 <button id="loadSubmodelBtn" class="small-btn" type="button" data-i18n="action.loadSubmodel" data-title-i18n="tooltip.node.loadSubmodel"></button>
                 <button id="showSubmodelBtn" class="small-btn" type="button" data-i18n="action.showSubmodel" data-title-i18n="tooltip.node.showSubmodel"></button>

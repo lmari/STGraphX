@@ -97,8 +97,6 @@
           id: e.id,
           from: e.from,
           to: e.to,
-          sourcePort: String(e.sourcePort ?? ""),
-          targetPort: String(e.targetPort ?? ""),
           controlPoints: Array.isArray(e.controlPoints)
             ? e.controlPoints.filter((cp) => Number.isFinite(cp?.x) && Number.isFinite(cp?.y)).map((cp) => ({ x: cp.x, y: cp.y }))
             : [],
@@ -202,12 +200,19 @@
     function evaluateParameterNodesForModel(model, timeValue, rootExecution) {
       const globals = buildExecutionGlobalsForModel(model, rootExecution, timeValue);
       const parameterNodes = (model?.nodes || []).filter((node) => node?.shape === "diamond");
-      const pending = new Set(parameterNodes.map((node) => node.id));
+      const pending = new Set();
       const resolved = new Set();
 
       parameterNodes.forEach((node) => {
         node.pendingStateValue = null;
         node.pendingStateError = "";
+        if (node.externalValueEnabled) {
+          node.computedValue = node.externalValue;
+          node.computedError = "";
+          resolved.add(node.id);
+          return;
+        }
+        pending.add(node.id);
       });
 
       while (pending.size > 0) {
@@ -492,31 +497,10 @@
 
     function buildSubmodelInputOverrides(model, node, parentContext) {
       const overrides = new Map();
-      const assignedPorts = new Set();
-
-      (model?.edges || [])
-        .filter((edge) => edge.to === node.id && String(edge.targetPort ?? "").trim())
-        .forEach((edge) => {
-          const targetPort = String(edge.targetPort ?? "").trim();
-          const fromNode = getModelNodeById(model, edge.from);
-          if (!fromNode) {
-            return;
-          }
-          let value = parentContext[fromNode.name];
-          const sourcePort = String(edge.sourcePort ?? "").trim();
-          if (sourcePort) {
-            if (value === null || typeof value !== "object" || !Object.prototype.hasOwnProperty.call(value, sourcePort)) {
-              throw new Error(`missing submodel output ${sourcePort}`);
-            }
-            value = value[sourcePort];
-          }
-          overrides.set(targetPort, value);
-          assignedPorts.add(targetPort);
-        });
 
       Object.entries(node.inputBindings || {}).forEach(([inputName, expr]) => {
         const name = String(inputName || "").trim();
-        if (!name || assignedPorts.has(name)) {
+        if (!name) {
           return;
         }
         const result = semantics.evaluateValueExpression(String(expr ?? ""), parentContext, {

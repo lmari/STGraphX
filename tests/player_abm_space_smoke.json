@@ -30,8 +30,14 @@
       "fillColor": "",
       "strokeColor": "",
       "properties": [
-        { "key": "note formula", "value": "" },
-        { "key": "descrizione", "value": "Popolazione base di agenti con coordinate X,Y" }
+        {
+          "key": "note formula",
+          "value": ""
+        },
+        {
+          "key": "descrizione",
+          "value": "Popolazione base di agenti con coordinate X,Y"
+        }
       ],
       "valueExpression": "agents([\"ID\",\"X\",\"Y\",\"STATE\"],[[1,0,0,1],[2,1,1,1],[3,2,2,0],[4,3,3,1],[5,4,1,0]])"
     },
@@ -47,8 +53,14 @@
       "fillColor": "",
       "strokeColor": "",
       "properties": [
-        { "key": "note formula", "value": "" },
-        { "key": "descrizione", "value": "Popolazione traslata lungo X in funzione del tempo" }
+        {
+          "key": "note formula",
+          "value": ""
+        },
+        {
+          "key": "descrizione",
+          "value": "Popolazione traslata lungo X in funzione del tempo"
+        }
       ],
       "input": false,
       "valueExpression": "setCol(seed, \"X\", (col(seed, \"X\") + time) % 6)"
@@ -65,8 +77,14 @@
       "fillColor": "",
       "strokeColor": "",
       "properties": [
-        { "key": "note formula", "value": "" },
-        { "key": "descrizione", "value": "Indice spaziale 6x6 costruito sugli agenti" }
+        {
+          "key": "note formula",
+          "value": ""
+        },
+        {
+          "key": "descrizione",
+          "value": "Indice spaziale 6x6 costruito sugli agenti"
+        }
       ],
       "input": false,
       "valueExpression": "agentSpace(agenti, \"X\", \"Y\", \"ID\", [6,6])"
@@ -83,8 +101,14 @@
       "fillColor": "",
       "strokeColor": "",
       "properties": [
-        { "key": "note formula", "value": "" },
-        { "key": "descrizione", "value": "Matrice di occupazione dello spazio" }
+        {
+          "key": "note formula",
+          "value": ""
+        },
+        {
+          "key": "descrizione",
+          "value": "Matrice di occupazione dello spazio"
+        }
       ],
       "input": false,
       "valueExpression": "spaceMatrix(space)"
@@ -101,18 +125,44 @@
       "fillColor": "",
       "strokeColor": "",
       "properties": [
-        { "key": "note formula", "value": "" },
-        { "key": "descrizione", "value": "Numero di agenti con STATE=1" }
+        {
+          "key": "note formula",
+          "value": ""
+        },
+        {
+          "key": "descrizione",
+          "value": "Numero di agenti con STATE=1"
+        }
       ],
       "input": false,
       "valueExpression": "sum(col(agenti, \"STATE\"))"
     }
   ],
   "edges": [
-    { "id": 1, "from": 1, "to": 2, "sourcePort": "", "targetPort": "", "controlPoints": [] },
-    { "id": 2, "from": 2, "to": 3, "sourcePort": "", "targetPort": "", "controlPoints": [] },
-    { "id": 3, "from": 2, "to": 5, "sourcePort": "", "targetPort": "", "controlPoints": [] },
-    { "id": 4, "from": 3, "to": 4, "sourcePort": "", "targetPort": "", "controlPoints": [] }
+    {
+      "id": 1,
+      "from": 1,
+      "to": 2,
+      "controlPoints": []
+    },
+    {
+      "id": 2,
+      "from": 2,
+      "to": 3,
+      "controlPoints": []
+    },
+    {
+      "id": 3,
+      "from": 2,
+      "to": 5,
+      "controlPoints": []
+    },
+    {
+      "id": 4,
+      "from": 3,
+      "to": 4,
+      "controlPoints": []
+    }
   ],
   "textItems": [
     {
@@ -232,7 +282,10 @@
       "value": 0,
       "options": [],
       "mappings": [],
-      "columns": ["time", "alive"],
+      "columns": [
+        "time",
+        "alive"
+      ],
       "xyPairs": []
     }
   ]

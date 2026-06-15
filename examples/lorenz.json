@@ -183,64 +183,48 @@
       "id": 1,
       "from": 4,
       "to": 1,
-      "sourcePort": "",
-      "targetPort": "",
       "controlPoints": []
     },
     {
       "id": 2,
       "from": 5,
       "to": 2,
-      "sourcePort": "",
-      "targetPort": "",
       "controlPoints": []
     },
     {
       "id": 3,
       "from": 6,
       "to": 3,
-      "sourcePort": "",
-      "targetPort": "",
       "controlPoints": []
     },
     {
       "id": 4,
       "from": 1,
       "to": 2,
-      "sourcePort": "",
-      "targetPort": "",
       "controlPoints": []
     },
     {
       "id": 5,
       "from": 2,
       "to": 3,
-      "sourcePort": "",
-      "targetPort": "",
       "controlPoints": []
     },
     {
       "id": 6,
       "from": 3,
       "to": 2,
-      "sourcePort": "",
-      "targetPort": "",
       "controlPoints": []
     },
     {
       "id": 7,
       "from": 3,
       "to": 1,
-      "sourcePort": "",
-      "targetPort": "",
       "controlPoints": []
     },
     {
       "id": 8,
       "from": 1,
       "to": 3,
-      "sourcePort": "",
-      "targetPort": "",
       "controlPoints": []
     }
   ],

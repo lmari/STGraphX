@@ -1389,6 +1389,20 @@
         openWatchDebugger: () => {},
         clearVisualHistory: () => this.clearWidgetHistory(),
         clearSimulationHistory: () => this.clearWidgetHistory(),
+        onTimedExecutionStarted: ({ delay }) => {
+          this.dispatchPlayerEvent("stgraphx-run-start", {
+            mode: "timed",
+            delay,
+            time: this.currentDisplayTime(),
+          });
+        },
+        onTimedExecutionStopped: ({ reason }) => {
+          this.dispatchPlayerEvent("stgraphx-run-stop", {
+            mode: "timed",
+            reason,
+            time: this.currentDisplayTime(),
+          });
+        },
         hasStrictExecutionBlock: () => false,
         buildEvaluationEnv: () => ({ rootExecution: runtimeModel.execution, stack: [] }),
       });
@@ -1629,11 +1643,6 @@
       if (!this._state.runtimeController) {
         return;
       }
-      const starting = this._timedState.timedRunHandle == null;
-      this.dispatchPlayerEvent(starting ? "stgraphx-run-start" : "stgraphx-run-stop", {
-        mode: "timed",
-        time: this.currentDisplayTime(),
-      });
       try {
         await this._state.runtimeController.toggleTimedExecution();
       } catch (err) {
