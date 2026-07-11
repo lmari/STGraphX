@@ -1,0 +1,94 @@
+{
+  "version": 1,
+  "modelTitle": "",
+  "localFunctions": [],
+  "view": {
+    "zoom": 1,
+    "showGrid": true,
+    "highlightNodeEdges": false,
+    "gridSize": 20,
+    "scrollLeft": 180,
+    "scrollTop": 180
+  },
+  "debug": {
+    "watches": [],
+    "breakpointEnabled": false,
+    "breakpointExpression": ""
+  },
+  "modelProperties": [],
+  "nodeCounter": 4,
+  "edgeCounter": 2,
+  "widgetCounter": 1,
+  "textItemCounter": 1,
+  "execution": {
+    "t0": 0,
+    "dt": 1,
+    "t1": 10,
+    "delayMs": 1000,
+    "decimals": 3,
+    "integrator": "euler",
+    "strictDefinitions": false
+  },
+  "nodes": [
+    {
+      "id": 2,
+      "name": "input",
+      "output": false,
+      "global": false,
+      "type": "algebraic",
+      "x": 420,
+      "y": 140,
+      "width": 120,
+      "height": 70,
+      "fillColor": "",
+      "strokeColor": "",
+      "properties": [
+        {
+          "key": "note formula",
+          "value": ""
+        },
+        {
+          "key": "descrizione",
+          "value": ""
+        }
+      ],
+      "input": true,
+      "valueExpression": ""
+    },
+    {
+      "id": 3,
+      "name": "output",
+      "output": true,
+      "global": false,
+      "type": "algebraic",
+      "x": 600,
+      "y": 140,
+      "width": 120,
+      "height": 70,
+      "fillColor": "",
+      "strokeColor": "",
+      "properties": [
+        {
+          "key": "note formula",
+          "value": ""
+        },
+        {
+          "key": "descrizione",
+          "value": ""
+        }
+      ],
+      "input": false,
+      "valueExpression": "input*2"
+    }
+  ],
+  "edges": [
+    {
+      "id": 1,
+      "from": 2,
+      "to": 3,
+      "controlPoints": []
+    }
+  ],
+  "textItems": [],
+  "widgets": []
+}

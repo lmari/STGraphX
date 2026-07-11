@@ -123,6 +123,7 @@
           <button class="menu-title" type="button" data-menu="helpMenu" data-i18n="menu.help" data-title-i18n="tooltip.menu.help"></button>
           <div class="menu-panel" id="helpMenu">
             <button id="functionsHelpBtn" class="menu-command" type="button" data-title-i18n="tooltip.menu.help.functions"><span data-i18n="menu.help.functions"></span><span class="menu-shortcut">F1</span></button>
+            <button id="examplesHelpBtn" class="menu-command" type="button" data-title-i18n="tooltip.menu.help.examples"><span data-i18n="menu.help.examples"></span></button>
             <button id="aboutAppBtn" class="menu-command" type="button" data-title-i18n="tooltip.menu.help.about"><span data-i18n="menu.help.about"></span></button>
           </div>
         </div>
@@ -145,6 +146,17 @@
         <div class="workspace-tab-strip" id="workspaceTabBar"></div>
         <button id="newTabBtn" class="workspace-tab workspace-tab-add" type="button" data-i18n="action.newTab" data-title-i18n="tooltip.tab.new"></button>
       </div>
+
+      <button id="tabletSidebarToggle" class="tabletSidebarToggle tablet-sidebar-toggle" type="button" aria-label="Pannello" aria-expanded="false">☰</button>
+      <div id="tabletQuickbar" class="tablet-quickbar">
+        <button id="tabletFitBtn" class="tablet-quick-btn" type="button" title="Fit">⤢</button>
+        <button id="tabletModeBtn" class="tablet-quick-btn" type="button" title="Edit">✎</button>
+        <button id="tabletRunBtn" class="tablet-quick-btn" type="button" title="Run">▶▶</button>
+        <button id="tabletStepBtn" class="tablet-quick-btn" type="button" title="Step">▶</button>
+        <button id="tabletTimedBtn" class="tablet-quick-btn" type="button" title="Timed">⏱</button>
+        <button id="tabletResetBtn" class="tablet-quick-btn" type="button" title="Reset">↺</button>
+      </div>
+      <div id="tabletSidebarBackdrop" class="tablet-sidebar-backdrop hidden"></div>
 
       <main class="layout">
         <section class="canvas-wrap" id="graphViewport">
@@ -284,6 +296,7 @@
                 <button id="editNodeValueExprBtn" class="small-btn expr-edit-btn" type="button" data-i18n="action.editExpression" data-title-i18n="tooltip.node.editExpression"></button>
               </div>
               <div id="nodeValueExprStatus" class="expr-status hidden"></div>
+              <div id="nodeWidgetBindingInfo" class="expr-status hidden"></div>
 
             </div>
 
@@ -447,6 +460,19 @@
         <div id="functionsHelpContent" class="functions-help-content"></div>
         <div class="modal-actions">
           <button id="functionsHelpDismissBtn" type="button" data-i18n="action.close"></button>
+        </div>
+      </div>
+    </div>
+    <div id="examplesHelpModal" class="modal-backdrop hidden">
+      <div class="modal-card examples-help-card" role="dialog" aria-modal="true" aria-labelledby="examplesHelpTitle">
+        <div class="modal-head">
+          <h3 id="examplesHelpTitle" data-i18n="examples.title"></h3>
+          <button id="examplesHelpCloseBtn" class="icon-btn modal-close-btn" type="button" data-i18n-aria-label="aria.close">×</button>
+        </div>
+        <div id="examplesHelpIntro" class="help-intro" data-i18n="examples.intro"></div>
+        <div id="examplesHelpContent" class="examples-help-content"></div>
+        <div class="modal-actions">
+          <button id="examplesHelpDismissBtn" type="button" data-i18n="action.close"></button>
         </div>
       </div>
     </div>

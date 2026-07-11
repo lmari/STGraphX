@@ -8,6 +8,15 @@ const menuTimeText = document.getElementById("menuTimeText");
 const topMenuBar = document.getElementById("topMenuBar");
 const workspaceTabBar = document.getElementById("workspaceTabBar");
 const newTabBtn = document.getElementById("newTabBtn");
+const tabletSidebarToggle = document.getElementById("tabletSidebarToggle");
+const tabletQuickbar = document.getElementById("tabletQuickbar");
+const tabletFitBtn = document.getElementById("tabletFitBtn");
+const tabletModeBtn = document.getElementById("tabletModeBtn");
+const tabletRunBtn = document.getElementById("tabletRunBtn");
+const tabletStepBtn = document.getElementById("tabletStepBtn");
+const tabletTimedBtn = document.getElementById("tabletTimedBtn");
+const tabletResetBtn = document.getElementById("tabletResetBtn");
+const tabletSidebarBackdrop = document.getElementById("tabletSidebarBackdrop");
 const menuRoots = Array.from(document.querySelectorAll(".menu-root"));
 const menuTitles = Array.from(document.querySelectorAll(".menu-title"));
 const menuCommands = Array.from(document.querySelectorAll(".menu-command"));
@@ -61,6 +70,7 @@ const recentModelsMenuRoot = document.getElementById("recentModelsMenuRoot");
 const recentModelsSep = document.getElementById("recentModelsSep");
 const recentModelsSection = document.getElementById("recentModelsSection");
 const clearRecentModelsBtn = document.getElementById("clearRecentModelsBtn");
+const recentModelsMenuBtn = document.getElementById("recentModelsMenuBtn");
 const loadJsonInput = document.getElementById("loadJsonInput");
 const snapToGridInput = document.getElementById("snapToGridInput");
 const showGridInput = document.getElementById("showGridInput");
@@ -104,6 +114,7 @@ const nodeValueExprRow = document.getElementById("nodeValueExprRow");
 const nodeValueExprInput = document.getElementById("nodeValueExprInput");
 const editNodeValueExprBtn = document.getElementById("editNodeValueExprBtn");
 const nodeValueExprStatus = document.getElementById("nodeValueExprStatus");
+const nodeWidgetBindingInfo = document.getElementById("nodeWidgetBindingInfo");
 const nodeModelPathLabel = document.getElementById("nodeModelPathLabel");
 const nodeModelPathInput = document.getElementById("nodeModelPathInput");
 const submodelActionRow = document.getElementById("submodelActionRow");
@@ -180,12 +191,17 @@ const expressionEditorCancelBtn = document.getElementById("expressionEditorCance
 const expressionEditorApplyBtn = document.getElementById("expressionEditorApplyBtn");
 const expressionEditorResizeHandle = document.getElementById("expressionEditorResizeHandle");
 const functionsHelpBtn = document.getElementById("functionsHelpBtn");
+const examplesHelpBtn = document.getElementById("examplesHelpBtn");
 const aboutAppBtn = document.getElementById("aboutAppBtn");
 const exitSubmodelBtn = document.getElementById("exitSubmodelBtn");
 const functionsHelpModal = document.getElementById("functionsHelpModal");
 const functionsHelpCloseBtn = document.getElementById("functionsHelpCloseBtn");
 const functionsHelpDismissBtn = document.getElementById("functionsHelpDismissBtn");
 const functionsHelpContent = document.getElementById("functionsHelpContent");
+const examplesHelpModal = document.getElementById("examplesHelpModal");
+const examplesHelpCloseBtn = document.getElementById("examplesHelpCloseBtn");
+const examplesHelpDismissBtn = document.getElementById("examplesHelpDismissBtn");
+const examplesHelpContent = document.getElementById("examplesHelpContent");
 const aboutAppModal = document.getElementById("aboutAppModal");
 const aboutAppCloseBtn = document.getElementById("aboutAppCloseBtn");
 const aboutAppDismissBtn = document.getElementById("aboutAppDismissBtn");
@@ -846,6 +862,8 @@ const ui = {
   watchPreviousSnapshot: new Map(),
   breakpointLastResult: null,
   localFunctionsEditor: null,
+  tabletSidebarOpen: false,
+  tabletCanvasMode: "edit",
 };
 
 const history = {
@@ -1103,6 +1121,29 @@ function sanitizeRichTextHtml(rawHtml) {
 
 function hasPlatformApi(name) {
   return typeof window.STGraphXPlatform?.[name] === "function";
+}
+
+function widgetMinDimensions(widget) {
+  switch (String(widget?.type || "")) {
+    case "led":
+      return { width: 120, height: 78 };
+    case "button":
+      return { width: 120, height: 76 };
+    case "select":
+      return { width: 120, height: 82 };
+    case "slider":
+      return { width: 220, height: 82 };
+    case "text":
+      return { width: 120, height: 82 };
+    case "matrix":
+      return { width: 180, height: 130 };
+    case "table":
+      return { width: 120, height: 96 };
+    case "xychart":
+      return { width: 244, height: 152 };
+    default:
+      return { width: 160, height: 84 };
+  }
 }
 
 function supportsOpenFilePicker() {
@@ -3316,6 +3357,153 @@ function closeFunctionsHelp() {
   functionsHelpModal.classList.add("hidden");
 }
 
+const EXAMPLE_CATALOG_PATH = "examples/examples-catalog.json";
+
+function localizedExampleText(record) {
+  if (!record || typeof record !== "object") {
+    return "";
+  }
+  return String(record[currentLang] ?? record.en ?? record.it ?? "").trim();
+}
+
+async function openExampleModel(fileName) {
+  const normalized = String(fileName || "").trim();
+  if (!normalized) {
+    return false;
+  }
+  try {
+    let text = "";
+    let fileHandle = null;
+    let directoryHandle = null;
+    if (hasPlatformApi("createFileHandleFromPath") && hasPlatformApi("createDirectoryHandleFromDirectoryPath")) {
+      try {
+        const pageUrl = new URL(window.location.href);
+        const basePath = decodeURIComponent(pageUrl.pathname || "");
+        const baseDir = basePath.replace(/\/[^/]*$/, "");
+        const filePath = `${baseDir}/examples/${normalized}`;
+        fileHandle = window.STGraphXPlatform.createFileHandleFromPath(filePath);
+        directoryHandle = window.STGraphXPlatform.createDirectoryHandleFromDirectoryPath(`${baseDir}/examples`);
+        const file = await fileHandle.getFile();
+        text = await file.text();
+      } catch (_err) {
+        fileHandle = null;
+        directoryHandle = null;
+      }
+    }
+    if (!text) {
+      const response = await fetch(`examples/${encodeURIComponent(normalized)}`, { cache: "no-store" });
+      if (!response.ok) {
+        throw new Error(`${response.status}`);
+      }
+      text = await response.text();
+    }
+    const rootEntry = {
+      name: normalized,
+      text,
+      fileHandle,
+      directoryHandle,
+      data: JSON.parse(text),
+    };
+    const opened = await openPreparedJsonEntryInNewTab(rootEntry);
+    if (!opened) {
+      return false;
+    }
+    closeExamplesHelp();
+    return true;
+  } catch (err) {
+    const message = `${t("examples.openError")} ${String(err?.message || "")}`.trim();
+    setStatus(message, true);
+    window.alert(message);
+    return false;
+  }
+}
+
+async function loadExamplesCatalog() {
+  let text = "";
+  if (hasPlatformApi("createFileHandleFromPath")) {
+    try {
+      const pageUrl = new URL(window.location.href);
+      const basePath = decodeURIComponent(pageUrl.pathname || "");
+      const baseDir = basePath.replace(/\/[^/]*$/, "");
+      const catalogPath = `${baseDir}/${EXAMPLE_CATALOG_PATH}`;
+      const fileHandle = window.STGraphXPlatform.createFileHandleFromPath(catalogPath);
+      const file = await fileHandle.getFile();
+      text = await file.text();
+    } catch (_err) {
+      text = "";
+    }
+  }
+  if (!text) {
+    const response = await fetch(EXAMPLE_CATALOG_PATH, { cache: "no-store" });
+    if (!response.ok) {
+      throw new Error(`${response.status}`);
+    }
+    text = await response.text();
+  }
+  const parsed = JSON.parse(text);
+  return Array.isArray(parsed) ? parsed : [];
+}
+
+async function renderExamplesHelp() {
+  if (!examplesHelpContent) {
+    return;
+  }
+  examplesHelpContent.innerHTML = "";
+  let entries = [];
+  try {
+    entries = await loadExamplesCatalog();
+  } catch (err) {
+    const message = `${t("examples.openError")} ${String(err?.message || "")}`.trim();
+    const row = document.createElement("div");
+    row.className = "example-entry";
+    row.textContent = message;
+    examplesHelpContent.appendChild(row);
+    return;
+  }
+  entries.forEach((entry) => {
+    const row = document.createElement("div");
+    row.className = "example-entry";
+    const openBtn = document.createElement("button");
+    openBtn.type = "button";
+    openBtn.className = "small-btn";
+    openBtn.textContent = t("examples.open");
+    openBtn.addEventListener("click", () => {
+      void openExampleModel(entry.file);
+    });
+    const content = document.createElement("div");
+    const title = document.createElement("div");
+    title.className = "example-entry-title";
+    title.textContent = localizedExampleText(entry.title) || entry.file;
+    const path = document.createElement("div");
+    path.className = "example-entry-path";
+    path.textContent = `examples/${entry.file}`;
+    const desc = document.createElement("p");
+    desc.className = "example-entry-desc";
+    desc.textContent = localizedExampleText(entry.description);
+    content.appendChild(title);
+    content.appendChild(path);
+    content.appendChild(desc);
+    row.appendChild(openBtn);
+    row.appendChild(content);
+    examplesHelpContent.appendChild(row);
+  });
+}
+
+function openExamplesHelp() {
+  if (!examplesHelpModal) {
+    return;
+  }
+  void renderExamplesHelp();
+  examplesHelpModal.classList.remove("hidden");
+}
+
+function closeExamplesHelp() {
+  if (!examplesHelpModal) {
+    return;
+  }
+  examplesHelpModal.classList.add("hidden");
+}
+
 function openAboutApp() {
   if (!aboutAppModal) {
     return;
@@ -5413,6 +5601,58 @@ function displayFileName() {
   return currentFileName || t("file.unnamed");
 }
 
+function isCompactTabletLayout() {
+  return window.matchMedia("(max-width: 1100px)").matches;
+}
+
+function isTabletCanvasPanMode() {
+  return isCompactTabletLayout() && ui.tabletCanvasMode === "pan";
+}
+
+function updateTabletCanvasModeUi() {
+  const panMode = isTabletCanvasPanMode();
+  document.body.classList.toggle("tablet-canvas-pan", panMode);
+  if (tabletModeBtn) {
+    tabletModeBtn.textContent = panMode ? "✋" : "✎";
+    tabletModeBtn.classList.toggle("active", panMode);
+    setTooltipText(tabletModeBtn, t(panMode ? "action.tabletCanvasPan" : "action.tabletCanvasEdit"));
+  }
+}
+
+function setTabletCanvasMode(mode) {
+  ui.tabletCanvasMode = mode === "pan" ? "pan" : "edit";
+  updateTabletCanvasModeUi();
+}
+
+function applyResponsiveUiState() {
+  const compact = isCompactTabletLayout();
+  const open = compact && ui.tabletSidebarOpen;
+  document.body.classList.toggle("tablet-sidebar-layout", compact);
+  document.body.classList.toggle("tablet-sidebar-open", open);
+  if (tabletQuickbar) {
+    tabletQuickbar.classList.toggle("hidden", !compact);
+  }
+  if (tabletSidebarBackdrop) {
+    tabletSidebarBackdrop.classList.toggle("hidden", !open);
+  }
+  if (tabletSidebarToggle) {
+    tabletSidebarToggle.classList.toggle("active", open);
+    tabletSidebarToggle.setAttribute("aria-expanded", open ? "true" : "false");
+  }
+  updateTabletCanvasModeUi();
+}
+
+function setTabletSidebarOpen(open) {
+  ui.tabletSidebarOpen = Boolean(open);
+  applyResponsiveUiState();
+}
+
+function revealSidebarForCompactLayout() {
+  if (isCompactTabletLayout()) {
+    setTabletSidebarOpen(true);
+  }
+}
+
 function displayFileNameFromContext(context) {
   const fileName = String(context?.currentFileName || "").trim();
   if (fileName) {
@@ -5498,6 +5738,15 @@ function cloneRuntimeWidgetState(widget) {
     id: Number(widget.id),
     type: String(widget.type || ""),
   };
+  if (widget.type === "slider") {
+    state.value = Number(widget.value);
+  }
+  if (widget.type === "button") {
+    state.value = Boolean(widget.value);
+  }
+  if (widget.type === "select") {
+    state.value = Number(widget.value);
+  }
   if (widget.type === "table") {
     state.rows = Array.isArray(widget.rows) ? deepClone(widget.rows) : [];
   }
@@ -5784,6 +6033,13 @@ function applyRuntimeStateSnapshot(snapshot) {
         });
       }
       return;
+    }
+    if (widget.type === "slider") {
+      widget.value = Number(saved.value);
+    } else if (widget.type === "button") {
+      widget.value = Boolean(saved.value);
+    } else if (widget.type === "select") {
+      widget.value = Number(saved.value);
     }
     if (widget.type === "table") {
       widget.rows = Array.isArray(saved.rows) ? deepClone(saved.rows) : [];
@@ -6778,16 +7034,44 @@ function normalizeInputNodeFlags() {
   });
 }
 
-function buttonBindableNodeNames() {
-  return graph.nodes.filter((node) => canBindButtonToNode(node)).map((node) => node.name);
+function inputWidgetBoundNodeNameSet(excludeWidgetId = null) {
+  const bound = new Set();
+  graph.widgets.forEach((widget) => {
+    if (!widget || (excludeWidgetId != null && Number(widget.id) === Number(excludeWidgetId))) {
+      return;
+    }
+    if (widget.type !== "slider" && widget.type !== "button" && widget.type !== "select") {
+      return;
+    }
+    const source = String(widget.source ?? "").trim();
+    if (source) {
+      bound.add(source);
+    }
+  });
+  return bound;
 }
 
-function selectBindableNodeNames() {
-  return graph.nodes.filter((node) => canBindSliderToNode(node)).map((node) => node.name);
+function bindableInputNodeNames(predicate, excludeWidgetId = null, preserveName = "") {
+  const blocked = inputWidgetBoundNodeNameSet(excludeWidgetId);
+  const keepName = String(preserveName ?? "").trim();
+  if (keepName) {
+    blocked.delete(keepName);
+  }
+  return graph.nodes
+    .filter((node) => predicate(node) && !blocked.has(String(node.name ?? "")))
+    .map((node) => node.name);
 }
 
-function sliderBindableNodeNames() {
-  return graph.nodes.filter((node) => canBindSliderToNode(node)).map((node) => node.name);
+function buttonBindableNodeNames(excludeWidgetId = null, preserveName = "") {
+  return bindableInputNodeNames((node) => canBindButtonToNode(node), excludeWidgetId, preserveName);
+}
+
+function selectBindableNodeNames(excludeWidgetId = null, preserveName = "") {
+  return bindableInputNodeNames((node) => canBindSliderToNode(node), excludeWidgetId, preserveName);
+}
+
+function sliderBindableNodeNames(excludeWidgetId = null, preserveName = "") {
+  return bindableInputNodeNames((node) => canBindSliderToNode(node), excludeWidgetId, preserveName);
 }
 
 function selectedNodesList() {
@@ -6958,9 +7242,17 @@ function updateModelRunButtons() {
     setTooltipText(topRunEvalBtn, `${t("menu.run.execute")} (F7)`);
     topRunEvalBtn.disabled = blocked;
   }
+  if (tabletRunBtn) {
+    setTooltipText(tabletRunBtn, t("menu.run.execute"));
+    tabletRunBtn.disabled = blocked;
+  }
   if (topRunStepBtn) {
     setTooltipText(topRunStepBtn, `${t("menu.run.step")} (F8)`);
     topRunStepBtn.disabled = blocked;
+  }
+  if (tabletStepBtn) {
+    setTooltipText(tabletStepBtn, t("menu.run.step"));
+    tabletStepBtn.disabled = blocked;
   }
   if (topRunTimedBtn) {
     const timedKey = ui.timedRunHandle == null ? "action.timedStart" : "action.timedStop";
@@ -6969,9 +7261,23 @@ function updateModelRunButtons() {
     topRunTimedBtn.disabled = blocked && ui.timedRunHandle == null;
     topRunTimedBtn.classList.toggle("active", ui.timedRunHandle != null);
   }
+  if (tabletTimedBtn) {
+    const timedKey = ui.timedRunHandle == null ? "action.timedStart" : "action.timedStop";
+    tabletTimedBtn.textContent = ui.timedRunHandle == null ? "⏱" : "⏸";
+    setTooltipText(tabletTimedBtn, t(timedKey));
+    tabletTimedBtn.disabled = blocked && ui.timedRunHandle == null;
+    tabletTimedBtn.classList.toggle("active", ui.timedRunHandle != null);
+  }
   if (topRunResetBtn) {
     setTooltipText(topRunResetBtn, `${t("menu.run.reset")} (F10)`);
   }
+  if (tabletResetBtn) {
+    setTooltipText(tabletResetBtn, t("menu.run.reset"));
+  }
+  if (tabletFitBtn) {
+    setTooltipText(tabletFitBtn, t("menu.view.fit"));
+  }
+  updateTabletCanvasModeUi();
   if (runFullModelBtn) {
     setTooltipText(runFullModelBtn, `${t("menu.run.execute")} (F7)`);
     runFullModelBtn.disabled = blocked;
@@ -7196,6 +7502,7 @@ function selectEdge(id) {
     ui.selected = { type: "edge", id };
     ui.selectedNodes.clear();
     ui.selectedControlPoint = null;
+    revealSidebarForCompactLayout();
     refreshSidebar();
   }, `edge:${id}`);
 }
@@ -7205,6 +7512,7 @@ function selectWidget(id) {
     ui.selected = { type: "widget", id };
     ui.selectedNodes.clear();
     ui.selectedControlPoint = null;
+    revealSidebarForCompactLayout();
     refreshSidebar();
   }, `widget:${id}`);
 }
@@ -7214,6 +7522,7 @@ function selectTextItem(id) {
     ui.selected = { type: "text", id };
     ui.selectedNodes.clear();
     ui.selectedControlPoint = null;
+    revealSidebarForCompactLayout();
     refreshSidebar();
   }, `text:${id}`);
 }
@@ -7260,6 +7569,7 @@ function selectSingleNode(id) {
     ui.selected = { type: "node", id };
     ui.selectedNodes = new Set([id]);
     ui.selectedControlPoint = null;
+    revealSidebarForCompactLayout();
     refreshSidebar();
   }, `node:${id}`);
 }
@@ -7278,6 +7588,7 @@ function toggleNodeSelection(id) {
     ui.selectedControlPoint = null;
     ui.selected = null;
     syncNodeSelectionFocus();
+    revealSidebarForCompactLayout();
     refreshSidebar();
   }, nextSelectionKey);
 }
@@ -7294,6 +7605,7 @@ function setNodeSelection(ids, additive = false) {
     ui.selected = null;
     ui.selectedControlPoint = null;
     syncNodeSelectionFocus();
+    revealSidebarForCompactLayout();
     refreshSidebar();
   }, nextSelectionKey);
 }
@@ -7427,8 +7739,11 @@ function exportGraphData() {
       max: Number.isFinite(Number(w.max)) ? Number(w.max) : 100,
       step: Number.isFinite(Number(w.step)) ? Number(w.step) : 1,
       value: w.type === "button"
-        ? Boolean(w.value)
+        ? Boolean(w.initialValue ?? w.value)
         : (Number.isFinite(Number(w.value)) ? Number(w.value) : 0),
+      initialValue: w.type === "button" ? Boolean(w.initialValue ?? w.value) : undefined,
+      falseLabel: String(w.falseLabel ?? ""),
+      trueLabel: String(w.trueLabel ?? ""),
       options: Array.isArray(w.options)
         ? w.options.map((option) => ({
           label: String(option?.label ?? ""),
@@ -7634,8 +7949,8 @@ function applyGraphData(data) {
         customTitle: String(w.customTitle ?? ""),
         x: Number.isFinite(Number(w.x)) ? Number(w.x) : 40,
         y: Number.isFinite(Number(w.y)) ? Number(w.y) : 40,
-        width: clamp(Number(w.width) || 320, 220, 1200),
-        height: clamp(Number(w.height) || 160, 110, 900),
+        width: clamp(Number(w.width) || 320, widgetMinDimensions(w).width, 1200),
+        height: clamp(Number(w.height) || 160, widgetMinDimensions(w).height, 900),
         minimized: Boolean(w.minimized),
         outputOnly: Boolean(w.outputOnly),
         showHistory: Boolean(w.showHistory),
@@ -7663,8 +7978,15 @@ function applyGraphData(data) {
         max: Number.isFinite(Number(w.max)) ? Number(w.max) : 100,
         step: Number.isFinite(Number(w.step)) ? Number(w.step) : 1,
         value: w.type === "button"
-          ? (w.value === true || w.value === "true" || w.value === 1 || w.value === "1")
+          ? (w.initialValue === true || w.initialValue === "true" || w.initialValue === 1 || w.initialValue === "1"
+            || ((w.initialValue == null) && (w.value === true || w.value === "true" || w.value === 1 || w.value === "1")))
           : (Number.isFinite(Number(w.value)) ? Number(w.value) : 0),
+        initialValue: w.type === "button"
+          ? (w.initialValue === true || w.initialValue === "true" || w.initialValue === 1 || w.initialValue === "1"
+            || ((w.initialValue == null) && (w.value === true || w.value === "true" || w.value === 1 || w.value === "1")))
+          : undefined,
+        falseLabel: String(w.falseLabel ?? ""),
+        trueLabel: String(w.trueLabel ?? ""),
         options: Array.isArray(w.options)
           ? w.options.map((option) => ({
             label: String(option?.label ?? ""),
@@ -8605,6 +8927,12 @@ function refreshSidebar() {
       nodeValueExprInput.classList.remove("invalid");
       hideExpressionStatus(nodeValueExprStatus);
     }
+    if (nodeWidgetBindingInfo) {
+      const controlledByWidget = !submodelNode && hasInputWidgetBinding(node);
+      nodeWidgetBindingInfo.classList.toggle("hidden", !controlledByWidget);
+      nodeWidgetBindingInfo.classList.remove("ok", "error");
+      nodeWidgetBindingInfo.textContent = controlledByWidget ? t("node.widgetControlled") : "";
+    }
     if (nodeInitialStateLabel) {
       nodeInitialStateLabel.classList.toggle("hidden", !stateNode || submodelNode);
     }
@@ -8683,6 +9011,11 @@ function refreshSidebar() {
   nodeInitialStateInput.classList.remove("invalid");
   hideExpressionStatus(nodeValueExprStatus);
   hideExpressionStatus(nodeInitialStateStatus);
+  if (nodeWidgetBindingInfo) {
+    nodeWidgetBindingInfo.classList.add("hidden");
+    nodeWidgetBindingInfo.classList.remove("ok", "error");
+    nodeWidgetBindingInfo.textContent = "";
+  }
   nodeInputInput.checked = false;
   if (nodeInputLabel) {
     nodeInputLabel.classList.add("hidden");
@@ -8970,6 +9303,9 @@ function render() {
     path.addEventListener("contextmenu", onEdgeContextMenu);
 
     const onEdgeHitDown = (evt, pointGetter) => {
+      if (isTabletCanvasPanMode()) {
+        return;
+      }
       evt.stopPropagation();
       const p = pointGetter(evt);
       if (!isSelected) {
@@ -9008,9 +9344,12 @@ function render() {
         }
         cpCircle.setAttribute("cx", cp.x);
         cpCircle.setAttribute("cy", cp.y);
-        cpCircle.setAttribute("r", "7");
+        cpCircle.setAttribute("r", isCompactTabletLayout() ? "10" : "7");
 
         cpCircle.addEventListener("pointerdown", (evt) => {
+          if (isTabletCanvasPanMode()) {
+            return;
+          }
           evt.stopPropagation();
           selectEdge(edge.id);
           if (isEditingUiLocked()) {
@@ -9168,6 +9507,9 @@ function render() {
     }
 
     const startEdgeCreate = (evt) => {
+      if (isTabletCanvasPanMode()) {
+        return;
+      }
       if (isEditingUiLocked()) {
         return;
       }
@@ -9177,6 +9519,9 @@ function render() {
     };
 
     const startEdgeCreateMouse = (evt) => {
+      if (isTabletCanvasPanMode()) {
+        return;
+      }
       if (isEditingUiLocked()) {
         return;
       }
@@ -9185,6 +9530,9 @@ function render() {
     };
 
     g.addEventListener("pointerdown", (evt) => {
+      if (isTabletCanvasPanMode()) {
+        return;
+      }
       evt.preventDefault();
       evt.stopPropagation();
       ui.marquee = null;
@@ -9336,6 +9684,9 @@ function render() {
           port.setAttribute("cy", node.y - node.height / 2 + 10 + step * (idx + 1));
           const title = document.createElementNS(SVG_NS, "title");
           title.textContent = `${side === "input" ? t("label.input") : t("label.output")}: ${String(name)}`;
+          if (isCompactTabletLayout()) {
+            port.setAttribute("r", "6");
+          }
           port.appendChild(title);
           submodelPorts.push(port);
         });
@@ -9350,7 +9701,7 @@ function render() {
     centerPortHit.classList.add("center-port-hit");
     centerPortHit.setAttribute("cx", node.x);
     centerPortHit.setAttribute("cy", node.y);
-    centerPortHit.setAttribute("r", "18");
+    centerPortHit.setAttribute("r", isCompactTabletLayout() ? "26" : "18");
     if (disableCenterPortForMultiSelection) {
       centerPortHit.style.pointerEvents = "none";
       centerPortHit.style.cursor = "inherit";
@@ -9366,6 +9717,9 @@ function render() {
     handle.setAttribute("r", "6");
 
     handle.addEventListener("pointerdown", (evt) => {
+      if (isTabletCanvasPanMode()) {
+        return;
+      }
       evt.stopPropagation();
       if (!ui.selectedNodes.has(node.id)) {
         selectSingleNode(node.id);
@@ -9466,6 +9820,9 @@ function render() {
     handle.setAttribute("r", "6");
 
     g.addEventListener("pointerdown", (evt) => {
+      if (isTabletCanvasPanMode()) {
+        return;
+      }
       evt.stopPropagation();
       if (!(ui.selected?.type === "text" && ui.selected.id === item.id)) {
         selectTextItem(item.id);
@@ -9501,6 +9858,9 @@ function render() {
       openTextEditor();
     });
     handle.addEventListener("pointerdown", (evt) => {
+      if (isTabletCanvasPanMode()) {
+        return;
+      }
       evt.stopPropagation();
       if (!(ui.selected?.type === "text" && ui.selected.id === item.id)) {
         selectTextItem(item.id);
@@ -9663,8 +10023,32 @@ function importGraphData(data) {
         customTitle: String(w.customTitle ?? ""),
         x: Number.isFinite(Number(w.x)) ? Number(w.x) : 40,
         y: Number.isFinite(Number(w.y)) ? Number(w.y) : 40,
-        width: clamp(Number(w.width) || 320, 220, 1200),
-        height: clamp(Number(w.height) || 160, 110, 900),
+        width: clamp(Number(w.width) || 320, widgetMinDimensions({
+          type: w.type === "xychart"
+            ? "xychart"
+            : (w.type === "slider"
+              ? "slider"
+              : (w.type === "matrix"
+                ? "matrix"
+                : (w.type === "button"
+                  ? "button"
+                  : (w.type === "led"
+                    ? "led"
+                    : (w.type === "select" ? "select" : (w.type === "text" ? "text" : "table"))))))
+        }).width, 1200),
+        height: clamp(Number(w.height) || 160, widgetMinDimensions({
+          type: w.type === "xychart"
+            ? "xychart"
+            : (w.type === "slider"
+              ? "slider"
+              : (w.type === "matrix"
+                ? "matrix"
+                : (w.type === "button"
+                  ? "button"
+                  : (w.type === "led"
+                    ? "led"
+                    : (w.type === "select" ? "select" : (w.type === "text" ? "text" : "table"))))))
+        }).height, 900),
         minimized: Boolean(w.minimized),
         outputOnly: Boolean(w.outputOnly),
         showHistory: Boolean(w.showHistory),
@@ -9692,8 +10076,15 @@ function importGraphData(data) {
         max: Number.isFinite(Number(w.max)) ? Number(w.max) : 100,
         step: Number.isFinite(Number(w.step)) ? Number(w.step) : 1,
         value: w.type === "button"
-          ? (w.value === true || w.value === "true" || w.value === 1 || w.value === "1")
+          ? (w.initialValue === true || w.initialValue === "true" || w.initialValue === 1 || w.initialValue === "1"
+            || ((w.initialValue == null) && (w.value === true || w.value === "true" || w.value === 1 || w.value === "1")))
           : (Number.isFinite(Number(w.value)) ? Number(w.value) : 0),
+        initialValue: w.type === "button"
+          ? (w.initialValue === true || w.initialValue === "true" || w.initialValue === 1 || w.initialValue === "1"
+            || ((w.initialValue == null) && (w.value === true || w.value === "true" || w.value === 1 || w.value === "1")))
+          : undefined,
+        falseLabel: String(w.falseLabel ?? ""),
+        trueLabel: String(w.trueLabel ?? ""),
         options: Array.isArray(w.options)
           ? w.options.map((option) => ({
             label: String(option?.label ?? ""),
@@ -11989,8 +12380,9 @@ window.addEventListener("pointermove", (evt) => {
       const dy = (evt.clientY - ui.widgetResize.startClientY) / z;
       const nextWidth = ui.snapToGrid ? snap(ui.widgetResize.startWidth + dx) : ui.widgetResize.startWidth + dx;
       const nextHeight = ui.snapToGrid ? snap(ui.widgetResize.startHeight + dy) : ui.widgetResize.startHeight + dy;
-      widget.width = clamp(nextWidth, 220, 1200);
-      widget.height = clamp(nextHeight, 110, 900);
+      const minSize = widgetMinDimensions(widget);
+      widget.width = clamp(nextWidth, minSize.width, 1200);
+      widget.height = clamp(nextHeight, minSize.height, 900);
       renderWidgets();
     }
     return;
@@ -12286,6 +12678,9 @@ svg.addEventListener("pointerleave", () => {
 
 svg.addEventListener("pointerdown", (evt) => {
   hideContextMenu();
+  if (isTabletCanvasPanMode()) {
+    return;
+  }
   ui.lastNodeActivate = null;
   if (evt.target !== svg) {
     return;
@@ -12367,6 +12762,20 @@ menuCommands.forEach((cmd) => {
     closeTopMenus();
   });
 });
+
+if (recentModelsMenuBtn) {
+  recentModelsMenuBtn.addEventListener("click", (evt) => {
+    if (!isCompactTabletLayout()) {
+      return;
+    }
+    evt.preventDefault();
+    evt.stopPropagation();
+    const submenu = recentModelsMenuBtn.closest(".menu-submenu");
+    if (submenu) {
+      submenu.classList.toggle("open");
+    }
+  });
+}
 
 addRectNodeItem.addEventListener("click", () => {
   runAction(() => {
@@ -12525,6 +12934,32 @@ if (topRunTimedBtn) {
 }
 if (topRunResetBtn) {
   topRunResetBtn.addEventListener("click", resetExecution);
+}
+if (tabletFitBtn) {
+  tabletFitBtn.addEventListener("click", fitToContent);
+}
+if (tabletModeBtn) {
+  tabletModeBtn.addEventListener("click", () => {
+    setTabletCanvasMode(ui.tabletCanvasMode === "pan" ? "edit" : "pan");
+  });
+}
+if (tabletRunBtn) {
+  tabletRunBtn.addEventListener("click", () => {
+    void executeNodeExpressions();
+  });
+}
+if (tabletStepBtn) {
+  tabletStepBtn.addEventListener("click", () => {
+    void runManualStep();
+  });
+}
+if (tabletTimedBtn) {
+  tabletTimedBtn.addEventListener("click", () => {
+    void toggleTimedExecution();
+  });
+}
+if (tabletResetBtn) {
+  tabletResetBtn.addEventListener("click", resetExecution);
 }
 runEvalBtn.addEventListener("click", () => {
   void executeNodeExpressions();
@@ -13458,6 +13893,27 @@ if (functionsHelpModal) {
     });
   }
 }
+if (examplesHelpModal) {
+  const modalHead = examplesHelpModal.querySelector(".modal-head");
+  const modalCard = examplesHelpModal.querySelector(".examples-help-card");
+  if (modalHead && modalCard) {
+    modalHead.addEventListener("pointerdown", (evt) => {
+      if (evt.target.closest("button")) {
+        return;
+      }
+      const rect = modalCard.getBoundingClientRect();
+      modalCard.style.transform = "none";
+      modalCard.style.left = `${rect.left}px`;
+      modalCard.style.top = `${rect.top}px`;
+      ui.modalDrag = {
+        pointerId: evt.pointerId,
+        offsetX: evt.clientX - rect.left,
+        offsetY: evt.clientY - rect.top,
+        card: modalCard,
+      };
+    });
+  }
+}
 if (aboutAppModal) {
   const modalHead = aboutAppModal.querySelector(".modal-head");
   const modalCard = aboutAppModal.querySelector(".about-app-card");
@@ -13568,6 +14024,12 @@ if (functionsHelpBtn) {
     openFunctionsHelp();
   });
 }
+if (examplesHelpBtn) {
+  examplesHelpBtn.addEventListener("click", () => {
+    closeTopMenus();
+    openExamplesHelp();
+  });
+}
 if (aboutAppBtn) {
   aboutAppBtn.addEventListener("click", () => {
     closeTopMenus();
@@ -13591,6 +14053,12 @@ if (functionsHelpCloseBtn) {
 }
 if (functionsHelpDismissBtn) {
   functionsHelpDismissBtn.addEventListener("click", closeFunctionsHelp);
+}
+if (examplesHelpCloseBtn) {
+  examplesHelpCloseBtn.addEventListener("click", closeExamplesHelp);
+}
+if (examplesHelpDismissBtn) {
+  examplesHelpDismissBtn.addEventListener("click", closeExamplesHelp);
 }
 if (aboutAppCloseBtn) {
   aboutAppCloseBtn.addEventListener("click", closeAboutApp);
@@ -13696,6 +14164,13 @@ if (functionsHelpModal) {
   functionsHelpModal.addEventListener("pointerdown", (evt) => {
     if (evt.target === functionsHelpModal) {
       closeFunctionsHelp();
+    }
+  });
+}
+if (examplesHelpModal) {
+  examplesHelpModal.addEventListener("pointerdown", (evt) => {
+    if (evt.target === examplesHelpModal) {
+      closeExamplesHelp();
     }
   });
 }
@@ -13900,6 +14375,14 @@ document.addEventListener("keydown", (evt) => {
     if (evt.key === "Escape" || evt.key === "F1") {
       evt.preventDefault();
       closeFunctionsHelp();
+    }
+    return;
+  }
+
+  if (!examplesHelpModal?.classList.contains("hidden")) {
+    if (evt.key === "Escape") {
+      evt.preventDefault();
+      closeExamplesHelp();
     }
     return;
   }
@@ -14120,14 +14603,32 @@ window.addEventListener("pointerdown", (evt) => {
   if (!topMenuBar.contains(evt.target)) {
     closeTopMenus();
   }
+  if (
+    isCompactTabletLayout()
+    && ui.tabletSidebarOpen
+    && !evt.target.closest?.(".sidebar, #tabletSidebarToggle, .menu-bar, .context-menu, .modal-overlay")
+  ) {
+    setTabletSidebarOpen(false);
+  }
 });
 
 window.addEventListener("resize", () => {
   updateCanvasSize();
+  applyResponsiveUiState();
 });
 
 async function boot() {
   await loadI18n();
+  if (tabletSidebarToggle) {
+    tabletSidebarToggle.addEventListener("click", () => {
+      setTabletSidebarOpen(!ui.tabletSidebarOpen);
+    });
+  }
+  if (tabletSidebarBackdrop) {
+    tabletSidebarBackdrop.addEventListener("click", () => {
+      setTabletSidebarOpen(false);
+    });
+  }
   loadRecentModelsFromStorage();
   renderRecentModelsMenu();
 
@@ -14140,6 +14641,7 @@ async function boot() {
   history.redo = [];
   updateZoomButtons();
   applyCanvasVisibility();
+  applyResponsiveUiState();
   markSavedSnapshot();
   workspace.tabs = [];
   workspace.activeTabId = null;

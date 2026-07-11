@@ -1,6 +1,6 @@
 # STGraphX: readme
 
-Luca Mari, versione 15 giugno 2026
+Luca Mari, versione 11 luglio 2026
 
 ## Contesto
 
@@ -16,10 +16,13 @@ Ho guardato ma mai toccato il codice generato, che al momento è di circa 600 li
 
 ## Stato del progetto
 
-Applicazione JavaScript con doppia shell e logica condivisa:
+Applicazione JavaScript con tre opzioni di uso:
 
-* web, per accesso da browser via `http:` (e con qualche limitazione anche `file:`);
-* desktop, mediante `Electron`.
+* editor con doppia shell e logica condivisa:
+  * web, per accesso da browser via `http:` (e con qualche limitazione anche `file:`);
+  * desktop, mediante `Electron`;
+* visualizzatore via browser;
+* API Javascript.
 
 __Al momento implementati (senza librerie esterne):__
 

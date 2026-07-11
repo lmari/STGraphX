@@ -1,6 +1,7 @@
 {
   "version": 1,
   "modelTitle": "",
+  "localFunctions": [],
   "view": {
     "zoom": 1,
     "showGrid": true,
@@ -9,11 +10,16 @@
     "scrollLeft": 208,
     "scrollTop": 326
   },
+  "debug": {
+    "watches": [],
+    "breakpointEnabled": false,
+    "breakpointExpression": ""
+  },
   "modelProperties": [],
-  "nodeCounter": 6,
-  "edgeCounter": 5,
-  "widgetCounter": 2,
-  "textItemCounter": 2,
+  "nodeCounter": 7,
+  "edgeCounter": 6,
+  "widgetCounter": 3,
+  "textItemCounter": 3,
   "execution": {
     "t0": 0,
     "dt": 0.01,
@@ -180,7 +186,7 @@
       "id": 1,
       "x": 80,
       "y": 240,
-      "width": 460,
+      "width": 480,
       "height": 60,
       "fillColor": "",
       "strokeColor": "",
@@ -219,6 +225,8 @@
       "max": 100,
       "step": 1,
       "value": 0,
+      "falseLabel": "",
+      "trueLabel": "",
       "options": [],
       "mappings": [],
       "columns": [],

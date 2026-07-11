@@ -13,8 +13,8 @@ function addTableWidget(at = null) {
     customTitle: "",
     x,
     y,
-    width: 360,
-    height: 180,
+    width: 320,
+    height: 160,
     minimized: false,
     outputOnly: false,
     showHistory: false,
@@ -52,8 +52,8 @@ function addMatrixWidget(at = null) {
     customTitle: "",
     x,
     y,
-    width: 320,
-    height: 240,
+    width: 260,
+    height: 190,
     minimized: false,
     outputOnly: true,
     source: "",
@@ -84,11 +84,13 @@ function addLedWidget(at = null) {
     customTitle: "",
     x,
     y,
-    width: 220,
-    height: 120,
+    width: 170,
+    height: 96,
     minimized: false,
     outputOnly: true,
     source: outputNames[0] || "",
+    falseLabel: "",
+    trueLabel: "",
     rows: [],
     columns: [],
     xyPairs: [],
@@ -100,15 +102,15 @@ function addSliderWidget(at = null) {
   const z = Math.max(0.0001, ui.zoom || 1);
   const x = at?.x ?? (graphViewport.scrollLeft + 80) / z;
   const y = at?.y ?? (graphViewport.scrollTop + 80) / z;
-  const bindableNames = sliderBindableNodeNames();
+  const bindableNames = sliderBindableNodeNames(null, "");
   graph.widgets.push({
     id,
     type: "slider",
     customTitle: "",
     x,
     y,
-    width: 340,
-    height: 120,
+    width: 260,
+    height: 96,
     minimized: false,
     outputOnly: false,
     source: bindableNames[0] || "",
@@ -127,19 +129,22 @@ function addButtonWidget(at = null) {
   const z = Math.max(0.0001, ui.zoom || 1);
   const x = at?.x ?? (graphViewport.scrollLeft + 80) / z;
   const y = at?.y ?? (graphViewport.scrollTop + 80) / z;
-  const bindableNames = buttonBindableNodeNames();
+  const bindableNames = buttonBindableNodeNames(null, "");
   graph.widgets.push({
     id,
     type: "button",
     customTitle: "",
     x,
     y,
-    width: 260,
-    height: 108,
+    width: 190,
+    height: 88,
     minimized: false,
     outputOnly: false,
     source: bindableNames[0] || "",
     value: false,
+    initialValue: false,
+    falseLabel: "",
+    trueLabel: "",
     rows: [],
     columns: [],
     xyPairs: [],
@@ -151,15 +156,15 @@ function addSelectWidget(at = null) {
   const z = Math.max(0.0001, ui.zoom || 1);
   const x = at?.x ?? (graphViewport.scrollLeft + 80) / z;
   const y = at?.y ?? (graphViewport.scrollTop + 80) / z;
-  const bindableNames = selectBindableNodeNames();
+  const bindableNames = selectBindableNodeNames(null, "");
   graph.widgets.push({
     id,
     type: "select",
     customTitle: "",
     x,
     y,
-    width: 320,
-    height: 116,
+    width: 240,
+    height: 92,
     minimized: false,
     outputOnly: false,
     source: bindableNames[0] || "",
@@ -186,8 +191,8 @@ function addTextWidget(at = null) {
     customTitle: "",
     x,
     y,
-    width: 300,
-    height: 120,
+    width: 220,
+    height: 92,
     minimized: false,
     outputOnly: true,
     source: outputNames[0] || "",
@@ -210,8 +215,8 @@ function addXYChartWidget(at = null) {
     customTitle: "",
     x,
     y,
-    width: 380,
-    height: 240,
+    width: 320,
+    height: 210,
     minimized: false,
     outputOnly: false,
     xMin: null,
@@ -368,6 +373,8 @@ function sanitizeLedWidgetOptions(widget) {
   if (widget.source && !allowedNames.has(widget.source)) {
     widget.source = "";
   }
+  widget.falseLabel = String(widget.falseLabel ?? "").trim();
+  widget.trueLabel = String(widget.trueLabel ?? "").trim();
 }
 
 function sanitizeWidgetXYPairs(widget) {
@@ -501,7 +508,7 @@ function sanitizeSliderWidgetOptions(widget) {
     const n = Number(value);
     return Number.isFinite(n) ? n : fallback;
   };
-  const allowedNames = new Set(sliderBindableNodeNames());
+  const allowedNames = new Set(sliderBindableNodeNames(widget.id, widget.source));
   widget.source = String(widget.source ?? "");
   if (widget.source && !allowedNames.has(widget.source)) {
     widget.source = "";
@@ -527,12 +534,17 @@ function sanitizeSliderWidgetOptions(widget) {
 }
 
 function sanitizeButtonWidgetOptions(widget) {
-  const allowedNames = new Set(buttonBindableNodeNames());
+  const allowedNames = new Set(buttonBindableNodeNames(widget.id, widget.source));
   widget.source = String(widget.source ?? "");
   if (widget.source && !allowedNames.has(widget.source)) {
     widget.source = "";
   }
-  widget.value = widget.value === true || widget.value === "true" || widget.value === 1 || widget.value === "1";
+  const normalizedValue = widget.value === true || widget.value === "true" || widget.value === 1 || widget.value === "1";
+  const normalizedInitialValue = widget.initialValue === true || widget.initialValue === "true" || widget.initialValue === 1 || widget.initialValue === "1";
+  widget.value = normalizedValue;
+  widget.initialValue = normalizedInitialValue;
+  widget.falseLabel = String(widget.falseLabel ?? "").trim();
+  widget.trueLabel = String(widget.trueLabel ?? "").trim();
 }
 
 function normalizeSelectWidgetOptions(options) {
@@ -552,7 +564,7 @@ function normalizeSelectWidgetOptions(options) {
 }
 
 function sanitizeSelectWidgetOptions(widget) {
-  const allowedNames = new Set(selectBindableNodeNames());
+  const allowedNames = new Set(selectBindableNodeNames(widget.id, widget.source));
   widget.source = String(widget.source ?? "");
   if (widget.source && !allowedNames.has(widget.source)) {
     widget.source = "";
@@ -840,7 +852,7 @@ function drawXYChart(canvas, seriesList = [], options = null) {
     return ticks.filter((value, index, arr) => index === 0 || Math.abs(value - arr[index - 1]) > step * 0.25);
   };
 
-  ctx.font = "11px Segoe UI, Tahoma, sans-serif";
+  ctx.font = "11px \"Noto Sans\", \"DejaVu Sans\", \"Liberation Sans\", Arial, sans-serif";
   const provisionalXTicks = buildTicks(minX, maxX, Math.max(4, Math.floor((width - 48) / 90)));
   const provisionalYTicks = buildTicks(minY, maxY, Math.max(4, Math.floor((height - 48) / 60)));
   const maxYLabelWidth = provisionalYTicks.reduce((max, tick) => {
@@ -1006,7 +1018,7 @@ function drawXYChart(canvas, seriesList = [], options = null) {
   });
   const visibleLegend = legendSeries.slice(0, 10);
   if (visibleLegend.length > 0) {
-    ctx.font = "11px Segoe UI, Tahoma, sans-serif";
+  ctx.font = "11px \"Noto Sans\", \"DejaVu Sans\", \"Liberation Sans\", Arial, sans-serif";
     const sampleWidth = 18;
     const sampleGap = 8;
     const rowHeight = 18;
@@ -1313,8 +1325,42 @@ function widgetDefaultTitle(widget) {
   return t("widget.tableTitle", { id: widget.id });
 }
 
+function widgetTitleBindingLabel(widget) {
+  const source = String(widget?.source ?? "").trim();
+  if (["slider", "select", "button", "text", "led", "matrix"].includes(widget?.type)) {
+    return source;
+  }
+  if (widget?.type === "table") {
+    const columns = Array.isArray(widget.columns)
+      ? [...new Set(widget.columns.map((name) => String(name ?? "").trim()).filter((name) => name && name !== "time"))]
+      : [];
+    return columns.length === 1 ? columns[0] : "";
+  }
+  if (widget?.type === "xychart") {
+    const pairs = Array.isArray(widget.xyPairs)
+      ? widget.xyPairs.filter((pair) => String(pair?.ySource ?? "").trim())
+      : [];
+    if (pairs.length === 1) {
+      const xSource = String(pairs[0]?.xSource ?? "").trim();
+      const ySource = String(pairs[0]?.ySource ?? "").trim();
+      if (!ySource) {
+        return "";
+      }
+      return !xSource || xSource === "time" ? ySource : `${xSource} -> ${ySource}`;
+    }
+  }
+  return "";
+}
+
 function widgetDisplayTitle(widget) {
   const custom = String(widget.customTitle ?? "").trim();
+  const binding = widgetTitleBindingLabel(widget);
+  if (custom && binding) {
+    return `${custom} · ${binding}`;
+  }
+  if (binding) {
+    return binding;
+  }
   return custom || widgetDefaultTitle(widget);
 }
 
@@ -1382,6 +1428,14 @@ function matrixCellBackgroundColor(value, minValue, maxValue, scheme, fixedRange
   return matrixPaletteColor(scheme, 0.55);
 }
 
+function widgetBinaryStateLabel(widget, state, fallbackKey) {
+  const explicit = state ? String(widget?.trueLabel ?? "").trim() : String(widget?.falseLabel ?? "").trim();
+  if (explicit) {
+    return explicit;
+  }
+  return fallbackKey ? t(fallbackKey) : "";
+}
+
 function coerceLedState(value) {
   if (value === true || value === false) {
     return { ok: true, value };
@@ -1411,38 +1465,49 @@ function renderLedWidgetBody(body, widget, nodeMap = buildNodeNameMap()) {
   const sourceNode = nodeMap.get(widget.source) || null;
   const wrap = document.createElement("div");
   wrap.className = "led-widget-wrap";
-  const sourceLine = document.createElement("div");
-  sourceLine.className = "led-widget-source";
-  sourceLine.textContent = widget.source || t("widget.noneOption");
-  wrap.appendChild(sourceLine);
 
   const display = document.createElement("div");
   display.className = "led-widget-display";
+  const stack = document.createElement("div");
+  stack.className = "led-widget-stack";
   const lamp = document.createElement("div");
   lamp.className = "led-widget-lamp";
   const label = document.createElement("div");
   label.className = "led-widget-label";
+  const message = document.createElement("div");
+  message.className = "led-widget-message";
 
+  let overlayText = "";
+  let messageText = "";
   if (!sourceNode) {
     lamp.classList.add("is-invalid");
-    label.textContent = t("widget.noneOption");
+    messageText = t("widget.noneOption");
   } else if (sourceNode.computedError) {
     lamp.classList.add("is-invalid");
-    label.textContent = localizeExpressionErrorMessage(String(sourceNode.computedError || ""));
+    messageText = localizeExpressionErrorMessage(String(sourceNode.computedError || ""));
+  } else if (sourceNode.computedValue == null) {
+    // Keep the LED neutral until the source node has produced a value.
   } else {
     const coerced = coerceLedState(sourceNode.computedValue);
     if (coerced.ok) {
       lamp.classList.toggle("is-on", coerced.value);
       lamp.classList.toggle("is-off", !coerced.value);
-      label.textContent = coerced.value ? t("widget.ledState.on") : t("widget.ledState.off");
+      overlayText = widgetBinaryStateLabel(widget, coerced.value, "");
     } else {
       lamp.classList.add("is-invalid");
-      label.textContent = t("widget.ledInvalid");
+      messageText = t("widget.ledInvalid");
     }
   }
 
-  display.appendChild(lamp);
-  display.appendChild(label);
+  label.textContent = overlayText;
+  label.hidden = !overlayText;
+  message.textContent = messageText;
+  message.hidden = !messageText;
+
+  stack.appendChild(lamp);
+  stack.appendChild(label);
+  display.appendChild(stack);
+  display.appendChild(message);
   wrap.appendChild(display);
   body.appendChild(wrap);
 }
@@ -1462,10 +1527,6 @@ function renderTextWidgetBody(body, widget, nodeMap = buildNodeNameMap()) {
   const sourceNode = nodeMap.get(widget.source) || null;
   const wrap = document.createElement("div");
   wrap.className = "text-widget-wrap";
-  const sourceLine = document.createElement("div");
-  sourceLine.className = "text-widget-source";
-  sourceLine.textContent = widget.source || t("widget.noneOption");
-  wrap.appendChild(sourceLine);
 
   const display = document.createElement("div");
   display.className = "text-widget-display";
@@ -1507,6 +1568,9 @@ function renderMatrixWidgetBody(body, widget, nodeMap = buildNodeNameMap()) {
     body.appendChild(msg);
     return;
   }
+  if (sourceNode.computedValue == null && !Array.isArray(widget.lastMatrixValue)) {
+    return;
+  }
   if (sourceNode.computedError) {
     if (Array.isArray(widget.lastMatrixValue)) {
       renderMatrixGrid(body, widget, widget.lastMatrixValue);
@@ -1526,7 +1590,9 @@ function renderMatrixWidgetBody(body, widget, nodeMap = buildNodeNameMap()) {
     }
     const msg = document.createElement("div");
     msg.className = "empty-props";
-    msg.textContent = t("widget.matrixNotMatrix");
+    msg.textContent = sourceNode.computedValue == null
+      ? t("widget.matrixEmpty")
+      : t("widget.matrixNotMatrix");
     body.appendChild(msg);
     return;
   }
@@ -1719,14 +1785,10 @@ function refreshChartWidgetRuntimeBody(root, widget, nodeMap = buildNodeNameMap(
 function refreshSliderWidgetRuntimeBody(root, widget) {
   const rangeInput = root.querySelector("input[type='range']");
   const valueInput = root.querySelector(".slider-widget-number");
-  const sourceLine = root.querySelector(".slider-widget-source");
   const minLabel = root.querySelector(".slider-bound-min");
   const maxLabel = root.querySelector(".slider-bound-max");
   const sourceNode = getNodeByName(widget.source);
   const lockedForRun = sourceNode?.shape === "diamond" && isEditingUiLocked();
-  if (sourceLine) {
-    sourceLine.textContent = widget.source || t("text.unnamed");
-  }
   if (rangeInput) {
     rangeInput.min = String(widget.min);
     rangeInput.max = String(widget.max);
@@ -1753,32 +1815,28 @@ function refreshButtonWidgetRuntimeBody(root, widget) {
   sanitizeButtonWidgetOptions(widget);
   const body = root.querySelector(".value-widget-body");
   const toggleBtn = body?.querySelector(".button-widget-toggle");
-  const sourceLine = body?.querySelector(".button-widget-source");
-  if (!body || !toggleBtn || !sourceLine) {
+  if (!body || !toggleBtn) {
     renderWidgets();
     return;
   }
   const sourceNode = getNodeByName(widget.source);
   const lockedForRun = sourceNode?.shape === "diamond" && isEditingUiLocked();
-  sourceLine.textContent = widget.source || t("text.unnamed");
   toggleBtn.disabled = lockedForRun;
   toggleBtn.classList.toggle("is-on", Boolean(widget.value));
   toggleBtn.classList.toggle("is-off", !Boolean(widget.value));
-  toggleBtn.textContent = widget.value ? t("widget.buttonState.true") : t("widget.buttonState.false");
+  toggleBtn.textContent = widgetBinaryStateLabel(widget, Boolean(widget.value), "");
 }
 
 function refreshSelectWidgetRuntimeBody(root, widget) {
   sanitizeSelectWidgetOptions(widget);
   const body = root.querySelector(".value-widget-body");
   const selectInput = body?.querySelector(".select-widget-input");
-  const sourceLine = body?.querySelector(".select-widget-source");
-  if (!body || !selectInput || !sourceLine) {
+  if (!body || !selectInput) {
     renderWidgets();
     return;
   }
   const sourceNode = getNodeByName(widget.source);
   const lockedForRun = sourceNode?.shape === "diamond" && isEditingUiLocked();
-  sourceLine.textContent = widget.source || t("text.unnamed");
   const optionsKey = JSON.stringify(widget.options);
   if (selectInput.dataset.options !== optionsKey) {
     selectInput.innerHTML = "";
@@ -1899,7 +1957,7 @@ function renderWidgets() {
       sanitizeSliderWidgetOptions(widget);
     }
     const root = document.createElement("div");
-    root.className = "value-widget";
+    root.className = `value-widget widget-type-${widget.type}`;
     if (ui.selected?.type === "widget" && ui.selected.id === widget.id) {
       root.classList.add("selected");
     }
@@ -1918,6 +1976,9 @@ function renderWidgets() {
     root.style.transformOrigin = "top left";
     root.dataset.widgetId = String(widget.id);
     root.addEventListener("pointerdown", (evt) => {
+      if (typeof isTabletCanvasPanMode === "function" && isTabletCanvasPanMode()) {
+        return;
+      }
       evt.stopPropagation();
       if (!(ui.selected?.type === "widget" && ui.selected.id === widget.id)) {
         selectWidget(widget.id);
@@ -1982,6 +2043,9 @@ function renderWidgets() {
     actions.appendChild(delBtn);
     header.appendChild(actions);
     header.addEventListener("pointerdown", (evt) => {
+      if (typeof isTabletCanvasPanMode === "function" && isTabletCanvasPanMode()) {
+        return;
+      }
       if (evt.target.closest("button")) {
         return;
       }
@@ -2069,9 +2133,6 @@ function renderWidgets() {
       const sliderWrap = document.createElement("div");
       sliderWrap.className = "slider-widget-wrap";
 
-      const sourceLine = document.createElement("div");
-      sourceLine.className = "slider-widget-source";
-      sourceLine.textContent = widget.source || t("text.unnamed");
       const sourceNode = getNodeByName(widget.source);
       const lockedForRun = sourceNode?.shape === "diamond" && isEditingUiLocked();
 
@@ -2083,7 +2144,7 @@ function renderWidgets() {
       slider.value = String(widget.value);
       slider.disabled = lockedForRun;
       slider.addEventListener("pointerdown", (evt) => {
-        if (lockedForRun) {
+        if ((typeof isTabletCanvasPanMode === "function" && isTabletCanvasPanMode()) || lockedForRun) {
           return;
         }
         evt.stopPropagation();
@@ -2113,7 +2174,7 @@ function renderWidgets() {
       valueInput.className = "slider-widget-number";
       valueInput.disabled = lockedForRun;
       valueInput.addEventListener("pointerdown", (evt) => {
-        if (lockedForRun) {
+        if ((typeof isTabletCanvasPanMode === "function" && isTabletCanvasPanMode()) || lockedForRun) {
           return;
         }
         evt.stopPropagation();
@@ -2180,16 +2241,12 @@ function renderWidgets() {
         render();
       });
 
-      sliderWrap.appendChild(sourceLine);
       sliderWrap.appendChild(rangeLine);
       body.appendChild(sliderWrap);
     } else if (widget.type === "select") {
       const selectWrap = document.createElement("div");
       selectWrap.className = "select-widget-wrap";
 
-      const sourceLine = document.createElement("div");
-      sourceLine.className = "select-widget-source";
-      sourceLine.textContent = widget.source || t("text.unnamed");
       const sourceNode = getNodeByName(widget.source);
       const lockedForRun = sourceNode?.shape === "diamond" && isEditingUiLocked();
 
@@ -2205,10 +2262,11 @@ function renderWidgets() {
       selectInput.value = String(widget.value);
       selectInput.disabled = lockedForRun;
       selectInput.addEventListener("pointerdown", (evt) => {
-        if (lockedForRun) {
+        if ((typeof isTabletCanvasPanMode === "function" && isTabletCanvasPanMode()) || lockedForRun) {
           return;
         }
         evt.stopPropagation();
+        ui.sliderInteraction = { widgetId: widget.id, mode: "select" };
         if (!(ui.selected?.type === "widget" && ui.selected.id === widget.id)) {
           selectWidget(widget.id);
         }
@@ -2216,25 +2274,33 @@ function renderWidgets() {
       selectInput.addEventListener("mousedown", (evt) => {
         evt.stopPropagation();
       });
+      selectInput.addEventListener("focus", () => {
+        if (lockedForRun) {
+          return;
+        }
+        ui.sliderInteraction = { widgetId: widget.id, mode: "select" };
+      });
       selectInput.addEventListener("change", (evt) => {
         evt.stopPropagation();
         widget.value = Number(selectInput.value);
         applySelectWidgetValueToNode(widget);
         refreshSidebar();
         scheduleFileStatusRefresh();
+        ui.sliderInteraction = null;
         renderWidgets();
       });
+      selectInput.addEventListener("blur", () => {
+        if (ui.sliderInteraction?.widgetId === widget.id && ui.sliderInteraction?.mode === "select") {
+          ui.sliderInteraction = null;
+        }
+      });
 
-      selectWrap.appendChild(sourceLine);
       selectWrap.appendChild(selectInput);
       body.appendChild(selectWrap);
     } else if (widget.type === "button") {
       const buttonWrap = document.createElement("div");
       buttonWrap.className = "button-widget-wrap";
 
-      const sourceLine = document.createElement("div");
-      sourceLine.className = "button-widget-source";
-      sourceLine.textContent = widget.source || t("text.unnamed");
       const sourceNode = getNodeByName(widget.source);
       const lockedForRun = sourceNode?.shape === "diamond" && isEditingUiLocked();
 
@@ -2245,7 +2311,7 @@ function renderWidgets() {
       const syncButtonDisplay = (commit = false) => {
         toggleBtn.classList.toggle("is-on", Boolean(widget.value));
         toggleBtn.classList.toggle("is-off", !Boolean(widget.value));
-        toggleBtn.textContent = widget.value ? t("widget.buttonState.true") : t("widget.buttonState.false");
+        toggleBtn.textContent = widgetBinaryStateLabel(widget, Boolean(widget.value), "");
         applyButtonWidgetValueToNode(widget);
         if (commit) {
           refreshSidebar();
@@ -2253,26 +2319,55 @@ function renderWidgets() {
         }
       };
       syncButtonDisplay();
+      let pointerDownToggled = false;
+      const clearButtonInteraction = () => {
+        if (ui.sliderInteraction?.widgetId === widget.id && ui.sliderInteraction?.mode === "button") {
+          ui.sliderInteraction = null;
+        }
+      };
       toggleBtn.addEventListener("pointerdown", (evt) => {
-        if (lockedForRun) {
+        if ((typeof isTabletCanvasPanMode === "function" && isTabletCanvasPanMode()) || lockedForRun) {
           return;
         }
         evt.stopPropagation();
+        ui.sliderInteraction = { widgetId: widget.id, mode: "button" };
         if (!(ui.selected?.type === "widget" && ui.selected.id === widget.id)) {
           selectWidget(widget.id);
         }
+        const timedRunning = typeof isTimedExecutionActive === "function" && isTimedExecutionActive();
+        if (timedRunning) {
+          pointerDownToggled = true;
+          widget.value = !widget.value;
+          syncButtonDisplay(true);
+        } else {
+          pointerDownToggled = false;
+        }
+      });
+      toggleBtn.addEventListener("pointerup", () => {
+        clearButtonInteraction();
+      });
+      toggleBtn.addEventListener("pointercancel", () => {
+        pointerDownToggled = false;
+        clearButtonInteraction();
+      });
+      toggleBtn.addEventListener("blur", () => {
+        clearButtonInteraction();
       });
       toggleBtn.addEventListener("click", (evt) => {
         if (lockedForRun) {
           return;
         }
         evt.stopPropagation();
+        if (pointerDownToggled) {
+          pointerDownToggled = false;
+          return;
+        }
         widget.value = !widget.value;
         syncButtonDisplay(true);
+        clearButtonInteraction();
         renderWidgets();
       });
 
-      buttonWrap.appendChild(sourceLine);
       buttonWrap.appendChild(toggleBtn);
       body.appendChild(buttonWrap);
     } else if (widget.type === "text") {
@@ -2282,6 +2377,9 @@ function renderWidgets() {
     const resize = document.createElement("div");
     resize.className = "value-widget-resize";
     resize.addEventListener("pointerdown", (evt) => {
+      if (typeof isTabletCanvasPanMode === "function" && isTabletCanvasPanMode()) {
+        return;
+      }
       evt.stopPropagation();
       if (isEditingUiLocked()) {
         return;
@@ -3097,7 +3195,7 @@ function refreshWidgetConfigPanel(widget) {
     const sourceLabel = document.createElement("label");
     sourceLabel.textContent = t("widget.sliderSourceLabel");
     const sourceSelect = document.createElement("select");
-    const sliderChoices = ["", ...sliderBindableNodeNames()];
+    const sliderChoices = ["", ...sliderBindableNodeNames(widget.id, widget.source)];
     sliderChoices.forEach((name) => {
       const opt = document.createElement("option");
       opt.value = name;
@@ -3163,7 +3261,7 @@ function refreshWidgetConfigPanel(widget) {
     const sourceLabel = document.createElement("label");
     sourceLabel.textContent = t("widget.buttonSourceLabel");
     const sourceSelect = document.createElement("select");
-    const buttonChoices = ["", ...buttonBindableNodeNames()];
+    const buttonChoices = ["", ...buttonBindableNodeNames(widget.id, widget.source)];
     buttonChoices.forEach((name) => {
       const opt = document.createElement("option");
       opt.value = name;
@@ -3184,18 +3282,50 @@ function refreshWidgetConfigPanel(widget) {
     valueLabel.className = "menu-check compact-bool";
     const valueInput = document.createElement("input");
     valueInput.type = "checkbox";
-    valueInput.checked = widget.value === true;
+    valueInput.checked = widget.initialValue === true;
     valueInput.addEventListener("change", () => {
       runAction(() => {
-        widget.value = valueInput.checked;
+        widget.initialValue = valueInput.checked;
+        if (!isEditingUiLocked()) {
+          widget.value = widget.initialValue;
+        }
         sanitizeButtonWidgetOptions(widget);
       });
+      valueInput.checked = widget.initialValue === true;
     });
     const valueText = document.createElement("span");
     valueText.textContent = t("widget.buttonValueLabel");
     valueLabel.appendChild(valueInput);
     valueLabel.appendChild(valueText);
     buttonSection.appendChild(valueLabel);
+
+    const labelsRow = document.createElement("div");
+    labelsRow.className = "row2-exec";
+    const falseLabelInput = document.createElement("input");
+    falseLabelInput.type = "text";
+    falseLabelInput.placeholder = t("widget.binaryLabelPlaceholder");
+    falseLabelInput.value = String(widget.falseLabel ?? "");
+    falseLabelInput.addEventListener("change", () => {
+      runAction(() => {
+        widget.falseLabel = falseLabelInput.value;
+        sanitizeButtonWidgetOptions(widget);
+      });
+      falseLabelInput.value = String(widget.falseLabel ?? "");
+    });
+    const trueLabelInput = document.createElement("input");
+    trueLabelInput.type = "text";
+    trueLabelInput.placeholder = t("widget.binaryLabelPlaceholder");
+    trueLabelInput.value = String(widget.trueLabel ?? "");
+    trueLabelInput.addEventListener("change", () => {
+      runAction(() => {
+        widget.trueLabel = trueLabelInput.value;
+        sanitizeButtonWidgetOptions(widget);
+      });
+      trueLabelInput.value = String(widget.trueLabel ?? "");
+    });
+    labelsRow.appendChild(createCompactField("widget.binaryFalseLabel", falseLabelInput));
+    labelsRow.appendChild(createCompactField("widget.binaryTrueLabel", trueLabelInput));
+    buttonSection.appendChild(labelsRow);
     return;
   }
 
@@ -3205,7 +3335,7 @@ function refreshWidgetConfigPanel(widget) {
     const sourceLabel = document.createElement("label");
     sourceLabel.textContent = t("widget.selectSourceLabel");
     const sourceSelect = document.createElement("select");
-    const selectChoices = ["", ...selectBindableNodeNames()];
+    const selectChoices = ["", ...selectBindableNodeNames(widget.id, widget.source)];
     selectChoices.forEach((name) => {
       const opt = document.createElement("option");
       opt.value = name;
@@ -3487,6 +3617,34 @@ function refreshWidgetConfigPanel(widget) {
     });
     ledSection.appendChild(sourceLabel);
     ledSection.appendChild(sourceSelect);
+
+    const labelsRow = document.createElement("div");
+    labelsRow.className = "row2-exec";
+    const falseLabelInput = document.createElement("input");
+    falseLabelInput.type = "text";
+    falseLabelInput.placeholder = t("widget.binaryLabelPlaceholder");
+    falseLabelInput.value = String(widget.falseLabel ?? "");
+    falseLabelInput.addEventListener("change", () => {
+      runAction(() => {
+        widget.falseLabel = falseLabelInput.value;
+        sanitizeLedWidgetOptions(widget);
+      });
+      falseLabelInput.value = String(widget.falseLabel ?? "");
+    });
+    const trueLabelInput = document.createElement("input");
+    trueLabelInput.type = "text";
+    trueLabelInput.placeholder = t("widget.binaryLabelPlaceholder");
+    trueLabelInput.value = String(widget.trueLabel ?? "");
+    trueLabelInput.addEventListener("change", () => {
+      runAction(() => {
+        widget.trueLabel = trueLabelInput.value;
+        sanitizeLedWidgetOptions(widget);
+      });
+      trueLabelInput.value = String(widget.trueLabel ?? "");
+    });
+    labelsRow.appendChild(createCompactField("widget.binaryFalseLabel", falseLabelInput));
+    labelsRow.appendChild(createCompactField("widget.binaryTrueLabel", trueLabelInput));
+    ledSection.appendChild(labelsRow);
     return;
   }
 

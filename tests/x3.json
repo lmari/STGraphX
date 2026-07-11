@@ -1,0 +1,140 @@
+{
+  "version": 1,
+  "modelTitle": "",
+  "localFunctions": [],
+  "view": {
+    "zoom": 1,
+    "showGrid": true,
+    "highlightNodeEdges": false,
+    "gridSize": 20,
+    "scrollLeft": 180,
+    "scrollTop": 180
+  },
+  "debug": {
+    "watches": [],
+    "breakpointEnabled": false,
+    "breakpointExpression": ""
+  },
+  "modelProperties": [],
+  "nodeCounter": 4,
+  "edgeCounter": 3,
+  "widgetCounter": 1,
+  "textItemCounter": 1,
+  "execution": {
+    "t0": 0,
+    "dt": 1,
+    "t1": 10,
+    "delayMs": 1000,
+    "decimals": 3,
+    "integrator": "euler",
+    "strictDefinitions": false
+  },
+  "nodes": [
+    {
+      "id": 1,
+      "name": "m2",
+      "output": false,
+      "global": false,
+      "type": "submodel",
+      "x": 380,
+      "y": 140,
+      "width": 120,
+      "height": 70,
+      "fillColor": "",
+      "strokeColor": "",
+      "properties": [
+        {
+          "key": "note formula",
+          "value": ""
+        },
+        {
+          "key": "descrizione",
+          "value": ""
+        }
+      ],
+      "modelPath": "x2.json",
+      "inputBindings": {
+        "n1": "m1"
+      },
+      "interfaceCache": {
+        "inputs": [
+          "n1"
+        ],
+        "outputs": [
+          "n2"
+        ],
+        "inputDetails": {
+          "n1": {
+            "description": ""
+          }
+        }
+      }
+    },
+    {
+      "id": 2,
+      "name": "m1",
+      "output": false,
+      "global": false,
+      "type": "algebraic",
+      "x": 200,
+      "y": 140,
+      "width": 120,
+      "height": 70,
+      "fillColor": "",
+      "strokeColor": "",
+      "properties": [
+        {
+          "key": "note formula",
+          "value": ""
+        },
+        {
+          "key": "descrizione",
+          "value": ""
+        }
+      ],
+      "input": false,
+      "valueExpression": "100"
+    },
+    {
+      "id": 3,
+      "name": "m3",
+      "output": true,
+      "global": false,
+      "type": "algebraic",
+      "x": 560,
+      "y": 140,
+      "width": 120,
+      "height": 70,
+      "fillColor": "",
+      "strokeColor": "",
+      "properties": [
+        {
+          "key": "note formula",
+          "value": ""
+        },
+        {
+          "key": "descrizione",
+          "value": ""
+        }
+      ],
+      "input": false,
+      "valueExpression": "m2.n2"
+    }
+  ],
+  "edges": [
+    {
+      "id": 1,
+      "from": 2,
+      "to": 1,
+      "controlPoints": []
+    },
+    {
+      "id": 2,
+      "from": 1,
+      "to": 3,
+      "controlPoints": []
+    }
+  ],
+  "textItems": [],
+  "widgets": []
+}
