@@ -1,0 +1,181 @@
+<!doctype html>
+<html lang="it">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>STGraphX Player API Demo</title>
+    <style>
+      body {
+        margin: 0;
+        padding: 28px;
+        font-family: Georgia, "Iowan Old Style", "Palatino Linotype", serif;
+        background: linear-gradient(180deg, #eef4fa 0%, #f8fbfd 100%);
+        color: #24384d;
+      }
+      main {
+        max-width: 1200px;
+        margin: 0 auto;
+        display: grid;
+        gap: 20px;
+      }
+      h1, h2 {
+        margin: 0;
+      }
+      p {
+        margin: 0;
+        color: #5a6f84;
+      }
+      .layout {
+        display: grid;
+        gap: 20px;
+        grid-template-columns: minmax(0, 1.5fr) minmax(320px, 0.9fr);
+        align-items: start;
+      }
+      .card {
+        padding: 18px;
+        border-radius: 16px;
+        background: rgba(255, 255, 255, 0.88);
+        box-shadow: 0 18px 42px rgba(32, 64, 96, 0.12);
+        border: 1px solid rgba(80, 112, 148, 0.12);
+      }
+      .controls {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        margin-top: 14px;
+      }
+      button {
+        border: 0;
+        border-radius: 999px;
+        padding: 10px 16px;
+        font: inherit;
+        font-weight: 700;
+        color: white;
+        background: linear-gradient(135deg, #1d5ea8 0%, #2e7bc8 100%);
+        cursor: pointer;
+      }
+      button:disabled {
+        opacity: 0.45;
+        cursor: default;
+      }
+      .meta {
+        margin-top: 12px;
+        font-size: 0.95rem;
+        color: #52677c;
+      }
+      pre {
+        margin: 14px 0 0 0;
+        padding: 14px;
+        border-radius: 12px;
+        background: #f4f8fb;
+        border: 1px solid #d8e3ee;
+        overflow: auto;
+        font-size: 0.92rem;
+        line-height: 1.35;
+      }
+      code {
+        font-family: "Iosevka Web", "Fira Code", "Cascadia Mono", monospace;
+      }
+      @media (max-width: 920px) {
+        .layout {
+          grid-template-columns: 1fr;
+        }
+      }
+    </style>
+    <script src="../player-runtime-loader.js"></script>
+  </head>
+  <body>
+    <main>
+      <div>
+        <h1>STGraphX Player API Demo</h1>
+        <p>Esempio minimale di uso dell'API del player dentro una pagina web, con avanzamento di un passo e visualizzazione HTML degli output.</p>
+      </div>
+
+      <div class="layout">
+        <section class="card">
+          <stgraphx-player
+            id="p1"
+            src="../examples/sir.json"
+            lang="it"
+            zoom="0.85"
+            controls="full">
+          </stgraphx-player>
+        </section>
+
+        <section class="card">
+          <h2>Controllo Da Script</h2>
+          <p>Il pulsante qui sotto usa direttamente l'API JavaScript del custom element.</p>
+          <div class="controls">
+            <button id="stepBtn" type="button">Passo via API</button>
+            <button id="refreshBtn" type="button">Aggiorna output</button>
+          </div>
+          <div id="statusLine" class="meta">In attesa del player...</div>
+          <pre id="outputBox"></pre>
+        </section>
+      </div>
+    </main>
+
+    <script>
+      async function main() {
+        await customElements.whenDefined("stgraphx-player");
+        const player = document.getElementById("p1");
+        const stepBtn = document.getElementById("stepBtn");
+        const refreshBtn = document.getElementById("refreshBtn");
+        const outputBox = document.getElementById("outputBox");
+        const statusLine = document.getElementById("statusLine");
+
+        function refreshOutput() {
+          const payload = {
+            time: player.getTime(),
+            outputs: player.getOutputs(),
+          };
+          outputBox.textContent = JSON.stringify(payload, null, 2);
+        }
+
+        function setStatus(text) {
+          statusLine.textContent = text;
+        }
+
+        stepBtn.disabled = true;
+        refreshBtn.disabled = true;
+        setStatus("Caricamento del player...");
+
+        await player.ready;
+        refreshOutput();
+        stepBtn.disabled = false;
+        refreshBtn.disabled = false;
+        setStatus("Player pronto. Usa \"Passo via API\" per avanzare la simulazione.");
+
+        stepBtn.addEventListener("click", async () => {
+          stepBtn.disabled = true;
+          refreshBtn.disabled = true;
+          setStatus("Esecuzione di un passo...");
+          try {
+            await player.step();
+            refreshOutput();
+            setStatus("Passo eseguito.");
+          } catch (err) {
+            setStatus(`Errore: ${err?.message || err}`);
+            console.error(err);
+          } finally {
+            stepBtn.disabled = false;
+            refreshBtn.disabled = false;
+          }
+        });
+
+        refreshBtn.addEventListener("click", () => {
+          refreshOutput();
+          setStatus("Output aggiornati.");
+        });
+      }
+
+      main().catch((err) => {
+        const statusLine = document.getElementById("statusLine");
+        if (statusLine) {
+          statusLine.textContent = `Errore inizializzazione: ${err?.message || err}`;
+        }
+        console.error(err);
+      });
+    </script>
+  </body>
+</html>

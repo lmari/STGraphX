@@ -33,7 +33,7 @@ Il player:
 * supporta:
   * sottomodelli;
   * `readData(...)`;
-  * localizzazione `it`, `en`, `pt`.
+  * localizzazione `it`, `en`.
 
 In più è disponibile anche un runtime headless JavaScript, utilizzabile:
 
@@ -219,7 +219,6 @@ Lingua dell'interfaccia:
 
 * `it`
 * `en`
-* `pt`
 
 Se omesso, il player usa `en`.
 
@@ -350,8 +349,14 @@ await player.setZoom(1.1);
 Promessa risolta quando il player ha completato il caricamento iniziale.
 
 ```js
+await customElements.whenDefined("stgraphx-player");
 await player.ready;
 ```
+
+Nota:
+
+- prima di usare i metodi del player conviene attendere sia la definizione del custom element sia `player.ready`;
+- se salti `customElements.whenDefined("stgraphx-player")`, l'elemento può esistere nel DOM ma non essere ancora stato "upgraded", e metodi come `step()` possono risultare assenti.
 
 ### Metodi disponibili anche sul custom element
 
@@ -370,10 +375,51 @@ Esempio:
 
 ```js
 const player = document.querySelector("stgraphx-player");
+await customElements.whenDefined("stgraphx-player");
 await player.ready;
 
 await player.setValue("beta", 0.4, { evaluate: true });
 const outputs = player.getOutputs();
+```
+
+Esempio più completo, con un pulsante HTML per avanzare di un passo e un elemento per visualizzare gli output:
+
+```html
+<script src="player-runtime-loader.js"></script>
+
+<stgraphx-player id="p1" src="models/sir.json"></stgraphx-player>
+
+<button id="stepBtn" type="button">Passo</button>
+<pre id="outputBox"></pre>
+
+<script>
+  async function main() {
+    await customElements.whenDefined("stgraphx-player");
+    const player = document.getElementById("p1");
+    const stepBtn = document.getElementById("stepBtn");
+    const outputBox = document.getElementById("outputBox");
+
+    function refreshOutput() {
+      const payload = {
+        time: player.getTime(),
+        outputs: player.getOutputs(),
+      };
+      outputBox.textContent = JSON.stringify(payload, null, 2);
+    }
+
+    await player.ready;
+    refreshOutput();
+
+    stepBtn.addEventListener("click", async () => {
+      await player.step();
+      refreshOutput();
+    });
+  }
+
+  main().catch((err) => {
+    console.error(err);
+  });
+</script>
 ```
 
 ## Runtime headless

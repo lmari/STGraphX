@@ -1,6 +1,6 @@
 # STGraphX: readme
 
-Luca Mari, versione 11 luglio 2026
+Luca Mari, versione 16 luglio 2026
 
 ## Contesto
 
@@ -29,7 +29,7 @@ __Al momento implementati (senza librerie esterne):__
 * editor per grafi orientati, con nodi di forme e colori diversi e tooltip, frecce spline, testi, gestione di ridimensionamento, spostamento, cancellazione dei nodi, anche per selezioni multiple, zoom, griglia, clipboard (anche condivisa tra instanze diverse dell'app), undo e redo, ...;
 * menu, menu contestuale e pannello di configurazione aggiornato dinamicamente, con tooltip;
 * interfaccia a tab per più modelli, con gestione contestuale della relazione tra modelli e sottomodelli;
-* gestione dei testi dell'interfaccia utente in italiano, inglese e portoghese, con scelta via query string nella shell web (`?lang=it|en|pt`) e via parametro `--lang=it|en|pt` nella shell Electron;
+* gestione dei testi dell'interfaccia utente in italiano e inglese, con scelta via query string nella shell web (`?lang=it|en`) e via parametro `--lang=it|en` nella shell Electron;
 * gestione dei nodi algebrici, di stato, parametri e sottomodelli, con funzioni in sintassi javascript (compresa la gestione locale di `this` come stato attuale); controllo sintattico sul nome dei nodi; controllo sui parametri (valore non cambia dopo la prima esecuzione; frecce entranti non ammesse); controllo sullo stato iniziale: solo espressioni locali o riferimenti a parametri; controllo del numero di cifre decimali visualizzate;
 * variabili globali;
 * gestione di esecuzione completa, passo-passo, temporizzata, con modello in modalità read-only durante l'esecuzione;
@@ -55,6 +55,8 @@ __Al momento implementati (senza librerie esterne):__
 * caricamento e salvataggio di modelli in file JSON;
 * editor per espressioni con controllo sintattico interattivo, visualizzazione dei valori attuali, help;
 * menu di help;
+* una pagina di esempi configurabile via file JSON;
+* una funzione per la generazione dei contenuti noti della 8-upla del modello attivo
 * nel menu File, gestione dei modelli aperti di recente;
 * una prima gestione di controllo di correttezza del modello;
 * un primo debugger, con gestione di watch e breakpoint;
@@ -69,7 +71,6 @@ __Al momento non implementati (rispetto a STGraph):__
 * nodi di stato con output;
 * gestione di interrupt;
 * playmode e altre modalità di esecuzione;
-* una pagina di esempi;
 * ...
 
 ## Appunti sul progetto

@@ -7,7 +7,7 @@ function resolveSupportedLang(raw) {
     return '';
   }
   const base = value.split('-')[0];
-  if (base === 'it' || base === 'en' || base === 'pt') {
+  if (base === 'it' || base === 'en') {
     return base;
   }
   return '';

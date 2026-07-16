@@ -1,5 +1,5 @@
 (function initHeadlessRuntime(global) {
-  const HEADLESS_LANGS = new Set(["it", "en", "pt"]);
+  const HEADLESS_LANGS = new Set(["it", "en"]);
   const NODE_RUNTIME_FILES = [
     "i18n-inline.js",
     "graph-functions.js",

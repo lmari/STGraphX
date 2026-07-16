@@ -110,7 +110,6 @@
             <button id="runTimedToggleBtn" class="menu-command" type="button" data-title-i18n="tooltip.menu.run.timed"><span data-i18n="menu.run.timedToggle"></span><span class="menu-shortcut">F9</span></button>
             <button id="runResetBtn" class="menu-command" type="button" data-title-i18n="tooltip.menu.run.reset"><span data-i18n="menu.run.reset"></span><span class="menu-shortcut">F10</span></button>
             <hr class="menu-sep" />
-            <button id="analyzeModelBtn" class="menu-command" type="button" data-title-i18n="tooltip.menu.run.analyze"><span data-i18n="menu.run.analyze"></span></button>
             <button id="watchDebuggerBtn" class="menu-command" type="button" data-title-i18n="tooltip.menu.run.watch"><span data-i18n="menu.run.watch"></span></button>
             <label class="menu-check" for="runStrictDefinitionsInput" data-title-i18n="tooltip.model.strictDefinitions">
               <input id="runStrictDefinitionsInput" type="checkbox" />
@@ -123,6 +122,8 @@
           <button class="menu-title" type="button" data-menu="helpMenu" data-i18n="menu.help" data-title-i18n="tooltip.menu.help"></button>
           <div class="menu-panel" id="helpMenu">
             <button id="functionsHelpBtn" class="menu-command" type="button" data-title-i18n="tooltip.menu.help.functions"><span data-i18n="menu.help.functions"></span><span class="menu-shortcut">F1</span></button>
+            <button id="eightTupleBtn" class="menu-command" type="button" data-title-i18n="tooltip.menu.help.eightTuple"><span data-i18n="menu.help.eightTuple"></span></button>
+            <button id="analyzeModelBtn" class="menu-command" type="button" data-title-i18n="tooltip.menu.help.analyze"><span data-i18n="menu.help.analyze"></span></button>
             <button id="examplesHelpBtn" class="menu-command" type="button" data-title-i18n="tooltip.menu.help.examples"><span data-i18n="menu.help.examples"></span></button>
             <button id="aboutAppBtn" class="menu-command" type="button" data-title-i18n="tooltip.menu.help.about"><span data-i18n="menu.help.about"></span></button>
           </div>
@@ -504,6 +505,21 @@
         </div>
         <div class="modal-actions">
           <button id="aboutAppDismissBtn" type="button" data-i18n="action.close"></button>
+        </div>
+      </div>
+    </div>
+    <div id="eightTupleModal" class="modal-backdrop modal-modeless hidden">
+      <div class="modal-card eight-tuple-card" role="dialog" aria-modal="false" aria-labelledby="eightTupleTitle">
+        <div class="modal-head">
+          <h3 id="eightTupleTitle" data-i18n="eightTuple.title"></h3>
+          <button id="eightTupleCloseBtn" class="icon-btn modal-close-btn" type="button" data-i18n-aria-label="aria.close">×</button>
+        </div>
+        <div id="eightTupleIntro" class="help-intro" data-i18n="eightTuple.intro"></div>
+        <div id="eightTupleContent" class="eight-tuple-content"></div>
+        <div class="modal-actions">
+          <button id="eightTupleCopyBtn" type="button" data-i18n="eightTuple.copyMarkdown"></button>
+          <button id="eightTupleExportBtn" type="button" data-i18n="eightTuple.exportMarkdown"></button>
+          <button id="eightTupleDismissBtn" type="button" data-i18n="action.close"></button>
         </div>
       </div>
     </div>

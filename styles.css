@@ -1733,8 +1733,8 @@ button:disabled {
   overflow: hidden;
 }
 
-.examples-help-card {
-  width: min(860px, calc(100vw - 40px));
+.about-app-card {
+  width: min(560px, calc(100vw - 40px));
   max-width: calc(100vw - 20px);
   max-height: calc(100vh - 20px);
   position: absolute;
@@ -1744,8 +1744,8 @@ button:disabled {
   overflow: hidden;
 }
 
-.about-app-card {
-  width: min(560px, calc(100vw - 40px));
+.eight-tuple-card {
+  width: min(980px, calc(100vw - 40px));
   max-width: calc(100vw - 20px);
   max-height: calc(100vh - 20px);
   position: absolute;
@@ -2329,6 +2329,45 @@ button:disabled {
   line-height: 1.45;
 }
 
+.eight-tuple-content {
+  overflow: auto;
+  max-height: calc(100vh - 230px);
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 2px 2px 2px 0;
+}
+
+.eight-tuple-section {
+  border: 1px solid #dbe4ec;
+  border-radius: 8px;
+  background: #fff;
+  padding: 12px 14px;
+}
+
+.eight-tuple-section h4 {
+  margin: 0 0 6px;
+  font-size: 0.96rem;
+  color: #244158;
+}
+
+.eight-tuple-section p {
+  margin: 0 0 8px;
+  font-size: 0.86rem;
+  line-height: 1.45;
+  color: #445b70;
+}
+
+.eight-tuple-pre {
+  margin: 0;
+  white-space: pre-wrap;
+  word-break: break-word;
+  font-family: var(--font-mono);
+  font-size: 0.82rem;
+  line-height: 1.5;
+  color: #203648;
+}
+
 .functions-help-content {
   overflow: auto;
   max-height: calc(100vh - 220px);
@@ -2336,51 +2375,6 @@ button:disabled {
   border-radius: 8px;
   background: #fbfcfe;
   padding: 10px;
-}
-
-.examples-help-content {
-  overflow: auto;
-  max-height: calc(100vh - 220px);
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-}
-
-.example-entry {
-  display: grid;
-  grid-template-columns: auto 1fr;
-  gap: 10px 14px;
-  align-items: start;
-  padding: 10px 12px;
-  border: 1px solid #dbe4ec;
-  border-radius: 8px;
-  background: #fff;
-}
-
-.example-entry button {
-  white-space: nowrap;
-  align-self: start;
-}
-
-.example-entry-title {
-  margin: 0 0 4px;
-  font-size: 0.95rem;
-  font-weight: 700;
-  color: #244158;
-}
-
-.example-entry-path {
-  margin: 0 0 4px;
-  font-size: 0.78rem;
-  color: #607286;
-  font-family: var(--font-mono);
-}
-
-.example-entry-desc {
-  margin: 0;
-  font-size: 0.86rem;
-  line-height: 1.35;
-  color: #30485c;
 }
 
 .help-group + .help-group {
@@ -3512,8 +3506,8 @@ button:disabled {
 
   .modal-card,
   .functions-help-card,
-  .examples-help-card,
   .about-app-card,
+  .eight-tuple-card,
   .model-analysis-card,
   .watch-debugger-card,
   .local-functions-card,

@@ -1,6 +1,6 @@
 (function initPlayerShell(global) {
   const SVG_NS = "http://www.w3.org/2000/svg";
-  const PLAYER_LANGS = new Set(["it", "en", "pt"]);
+  const PLAYER_LANGS = new Set(["it", "en"]);
 
   function fillTemplate(template, vars = {}) {
     return String(template).replace(/\{([a-zA-Z0-9_]+)\}/g, (_match, name) => (
@@ -177,6 +177,47 @@
     }
   }
 
+  function widgetBinaryStateLabel(widget, state, t) {
+    const explicit = state ? String(widget?.trueLabel ?? "").trim() : String(widget?.falseLabel ?? "").trim();
+    if (explicit) {
+      return explicit;
+    }
+    return t(state ? "widget.buttonState.true" : "widget.buttonState.false");
+  }
+
+  function coerceLedState(value) {
+    if (value === true || value === false) {
+      return { ok: true, value };
+    }
+    if (typeof value === "number" && Number.isFinite(value)) {
+      if (value === 0) {
+        return { ok: true, value: false };
+      }
+      if (value === 1) {
+        return { ok: true, value: true };
+      }
+    }
+    if (typeof value === "string") {
+      const lower = value.trim().toLowerCase();
+      if (lower === "true") {
+        return { ok: true, value: true };
+      }
+      if (lower === "false") {
+        return { ok: true, value: false };
+      }
+    }
+    return { ok: false, value: false };
+  }
+
+  function textWidgetMappedLabel(widget, rawValue) {
+    const value = Number(rawValue);
+    if (!Number.isFinite(value) || !Array.isArray(widget?.mappings)) {
+      return "";
+    }
+    const hit = widget.mappings.find((mapping) => Number(mapping?.value) === value && String(mapping?.label ?? "").trim());
+    return hit ? String(hit.label) : "";
+  }
+
   function sanitizeWidgetList(widgets = []) {
     const parseNullablePositiveInt = (value) => {
       if (value === null || value === undefined || value === "") {
@@ -224,6 +265,8 @@
           value: Number.isFinite(Number(mapping?.value)) ? Number(mapping.value) : 0,
         }))
         : [],
+      falseLabel: String(widget?.falseLabel ?? ""),
+      trueLabel: String(widget?.trueLabel ?? ""),
       columns: Array.isArray(widget?.columns)
         ? widget.columns.map((name) => String(name ?? "")).filter(Boolean)
         : [],
@@ -865,16 +908,26 @@
           .widget-table, .matrix-table {
             width: 100%;
             border-collapse: collapse;
+            table-layout: fixed;
             font-size: inherit;
           }
           .widget-table th, .widget-table td, .matrix-table td, .matrix-table th {
             border: 1px solid #d9e3ee;
-            padding: calc(4px * var(--widget-scale)) calc(6px * var(--widget-scale));
+            padding: calc(3px * var(--widget-scale)) calc(5px * var(--widget-scale));
             text-align: left;
+            vertical-align: top;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            font-variant-numeric: tabular-nums;
             font-size: inherit;
           }
           .widget-table th, .matrix-table th {
-            background: #f5f9fc;
+            position: sticky;
+            top: 0;
+            z-index: 1;
+            background: #f3f7fb;
+            box-shadow: inset 0 -1px 0 #d9e2ea;
           }
           .matrix-widget-grid {
             display: grid;
@@ -904,31 +957,136 @@
           }
           .matrix-widget-value {
             background: rgba(255,255,255,0.92);
+            font-variant-numeric: tabular-nums;
+          }
+          .xy-chart-canvas-wrap {
+            min-height: 0;
+          }
+          .xy-chart-canvas {
+            display: block;
+            width: 100%;
+            height: 100%;
+            min-height: 84px;
+            border: 1px solid #d9e2ea;
+            border-radius: 6px;
+            background: #fff;
           }
           .led-wrap {
-            display: flex;
-            align-items: center;
-            gap: 10px;
+            display: grid;
+            justify-items: center;
+            gap: 4px;
           }
           .led {
-            width: 18px;
-            height: 18px;
+            width: 34px;
+            height: 34px;
             border-radius: 50%;
-            border: 1px solid rgba(0,0,0,0.12);
-            background: #c5d1db;
-            box-shadow: inset 0 0 4px rgba(0,0,0,0.18);
+            border: 2px solid #aebfd0;
+            background: radial-gradient(circle at 35% 35%, #f8fbfd 0%, #dfe8ef 45%, #c6d5e1 100%);
+            box-shadow: inset 0 1px 3px rgba(0,0,0,0.12);
           }
           .led.on {
-            background: #38b26d;
+            border-color: #6da46f;
+            background: radial-gradient(circle at 35% 35%, #f5fff2 0%, #73d86a 38%, #3f9d3d 100%);
+            box-shadow: 0 0 16px rgba(90, 192, 88, 0.45), inset 0 1px 4px rgba(255,255,255,0.35);
+          }
+          .led.off {
+            border-color: #b7c4d0;
+          }
+          .led.invalid {
+            border-color: #d0a1a1;
+            background: radial-gradient(circle at 35% 35%, #fff5f5 0%, #f0c8c8 45%, #d8a5a5 100%);
+          }
+          .led-stack {
+            position: relative;
+            display: grid;
+            place-items: center;
+            min-width: 40px;
+            min-height: 40px;
+          }
+          .led-label {
+            position: absolute;
+            inset: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 5px;
+            text-align: center;
+            font-size: 0.72rem;
+            font-weight: 700;
+            line-height: 1.05;
+            color: #17334d;
+            pointer-events: none;
+            text-shadow: 0 1px 0 rgba(255,255,255,0.55);
+          }
+          .led-message {
+            max-width: 100%;
+            text-align: center;
+            font-size: 0.78rem;
+            line-height: 1.2;
+            color: #3f566a;
+            word-break: break-word;
           }
           .input-wrap {
             display: grid;
-            gap: 8px;
+            gap: 6px;
           }
           .input-wrap input[type="range"], .input-wrap select, .input-wrap input[type="number"] {
             width: 100%;
             box-sizing: border-box;
             font: inherit;
+          }
+          .select-widget-wrap,
+          .button-widget-wrap,
+          .text-widget-wrap {
+            display: grid;
+            gap: 6px;
+            align-content: center;
+            min-height: 100%;
+          }
+          .select-widget-input {
+            width: 100%;
+            min-height: 28px;
+            padding-block: 3px;
+            border: 1px solid #d9e2ea;
+            border-radius: 8px;
+            background: white;
+            color: #193247;
+          }
+          .text-widget-display {
+            padding: 7px 9px;
+            border: 1px solid #d9e2ea;
+            border-radius: 10px;
+            background: #f8fbfe;
+            color: #193247;
+            line-height: 1.35;
+            white-space: pre-wrap;
+            word-break: break-word;
+          }
+          .slider-range-line {
+            display: grid;
+            grid-template-columns: auto 1fr 76px auto;
+            gap: 6px;
+            align-items: center;
+          }
+          .slider-bound {
+            font-size: 11px;
+            color: #4e6072;
+            white-space: nowrap;
+          }
+          .slider-widget-number {
+            margin-top: 0;
+            width: 100%;
+            min-height: 28px;
+            padding: 3px 5px;
+            border: 1px solid #d9e2ea;
+            border-radius: 8px;
+            background: white;
+            color: #193247;
+          }
+          .input-wrap input[type="range"] {
+            width: 100%;
+            margin: 0;
+            min-height: 20px;
           }
           .toggle-btn {
             border: 1px solid #b8c8d8;
@@ -1971,23 +2129,60 @@
       const widgetState = this._state.widgetState.get(widget.id) || null;
       if (widget.type === "text") {
         const node = nodeMap.get(widget.source);
-        const value = node?.computedValue;
-        const mapping = widget.mappings.find((item) => Number(item.value) === Number(value));
+        const wrap = document.createElement("div");
+        wrap.className = "text-widget-wrap";
         const content = document.createElement("div");
-        content.className = "widget-value";
-        content.textContent = mapping ? mapping.label : formatValue(execution, value);
-        body.appendChild(content);
+        content.className = "text-widget-display";
+        if (!node) {
+          content.textContent = this.t("widget.noneOption");
+        } else if (node.computedError) {
+          content.textContent = this.t(`error.evalReason.${node.computedError || "runtime"}`);
+        } else {
+          const mapped = textWidgetMappedLabel(widget, node.computedValue);
+          content.textContent = mapped || formatValue(execution, node.computedValue);
+        }
+        wrap.appendChild(content);
+        body.appendChild(wrap);
         return;
       }
       if (widget.type === "led") {
         const node = nodeMap.get(widget.source);
         const wrap = document.createElement("div");
         wrap.className = "led-wrap";
+        const stack = document.createElement("div");
+        stack.className = "led-stack";
         const led = document.createElement("div");
-        led.className = `led${coerceTruthy(node?.computedValue) ? " on" : ""}`;
+        led.className = "led";
+        const label = document.createElement("div");
+        label.className = "led-label";
         const text = document.createElement("div");
-        text.textContent = formatValue(execution, node?.computedValue);
-        wrap.appendChild(led);
+        text.className = "led-message";
+        let overlayText = "";
+        let messageText = "";
+        if (!node) {
+          led.classList.add("invalid");
+          messageText = this.t("widget.noneOption");
+        } else if (node.computedError) {
+          led.classList.add("invalid");
+          messageText = this.t(`error.evalReason.${node.computedError || "runtime"}`);
+        } else if (node.computedValue != null) {
+          const coerced = coerceLedState(node.computedValue);
+          if (coerced.ok) {
+            led.classList.toggle("on", coerced.value);
+            led.classList.toggle("off", !coerced.value);
+            overlayText = widgetBinaryStateLabel(widget, coerced.value, this.t.bind(this));
+          } else {
+            led.classList.add("invalid");
+            messageText = this.t("widget.ledInvalid");
+          }
+        }
+        label.textContent = overlayText;
+        label.hidden = !overlayText;
+        text.textContent = messageText;
+        text.hidden = !messageText;
+        stack.appendChild(led);
+        stack.appendChild(label);
+        wrap.appendChild(stack);
         wrap.appendChild(text);
         body.appendChild(wrap);
         return;
@@ -2067,18 +2262,25 @@
       if (widget.type === "slider") {
         const wrap = document.createElement("div");
         wrap.className = "input-wrap";
+        const minLabel = document.createElement("span");
+        minLabel.className = "slider-bound slider-bound-min";
+        minLabel.textContent = formatNumberValue(execution, Number(widget.min));
         const range = document.createElement("input");
         range.type = "range";
         range.min = String(widget.min);
         range.max = String(widget.max);
         range.step = String(widget.step);
         range.value = String(this._state.inputValues.get(widget.source) ?? widget.value ?? 0);
+        const maxLabel = document.createElement("span");
+        maxLabel.className = "slider-bound slider-bound-max";
+        maxLabel.textContent = formatNumberValue(execution, Number(widget.max));
         const number = document.createElement("input");
         number.type = "number";
         number.min = String(widget.min);
         number.max = String(widget.max);
         number.step = String(widget.step);
         number.value = range.value;
+        number.className = "slider-widget-number";
         const commit = (nextValue) => {
           const numeric = Number(nextValue);
           this._state.inputValues.set(widget.source, numeric);
@@ -2095,17 +2297,24 @@
         range.addEventListener("input", () => commit(range.value));
         range.addEventListener("change", () => commitAndRefresh(range.value));
         number.addEventListener("change", () => commitAndRefresh(number.value));
-        wrap.appendChild(range);
-        wrap.appendChild(number);
+        const rangeLine = document.createElement("div");
+        rangeLine.className = "slider-range-line";
+        rangeLine.appendChild(minLabel);
+        rangeLine.appendChild(range);
+        rangeLine.appendChild(number);
+        rangeLine.appendChild(maxLabel);
+        wrap.appendChild(rangeLine);
         body.appendChild(wrap);
         return;
       }
       if (widget.type === "button") {
+        const wrap = document.createElement("div");
+        wrap.className = "button-widget-wrap";
         const button = document.createElement("button");
         const current = Boolean(this._state.inputValues.get(widget.source) ?? (widget.value ? 1 : 0));
         button.type = "button";
-        button.className = `toggle-btn${current ? " on" : ""}`;
-        button.textContent = current ? this.t("widget.buttonState.true") : this.t("widget.buttonState.false");
+        button.className = `button-widget-toggle${current ? " is-on" : " is-off"}`;
+        button.textContent = widgetBinaryStateLabel(widget, current, this.t.bind(this));
         button.disabled = this._timedState.timedStepRunning || this._timedState.timedRunHandle != null;
         button.addEventListener("click", () => {
           const next = current ? 0 : 1;
@@ -2113,13 +2322,15 @@
           widget.value = next === 1;
           this.queuePreviewRefresh("input");
         });
-        body.appendChild(button);
+        wrap.appendChild(button);
+        body.appendChild(wrap);
         return;
       }
       if (widget.type === "select") {
         const wrap = document.createElement("div");
-        wrap.className = "input-wrap";
+        wrap.className = "select-widget-wrap";
         const select = document.createElement("select");
+        select.className = "select-widget-input";
         const current = Number(this._state.inputValues.get(widget.source) ?? widget.value ?? 0);
         widget.options.forEach((option) => {
           const opt = document.createElement("option");

@@ -37,6 +37,8 @@
       "index.html",
       "styles.css",
       "i18n-inline.js",
+      "examples/**/*",
+      "help/**/*",
       "icon.svg",
       "icon.png",
       "icon.ico",
@@ -73,6 +75,7 @@
   },
   "devDependencies": {
     "electron": "^35.0.0",
-    "electron-builder": "^24.13.3"
+    "electron-builder": "^24.13.3",
+    "terser": "^5.49.0"
   }
 }

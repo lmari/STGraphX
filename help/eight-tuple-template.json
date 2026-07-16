@@ -1,0 +1,150 @@
+{
+  "title": {
+    "it": "8-upla del modello attivo",
+    "en": "8-tuple of the active model"
+  },
+  "intro": {
+    "it": "Questa finestra ricostruisce automaticamente, per quanto possibile, la specificazione del modello attivo nella forma 〈T, K, U, Ω, Y, X, φ, η〉. Dove il modello non dichiara esplicitamente un'informazione, il testo lo segnala.",
+    "en": "This window automatically reconstructs, as far as possible, the specification of the active model in the form 〈T, K, U, Ω, Y, X, φ, η〉. Whenever the model does not explicitly declare a piece of information, the text states that limitation."
+  },
+  "copyMarkdownLabel": {
+    "it": "Copia Markdown",
+    "en": "Copy Markdown"
+  },
+  "exportMarkdownLabel": {
+    "it": "Esporta Markdown...",
+    "en": "Export Markdown..."
+  },
+  "exportPickerTitle": {
+    "it": "Esporta 8-upla in Markdown",
+    "en": "Export 8-tuple as Markdown"
+  },
+  "exportSuccess": {
+    "it": "8-upla esportata in Markdown.",
+    "en": "8-tuple exported as Markdown."
+  },
+  "exportFailed": {
+    "it": "Esportazione della 8-upla non riuscita.",
+    "en": "Failed to export the 8-tuple."
+  },
+  "sections": {
+    "tuple": {
+      "it": "Forma generale",
+      "en": "General form"
+    },
+    "T": {
+      "it": "T: insieme dei tempi",
+      "en": "T: set of times"
+    },
+    "K": {
+      "it": "K: costanti di input",
+      "en": "K: input constants"
+    },
+    "U": {
+      "it": "U: range delle variabili di input",
+      "en": "U: ranges of input variables"
+    },
+    "Omega": {
+      "it": "Ω: insieme delle funzioni di input ammissibili",
+      "en": "Ω: admissible input functions"
+    },
+    "Y": {
+      "it": "Y: range delle variabili di output",
+      "en": "Y: ranges of output variables"
+    },
+    "X": {
+      "it": "X: range delle variabili di stato",
+      "en": "X: ranges of state variables"
+    },
+    "phi": {
+      "it": "φ: funzione locale di transizione di stato",
+      "en": "φ: local state transition function"
+    },
+    "eta": {
+      "it": "η: funzione di comportamento",
+      "en": "η: behavior function"
+    },
+    "notes": {
+      "it": "Note di ricostruzione",
+      "en": "Reconstruction notes"
+    }
+  },
+  "text": {
+    "KIntro": {
+      "it": "In questa ricostruzione, K include sia i parametri espliciti sia gli stati iniziali dei nodi di stato.",
+      "en": "In this reconstruction, K includes both explicit parameters and the initial states of state nodes."
+    },
+    "closedModel": {
+      "it": "Il modello non espone variabili di input: viene quindi ricostruito come chiuso/autonomo (U = ∅).",
+      "en": "The model exposes no input variables, so it is reconstructed as closed/autonomous (U = ∅)."
+    },
+    "algebraicModel": {
+      "it": "Il modello non contiene nodi di stato: viene quindi ricostruito come algebrico (X = ∅).",
+      "en": "The model contains no state nodes, so it is reconstructed as algebraic (X = ∅)."
+    },
+    "noOutputs": {
+      "it": "Nel modello attivo non risultano nodi marcati come output.",
+      "en": "No nodes are currently marked as outputs in the active model."
+    },
+    "phiIntro": {
+      "it": "Per ciascun nodo di stato viene riportata la regola locale x(t + Δt) = φ(...), nella forma effettivamente memorizzata dal modello STGraphX.",
+      "en": "For each state node, the local rule x(t + Δt) = φ(...) is reported in the form actually stored by the STGraphX model."
+    },
+    "phiUndefined": {
+      "it": "Poiché X = ∅, la funzione φ non è definita.",
+      "en": "Because X = ∅, the function φ is undefined."
+    },
+    "etaIntro": {
+      "it": "Per ciascun output viene riportata la funzione locale che ne determina il valore. Per gli output che coincidono con nodi di stato, STGraphX assume implicitamente y(t) = x(t).",
+      "en": "For each output, the local function determining its value is reported. For outputs that coincide with state nodes, STGraphX implicitly assumes y(t) = x(t)."
+    },
+    "omegaUndefined": {
+      "it": "Poiché U = ∅, Ω non è definito.",
+      "en": "Because U = ∅, Ω is undefined."
+    },
+    "omegaUndeclared": {
+      "it": "Il modello attivo non dichiara esplicitamente vincoli di ammissibilità sugli input; in questa ricostruzione Ω è quindi considerato non specificato oltre a u: T → U.",
+      "en": "The active model does not explicitly declare admissibility constraints on inputs; in this reconstruction, Ω is therefore treated as unspecified beyond u: T → U."
+    },
+    "rangeUndeclared": {
+      "it": "range non esplicitamente dichiarato nel modello attivo",
+      "en": "range not explicitly declared in the active model"
+    },
+    "timeUndeclared": {
+      "it": "struttura temporale non ricostruibile completamente dai parametri correnti",
+      "en": "time structure cannot be fully reconstructed from the current parameters"
+    },
+    "unspecified": {
+      "it": "non specificato",
+      "en": "unspecified"
+    },
+    "none": {
+      "it": "nessuno",
+      "en": "none"
+    },
+    "stateOutputIdentity": {
+      "it": "{name}  (identità implicita di un nodo di stato esposto come output)",
+      "en": "{name}  (implicit identity of a state node exposed as output)"
+    },
+    "noteImplementation": {
+      "it": "Nota implementativa",
+      "en": "Implementation note"
+    },
+    "noteInternal": {
+      "it": "Variabili algebriche interne non incluse nell'8-upla",
+      "en": "Internal algebraic variables not included in the 8-tuple"
+    },
+    "noteSubmodels": {
+      "it": "Sottomodelli presenti",
+      "en": "Submodels present"
+    },
+    "noteLocalFunctions": {
+      "it": "Funzioni locali presenti",
+      "en": "Local functions present"
+    },
+    "noteGaps": {
+      "it": "Le informazioni su unità di misura, range formali di U/Y/X, vincoli su Ω e interpretazione semantica delle variabili non sono esplicitamente dichiarate nel formato del modello STGraphX e quindi vengono riportate solo se inferibili automaticamente.",
+      "en": "Information about measurement units, formal ranges of U/Y/X, constraints on Ω, and semantic interpretation of variables is not explicitly declared in the STGraphX model format, so it is reported only when it can be inferred automatically."
+    }
+  }
+}

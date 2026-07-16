@@ -208,11 +208,22 @@ oppure:
 
 ```bash
 npm run start:desktop -- --lang=it
-
-npm run start:desktop -- --lang=pt
 ```
 
 Se non passi `--lang`, la shell Electron prova a usare la lingua del sistema operativo.
+
+## Pagina esempi
+
+La gestione della finestra `Help -> Modelli di esempio...` è mantenuta nella cartella `examples/`.
+
+File principali:
+
+- `examples/examples-catalog.json`
+- `examples/examples-catalog.template.json`
+- `examples/examples-help.css`
+- `examples/README-EXAMPLES.md`
+
+Il renderer carica dinamicamente catalogo e CSS, così contenuti e layout della pagina esempi possono essere mantenuti localmente in quella cartella.
 
 5. Genera una build unpacked di prova:
 

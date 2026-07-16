@@ -1,128 +1,165 @@
-[
-  {
-    "file": "abm0.json",
-    "title": { "it": "ABM base", "en": "ABM basics", "pt": "ABM básico" },
-    "description": {
-      "it": "Esempio minimale di popolazione agent-based per provare la struttura dati di base.",
-      "en": "Minimal agent-based population example to inspect the basic data structure.",
-      "pt": "Exemplo mínimo de população baseada em agentes para inspecionar a estrutura básica."
+{
+  "title": {
+    "it": "Modelli di esempio",
+    "en": "Example models"
+  },
+  "intro": {
+    "it": "Puoi modificare liberamente questo file JSON per cambiare titolo, testo introduttivo, layout e organizzazione degli esempi mostrati nella finestra Help.",
+    "en": "You can freely edit this JSON file to change the title, intro text, layout, and organization of the examples shown in the Help window."
+  },
+  "layout": {
+    "variant": "list",
+    "showPaths": true,
+    "dense": false,
+    "openLabel": {
+      "it": "Apri",
+      "en": "Open"
     }
   },
-  {
-    "file": "abm0b.json",
-    "title": { "it": "ABM con proprietà nominate", "en": "ABM with named fields", "pt": "ABM com propriedades nomeadas" },
-    "description": {
-      "it": "Variante che usa nomi di proprietà degli agenti per rendere più leggibili le espressioni.",
-      "en": "Variant using named agent fields to make expressions easier to read.",
-      "pt": "Variação que usa nomes de propriedades dos agentes para tornar as expressões mais legíveis."
+  "sections": [
+    {
+      "title": {
+        "it": "Modelli dinamici classici",
+        "en": "Classic dynamical models"
+      },
+      "intro": {
+        "it": "Esempi utili per testare nodi di stato, grafici e integrazione numerica.",
+        "en": "Examples useful for testing state nodes, charts, and numerical integration."
+      },
+      "entries": [
+        {
+          "file": "lorenz.json",
+          "label": { "it": "Sistema di Lorenz", "en": "Lorenz system" },
+          "summary": {
+            "it": "Sistema dinamico continuo con comportamento caotico, adatto a grafici e integrazione numerica.",
+            "en": "Continuous dynamical system with chaotic behavior, suited to charts and numerical integration."
+          }
+        },
+        {
+          "file": "lotka_volterra.json",
+          "label": "Lotka-Volterra",
+          "summary": {
+            "it": "Predatori e prede: esempio compatto per equazioni differenziali e grafici x-y.",
+            "en": "Predator-prey model: compact example for differential equations and x-y charts."
+          }
+        },
+        {
+          "file": "sir.json",
+          "label": { "it": "SIR classico", "en": "Classic SIR" },
+          "summary": {
+            "it": "Modello epidemiologico aggregato, semplice per testare stati, parametri e output.",
+            "en": "Aggregate epidemiological model, simple for testing states, parameters, and outputs."
+          }
+        }
+      ]
+    },
+    {
+      "title": {
+        "it": "ABM e spazio",
+        "en": "ABM and space"
+      },
+      "intro": {
+        "it": "Esempi per agenti, popolazioni e matrici spaziali.",
+        "en": "Examples for agents, populations, and spatial matrices."
+      },
+      "entries": [
+        {
+          "file": "abm0.json",
+          "label": { "it": "ABM base", "en": "ABM basics" },
+          "summary": {
+            "it": "Esempio minimale di popolazione agent-based per provare la struttura dati di base.",
+            "en": "Minimal agent-based population example to inspect the basic data structure."
+          }
+        },
+        {
+          "file": "abm0b.json",
+          "label": { "it": "ABM con proprietà nominate", "en": "ABM with named fields" },
+          "summary": {
+            "it": "Variante che usa nomi di proprietà degli agenti per rendere più leggibili le espressioni.",
+            "en": "Variant using named agent fields to make expressions easier to read."
+          }
+        },
+        {
+          "file": "schelling.json",
+          "label": "Schelling",
+          "summary": {
+            "it": "Modello di segregazione spaziale agent-based, utile per vicinanze e dinamiche locali.",
+            "en": "Agent-based spatial segregation model, useful for neighborhoods and local dynamics."
+          }
+        },
+        {
+          "file": "schelling_mobile.json",
+          "label": { "it": "Schelling mobile", "en": "Mobile Schelling" },
+          "summary": {
+            "it": "Variante più adatta a schermi piccoli per verificare usabilità e interazione touch.",
+            "en": "Variant better suited to small screens to verify usability and touch interaction."
+          }
+        },
+        {
+          "file": "sir_abm.json",
+          "label": "SIR ABM",
+          "summary": {
+            "it": "Versione agent-based del SIR per confrontare approcci aggregati e a popolazione esplicita.",
+            "en": "Agent-based SIR version to compare aggregate and explicit-population approaches."
+          }
+        },
+        {
+          "file": "sir_abm2.json",
+          "label": "SIR ABM 2",
+          "summary": {
+            "it": "Seconda variante ABM per testare organizzazioni diverse della popolazione e delle regole.",
+            "en": "Second ABM variant to test different population layouts and update rules."
+          }
+        },
+        {
+          "file": "sir_abm3.json",
+          "label": "SIR ABM 3",
+          "summary": {
+            "it": "Terza variante ABM, utile anche per confronti di prestazioni e ottimizzazione.",
+            "en": "Third ABM variant, also useful for performance comparisons and optimization."
+          }
+        },
+        {
+          "file": "life.json",
+          "label": "Game of Life",
+          "summary": {
+            "it": "Automa cellulare classico, utile per matrice, widget matrice e aggiornamenti per passi.",
+            "en": "Classic cellular automaton, useful for matrix data, matrix widgets, and stepwise updates."
+          }
+        }
+      ]
+    },
+    {
+      "title": {
+        "it": "Varie",
+        "en": "Miscellaneous"
+      },
+      "entries": [
+        {
+          "file": "free_bodies.json",
+          "label": { "it": "Corpi liberi", "en": "Free bodies" },
+          "summary": {
+            "it": "Piccolo modello fisico utile per testare parametri, stato e relazioni tra nodi.",
+            "en": "Small physics model useful for testing parameters, state, and node relations."
+          }
+        },
+        {
+          "file": "newtonian_system.json",
+          "label": { "it": "Sistema newtoniano", "en": "Newtonian system" },
+          "summary": {
+            "it": "Esempio meccanico con parametri globali e relazioni fisiche tra variabili.",
+            "en": "Mechanical example with global parameters and physical relations between variables."
+          }
+        },
+        {
+          "file": "read_data_demo.json",
+          "label": { "it": "Lettura dati CSV", "en": "CSV data import" },
+          "summary": {
+            "it": "Mostra l'uso di readData() per caricare matrici e testi da file CSV nella cartella data.",
+            "en": "Shows how readData() loads matrices and text from CSV files in the data folder."
+          }
+        }
+      ]
     }
-  },
-  {
-    "file": "free_bodies.json",
-    "title": { "it": "Corpi liberi", "en": "Free bodies", "pt": "Corpos livres" },
-    "description": {
-      "it": "Piccolo modello fisico utile per testare parametri, stato e relazioni tra nodi.",
-      "en": "Small physics model useful for testing parameters, state, and node relations.",
-      "pt": "Pequeno modelo físico útil para testar parâmetros, estado e relações entre nós."
-    }
-  },
-  {
-    "file": "life.json",
-    "title": { "it": "Game of Life", "en": "Game of Life", "pt": "Game of Life" },
-    "description": {
-      "it": "Automa cellulare classico, utile per matrice, widget matrice e aggiornamenti per passi.",
-      "en": "Classic cellular automaton, useful for matrix data, matrix widgets, and stepwise updates.",
-      "pt": "Autômato celular clássico, útil para matrizes, widget matriz e atualizações por passo."
-    }
-  },
-  {
-    "file": "lorenz.json",
-    "title": { "it": "Sistema di Lorenz", "en": "Lorenz system", "pt": "Sistema de Lorenz" },
-    "description": {
-      "it": "Sistema dinamico continuo con comportamento caotico, adatto a grafici e integrazione numerica.",
-      "en": "Continuous dynamical system with chaotic behavior, suited to charts and numerical integration.",
-      "pt": "Sistema dinâmico contínuo com comportamento caótico, adequado a gráficos e integração numérica."
-    }
-  },
-  {
-    "file": "lotka_volterra.json",
-    "title": { "it": "Lotka-Volterra", "en": "Lotka-Volterra", "pt": "Lotka-Volterra" },
-    "description": {
-      "it": "Predatori e prede: esempio compatto per equazioni differenziali e grafici x-y.",
-      "en": "Predator-prey model: compact example for differential equations and x-y charts.",
-      "pt": "Modelo presa-predador: exemplo compacto para equações diferenciais e gráficos x-y."
-    }
-  },
-  {
-    "file": "newtonian_system.json",
-    "title": { "it": "Sistema newtoniano", "en": "Newtonian system", "pt": "Sistema newtoniano" },
-    "description": {
-      "it": "Esempio meccanico con parametri globali e relazioni fisiche tra variabili.",
-      "en": "Mechanical example with global parameters and physical relations between variables.",
-      "pt": "Exemplo mecânico com parâmetros globais e relações físicas entre variáveis."
-    }
-  },
-  {
-    "file": "read_data_demo.json",
-    "title": { "it": "Lettura dati CSV", "en": "CSV data import", "pt": "Leitura de dados CSV" },
-    "description": {
-      "it": "Mostra l'uso di readData() per caricare matrici e testi da file CSV nella cartella data.",
-      "en": "Shows how readData() loads matrices and text from CSV files in the data folder.",
-      "pt": "Mostra como readData() carrega matrizes e texto de arquivos CSV na pasta data."
-    }
-  },
-  {
-    "file": "schelling.json",
-    "title": { "it": "Schelling", "en": "Schelling", "pt": "Schelling" },
-    "description": {
-      "it": "Modello di segregazione spaziale agent-based, utile per vicinanze e dinamiche locali.",
-      "en": "Agent-based spatial segregation model, useful for neighborhoods and local dynamics.",
-      "pt": "Modelo espacial de segregação baseado em agentes, útil para vizinhanças e dinâmicas locais."
-    }
-  },
-  {
-    "file": "schelling_mobile.json",
-    "title": { "it": "Schelling mobile", "en": "Mobile Schelling", "pt": "Schelling móvel" },
-    "description": {
-      "it": "Variante più adatta a schermi piccoli per verificare usabilità e interazione touch.",
-      "en": "Variant better suited to small screens to verify usability and touch interaction.",
-      "pt": "Variação mais adequada a telas pequenas para verificar usabilidade e interação por toque."
-    }
-  },
-  {
-    "file": "sir.json",
-    "title": { "it": "SIR classico", "en": "Classic SIR", "pt": "SIR clássico" },
-    "description": {
-      "it": "Modello epidemiologico aggregato, semplice per testare stati, parametri e output.",
-      "en": "Aggregate epidemiological model, simple for testing states, parameters, and outputs.",
-      "pt": "Modelo epidemiológico agregado, simples para testar estados, parâmetros e saídas."
-    }
-  },
-  {
-    "file": "sir_abm.json",
-    "title": { "it": "SIR ABM", "en": "SIR ABM", "pt": "SIR ABM" },
-    "description": {
-      "it": "Versione agent-based del SIR per confrontare approcci aggregati e a popolazione esplicita.",
-      "en": "Agent-based SIR version to compare aggregate and explicit-population approaches.",
-      "pt": "Versão baseada em agentes do SIR para comparar abordagens agregadas e de população explícita."
-    }
-  },
-  {
-    "file": "sir_abm2.json",
-    "title": { "it": "SIR ABM 2", "en": "SIR ABM 2", "pt": "SIR ABM 2" },
-    "description": {
-      "it": "Seconda variante ABM per testare organizzazioni diverse della popolazione e delle regole.",
-      "en": "Second ABM variant to test different population layouts and update rules.",
-      "pt": "Segunda variante ABM para testar diferentes organizações da população e das regras."
-    }
-  },
-  {
-    "file": "sir_abm3.json",
-    "title": { "it": "SIR ABM 3", "en": "SIR ABM 3", "pt": "SIR ABM 3" },
-    "description": {
-      "it": "Terza variante ABM, utile anche per confronti di prestazioni e ottimizzazione.",
-      "en": "Third ABM variant, also useful for performance comparisons and optimization.",
-      "pt": "Terceira variante ABM, útil também para comparações de desempenho e otimização."
-    }
-  }
-]
+  ]
+}

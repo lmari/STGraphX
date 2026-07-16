@@ -1,0 +1,42 @@
+{
+  "title": {
+    "it": "Modelli di esempio",
+    "en": "Example models"
+  },
+  "intro": {
+    "it": "Personalizza questa pagina modificando titolo, introduzione, layout e sezioni.",
+    "en": "Customize this page by editing title, intro, layout, and sections."
+  },
+  "layout": {
+    "variant": "list",
+    "showPaths": true,
+    "dense": false,
+    "openLabel": {
+      "it": "Apri",
+      "en": "Open"
+    }
+  },
+  "entries": [],
+  "sections": [
+    {
+      "title": {
+        "it": "Sezione di esempio",
+        "en": "Example section"
+      },
+      "intro": {
+        "it": "Una breve spiegazione opzionale della sezione.",
+        "en": "An optional short explanation for the section."
+      },
+      "entries": [
+        {
+          "file": "life.json",
+          "label": "Game of Life",
+          "summary": {
+            "it": "Descrizione breve dell'esempio.",
+            "en": "Short description of the example."
+          }
+        }
+      ]
+    }
+  ]
+}
