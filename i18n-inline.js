@@ -1,6 +1,15 @@
+/*
+ * This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at https://mozilla.org/MPL/2.0/.
+ * Copyright (c) 2026 Luca Mari
+ */
+
 window.STGraphXAppMeta = {
   author: "Luca Mari",
-  releaseDate: "2026.07.16",
+  releaseDate: "2026.07.20",
+  license: "MPL-2.0",
+  copyright: "Copyright (c) 2026 Luca Mari",
 };
 
 window.STGraphXI18nBundles = {
@@ -45,6 +54,8 @@ window.STGraphXI18nBundles = {
     "about.subtitle": "Ambiente di lavoro per il variable-based modeling",
     "about.versionLabel": "Ultimo aggiornamento",
     "about.authorLabel": "Autore",
+    "about.licenseLabel": "Licenza",
+    "about.copyrightLabel": "Copyright",
     "about.body": "Versione sperimentale con shell web ed Electron.",
     "confirm.exitSubmodel.save": "Ci sono modifiche non salvate nel sottomodello corrente. Vuoi salvarle prima di tornare al livello superiore?",
     "confirm.closeApp.save": "Ci sono modifiche non salvate. Vuoi salvarle prima di chiudere l'app?",
@@ -960,6 +971,8 @@ window.STGraphXI18nBundles = {
     "about.subtitle": "Variable-based modeling workbench",
     "about.versionLabel": "Last update",
     "about.authorLabel": "Author",
+    "about.licenseLabel": "License",
+    "about.copyrightLabel": "Copyright",
     "about.body": "Experimental release with web and Electron shells.",
     "confirm.exitSubmodel.save": "There are unsaved changes in the current submodel. Save them before returning to the upper level?",
     "confirm.closeApp.save": "There are unsaved changes. Save them before closing the app?",

@@ -1,3 +1,10 @@
+/*
+ * This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at https://mozilla.org/MPL/2.0/.
+ * Copyright (c) 2026 Luca Mari
+ */
+
 const svg = document.getElementById("graphCanvas");
 const graphViewport = document.getElementById("graphViewport");
 const sidebar = document.getElementById("sidebar");
@@ -17,6 +24,9 @@ const tabletStepBtn = document.getElementById("tabletStepBtn");
 const tabletTimedBtn = document.getElementById("tabletTimedBtn");
 const tabletResetBtn = document.getElementById("tabletResetBtn");
 const tabletSidebarBackdrop = document.getElementById("tabletSidebarBackdrop");
+const tabletSidebarHeader = document.getElementById("tabletSidebarHeader");
+const tabletSidebarExpandBtn = document.getElementById("tabletSidebarExpandBtn");
+const tabletSidebarCloseBtn = document.getElementById("tabletSidebarCloseBtn");
 const menuRoots = Array.from(document.querySelectorAll(".menu-root"));
 const menuTitles = Array.from(document.querySelectorAll(".menu-title"));
 const menuCommands = Array.from(document.querySelectorAll(".menu-command"));
@@ -216,6 +226,8 @@ const aboutAppCloseBtn = document.getElementById("aboutAppCloseBtn");
 const aboutAppDismissBtn = document.getElementById("aboutAppDismissBtn");
 const aboutAppVersionValue = document.getElementById("aboutAppVersionValue");
 const aboutAppAuthorValue = document.getElementById("aboutAppAuthorValue");
+const aboutAppLicenseValue = document.getElementById("aboutAppLicenseValue");
+const aboutAppCopyrightValue = document.getElementById("aboutAppCopyrightValue");
 const modelAnalysisModal = document.getElementById("modelAnalysisModal");
 const modelAnalysisCloseBtn = document.getElementById("modelAnalysisCloseBtn");
 const modelAnalysisDismissBtn = document.getElementById("modelAnalysisDismissBtn");
@@ -872,7 +884,10 @@ const ui = {
   breakpointLastResult: null,
   localFunctionsEditor: null,
   tabletSidebarOpen: false,
+  tabletSidebarExpanded: false,
+  tabletSidebarDrag: null,
   tabletCanvasMode: "edit",
+  touchViewportGesture: null,
 };
 
 const history = {
@@ -4043,11 +4058,19 @@ function openAboutApp() {
   const appMeta = window.STGraphXAppMeta || {};
   const releaseDate = String(appMeta.releaseDate || "").trim();
   const author = String(appMeta.author || "").trim();
+  const license = String(appMeta.license || "").trim();
+  const copyright = String(appMeta.copyright || "").trim();
   if (aboutAppVersionValue) {
     aboutAppVersionValue.textContent = releaseDate;
   }
   if (aboutAppAuthorValue) {
     aboutAppAuthorValue.textContent = author;
+  }
+  if (aboutAppLicenseValue) {
+    aboutAppLicenseValue.textContent = license;
+  }
+  if (aboutAppCopyrightValue) {
+    aboutAppCopyrightValue.textContent = copyright;
   }
   aboutAppModal.classList.remove("hidden");
 }
@@ -6141,6 +6164,79 @@ function isTabletCanvasPanMode() {
   return isCompactTabletLayout() && ui.tabletCanvasMode === "pan";
 }
 
+function isCompactTouchPointerEvent(evt) {
+  return isCompactTabletLayout() && evt?.pointerType === "touch";
+}
+
+function isBackgroundTouchCanvasTarget(target) {
+  return !target?.closest?.(".node, .value-widget, .canvas-text-item, .edge, .control-point, .resize-handle, input, select, button, textarea, .menu-bar, .sidebar, .context-menu, .modal-backdrop, .modal-card");
+}
+
+function clearTouchViewportGesture() {
+  ui.touchViewportGesture = null;
+}
+
+function ensureTouchViewportGesture() {
+  if (!ui.touchViewportGesture) {
+    ui.touchViewportGesture = {
+      pointers: new Map(),
+      mode: null,
+      startClientX: 0,
+      startClientY: 0,
+      startScrollLeft: 0,
+      startScrollTop: 0,
+      startZoom: ui.zoom,
+      startDistance: 0,
+      lastDistance: 0,
+      lastMidClientX: 0,
+      lastMidClientY: 0,
+      target: null,
+    };
+  }
+  return ui.touchViewportGesture;
+}
+
+function touchGestureDistance(a, b) {
+  return Math.hypot(a.clientX - b.clientX, a.clientY - b.clientY);
+}
+
+function touchGestureMidpoint(a, b) {
+  return {
+    x: (a.clientX + b.clientX) / 2,
+    y: (a.clientY + b.clientY) / 2,
+  };
+}
+
+function refreshTouchViewportGestureMode() {
+  const gesture = ui.touchViewportGesture;
+  if (!gesture) {
+    return;
+  }
+  const points = [...gesture.pointers.values()];
+  if (points.length >= 2) {
+    const [a, b] = points;
+    const mid = touchGestureMidpoint(a, b);
+    const dist = touchGestureDistance(a, b);
+    gesture.mode = "pinch";
+    gesture.startZoom = ui.zoom;
+    gesture.startDistance = Math.max(1, dist);
+    gesture.lastDistance = Math.max(1, dist);
+    gesture.lastMidClientX = mid.x;
+    gesture.lastMidClientY = mid.y;
+    return;
+  }
+  if (points.length === 1) {
+    const [point] = points;
+    gesture.mode = "pan";
+    gesture.startClientX = point.clientX;
+    gesture.startClientY = point.clientY;
+    gesture.startScrollLeft = graphViewport.scrollLeft;
+    gesture.startScrollTop = graphViewport.scrollTop;
+    return;
+  }
+  clearTouchViewportGesture();
+}
+
 function updateTabletCanvasModeUi() {
   const panMode = isTabletCanvasPanMode();
   document.body.classList.toggle("tablet-canvas-pan", panMode);
@@ -6148,6 +6244,19 @@ function updateTabletCanvasModeUi() {
     tabletModeBtn.textContent = panMode ? "✋" : "✎";
     tabletModeBtn.classList.toggle("active", panMode);
     setTooltipText(tabletModeBtn, t(panMode ? "action.tabletCanvasPan" : "action.tabletCanvasEdit"));
+  }
+}
+
+function updateTabletSidebarHeaderUi() {
+  const expanded = isCompactTabletLayout() && ui.tabletSidebarExpanded;
+  document.body.classList.toggle("tablet-sidebar-expanded", expanded);
+  if (tabletSidebarExpandBtn) {
+    tabletSidebarExpandBtn.textContent = expanded ? "▾" : "▴";
+    tabletSidebarExpandBtn.setAttribute("aria-expanded", expanded ? "true" : "false");
+    tabletSidebarExpandBtn.title = expanded ? "Riduci pannello" : "Espandi pannello";
+  }
+  if (tabletSidebarCloseBtn) {
+    tabletSidebarCloseBtn.title = t("action.close");
   }
 }
 
@@ -6161,6 +6270,7 @@ function applyResponsiveUiState() {
   const open = compact && ui.tabletSidebarOpen;
   document.body.classList.toggle("tablet-sidebar-layout", compact);
   document.body.classList.toggle("tablet-sidebar-open", open);
+  document.body.classList.toggle("tablet-sidebar-expanded", compact && open && ui.tabletSidebarExpanded);
   if (tabletQuickbar) {
     tabletQuickbar.classList.toggle("hidden", !compact);
   }
@@ -6171,12 +6281,57 @@ function applyResponsiveUiState() {
     tabletSidebarToggle.classList.toggle("active", open);
     tabletSidebarToggle.setAttribute("aria-expanded", open ? "true" : "false");
   }
+  if (tabletSidebarHeader) {
+    tabletSidebarHeader.classList.toggle("hidden", !compact);
+  }
+  updateTabletSidebarHeaderUi();
   updateTabletCanvasModeUi();
 }
 
 function setTabletSidebarOpen(open) {
   ui.tabletSidebarOpen = Boolean(open);
+  if (!ui.tabletSidebarOpen) {
+    ui.tabletSidebarExpanded = false;
+  }
   applyResponsiveUiState();
+}
+
+function setTabletSidebarExpanded(expanded) {
+  ui.tabletSidebarExpanded = Boolean(expanded);
+  if (ui.tabletSidebarExpanded && !ui.tabletSidebarOpen) {
+    ui.tabletSidebarOpen = true;
+  }
+  applyResponsiveUiState();
+}
+
+function bindModalDragHandle(modalRoot, cardSelector) {
+  if (!modalRoot) {
+    return;
+  }
+  const modalHead = modalRoot.querySelector(".modal-head");
+  const modalCard = modalRoot.querySelector(cardSelector);
+  if (!modalHead || !modalCard) {
+    return;
+  }
+  modalHead.addEventListener("pointerdown", (evt) => {
+    if (evt.target.closest("button")) {
+      return;
+    }
+    if (isCompactTouchPointerEvent(evt)) {
+      return;
+    }
+    const rect = modalCard.getBoundingClientRect();
+    modalCard.style.transform = "none";
+    modalCard.style.left = `${rect.left}px`;
+    modalCard.style.top = `${rect.top}px`;
+    ui.modalDrag = {
+      pointerId: evt.pointerId,
+      offsetX: evt.clientX - rect.left,
+      offsetY: evt.clientY - rect.top,
+      card: modalCard,
+    };
+    evt.currentTarget?.setPointerCapture?.(evt.pointerId);
+  });
 }
 
 function revealSidebarForCompactLayout() {
@@ -7883,6 +8038,70 @@ function applyZoom(nextZoom, anchorClientX = null, anchorClientY = null) {
   refreshSidebar();
   scheduleFileStatusRefresh();
   setStatusKey("status.zoom", { value: Math.round(ui.zoom * 100) });
+}
+
+function handleCompactTouchViewportPointerDown(evt) {
+  if (!isCompactTouchPointerEvent(evt) || !isBackgroundTouchCanvasTarget(evt.target)) {
+    return;
+  }
+  const gesture = ensureTouchViewportGesture();
+  gesture.target = graphViewport;
+  gesture.pointers.set(evt.pointerId, {
+    clientX: evt.clientX,
+    clientY: evt.clientY,
+  });
+  refreshTouchViewportGestureMode();
+  evt.preventDefault();
+}
+
+function handleCompactTouchViewportPointerMove(evt) {
+  const gesture = ui.touchViewportGesture;
+  if (!gesture || gesture.target !== graphViewport || !gesture.pointers.has(evt.pointerId)) {
+    return false;
+  }
+  gesture.pointers.set(evt.pointerId, {
+    clientX: evt.clientX,
+    clientY: evt.clientY,
+  });
+  const points = [...gesture.pointers.values()];
+  if (gesture.mode === "pinch" && points.length >= 2) {
+    const [a, b] = points;
+    const mid = touchGestureMidpoint(a, b);
+    const dist = Math.max(1, touchGestureDistance(a, b));
+    const factor = dist / Math.max(1, gesture.lastDistance || dist);
+    if (Number.isFinite(factor) && factor > 0) {
+      applyZoom(ui.zoom * factor, mid.x, mid.y);
+    }
+    graphViewport.scrollLeft -= (mid.x - gesture.lastMidClientX);
+    graphViewport.scrollTop -= (mid.y - gesture.lastMidClientY);
+    gesture.lastDistance = dist;
+    gesture.lastMidClientX = mid.x;
+    gesture.lastMidClientY = mid.y;
+    evt.preventDefault();
+    return true;
+  }
+  if (gesture.mode === "pan" && points.length === 1) {
+    const point = points[0];
+    graphViewport.scrollLeft = gesture.startScrollLeft - (point.clientX - gesture.startClientX);
+    graphViewport.scrollTop = gesture.startScrollTop - (point.clientY - gesture.startClientY);
+    evt.preventDefault();
+    return true;
+  }
+  return false;
+}
+
+function handleCompactTouchViewportPointerEnd(evt) {
+  const gesture = ui.touchViewportGesture;
+  if (!gesture || !gesture.pointers.has(evt.pointerId)) {
+    return false;
+  }
+  gesture.pointers.delete(evt.pointerId);
+  if (gesture.pointers.size === 0) {
+    clearTouchViewportGesture();
+  } else {
+    refreshTouchViewportGestureMode();
+  }
+  return true;
 }
 
 function fitToContent() {
@@ -12870,6 +13089,12 @@ async function toggleTimedExecution() {
 }
 
 window.addEventListener("pointermove", (evt) => {
+  if (ui.tabletSidebarDrag && evt.pointerId === ui.tabletSidebarDrag.pointerId) {
+    return;
+  }
+  if (handleCompactTouchViewportPointerMove(evt)) {
+    return;
+  }
   if (ui.modalDrag && evt.pointerId === ui.modalDrag.pointerId) {
     const card = ui.modalDrag.card;
     if (card) {
@@ -12898,8 +13123,9 @@ window.addEventListener("pointermove", (evt) => {
       const z = Math.max(0.0001, ui.zoom || 1);
       const dx = (evt.clientX - ui.widgetDrag.startClientX) / z;
       const dy = (evt.clientY - ui.widgetDrag.startClientY) / z;
-      widget.x = ui.snapToGrid ? snap(ui.widgetDrag.startX + dx) : ui.widgetDrag.startX + dx;
-      widget.y = ui.snapToGrid ? snap(ui.widgetDrag.startY + dy) : ui.widgetDrag.startY + dy;
+      const dragSnap = ui.snapToGrid && !ui.widgetDrag.snapOnRelease;
+      widget.x = dragSnap ? snap(ui.widgetDrag.startX + dx) : ui.widgetDrag.startX + dx;
+      widget.y = dragSnap ? snap(ui.widgetDrag.startY + dy) : ui.widgetDrag.startY + dy;
       renderWidgets();
     }
     return;
@@ -13061,6 +13287,22 @@ window.addEventListener("mousemove", (evt) => {
 });
 
 window.addEventListener("pointerup", (evt) => {
+  handleCompactTouchViewportPointerEnd(evt);
+  if (ui.tabletSidebarDrag && evt.pointerId === ui.tabletSidebarDrag.pointerId) {
+    const deltaY = evt.clientY - ui.tabletSidebarDrag.startClientY;
+    const wasExpanded = ui.tabletSidebarDrag.startExpanded;
+    ui.tabletSidebarDrag = null;
+    if (deltaY < -26) {
+      setTabletSidebarExpanded(true);
+    } else if (deltaY > 36) {
+      if (wasExpanded) {
+        setTabletSidebarExpanded(false);
+      } else {
+        setTabletSidebarOpen(false);
+      }
+    }
+    return;
+  }
   let needsRender = false;
 
   if (ui.modalDrag && evt.pointerId === ui.modalDrag.pointerId) {
@@ -13072,6 +13314,10 @@ window.addEventListener("pointerup", (evt) => {
 
   if (ui.widgetDrag && evt.pointerId === ui.widgetDrag.pointerId) {
     const widget = graph.widgets.find((w) => w.id === ui.widgetDrag.widgetId);
+    if (widget && ui.widgetDrag.snapOnRelease && ui.snapToGrid) {
+      widget.x = snap(widget.x);
+      widget.y = snap(widget.y);
+    }
     const moved = widget && (widget.x !== ui.widgetDrag.startX || widget.y !== ui.widgetDrag.startY);
     ui.widgetDrag = null;
     commitTransaction();
@@ -13193,6 +13439,13 @@ window.addEventListener("pointerup", (evt) => {
   }
 });
 
+window.addEventListener("pointercancel", (evt) => {
+  handleCompactTouchViewportPointerEnd(evt);
+  if (ui.tabletSidebarDrag && evt.pointerId === ui.tabletSidebarDrag.pointerId) {
+    ui.tabletSidebarDrag = null;
+  }
+});
+
 window.addEventListener("mouseup", (evt) => {
   if (!ui.edgeCreate) {
     return;
@@ -13211,6 +13464,9 @@ svg.addEventListener("pointerleave", () => {
 svg.addEventListener("pointerdown", (evt) => {
   hideContextMenu();
   if (isTabletCanvasPanMode()) {
+    return;
+  }
+  if (isCompactTouchPointerEvent(evt)) {
     return;
   }
   ui.lastNodeActivate = null;
@@ -13248,6 +13504,10 @@ svg.addEventListener("pointerdown", (evt) => {
     render();
   });
 });
+
+graphViewport.addEventListener("pointerdown", (evt) => {
+  handleCompactTouchViewportPointerDown(evt);
+}, { passive: false });
 
 svg.addEventListener("contextmenu", (evt) => {
   const onNode = evt.target.closest?.(".node");
@@ -14362,27 +14622,13 @@ if (expressionSymbolsFilter) {
   });
 }
 if (expressionEditorModal) {
-  const modalHead = expressionEditorModal.querySelector(".modal-head");
   const modalCard = expressionEditorModal.querySelector(".expression-editor-card");
-  if (modalHead && modalCard) {
-    modalHead.addEventListener("pointerdown", (evt) => {
-      if (evt.target.closest("button")) {
-        return;
-      }
-      const rect = modalCard.getBoundingClientRect();
-      modalCard.style.transform = "none";
-      modalCard.style.left = `${rect.left}px`;
-      modalCard.style.top = `${rect.top}px`;
-      ui.modalDrag = {
-        pointerId: evt.pointerId,
-        offsetX: evt.clientX - rect.left,
-        offsetY: evt.clientY - rect.top,
-        card: modalCard,
-      };
-    });
-  }
+  bindModalDragHandle(expressionEditorModal, ".expression-editor-card");
   if (expressionEditorResizeHandle && modalCard) {
     expressionEditorResizeHandle.addEventListener("pointerdown", (evt) => {
+      if (isCompactTouchPointerEvent(evt)) {
+        return;
+      }
       evt.preventDefault();
       evt.stopPropagation();
       const rect = modalCard.getBoundingClientRect();
@@ -14401,176 +14647,18 @@ if (expressionEditorModal) {
         startTop: rect.top,
         card: modalCard,
       };
+      evt.currentTarget?.setPointerCapture?.(evt.pointerId);
     });
   }
 }
-if (functionsHelpModal) {
-  const modalHead = functionsHelpModal.querySelector(".modal-head");
-  const modalCard = functionsHelpModal.querySelector(".functions-help-card");
-  if (modalHead && modalCard) {
-    modalHead.addEventListener("pointerdown", (evt) => {
-      if (evt.target.closest("button")) {
-        return;
-      }
-      const rect = modalCard.getBoundingClientRect();
-      modalCard.style.transform = "none";
-      modalCard.style.left = `${rect.left}px`;
-      modalCard.style.top = `${rect.top}px`;
-      ui.modalDrag = {
-        pointerId: evt.pointerId,
-        offsetX: evt.clientX - rect.left,
-        offsetY: evt.clientY - rect.top,
-        card: modalCard,
-      };
-    });
-  }
-}
-if (examplesHelpModal) {
-  const modalHead = examplesHelpModal.querySelector(".modal-head");
-  const modalCard = examplesHelpModal.querySelector(".examples-help-card");
-  if (modalHead && modalCard) {
-    modalHead.addEventListener("pointerdown", (evt) => {
-      if (evt.target.closest("button")) {
-        return;
-      }
-      const rect = modalCard.getBoundingClientRect();
-      modalCard.style.transform = "none";
-      modalCard.style.left = `${rect.left}px`;
-      modalCard.style.top = `${rect.top}px`;
-      ui.modalDrag = {
-        pointerId: evt.pointerId,
-        offsetX: evt.clientX - rect.left,
-        offsetY: evt.clientY - rect.top,
-        card: modalCard,
-      };
-    });
-  }
-}
-if (aboutAppModal) {
-  const modalHead = aboutAppModal.querySelector(".modal-head");
-  const modalCard = aboutAppModal.querySelector(".about-app-card");
-  if (modalHead && modalCard) {
-    modalHead.addEventListener("pointerdown", (evt) => {
-      if (evt.target.closest("button")) {
-        return;
-      }
-      const rect = modalCard.getBoundingClientRect();
-      modalCard.style.transform = "none";
-      modalCard.style.left = `${rect.left}px`;
-      modalCard.style.top = `${rect.top}px`;
-      ui.modalDrag = {
-        pointerId: evt.pointerId,
-        offsetX: evt.clientX - rect.left,
-        offsetY: evt.clientY - rect.top,
-        card: modalCard,
-      };
-    });
-  }
-}
-if (modelAnalysisModal) {
-  const modalHead = modelAnalysisModal.querySelector(".modal-head");
-  const modalCard = modelAnalysisModal.querySelector(".model-analysis-card");
-  if (modalHead && modalCard) {
-    modalHead.addEventListener("pointerdown", (evt) => {
-      if (evt.target.closest("button")) {
-        return;
-      }
-      const rect = modalCard.getBoundingClientRect();
-      modalCard.style.transform = "none";
-      modalCard.style.left = `${rect.left}px`;
-      modalCard.style.top = `${rect.top}px`;
-      ui.modalDrag = {
-        pointerId: evt.pointerId,
-        offsetX: evt.clientX - rect.left,
-        offsetY: evt.clientY - rect.top,
-        card: modalCard,
-      };
-    });
-  }
-}
-if (eightTupleModal) {
-  const modalHead = eightTupleModal.querySelector(".modal-head");
-  const modalCard = eightTupleModal.querySelector(".eight-tuple-card");
-  if (modalHead && modalCard) {
-    modalHead.addEventListener("pointerdown", (evt) => {
-      if (evt.target.closest("button")) {
-        return;
-      }
-      const rect = modalCard.getBoundingClientRect();
-      modalCard.style.transform = "none";
-      modalCard.style.left = `${rect.left}px`;
-      modalCard.style.top = `${rect.top}px`;
-      ui.modalDrag = {
-        pointerId: evt.pointerId,
-        offsetX: evt.clientX - rect.left,
-        offsetY: evt.clientY - rect.top,
-        card: modalCard,
-      };
-    });
-  }
-}
-if (watchDebuggerModal) {
-  const modalHead = watchDebuggerModal.querySelector(".modal-head");
-  const modalCard = watchDebuggerModal.querySelector(".watch-debugger-card");
-  if (modalHead && modalCard) {
-    modalHead.addEventListener("pointerdown", (evt) => {
-      if (evt.target.closest("button")) {
-        return;
-      }
-      const rect = modalCard.getBoundingClientRect();
-      modalCard.style.transform = "none";
-      modalCard.style.left = `${rect.left}px`;
-      modalCard.style.top = `${rect.top}px`;
-      ui.modalDrag = {
-        pointerId: evt.pointerId,
-        offsetX: evt.clientX - rect.left,
-        offsetY: evt.clientY - rect.top,
-        card: modalCard,
-      };
-    });
-  }
-}
-if (localFunctionsModal) {
-  const modalHead = localFunctionsModal.querySelector(".modal-head");
-  const modalCard = localFunctionsModal.querySelector(".local-functions-card");
-  if (modalHead && modalCard) {
-    modalHead.addEventListener("pointerdown", (evt) => {
-      if (evt.target.closest("button")) {
-        return;
-      }
-      const rect = modalCard.getBoundingClientRect();
-      modalCard.style.transform = "none";
-      modalCard.style.left = `${rect.left}px`;
-      modalCard.style.top = `${rect.top}px`;
-      ui.modalDrag = {
-        pointerId: evt.pointerId,
-        offsetX: evt.clientX - rect.left,
-        offsetY: evt.clientY - rect.top,
-        card: modalCard,
-      };
-    });
-  }
-}
-if (textEditorModal) {
-  const modalHead = textEditorModal.querySelector(".modal-head");
-  if (modalHead && textEditorCard) {
-    modalHead.addEventListener("pointerdown", (evt) => {
-      if (evt.target.closest("button")) {
-        return;
-      }
-      const rect = textEditorCard.getBoundingClientRect();
-      textEditorCard.style.transform = "none";
-      textEditorCard.style.left = `${rect.left}px`;
-      textEditorCard.style.top = `${rect.top}px`;
-      ui.modalDrag = {
-        pointerId: evt.pointerId,
-        offsetX: evt.clientX - rect.left,
-        offsetY: evt.clientY - rect.top,
-        card: textEditorCard,
-      };
-    });
-  }
-}
+bindModalDragHandle(functionsHelpModal, ".functions-help-card");
+bindModalDragHandle(examplesHelpModal, ".examples-help-card");
+bindModalDragHandle(aboutAppModal, ".about-app-card");
+bindModalDragHandle(modelAnalysisModal, ".model-analysis-card");
+bindModalDragHandle(eightTupleModal, ".eight-tuple-card");
+bindModalDragHandle(watchDebuggerModal, ".watch-debugger-card");
+bindModalDragHandle(localFunctionsModal, ".local-functions-card");
+bindModalDragHandle(textEditorModal, ".text-editor-card");
 if (functionsHelpBtn) {
   functionsHelpBtn.addEventListener("click", () => {
     closeTopMenus();
@@ -15214,6 +15302,35 @@ async function boot() {
   if (tabletSidebarBackdrop) {
     tabletSidebarBackdrop.addEventListener("click", () => {
       setTabletSidebarOpen(false);
+    });
+  }
+  if (tabletSidebarExpandBtn) {
+    tabletSidebarExpandBtn.addEventListener("click", () => {
+      setTabletSidebarExpanded(!ui.tabletSidebarExpanded);
+    });
+  }
+  if (tabletSidebarCloseBtn) {
+    tabletSidebarCloseBtn.addEventListener("click", () => {
+      setTabletSidebarOpen(false);
+    });
+  }
+  if (tabletSidebarHeader) {
+    tabletSidebarHeader.addEventListener("pointerdown", (evt) => {
+      if (!isCompactTouchPointerEvent(evt) || evt.target.closest("button")) {
+        return;
+      }
+      evt.currentTarget?.setPointerCapture?.(evt.pointerId);
+      ui.tabletSidebarDrag = {
+        pointerId: evt.pointerId,
+        startClientY: evt.clientY,
+        startExpanded: ui.tabletSidebarExpanded,
+      };
+    });
+    tabletSidebarHeader.addEventListener("click", (evt) => {
+      if (evt.target.closest("button")) {
+        return;
+      }
+      setTabletSidebarExpanded(!ui.tabletSidebarExpanded);
     });
   }
   loadRecentModelsFromStorage();

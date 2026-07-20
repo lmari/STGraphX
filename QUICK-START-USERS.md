@@ -1,6 +1,8 @@
 # STGraphX Quick Start For Users
 
-Luca Mari, versione 16 luglio 2026
+Luca Mari, versione 20 luglio 2026
+
+Copyright (c) 2026 Luca Mari
 
 Questo file descrive l'uso di STGraphX nelle tre modalità basilari:
 
@@ -13,6 +15,12 @@ Per dettagli ulteriori:
 - `README.md`
 - `README-PLAYER.md`
 - `README-USAGE.md`
+
+## Licenza
+
+STGraphX è distribuito sotto licenza Mozilla Public License 2.0 (`MPL-2.0`).
+
+Se ricevi una copia redistribuita dell'applicazione o del player, il file `LICENSE` dovrebbe essere incluso insieme ai file del progetto.
 
 ## 1. Editor completo
 

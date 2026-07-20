@@ -1,22 +1,22 @@
 # STGraphX: readme
 
-Luca Mari, versione 16 luglio 2026
+Luca Mari, versione 20 luglio 2026
+
+Copyright (c) 2026 Luca Mari
 
 ## Contesto
 
 STGraphX è un editor ed esecutore di modelli dinamici a grafo orientato.
 
-È un esperimento di reimplementazione di STGraph, da Java a JavaScript, realizzata interamente in _vibe coding_ con GPT-Codex-5.x.
+È una reimplementazione di STGraph, da Java a JavaScript, realizzata interamente in _vibe coding_ con GPT-Codex-5.x (ho guardato ma mai toccato il codice generato, che al momento è di circa 1k linee HTML, 3k linee CSS, 30k linee JS).
 
-(si può provare <a href="https://lmari.github.io/STGraphX" target="_blank" rel="noopener noreferrer">qui</a>)
+Si può provare <a href="https://lmari.github.io/STGraphX" target="_blank" rel="noopener noreferrer">direttamente da questo repo GitHub</a>.
 
-(come spiegato in README-ARCHITECTURE.md, dall'ambiente di sviluppo si può eseguire la versione Electron senza compilazione con `npm run start:desktop -- --lang=en`)
-
-Ho guardato ma mai toccato il codice generato, che al momento è di circa 600 linee HTML (index.html), 3k linee CSS (styles.css), 29k linee JS (runtime*: 3k; player*: 2k; app.js: 13k, graph-functions.js: 2k, i18n-inline.js: 2k, semantic.js: 3k, widgets.js: 4k).
+Il file QUICK-START.md contiene informazioni sull'installazione, l'uso, e lo sviluppo di STGraphX.
 
 ## Stato del progetto
 
-Applicazione JavaScript con tre opzioni di uso:
+STGraphX è un'applicazione JavaScript con tre opzioni di uso:
 
 * editor con doppia shell e logica condivisa:
   * web, per accesso da browser via `http:` (e con qualche limitazione anche `file:`);
@@ -24,53 +24,67 @@ Applicazione JavaScript con tre opzioni di uso:
 * visualizzatore via browser;
 * API Javascript.
 
-__Al momento implementati (senza librerie esterne):__
+### Implementati (senza librerie esterne)
 
-* editor per grafi orientati, con nodi di forme e colori diversi e tooltip, frecce spline, testi, gestione di ridimensionamento, spostamento, cancellazione dei nodi, anche per selezioni multiple, zoom, griglia, clipboard (anche condivisa tra instanze diverse dell'app), undo e redo, ...;
-* menu, menu contestuale e pannello di configurazione aggiornato dinamicamente, con tooltip;
-* interfaccia a tab per più modelli, con gestione contestuale della relazione tra modelli e sottomodelli;
-* gestione dei testi dell'interfaccia utente in italiano e inglese, con scelta via query string nella shell web (`?lang=it|en`) e via parametro `--lang=it|en` nella shell Electron;
-* gestione dei nodi algebrici, di stato, parametri e sottomodelli, con funzioni in sintassi javascript (compresa la gestione locale di `this` come stato attuale); controllo sintattico sul nome dei nodi; controllo sui parametri (valore non cambia dopo la prima esecuzione; frecce entranti non ammesse); controllo sullo stato iniziale: solo espressioni locali o riferimenti a parametri; controllo del numero di cifre decimali visualizzate;
-* variabili globali;
-* gestione di esecuzione completa, passo-passo, temporizzata, con modello in modalità read-only durante l'esecuzione;
-* gestione opzionale di blocco di esecuzione ed evidenziazione per nodi non definiti;
-* editor per espressioni, con gestione ed help contestuale e controllo sintattico dinamico;
-* varie funzioni definite; mapping da valori booleani a valori numerici e funzione `if`;
-* funzione `integral`, con scelta dell'algoritmo di integrazione, se Eulero o RK4;
-* alcune funzioni per distribuzioni di probabilità;
-* generazione di vettori con la sintassi `range(inizio, fine, [passo])`; indicizzazione/slicing di vettori e matrici con la sintassi di NumPy, `[inizio:fine]` oppure `[inizio:fine:passo]`, anche con indici opzionali e negativi; gestione di funzioni a valori non scalari, per esempio `sin([1,2,3])`; gestione di operatori con argomenti non scalari;
-* funzioni "special form" per operare su vettori e matrici: `array`, `reduce`, `map`, `filter`;
-* una funzione per leggere il contenuto di file dati in formato csv;
-* una voce di menu per esportare la serie storica dei valori delle variabili di output in un file csv;
-* possibilità di definire funzioni locali ai modelli;
-* gestione di proprietà custom per il modello e i singoli nodi e funzioni `getModelProperty`/`getProperty` e `setModelProperty`/`setProperty`;
-* gestione di nodi di output e di widget di output: grafici, tabelle, matrici, led, testo; pannello di configurazione aggiornato dinamicamente;
-* gestione di nodi di input e di widget di input, anche per parametri: slider, pulsante, selettore di testo; pannello di configurazione aggiornato dinamicamente;
-* gestione dei sottomodelli con file JSON separati, con caricamento dalla stessa cartella del modello, binding dei nodi di input e accesso ai nodi di output con notazione `nomeSottomodello.nomeOutput`;
-* prima gestione in logica ABM dichiarativa / funzionale, mediante variabili di sistema `self` e `$i$`;
-* visualizzazione alternata per il grafo e i widget;
-* enfatizzazione delle frecce sul nodo selezionato;
-* editor per testi con formattazione HTML basilare;
-* definizione della base dei tempi e modalità varie di esecuzione; pannello di configurazione aggiornato dinamicamente;
-* caricamento e salvataggio di modelli in file JSON;
-* editor per espressioni con controllo sintattico interattivo, visualizzazione dei valori attuali, help;
-* menu di help;
-* una pagina di esempi configurabile via file JSON;
-* una funzione per la generazione dei contenuti noti della 8-upla del modello attivo
-* nel menu File, gestione dei modelli aperti di recente;
-* una prima gestione di controllo di correttezza del modello;
-* un primo debugger, con gestione di watch e breakpoint;
-* un player per esecuzione di modelli in pagine HTML;
-* un API JavaScript per esecuzione headless mediante script node.js;
-* ...
+#### Funzionalità generali
 
-__Al momento non implementati (rispetto a STGraph):__
+* Editor per grafi orientati, con nodi di forme e colori diversi e tooltip, frecce spline, testi, gestione di ridimensionamento, spostamento, cancellazione dei nodi, anche per selezioni multiple, zoom, griglia, clipboard (anche condivisa tra instanze diverse dell'app), undo e redo, ...
+* Player per esecuzione di modelli in pagine HTML
+* API JavaScript per esecuzione headless via script
+* Menu, menu contestuale e pannello di configurazione aggiornato dinamicamente, con tooltip
+* Interfaccia responsive a tab per più modelli, con gestione contestuale della relazione tra modelli e sottomodelli
+* gestione dei testi dell'interfaccia utente in italiano e inglese, con scelta via query string nella shell web (`?lang=it|en`) e via parametro `--lang=it|en` nella shell Electron
+* menu di help
+* una pagina di esempi configurabile via file JSON
+* licenza MPL-2.0
 
-* altri widget e altre opzioni per i widget già presenti;
-* altre funzioni;
-* nodi di stato con output;
-* gestione di interrupt;
-* playmode e altre modalità di esecuzione;
+#### Funzionalità strutturali
+
+* Gestione dei nodi algebrici, di stato, parametri e sottomodelli, con funzioni in sintassi javascript (compresa la gestione locale di `this` come stato attuale); controllo sintattico sul nome dei nodi; controllo sui parametri (valore non cambia dopo la prima esecuzione; frecce entranti non ammesse); controllo sullo stato iniziale: solo espressioni locali o riferimenti a parametri; controllo del numero di cifre decimali visualizzate
+* Gestione di variabili globali
+* Possibilità di definire funzioni locali ai modelli
+* Gestione di nodi di output e di widget di output: grafici, tabelle, matrici, led, testo; pannello di configurazione aggiornato dinamicamente
+* Gestione di nodi di input e di widget di input, anche per parametri: slider, pulsante, selettore di testo; pannello di configurazione aggiornato dinamicamente
+* Gestione dei sottomodelli con file JSON separati, con caricamento dalla stessa cartella del modello, binding dei nodi di input e accesso ai nodi di output con notazione `nomeSottomodello.nomeOutput`
+
+#### Funzionalità dell'engine
+
+* Definizione della base dei tempi e modalità varie di esecuzione; pannello di configurazione aggiornato dinamicamente
+* Gestione di esecuzione completa, passo-passo, temporizzata, con modello in modalità read-only durante l'esecuzione
+* Gestione opzionale di blocco di esecuzione ed evidenziazione per nodi non definiti
+
+#### Funzionalità del linguaggio
+
+* Varie funzioni definite; mapping da valori booleani a valori numerici e funzione `if`
+* Funzione `integral`, con scelta dell'algoritmo di integrazione, se Eulero o RK4;
+* Alcune funzioni per distribuzioni di probabilità
+* Generazione di vettori con la sintassi `range(inizio, fine, [passo])`; indicizzazione/slicing di vettori e matrici con la sintassi di NumPy, `[inizio:fine]` oppure `[inizio:fine:passo]`, anche con indici opzionali e negativi; gestione di funzioni a valori non scalari, per esempio `sin([1,2,3])`; gestione di operatori con argomenti non scalari
+* Funzioni "special form" per operare su vettori e matrici: `array`, `reduce`, `map`, `filter`
+* Una funzione per leggere il contenuto di file dati in formato csv
+* Gestione di proprietà custom per il modello e i singoli nodi e funzioni `getModelProperty`/`getProperty` e `setModelProperty`/`setProperty`
+* Prima gestione in logica ABM dichiarativa / funzionale, mediante variabili di sistema `self` e `$i$`
+
+#### Funzionalità di interfaccia utente
+
+* Editor per espressioni, con gestione ed help contestuale e controllo sintattico dinamico
+* Visualizzazione alternata per il grafo e i widget
+* Enfatizzazione delle frecce sul nodo selezionato
+* Editor per testi con formattazione HTML basilare
+* Una voce di menu per esportare la serie storica dei valori delle variabili di output in un file csv
+* Caricamento e salvataggio di modelli in file JSON
+* Editor per espressioni con controllo sintattico interattivo, visualizzazione dei valori attuali, help
+* Una funzione per la generazione dei contenuti noti della 8-upla del modello attivo
+* Uel menu File, gestione dei modelli aperti di recente
+* Una prima gestione di controllo di correttezza del modello
+* Un primo debugger, con gestione di watch e breakpoint
+
+#### Al momento non implementati (rispetto a STGraph)
+
+* Altri widget e altre opzioni per i widget già presenti
+* Altre funzioni
+* Nodi di stato con output
+* Gestione di interrupt
+* Playmode e altre modalità di esecuzione
 * ...
 
 ## Appunti sul progetto
@@ -96,3 +110,11 @@ Per l'architettura tecnica e per le istruzioni su come sviluppare il progetto, s
 Per l'uso del player e dell'API JavaScript, si veda `README-PLAYER.md`.
 
 Per l'uso di funzioni nei modelli, si veda `README-USAGE.md`.
+
+## Licenza
+
+STGraphX è distribuito sotto licenza Mozilla Public License 2.0 (`MPL-2.0`).
+
+Il testo completo della licenza è disponibile nel file `LICENSE`.
+
+Le dipendenze di build e packaging attualmente usate dal progetto risultano, da controllo locale, distribuite principalmente sotto licenze permissive come `MIT`, `ISC`, `BSD` e `Apache-2.0`.

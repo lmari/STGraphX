@@ -1,3 +1,10 @@
+/*
+ * This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at https://mozilla.org/MPL/2.0/.
+ * Copyright (c) 2026 Luca Mari
+ */
+
 (() => {
 
 const graphFunctionHelpers = globalThis.GraphFunctions?.helpers || {};
@@ -1932,6 +1939,33 @@ function renderWidgets() {
   const view = svg.viewBox.baseVal;
   const viewMinX = view?.x ?? 0;
   const viewMinY = view?.y ?? 0;
+  const startWidgetDrag = (widget, evt) => {
+    if (typeof isTabletCanvasPanMode === "function" && isTabletCanvasPanMode()) {
+      return false;
+    }
+    if (isEditingUiLocked()) {
+      if (!(ui.selected?.type === "widget" && ui.selected.id === widget.id)) {
+        selectWidget(widget.id);
+        render();
+      }
+      return false;
+    }
+    if (!(ui.selected?.type === "widget" && ui.selected.id === widget.id)) {
+      selectWidget(widget.id);
+    }
+    ui.widgetDrag = {
+      widgetId: widget.id,
+      pointerId: evt.pointerId,
+      startClientX: evt.clientX,
+      startClientY: evt.clientY,
+      startX: widget.x,
+      startY: widget.y,
+      snapOnRelease: Boolean(evt.pointerType === "touch" && typeof isCompactTabletLayout === "function" && isCompactTabletLayout()),
+    };
+    evt.currentTarget?.setPointerCapture?.(evt.pointerId);
+    beginTransaction();
+    return true;
+  };
 
   graph.widgets.forEach((widget) => {
     if (widget.type !== "table" && widget.type !== "xychart" && widget.type !== "slider" && widget.type !== "matrix" && widget.type !== "button" && widget.type !== "led" && widget.type !== "select" && widget.type !== "text") {
@@ -1984,6 +2018,14 @@ function renderWidgets() {
         selectWidget(widget.id);
         render();
       }
+      const touchDragAllowed =
+        evt.pointerType === "touch"
+        && typeof isCompactTabletLayout === "function"
+        && isCompactTabletLayout()
+        && !evt.target.closest("input, select, button, textarea");
+      if (touchDragAllowed) {
+        startWidgetDrag(widget, evt);
+      }
     });
     root.addEventListener("contextmenu", (evt) => {
       evt.preventDefault();
@@ -2000,7 +2042,14 @@ function renderWidgets() {
 
     const header = document.createElement("div");
     header.className = "value-widget-header";
+    const dragHandle = document.createElement("button");
+    dragHandle.type = "button";
+    dragHandle.className = "value-widget-drag-handle";
+    dragHandle.textContent = "⋮⋮";
+    dragHandle.setAttribute("aria-label", "Sposta widget");
+    setTooltipText(dragHandle, "Sposta widget");
     const title = document.createElement("span");
+    title.className = "value-widget-title";
     title.textContent = widgetDisplayTitle(widget);
     const actions = document.createElement("div");
     actions.className = "value-widget-actions";
@@ -2038,6 +2087,12 @@ function renderWidgets() {
       });
       setStatusKey("status.widgetDeleted");
     });
+    dragHandle.addEventListener("pointerdown", (evt) => {
+      evt.stopPropagation();
+      startWidgetDrag(widget, evt);
+      render();
+    });
+    header.appendChild(dragHandle);
     header.appendChild(title);
     actions.appendChild(minBtn);
     actions.appendChild(delBtn);
@@ -2050,22 +2105,9 @@ function renderWidgets() {
         return;
       }
       evt.stopPropagation();
-      if (!(ui.selected?.type === "widget" && ui.selected.id === widget.id)) {
-        selectWidget(widget.id);
-      }
-      if (isEditingUiLocked()) {
+      if (startWidgetDrag(widget, evt)) {
         render();
-        return;
       }
-      ui.widgetDrag = {
-        widgetId: widget.id,
-        pointerId: evt.pointerId,
-        startClientX: evt.clientX,
-        startClientY: evt.clientY,
-        startX: widget.x,
-        startY: widget.y,
-      };
-      beginTransaction();
     });
 
     const body = document.createElement("div");
@@ -2392,6 +2434,7 @@ function renderWidgets() {
         startWidth: widget.width,
         startHeight: widget.height,
       };
+      evt.currentTarget?.setPointerCapture?.(evt.pointerId);
       beginTransaction();
     });
 

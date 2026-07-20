@@ -1,6 +1,8 @@
 # STGraphX Quick Start For Developers
 
-Luca Mari, versione 16 luglio 2026
+Luca Mari, versione 20 luglio 2026
+
+Copyright (c) 2026 Luca Mari
 
 Questo file descrive ciò che serve a chi sviluppa o distribuisce STGraphX nelle tre modalità basilari:
 
@@ -13,6 +15,12 @@ Per dettagli ulteriori:
 - `README.md`
 - `README-ARCHITECTURE.md`
 - `README-PLAYER.md`
+
+## Licenza
+
+STGraphX è distribuito sotto licenza Mozilla Public License 2.0 (`MPL-2.0`).
+
+Quando distribuisci l'editor, il player o l'API JavaScript, includi sempre anche il file `LICENSE`.
 
 ## 1. Prima di cominciare
 

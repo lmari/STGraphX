@@ -1,6 +1,8 @@
 # STGraphX Player Embedded
 
-Luca Mari, versione 20 maggio 2026
+Luca Mari, versione 20 luglio 2026
+
+Copyright (c) 2026 Luca Mari
 
 ## Scopo
 
@@ -176,6 +178,12 @@ http://localhost:8080/tests/player_abm_space_smoke.html
 ```
 
 Se il bundle non è presente, le pagine continuano comunque a funzionare grazie al fallback ai file sorgente.
+
+## Licenza
+
+Il player embedded, il runtime headless e i file sorgente correlati di STGraphX sono distribuiti sotto licenza Mozilla Public License 2.0 (`MPL-2.0`).
+
+Il testo completo della licenza è disponibile nel file `LICENSE` del progetto.
 
 ## Uso minimo
 

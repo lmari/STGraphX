@@ -1,3 +1,10 @@
+/*
+ * This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at https://mozilla.org/MPL/2.0/.
+ * Copyright (c) 2026 Luca Mari
+ */
+
 :root {
   --bg: #f3f5f7;
   --surface: #ffffff;
@@ -509,9 +516,9 @@ body {
 }
 
 .value-widget-header {
-  display: flex;
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
   align-items: center;
-  justify-content: space-between;
   gap: 6px;
   background: #e9f3fc;
   color: #0f4772;
@@ -523,12 +530,20 @@ body {
   line-height: 1.05;
 }
 
+.value-widget-title {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
 .value-widget-actions {
   display: flex;
   align-items: center;
   gap: 4px;
 }
 
+.value-widget-drag-handle,
 .value-widget-header button {
   margin: 0;
   padding: 0 5px;
@@ -538,6 +553,15 @@ body {
   border-color: #d6a1ab;
   color: var(--danger);
   background: #fff4f6;
+}
+
+.value-widget-drag-handle {
+  padding: 0 4px;
+  border-color: #b8cade;
+  color: #44637c;
+  background: #f4f9fd;
+  cursor: move;
+  touch-action: none;
 }
 
 .value-widget.minimized .value-widget-body,
@@ -3236,6 +3260,10 @@ button:disabled {
   display: none;
 }
 
+.tablet-sidebar-header {
+  display: none;
+}
+
 @media (max-width: 1100px) {
   .menu-bar {
     flex-wrap: wrap;
@@ -3310,10 +3338,12 @@ button:disabled {
     padding: 8px 8px 88px;
     -webkit-overflow-scrolling: touch;
     overscroll-behavior: contain;
+    touch-action: none;
   }
 
-  #graphCanvas {
-    touch-action: pan-x pan-y;
+  #graphCanvas,
+  .canvas-content {
+    touch-action: none;
   }
 
   .edge-hit {
@@ -3327,7 +3357,7 @@ button:disabled {
     top: auto;
     bottom: 0;
     width: auto;
-    max-height: min(64vh, 580px);
+    max-height: min(44vh, 380px);
     border-left: 0;
     border-top: 1px solid var(--line);
     border-top-left-radius: 18px;
@@ -3336,7 +3366,45 @@ button:disabled {
     transform: translateY(calc(100% + 20px));
     transition: transform 180ms ease, box-shadow 180ms ease;
     z-index: 1100;
-    padding: 14px 14px calc(14px + env(safe-area-inset-bottom));
+    padding: 8px 10px calc(8px + env(safe-area-inset-bottom));
+  }
+
+  .tablet-sidebar-header {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    align-items: center;
+    gap: 8px;
+    margin: -2px 0 6px;
+    position: sticky;
+    top: 0;
+    z-index: 3;
+    padding: 0 0 4px;
+    background: linear-gradient(180deg, rgba(248, 251, 254, 0.98) 0%, rgba(248, 251, 254, 0.92) 100%);
+  }
+
+  .tablet-sidebar-grip {
+    width: 52px;
+    height: 5px;
+    border-radius: 999px;
+    background: rgba(92, 115, 132, 0.32);
+    justify-self: start;
+  }
+
+  .tablet-sidebar-header-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 6px;
+  }
+
+  .tablet-sidebar-header-btn {
+    min-width: 38px;
+    min-height: 38px;
+    border: 1px solid #c5d5e2;
+    border-radius: 12px;
+    background: linear-gradient(180deg, #ffffff 0%, #edf4f9 100%);
+    color: #25435b;
+    font-size: 0.96rem;
+    touch-action: manipulation;
   }
 
   body.tablet-sidebar-open .sidebar {
@@ -3387,8 +3455,15 @@ button:disabled {
   }
 
   .value-widget-header {
-    padding: 8px 10px;
+    padding: 10px 12px;
     font-size: 0.92rem;
+    min-height: 42px;
+  }
+
+  .value-widget-drag-handle {
+    min-width: 34px;
+    min-height: 34px;
+    font-size: 1rem;
   }
 
   .value-widget-header button {
@@ -3398,7 +3473,7 @@ button:disabled {
   }
 
   .value-widget-body {
-    padding: 10px;
+    padding: 9px;
   }
 
   .slider-widget-wrap input[type="range"] {
@@ -3456,8 +3531,61 @@ button:disabled {
     position: sticky;
     bottom: 0;
     z-index: 2;
-    padding-bottom: calc(10px + env(safe-area-inset-bottom));
+    padding: 6px 8px calc(8px + env(safe-area-inset-bottom));
     box-shadow: 0 -10px 18px rgba(255, 255, 255, 0.9);
+  }
+
+  body.tablet-sidebar-layout:not(.tablet-sidebar-expanded) .sidebar-zoom-controls {
+    display: none;
+  }
+
+  .panel,
+  #noSelection {
+    padding: 6px;
+  }
+
+  .panel h3,
+  #globalPanel h3 {
+    margin-bottom: 6px;
+    font-size: 0.88rem;
+  }
+
+  .panel h4,
+  #globalPanel h4 {
+    margin-bottom: 4px;
+    font-size: 0.76rem;
+  }
+
+  .panel-section,
+  .model-section {
+    gap: 3px;
+    padding: 4px;
+  }
+
+  .panel label,
+  #globalPanel label,
+  .compact-field span {
+    font-size: 0.72rem;
+  }
+
+  .panel input,
+  .panel select,
+  .panel textarea,
+  #globalPanel input,
+  #globalPanel select {
+    min-height: 22px;
+    padding: 2px 4px;
+    font-size: 0.8rem;
+  }
+
+  .props-list,
+  #globalPanel .props-list {
+    gap: 3px;
+  }
+
+  body.tablet-sidebar-layout:not(.tablet-sidebar-expanded) .panel-section:nth-of-type(n + 3),
+  body.tablet-sidebar-layout:not(.tablet-sidebar-expanded) .model-section:nth-of-type(n + 3) {
+    display: none;
   }
 
   .run-icons-row {
@@ -3513,28 +3641,45 @@ button:disabled {
   .local-functions-card,
   .text-editor-card,
   .expression-switch-card {
-    width: min(100vw - 12px, 980px);
-    max-width: calc(100vw - 12px);
-    max-height: calc(100vh - 12px);
-    border-radius: 14px;
+    width: min(100vw - 8px, 980px);
+    max-width: calc(100vw - 8px);
+    max-height: calc(100vh - 8px);
+    border-radius: 12px;
+    padding: 10px;
   }
 
   .expression-editor-card,
   .local-functions-card {
     min-width: 0;
     min-height: 0;
-    height: min(92vh, 920px);
+    height: min(96vh, 920px);
   }
 
   .modal-head {
     cursor: default;
-    padding-bottom: 4px;
+    padding-bottom: 2px;
   }
 
   .modal-close-btn {
     width: 42px;
     min-width: 42px;
     min-height: 42px;
+  }
+
+  .modal-backdrop {
+    align-items: stretch;
+    justify-content: center;
+    padding: 4px;
+  }
+
+  .functions-help-content,
+  .expression-editor-main,
+  .expression-sidebar,
+  .watch-debugger-list,
+  .local-functions-list,
+  .text-editor-body {
+    -webkit-overflow-scrolling: touch;
+    overscroll-behavior: contain;
   }
 
   .expression-editor-resize-handle,
@@ -3601,7 +3746,7 @@ button:disabled {
     bottom: 16px;
     z-index: 1140;
     display: grid;
-    grid-template-columns: repeat(6, minmax(0, 1fr));
+    grid-template-columns: repeat(5, minmax(0, 1fr));
     gap: 8px;
     padding: 8px;
     border: 1px solid #b9cddd;
@@ -3629,6 +3774,10 @@ button:disabled {
 
   .tablet-quick-btn:disabled {
     opacity: 0.45;
+  }
+
+  #tabletModeBtn {
+    display: none;
   }
 
   .canvas-wrap {

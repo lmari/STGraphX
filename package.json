@@ -5,6 +5,7 @@
   "main": "electron/main.js",
   "description": "STGraphX desktop and web shell",
   "author": "Luca Mari",
+  "license": "MPL-2.0",
   "scripts": {
     "start": "npm run start:desktop",
     "start:desktop": "electron .",
@@ -34,6 +35,7 @@
       "headless-runtime.js",
       "player-shell.js",
       "player-runtime-loader.js",
+      "LICENSE",
       "index.html",
       "styles.css",
       "i18n-inline.js",

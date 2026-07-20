@@ -1,3 +1,9 @@
+<!--
+  This Source Code Form is subject to the terms of the Mozilla Public
+  License, v. 2.0. If a copy of the MPL was not distributed with this
+  file, You can obtain one at https://mozilla.org/MPL/2.0/.
+  Copyright (c) 2026 Luca Mari
+-->
 <!doctype html>
 <html lang="it">
   <head>
@@ -168,6 +174,13 @@
         </section>
 
         <aside class="sidebar" id="sidebar">
+          <div id="tabletSidebarHeader" class="tablet-sidebar-header">
+            <div id="tabletSidebarGrip" class="tablet-sidebar-grip" aria-hidden="true"></div>
+            <div class="tablet-sidebar-header-actions">
+              <button id="tabletSidebarExpandBtn" class="tablet-sidebar-header-btn" type="button" aria-label="Espandi pannello">▴</button>
+              <button id="tabletSidebarCloseBtn" class="tablet-sidebar-header-btn" type="button" aria-label="Chiudi pannello">✕</button>
+            </div>
+          </div>
           <div id="noSelection" class="hidden"></div>
           <div id="globalPanel" class="panel hidden">
             <h3 data-i18n="panel.model"></h3>
@@ -499,6 +512,14 @@
             <div class="about-app-row">
               <span class="about-app-label" data-i18n="about.authorLabel"></span>
               <span id="aboutAppAuthorValue" class="about-app-value"></span>
+            </div>
+            <div class="about-app-row">
+              <span class="about-app-label" data-i18n="about.licenseLabel"></span>
+              <span id="aboutAppLicenseValue" class="about-app-value"></span>
+            </div>
+            <div class="about-app-row">
+              <span class="about-app-label" data-i18n="about.copyrightLabel"></span>
+              <span id="aboutAppCopyrightValue" class="about-app-value"></span>
             </div>
           </div>
           <div class="about-app-note" data-i18n="about.body"></div>

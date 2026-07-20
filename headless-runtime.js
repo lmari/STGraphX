@@ -1,3 +1,10 @@
+/*
+ * This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at https://mozilla.org/MPL/2.0/.
+ * Copyright (c) 2026 Luca Mari
+ */
+
 (function initHeadlessRuntime(global) {
   const HEADLESS_LANGS = new Set(["it", "en"]);
   const NODE_RUNTIME_FILES = [

@@ -1,6 +1,8 @@
 # STGraphX Quick Start
 
-Luca Mari, versione 16 luglio 2026
+Luca Mari, versione 20 luglio 2026
+
+Copyright (c) 2026 Luca Mari
 
 I quick start di STGraphX sono separati in due file:
 
@@ -29,3 +31,9 @@ Leggi `QUICK-START-USERS.md` se ti interessa:
 - `README-ARCHITECTURE.md`
 - `README-PLAYER.md`
 - `README-USAGE.md`
+
+## Licenza
+
+STGraphX è distribuito sotto licenza Mozilla Public License 2.0 (`MPL-2.0`).
+
+Il testo completo della licenza è disponibile nel file `LICENSE`.
