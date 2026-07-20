@@ -8290,7 +8290,6 @@ function selectEdge(id) {
     ui.selected = { type: "edge", id };
     ui.selectedNodes.clear();
     ui.selectedControlPoint = null;
-    revealSidebarForCompactLayout();
     refreshSidebar();
   }, `edge:${id}`);
 }
@@ -8300,7 +8299,6 @@ function selectWidget(id) {
     ui.selected = { type: "widget", id };
     ui.selectedNodes.clear();
     ui.selectedControlPoint = null;
-    revealSidebarForCompactLayout();
     refreshSidebar();
   }, `widget:${id}`);
 }
@@ -8310,7 +8308,6 @@ function selectTextItem(id) {
     ui.selected = { type: "text", id };
     ui.selectedNodes.clear();
     ui.selectedControlPoint = null;
-    revealSidebarForCompactLayout();
     refreshSidebar();
   }, `text:${id}`);
 }
@@ -8357,7 +8354,6 @@ function selectSingleNode(id) {
     ui.selected = { type: "node", id };
     ui.selectedNodes = new Set([id]);
     ui.selectedControlPoint = null;
-    revealSidebarForCompactLayout();
     refreshSidebar();
   }, `node:${id}`);
 }
@@ -8376,7 +8372,6 @@ function toggleNodeSelection(id) {
     ui.selectedControlPoint = null;
     ui.selected = null;
     syncNodeSelectionFocus();
-    revealSidebarForCompactLayout();
     refreshSidebar();
   }, nextSelectionKey);
 }
@@ -8393,7 +8388,6 @@ function setNodeSelection(ids, additive = false) {
     ui.selected = null;
     ui.selectedControlPoint = null;
     syncNodeSelectionFocus();
-    revealSidebarForCompactLayout();
     refreshSidebar();
   }, nextSelectionKey);
 }
@@ -13578,6 +13572,12 @@ svg.addEventListener("pointerdown", (evt) => {
 });
 
 graphViewport.addEventListener("pointerdown", (evt) => {
+  if (isCompactTouchPointerEvent(evt) && isBackgroundTouchCanvasTarget(evt.target)) {
+    hideContextMenu();
+    closeTopMenus();
+    clearAllSelection();
+    render();
+  }
   handleCompactTouchViewportPointerDown(evt);
 }, { passive: false });
 
@@ -13602,8 +13602,8 @@ svg.addEventListener("contextmenu", (evt) => {
 });
 
 menuTitles.forEach((title) => {
-  title.addEventListener("pointerdown", (evt) => {
-    if (!isCompactTouchPointerEvent(evt)) {
+  const openTouchMenu = (evt) => {
+    if (!isCompactTabletLayout()) {
       return;
     }
     evt.preventDefault();
@@ -13613,6 +13613,15 @@ menuTitles.forEach((title) => {
     if (root) {
       toggleTopMenu(root);
     }
+  };
+  title.addEventListener("touchstart", (evt) => {
+    openTouchMenu(evt);
+  }, { passive: false });
+  title.addEventListener("pointerdown", (evt) => {
+    if (!isCompactTouchPointerEvent(evt)) {
+      return;
+    }
+    openTouchMenu(evt);
   });
   title.addEventListener("click", (evt) => {
     if (isCompactTabletLayout()) {
@@ -13661,6 +13670,9 @@ if (recentModelsMenuBtn) {
     });
     submenu.classList.toggle("open", willOpen);
   };
+  recentModelsMenuBtn.addEventListener("touchstart", (evt) => {
+    toggleRecentModelsSubmenu(evt);
+  }, { passive: false });
   recentModelsMenuBtn.addEventListener("pointerdown", (evt) => {
     if (!isCompactTouchPointerEvent(evt)) {
       return;
