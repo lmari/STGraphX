@@ -6271,9 +6271,6 @@ function applyResponsiveUiState() {
   document.body.classList.toggle("tablet-sidebar-layout", compact);
   document.body.classList.toggle("tablet-sidebar-open", open);
   document.body.classList.toggle("tablet-sidebar-expanded", compact && open && ui.tabletSidebarExpanded);
-  if (tabletQuickbar) {
-    tabletQuickbar.classList.toggle("hidden", !compact);
-  }
   if (tabletSidebarBackdrop) {
     tabletSidebarBackdrop.classList.toggle("hidden", !open);
   }
@@ -8127,6 +8124,7 @@ function fitToContent() {
 
 function closeTopMenus() {
   menuRoots.forEach((root) => root.classList.remove("open"));
+  document.querySelectorAll(".menu-submenu.open").forEach((item) => item.classList.remove("open"));
 }
 
 function toggleTopMenu(root) {
@@ -13530,7 +13528,22 @@ svg.addEventListener("contextmenu", (evt) => {
 });
 
 menuTitles.forEach((title) => {
+  title.addEventListener("pointerdown", (evt) => {
+    if (!isCompactTouchPointerEvent(evt)) {
+      return;
+    }
+    evt.preventDefault();
+    evt.stopPropagation();
+    hideContextMenu();
+    const root = title.closest(".menu-root");
+    if (root) {
+      toggleTopMenu(root);
+    }
+  });
   title.addEventListener("click", (evt) => {
+    if (isCompactTouchPointerEvent(evt)) {
+      return;
+    }
     evt.stopPropagation();
     hideContextMenu();
     const root = title.closest(".menu-root");
@@ -13556,15 +13569,33 @@ menuCommands.forEach((cmd) => {
 });
 
 if (recentModelsMenuBtn) {
-  recentModelsMenuBtn.addEventListener("click", (evt) => {
+  const toggleRecentModelsSubmenu = (evt) => {
     if (!isCompactTabletLayout()) {
       return;
     }
     evt.preventDefault();
     evt.stopPropagation();
     const submenu = recentModelsMenuBtn.closest(".menu-submenu");
-    if (submenu) {
-      submenu.classList.toggle("open");
+    if (!submenu) {
+      return;
+    }
+    const willOpen = !submenu.classList.contains("open");
+    document.querySelectorAll(".menu-submenu.open").forEach((item) => {
+      if (item !== submenu) {
+        item.classList.remove("open");
+      }
+    });
+    submenu.classList.toggle("open", willOpen);
+  };
+  recentModelsMenuBtn.addEventListener("pointerdown", (evt) => {
+    if (!isCompactTouchPointerEvent(evt)) {
+      return;
+    }
+    toggleRecentModelsSubmenu(evt);
+  });
+  recentModelsMenuBtn.addEventListener("click", (evt) => {
+    if (isCompactTabletLayout()) {
+      toggleRecentModelsSubmenu(evt);
     }
   });
 }
