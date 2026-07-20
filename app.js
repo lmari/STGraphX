@@ -8166,6 +8166,7 @@ function closeTopMenus() {
     root.classList.remove("open");
     const panel = root.querySelector(".menu-panel");
     if (panel) {
+      panel.style.position = "";
       panel.style.left = "";
       panel.style.right = "";
       panel.style.top = "";
@@ -8185,13 +8186,17 @@ function positionCompactTopMenu(root) {
   if (!panel || !title) {
     return;
   }
-  const barRect = topMenuBar?.getBoundingClientRect?.();
   const titleRect = title.getBoundingClientRect();
-  const top = Math.round((barRect?.bottom ?? titleRect.bottom) + 4);
-  panel.style.left = "8px";
-  panel.style.right = "8px";
+  const viewportPadding = 8;
+  const desiredWidth = Math.min(380, Math.max(240, window.innerWidth - viewportPadding * 2));
+  const maxLeft = Math.max(viewportPadding, window.innerWidth - desiredWidth - viewportPadding);
+  const left = Math.round(Math.min(Math.max(titleRect.left, viewportPadding), maxLeft));
+  const top = Math.round(titleRect.bottom + 4);
+  panel.style.position = "fixed";
+  panel.style.left = `${left}px`;
+  panel.style.right = "auto";
   panel.style.top = `${top}px`;
-  panel.style.width = "auto";
+  panel.style.width = `${desiredWidth}px`;
   panel.style.maxHeight = `${Math.max(180, window.innerHeight - top - 12)}px`;
 }
 
@@ -13632,7 +13637,7 @@ svg.addEventListener("contextmenu", (evt) => {
 });
 
 menuTitles.forEach((title) => {
-  const openTouchMenu = (evt) => {
+  const openCompactMenu = (evt) => {
     if (!isCompactTabletLayout()) {
       return;
     }
@@ -13645,13 +13650,13 @@ menuTitles.forEach((title) => {
     }
   };
   title.addEventListener("touchstart", (evt) => {
-    openTouchMenu(evt);
+    openCompactMenu(evt);
   }, { passive: false });
   title.addEventListener("pointerdown", (evt) => {
-    if (!isCompactTouchPointerEvent(evt)) {
+    if (!isCompactTabletLayout()) {
       return;
     }
-    openTouchMenu(evt);
+    openCompactMenu(evt);
   });
   title.addEventListener("click", (evt) => {
     if (isCompactTabletLayout()) {
