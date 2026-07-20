@@ -889,6 +889,7 @@ const ui = {
   tabletCanvasMode: "edit",
   touchViewportGesture: null,
   touchHold: null,
+  lastMenuTouchAt: 0,
 };
 
 const history = {
@@ -13650,10 +13651,14 @@ menuTitles.forEach((title) => {
     }
   };
   title.addEventListener("touchstart", (evt) => {
+    ui.lastMenuTouchAt = Date.now();
     openCompactMenu(evt);
   }, { passive: false });
   title.addEventListener("pointerdown", (evt) => {
     if (!isCompactTabletLayout()) {
+      return;
+    }
+    if (evt.pointerType === "touch" && (Date.now() - ui.lastMenuTouchAt) < 700) {
       return;
     }
     openCompactMenu(evt);
@@ -13706,10 +13711,14 @@ if (recentModelsMenuBtn) {
     submenu.classList.toggle("open", willOpen);
   };
   recentModelsMenuBtn.addEventListener("touchstart", (evt) => {
+    ui.lastMenuTouchAt = Date.now();
     toggleRecentModelsSubmenu(evt);
   }, { passive: false });
   recentModelsMenuBtn.addEventListener("pointerdown", (evt) => {
     if (!isCompactTouchPointerEvent(evt)) {
+      return;
+    }
+    if ((Date.now() - ui.lastMenuTouchAt) < 700) {
       return;
     }
     toggleRecentModelsSubmenu(evt);
