@@ -3489,7 +3489,7 @@ button:disabled {
 
 @media (max-width: 1100px) {
   .menu-root {
-    position: static;
+    position: relative;
   }
 
   .menu-panel {

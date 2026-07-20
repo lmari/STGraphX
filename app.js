@@ -888,6 +888,7 @@ const ui = {
   tabletSidebarDrag: null,
   tabletCanvasMode: "edit",
   touchViewportGesture: null,
+  touchHold: null,
 };
 
 const history = {
@@ -6265,6 +6266,44 @@ function setTabletCanvasMode(mode) {
   updateTabletCanvasModeUi();
 }
 
+function clearTouchHold() {
+  if (ui.touchHold?.timerId != null) {
+    window.clearTimeout(ui.touchHold.timerId);
+  }
+  ui.touchHold = null;
+}
+
+function startTouchHold(evt, onTrigger, moveTolerance = 12, delayMs = 520) {
+  if (!isCompactTouchPointerEvent(evt) || typeof onTrigger !== "function") {
+    return false;
+  }
+  clearTouchHold();
+  const hold = {
+    pointerId: evt.pointerId,
+    startClientX: evt.clientX,
+    startClientY: evt.clientY,
+    lastClientX: evt.clientX,
+    lastClientY: evt.clientY,
+    moveTolerance,
+    triggered: false,
+    onTrigger,
+    timerId: window.setTimeout(() => {
+      if (!ui.touchHold || ui.touchHold !== hold) {
+        return;
+      }
+      hold.triggered = true;
+      hold.onTrigger({
+        clientX: hold.lastClientX,
+        clientY: hold.lastClientY,
+        pointerId: hold.pointerId,
+      });
+      clearTouchHold();
+    }, delayMs),
+  };
+  ui.touchHold = hold;
+  return true;
+}
+
 function applyResponsiveUiState() {
   const compact = isCompactTabletLayout();
   const open = compact && ui.tabletSidebarOpen;
@@ -10328,6 +10367,14 @@ function render() {
         pointerId: evt.pointerId,
       };
       beginTransaction();
+      startTouchHold(evt, ({ clientX, clientY, pointerId }) => {
+        if (ui.drag && ui.drag.pointerId === pointerId) {
+          ui.drag = null;
+          cancelTransaction();
+        }
+        openNodeContextMenu({ preventDefault() {}, stopPropagation() {}, clientX, clientY }, node);
+        render();
+      });
     });
     g.addEventListener("pointerup", (evt) => {
       if (evt.button !== 0) {
@@ -13087,6 +13134,18 @@ async function toggleTimedExecution() {
 }
 
 window.addEventListener("pointermove", (evt) => {
+  if (ui.touchHold && evt.pointerId === ui.touchHold.pointerId) {
+    ui.touchHold.lastClientX = evt.clientX;
+    ui.touchHold.lastClientY = evt.clientY;
+    if (
+      Math.hypot(
+        evt.clientX - ui.touchHold.startClientX,
+        evt.clientY - ui.touchHold.startClientY,
+      ) > ui.touchHold.moveTolerance
+    ) {
+      clearTouchHold();
+    }
+  }
   if (ui.tabletSidebarDrag && evt.pointerId === ui.tabletSidebarDrag.pointerId) {
     return;
   }
@@ -13285,6 +13344,13 @@ window.addEventListener("mousemove", (evt) => {
 });
 
 window.addEventListener("pointerup", (evt) => {
+  const touchHoldTriggered = ui.touchHold?.pointerId === evt.pointerId && ui.touchHold.triggered;
+  if (ui.touchHold?.pointerId === evt.pointerId) {
+    clearTouchHold();
+  }
+  if (touchHoldTriggered) {
+    return;
+  }
   handleCompactTouchViewportPointerEnd(evt);
   if (ui.tabletSidebarDrag && evt.pointerId === ui.tabletSidebarDrag.pointerId) {
     const deltaY = evt.clientY - ui.tabletSidebarDrag.startClientY;
@@ -13438,6 +13504,9 @@ window.addEventListener("pointerup", (evt) => {
 });
 
 window.addEventListener("pointercancel", (evt) => {
+  if (ui.touchHold?.pointerId === evt.pointerId) {
+    clearTouchHold();
+  }
   handleCompactTouchViewportPointerEnd(evt);
   if (ui.tabletSidebarDrag && evt.pointerId === ui.tabletSidebarDrag.pointerId) {
     ui.tabletSidebarDrag = null;
@@ -13465,6 +13534,11 @@ svg.addEventListener("pointerdown", (evt) => {
     return;
   }
   if (isCompactTouchPointerEvent(evt)) {
+    if (evt.target === svg) {
+      closeTopMenus();
+      clearAllSelection();
+      render();
+    }
     return;
   }
   ui.lastNodeActivate = null;

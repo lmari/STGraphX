@@ -2024,6 +2024,16 @@ function renderWidgets() {
         && isCompactTabletLayout()
         && !evt.target.closest("input, select, button, textarea");
       if (touchDragAllowed) {
+        if (typeof startTouchHold === "function") {
+          startTouchHold(evt, ({ clientX, clientY, pointerId }) => {
+            if (ui.widgetDrag && ui.widgetDrag.pointerId === pointerId) {
+              ui.widgetDrag = null;
+              cancelTransaction();
+            }
+            openWidgetContextMenu({ preventDefault() {}, stopPropagation() {}, clientX, clientY }, widget);
+            render();
+          });
+        }
         startWidgetDrag(widget, evt);
       }
     });
