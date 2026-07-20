@@ -2884,6 +2884,12 @@ button:disabled {
   }
 }
 
+@media (hover: none) and (pointer: coarse) {
+  .expression-editor-view-tabs {
+    display: inline-flex;
+  }
+}
+
 body.tablet-sidebar-layout .expression-editor-card {
   width: min(100vw - 8px, 980px);
   max-width: calc(100vw - 8px);

@@ -6209,7 +6209,11 @@ function displayFileName() {
 }
 
 function isCompactTabletLayout() {
-  return window.matchMedia("(max-width: 1100px)").matches;
+  const narrowViewport = window.matchMedia("(max-width: 1100px)").matches;
+  const coarsePrimaryPointer = window.matchMedia("(pointer: coarse)").matches;
+  const noPrimaryHover = window.matchMedia("(hover: none)").matches;
+  const touchPrimaryDevice = coarsePrimaryPointer && noPrimaryHover;
+  return narrowViewport || touchPrimaryDevice;
 }
 
 function isTabletCanvasPanMode() {
