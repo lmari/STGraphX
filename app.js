@@ -5467,7 +5467,8 @@ function resetExpressionEditorCardPosition() {
 }
 
 function isTabletExpressionEditorMode() {
-  return document.body.classList.contains("tablet-sidebar-layout");
+  return document.body.classList.contains("tablet-sidebar-layout")
+    || window.matchMedia("(hover: none) and (pointer: coarse)").matches;
 }
 
 function setExpressionEditorView(view, options = {}) {

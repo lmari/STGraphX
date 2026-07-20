@@ -399,9 +399,15 @@
         </div>
         <div class="expression-editor-toolbar">
           <div id="expressionEditorViewTabs" class="expression-editor-view-tabs" role="tablist" aria-label="Expression editor sections">
-            <button id="expressionEditorViewEditorBtn" class="expression-editor-view-tab active" type="button" data-expression-view="editor" data-i18n="expr.view.editor"></button>
-            <button id="expressionEditorViewNotesBtn" class="expression-editor-view-tab" type="button" data-expression-view="notes" data-i18n="expr.view.notes"></button>
-            <button id="expressionEditorViewHelpBtn" class="expression-editor-view-tab" type="button" data-expression-view="help" data-i18n="expr.view.help"></button>
+            <button id="expressionEditorViewEditorBtn" class="expression-editor-view-tab active" type="button" role="tab" aria-selected="true" data-expression-view="editor">
+              <span data-i18n="expr.view.editor"></span>
+            </button>
+            <button id="expressionEditorViewNotesBtn" class="expression-editor-view-tab" type="button" role="tab" aria-selected="false" data-expression-view="notes">
+              <span data-i18n="expr.view.notes"></span>
+            </button>
+            <button id="expressionEditorViewHelpBtn" class="expression-editor-view-tab" type="button" role="tab" aria-selected="false" data-expression-view="help">
+              <span data-i18n="expr.view.help"></span>
+            </button>
           </div>
           <div id="expressionEditorHint" class="expression-editor-hint" data-i18n="expr.hint"></div>
         </div>

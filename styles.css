@@ -2613,9 +2613,14 @@ button:disabled {
   align-items: center;
   gap: 6px;
   min-width: 0;
+  position: relative;
+  z-index: 1;
 }
 
 .expression-editor-view-tab {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   min-width: 0;
   padding: 6px 10px;
   border: 1px solid #cbd8e4;
@@ -2624,6 +2629,9 @@ button:disabled {
   color: #2e4b61;
   font-size: 0.8rem;
   line-height: 1.1;
+  white-space: nowrap;
+  touch-action: manipulation;
+  pointer-events: auto;
 }
 
 .expression-editor-view-tab.active {
@@ -2887,6 +2895,33 @@ button:disabled {
 @media (hover: none) and (pointer: coarse) {
   .expression-editor-view-tabs {
     display: inline-flex;
+  }
+
+  .expression-editor-toolbar {
+    justify-content: space-between;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .expression-editor-card.expression-view-editor .expression-main-docs,
+  .expression-editor-card.expression-view-editor .expression-sidebar {
+    display: none;
+  }
+
+  .expression-editor-card.expression-view-notes .expression-editor-core,
+  .expression-editor-card.expression-view-notes .expression-sidebar {
+    display: none;
+  }
+
+  .expression-editor-card.expression-view-help .expression-editor-main {
+    display: none;
+  }
+
+  .expression-editor-card.expression-view-help .expression-sidebar {
+    display: grid;
+    max-height: none;
+    border-top: 0;
+    padding-top: 0;
   }
 }
 
