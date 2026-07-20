@@ -198,7 +198,7 @@
                 </div>
               </div>
 
-              <div class="row3-exec model-compact-row">
+              <div class="row3-exec model-compact-row tablet-advanced-details">
                 <div>
                   <label for="timeDelayInput" data-i18n="label.timeDelayMs" data-title-i18n="tooltip.model.delay"></label>
                   <input id="timeDelayInput" type="number" min="1" step="1" data-title-i18n="tooltip.model.delay" />
@@ -212,7 +212,7 @@
                 </div>
               </div>
 
-              <div class="model-meta-row">
+              <div class="model-meta-row tablet-advanced-details">
                 <div class="model-current-inline">
                   <label for="timeCurrentOutput" data-i18n="label.timeCurrent" data-title-i18n="tooltip.model.currentTime"></label>
                   <pre id="timeCurrentOutput" class="value-output">-</pre>
@@ -220,7 +220,7 @@
               </div>
             </div>
 
-            <div class="model-section">
+            <div class="model-section tablet-advanced-details">
               <div class="run-icons-row">
                 <button id="runFullModelBtn" class="icon-btn" type="button">▶▶</button>
                 <button id="manualStepBtn" class="icon-btn" type="button">▶</button>
@@ -233,7 +233,7 @@
               </div>
             </div>
 
-            <div class="model-section model-properties-section">
+            <div class="model-section model-properties-section tablet-advanced-details">
               <div class="row2-exec">
                 <button id="editLocalFunctionsBtn" class="small-btn" type="button" data-i18n="action.editLocalFunctions"></button>
               </div>
@@ -306,12 +306,12 @@
 
             </div>
 
-            <div class="panel-section compact-panel-section">
+            <div class="panel-section compact-panel-section tablet-advanced-details">
               <label for="nodeValueOutput" data-i18n="label.valueComputed" data-title-i18n="tooltip.node.computedValue"></label>
               <pre id="nodeValueOutput" class="value-output">-</pre>
             </div>
 
-            <div class="panel-section compact-panel-section">
+            <div class="panel-section compact-panel-section tablet-advanced-details">
               <div class="row2-exec">
                 <div>
                   <label for="nodeFillColorInput" data-i18n="label.nodeFillColor"></label>
@@ -324,7 +324,7 @@
               </div>
             </div>
 
-            <div class="panel-section compact-panel-section">
+            <div class="panel-section compact-panel-section tablet-advanced-details">
               <h4 data-i18n="panel.propertiesList"></h4>
               <div id="propsList" class="props-list"></div>
               <button id="addPropBtn" class="small-btn" data-i18n="action.addProperty"></button>
@@ -357,19 +357,21 @@
                   <input id="textHeightInput" type="number" min="24" max="1200" step="10" />
                 </div>
               </div>
-              <div class="row2-exec">
-                <div>
-                  <label for="textFillColorInput" data-i18n="label.background"></label>
-                  <select id="textFillColorInput"></select>
+              <div class="tablet-advanced-details">
+                <div class="row2-exec">
+                  <div>
+                    <label for="textFillColorInput" data-i18n="label.background"></label>
+                    <select id="textFillColorInput"></select>
+                  </div>
+                  <div>
+                    <label for="textStrokeColorInput" data-i18n="label.border"></label>
+                    <select id="textStrokeColorInput"></select>
+                  </div>
                 </div>
-                <div>
-                  <label for="textStrokeColorInput" data-i18n="label.border"></label>
-                  <select id="textStrokeColorInput"></select>
-                </div>
+                <div class="hint" data-i18n="hint.textFormatting"></div>
+                <label for="textHtmlInput" data-i18n="label.textHtml"></label>
+                <textarea id="textHtmlInput" class="panel-textarea"></textarea>
               </div>
-              <div class="hint" data-i18n="hint.textFormatting"></div>
-              <label for="textHtmlInput" data-i18n="label.textHtml"></label>
-              <textarea id="textHtmlInput" class="panel-textarea"></textarea>
             </div>
           </div>
 

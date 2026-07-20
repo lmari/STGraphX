@@ -3599,9 +3599,8 @@ button:disabled {
     gap: 3px;
   }
 
-  body.tablet-sidebar-layout:not(.tablet-sidebar-expanded) .panel-section:nth-of-type(n + 3),
-  body.tablet-sidebar-layout:not(.tablet-sidebar-expanded) .model-section:nth-of-type(n + 5) {
-    display: none;
+  body.tablet-sidebar-layout:not(.tablet-sidebar-expanded) .tablet-advanced-details {
+    display: none !important;
   }
 
   .run-icons-row {

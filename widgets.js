@@ -3198,9 +3198,12 @@ function refreshWidgetConfigPanel(widget) {
   widgetConfig.innerHTML = "";
   widgetConfig.className = "widget-config-grid";
 
-  const createWidgetSection = () => {
+  const createWidgetSection = (advanced = false) => {
     const section = document.createElement("div");
     section.className = "panel-section compact-panel-section";
+    if (advanced) {
+      section.classList.add("tablet-advanced-details");
+    }
     widgetConfig.appendChild(section);
     return section;
   };
@@ -3223,7 +3226,7 @@ function refreshWidgetConfigPanel(widget) {
     return wrap;
   };
 
-  const mainSection = createWidgetSection();
+  const mainSection = createWidgetSection(true);
 
   const titleLabel = document.createElement("label");
   titleLabel.textContent = t("widget.customTitleLabel");
@@ -3971,7 +3974,7 @@ function refreshWidgetConfigPanel(widget) {
   chartPairsSection.appendChild(addBtn);
 
   if (activePairIndex >= 0 && widget.xyPairs[activePairIndex]) {
-    const activePairSection = createWidgetSection();
+    const activePairSection = createWidgetSection(true);
     appendWidgetSectionTitle(activePairSection, "widget.activePairLabel");
 
     const pair = widget.xyPairs[activePairIndex];
@@ -4168,7 +4171,7 @@ function refreshWidgetConfigPanel(widget) {
     chartPairsSection.appendChild(emptyPairs);
   }
 
-  const chartAxisSection = createWidgetSection();
+  const chartAxisSection = createWidgetSection(true);
   appendWidgetSectionTitle(chartAxisSection, "widget.axisLimitsLabel");
 
   const parseLimitInput = (text) => {
