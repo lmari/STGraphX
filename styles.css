@@ -3471,6 +3471,96 @@ body.tablet-sidebar-layout .expression-editor-resize-handle {
   display: none;
 }
 
+body.tablet-sidebar-layout .menu-bar {
+  position: relative;
+  z-index: 1200;
+  display: flex;
+  flex-wrap: wrap;
+  row-gap: 8px;
+  padding: 8px;
+}
+
+body.tablet-sidebar-layout .menu-status {
+  flex: 1 1 100%;
+  order: 20;
+  margin-left: 0;
+  padding-right: 0;
+  font-size: 0.9rem;
+}
+
+body.tablet-sidebar-layout .menu-file-status,
+body.tablet-sidebar-layout .menu-breadcrumb,
+body.tablet-sidebar-layout .menu-time {
+  margin-left: 0;
+  max-width: none;
+}
+
+body.tablet-sidebar-layout .menu-shortcut {
+  display: none;
+}
+
+body.tablet-sidebar-layout .menu-title,
+body.tablet-sidebar-layout .menu-command,
+body.tablet-sidebar-layout .menu-submenu-toggle,
+body.tablet-sidebar-layout .menu-check,
+body.tablet-sidebar-layout .menu-nav-btn,
+body.tablet-sidebar-layout .menu-run-btn,
+body.tablet-sidebar-layout .icon-btn,
+body.tablet-sidebar-layout .small-btn,
+body.tablet-sidebar-layout .workspace-tab,
+body.tablet-sidebar-layout .workspace-tab-add {
+  min-height: 44px;
+  font-size: 0.98rem;
+}
+
+body.tablet-sidebar-layout .menu-root {
+  position: relative;
+}
+
+body.tablet-sidebar-layout .menu-panel {
+  min-width: min(380px, calc(100vw - 12px));
+  max-width: calc(100vw - 12px);
+  max-height: min(62vh, 520px);
+  overflow: auto;
+  -webkit-overflow-scrolling: touch;
+  border-radius: 14px;
+  box-shadow: 0 16px 30px rgba(18, 33, 47, 0.16);
+  padding: 10px;
+}
+
+body.tablet-sidebar-layout .menu-submenu {
+  position: static;
+}
+
+body.tablet-sidebar-layout .menu-submenu-panel {
+  position: static;
+  top: auto;
+  left: auto;
+  min-width: 0;
+  margin-top: 6px;
+  border-style: dashed;
+  border-radius: 12px;
+  box-shadow: none;
+  background: #f9fbfd;
+}
+
+body.tablet-sidebar-layout .menu-submenu.open > .menu-submenu-panel {
+  display: block;
+}
+
+body.tablet-sidebar-layout .menu-run-toolbar {
+  margin-left: 0;
+  width: 100%;
+  justify-content: space-between;
+  order: 10;
+}
+
+body.tablet-sidebar-layout .menu-run-btn {
+  flex: 1 1 0;
+  min-width: 0;
+  height: 40px;
+}
+
 @media (max-width: 1100px) {
   .menu-bar {
     position: relative;
