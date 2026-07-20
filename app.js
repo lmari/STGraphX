@@ -5099,6 +5099,7 @@ function renderExpressionHighlightFor(inputEl, highlightEl) {
   if (!highlightEl || !inputEl) {
     return;
   }
+  syncExpressionSurfaceSize(inputEl, highlightEl);
   const text = inputEl.value || "";
   const caret = inputEl.selectionStart ?? 0;
   const bracketState = expressionBracketStateMap(text, caret);
@@ -5187,6 +5188,20 @@ function renderExpressionHighlightFor(inputEl, highlightEl) {
   highlightEl.classList.toggle("invalid", inputEl.classList.contains("invalid"));
   highlightEl.scrollTop = inputEl.scrollTop;
   highlightEl.scrollLeft = inputEl.scrollLeft;
+}
+
+function syncExpressionSurfaceSize(inputEl, highlightEl) {
+  if (!inputEl) {
+    return;
+  }
+  const surfaceEl = inputEl.closest(".expression-editor-surface");
+  const renderedHeight = inputEl.offsetHeight || inputEl.clientHeight || 0;
+  if (surfaceEl && renderedHeight > 0) {
+    surfaceEl.style.height = `${renderedHeight}px`;
+  }
+  if (highlightEl && renderedHeight > 0) {
+    highlightEl.style.height = `${renderedHeight}px`;
+  }
 }
 
 function renderExpressionHighlight() {
@@ -14765,6 +14780,11 @@ if (expressionEditorTextarea) {
       renderExpressionAutocomplete();
     });
   });
+  ["pointerup", "touchend"].forEach((eventName) => {
+    expressionEditorTextarea.addEventListener(eventName, () => {
+      renderExpressionHighlight();
+    });
+  });
 }
 
 if (expressionStateInitialInput) {
@@ -14814,6 +14834,35 @@ if (expressionStateInitialInput) {
       renderExpressionAutocomplete();
     });
   });
+  ["pointerup", "touchend"].forEach((eventName) => {
+    expressionStateInitialInput.addEventListener(eventName, () => {
+      renderExpressionHighlight();
+    });
+  });
+}
+
+const expressionResizeObserver = typeof ResizeObserver === "function"
+  ? new ResizeObserver((entries) => {
+    entries.forEach((entry) => {
+      const target = entry.target;
+      if (target === expressionEditorTextarea) {
+        syncExpressionSurfaceSize(expressionEditorTextarea, expressionEditorHighlight);
+        renderExpressionHighlightFor(expressionEditorTextarea, expressionEditorHighlight);
+      } else if (target === expressionStateInitialInput) {
+        syncExpressionSurfaceSize(expressionStateInitialInput, expressionStateInitialHighlight);
+        renderExpressionHighlightFor(expressionStateInitialInput, expressionStateInitialHighlight);
+      }
+    });
+  })
+  : null;
+
+if (expressionResizeObserver) {
+  if (expressionEditorTextarea) {
+    expressionResizeObserver.observe(expressionEditorTextarea);
+  }
+  if (expressionStateInitialInput) {
+    expressionResizeObserver.observe(expressionStateInitialInput);
+  }
 }
 
 if (expressionEditorCloseBtn) {

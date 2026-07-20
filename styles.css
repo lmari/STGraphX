@@ -2268,10 +2268,16 @@ button:disabled {
   border: 1px solid #d9e3ec;
   border-radius: 8px;
   background: #fbfcfe;
+  overflow: hidden;
 }
 
 .expression-formula-notes-input {
+  width: 100%;
   min-height: 96px;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  box-sizing: border-box;
   resize: vertical;
 }
 
@@ -2439,8 +2445,11 @@ button:disabled {
   position: relative;
   min-width: 0;
   min-height: 0;
-  height: 100%;
+  height: auto;
+  border: 1px solid var(--line);
   border-radius: 8px;
+  overflow: hidden;
+  background: #fff;
   transition: background-color 120ms ease, box-shadow 120ms ease;
 }
 
@@ -2453,8 +2462,8 @@ button:disabled {
 .expression-editor-textarea {
   width: 100%;
   padding: 10px 12px;
-  border: 1px solid var(--line);
-  border-radius: 8px;
+  border: 0;
+  border-radius: 0;
   font: 0.95rem/1.45 var(--font-mono);
   white-space: pre;
   overflow: auto;
@@ -2467,7 +2476,7 @@ button:disabled {
   inset: 0;
   margin: 0;
   pointer-events: none;
-  background: #fff;
+  background: transparent;
   color: var(--text);
 }
 
@@ -2475,6 +2484,7 @@ button:disabled {
   position: relative;
   min-height: 220px;
   height: 220px;
+  max-height: min(52vh, 420px);
   resize: vertical;
   background: transparent;
   color: transparent;
@@ -2717,12 +2727,14 @@ button:disabled {
 .expression-state-initial-input {
   min-height: 52px;
   height: 52px;
+  max-height: min(24vh, 140px);
   resize: vertical;
 }
 
 .expression-editor-main.state-node-editor > .expression-editor-surface:not(.expression-editor-surface-compact) .expression-editor-textarea {
   min-height: 260px;
   height: 260px;
+  max-height: min(54vh, 460px);
 }
 
 .expression-main-docs {
@@ -2954,7 +2966,7 @@ body.tablet-sidebar-layout .expression-editor-view-tabs {
 
 body.tablet-sidebar-layout .expression-editor-layout {
   grid-template-columns: 1fr;
-  gap: 10px;
+  gap: 8px;
 }
 
 body.tablet-sidebar-layout .expression-editor-main {
@@ -2965,6 +2977,18 @@ body.tablet-sidebar-layout .expression-editor-main {
 
 body.tablet-sidebar-layout .expression-editor-main.state-node-editor {
   grid-template-rows: minmax(0, 1fr);
+}
+
+body.tablet-sidebar-layout .expression-editor-core {
+  gap: 6px;
+}
+
+body.tablet-sidebar-layout .expression-state-initial {
+  gap: 4px;
+}
+
+body.tablet-sidebar-layout .expression-field-head {
+  gap: 6px;
 }
 
 body.tablet-sidebar-layout .expression-editor-main > .expression-editor-surface:not(.expression-editor-surface-compact) {
@@ -2978,19 +3002,30 @@ body.tablet-sidebar-layout .expression-sidebar {
 }
 
 body.tablet-sidebar-layout .expression-editor-textarea {
-  min-height: min(38vh, 360px);
-  height: min(38vh, 360px);
+  min-height: min(32vh, 300px);
+  height: min(32vh, 300px);
+  max-height: min(38vh, 340px);
   font-size: 16px;
 }
 
 body.tablet-sidebar-layout .expression-state-initial-input {
-  min-height: 52px;
-  height: 52px;
+  min-height: 46px;
+  height: 46px;
+  max-height: min(18vh, 120px);
 }
 
 body.tablet-sidebar-layout .expression-main-docs {
   grid-template-columns: 1fr;
-  gap: 8px;
+  gap: 6px;
+}
+
+body.tablet-sidebar-layout .expression-formula-notes {
+  gap: 4px;
+  padding: 6px 8px;
+}
+
+body.tablet-sidebar-layout .expression-formula-notes-input {
+  min-height: 72px;
 }
 
 body.tablet-sidebar-layout .expression-sidebar {
