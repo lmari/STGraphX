@@ -3544,6 +3544,8 @@ function refreshWidgetConfigPanel(widget) {
     fitLabel.appendChild(fitText);
     matrixSection.appendChild(fitLabel);
 
+    const matrixAdvancedSection = createWidgetSection(true);
+
     const matrixOptionsRow = document.createElement("div");
     matrixOptionsRow.className = "row3-exec";
 
@@ -3577,7 +3579,7 @@ function refreshWidgetConfigPanel(widget) {
 
     matrixOptionsRow.appendChild(createCompactField("widget.matrixCellSize", cellSizeInput));
     matrixOptionsRow.appendChild(createCompactField("widget.matrixColorSchemeLabel", colorSelect));
-    matrixSection.appendChild(matrixOptionsRow);
+    matrixAdvancedSection.appendChild(matrixOptionsRow);
 
     const matrixRangeRow = document.createElement("div");
     matrixRangeRow.className = "row2-exec";
@@ -3612,7 +3614,7 @@ function refreshWidgetConfigPanel(widget) {
 
     matrixRangeRow.appendChild(createCompactField("widget.matrixValueMin", valueMinInput));
     matrixRangeRow.appendChild(createCompactField("widget.matrixValueMax", valueMaxInput));
-    matrixSection.appendChild(matrixRangeRow);
+    matrixAdvancedSection.appendChild(matrixRangeRow);
 
     const matrixDimsRow = document.createElement("div");
     matrixDimsRow.className = "row2-exec";
@@ -3647,7 +3649,7 @@ function refreshWidgetConfigPanel(widget) {
 
     matrixDimsRow.appendChild(createCompactField("widget.matrixDisplayRows", displayRowsInput));
     matrixDimsRow.appendChild(createCompactField("widget.matrixDisplayCols", displayColsInput));
-    matrixSection.appendChild(matrixDimsRow);
+    matrixAdvancedSection.appendChild(matrixDimsRow);
     return;
   }
 
@@ -3674,6 +3676,7 @@ function refreshWidgetConfigPanel(widget) {
     ledSection.appendChild(sourceLabel);
     ledSection.appendChild(sourceSelect);
 
+    const labelsSection = createWidgetSection(true);
     const labelsRow = document.createElement("div");
     labelsRow.className = "row2-exec";
     const falseLabelInput = document.createElement("input");
@@ -3700,7 +3703,7 @@ function refreshWidgetConfigPanel(widget) {
     });
     labelsRow.appendChild(createCompactField("widget.binaryFalseLabel", falseLabelInput));
     labelsRow.appendChild(createCompactField("widget.binaryTrueLabel", trueLabelInput));
-    ledSection.appendChild(labelsRow);
+    labelsSection.appendChild(labelsRow);
     return;
   }
 
@@ -3727,7 +3730,8 @@ function refreshWidgetConfigPanel(widget) {
     textSection.appendChild(sourceLabel);
     textSection.appendChild(sourceSelect);
 
-    appendWidgetSectionTitle(textSection, "widget.textMappings");
+    const mappingsSection = createWidgetSection(true);
+    appendWidgetSectionTitle(mappingsSection, "widget.textMappings");
     const list = document.createElement("div");
     list.className = "props-list";
     widget.mappings.forEach((mapping, idx) => {
@@ -3771,7 +3775,7 @@ function refreshWidgetConfigPanel(widget) {
       row.appendChild(del);
       list.appendChild(row);
     });
-    textSection.appendChild(list);
+    mappingsSection.appendChild(list);
 
     const add = document.createElement("button");
     add.type = "button";
@@ -3782,7 +3786,7 @@ function refreshWidgetConfigPanel(widget) {
         sanitizeTextWidgetOptions(widget);
       });
     });
-    textSection.appendChild(add);
+    mappingsSection.appendChild(add);
     return;
   }
 
@@ -3884,7 +3888,8 @@ function refreshWidgetConfigPanel(widget) {
     modeLabel.appendChild(modeText);
     tableSection.appendChild(list);
     tableSection.appendChild(add);
-    tableSection.appendChild(modeLabel);
+    const tableModeSection = createWidgetSection(true);
+    tableModeSection.appendChild(modeLabel);
     return;
   }
 

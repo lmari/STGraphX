@@ -398,10 +398,16 @@
           <button id="expressionEditorCloseBtn" class="icon-btn modal-close-btn" type="button" data-i18n-aria-label="aria.close">×</button>
         </div>
         <div class="expression-editor-toolbar">
+          <div id="expressionEditorViewTabs" class="expression-editor-view-tabs" role="tablist" aria-label="Expression editor sections">
+            <button id="expressionEditorViewEditorBtn" class="expression-editor-view-tab active" type="button" data-expression-view="editor" data-i18n="expr.view.editor"></button>
+            <button id="expressionEditorViewNotesBtn" class="expression-editor-view-tab" type="button" data-expression-view="notes" data-i18n="expr.view.notes"></button>
+            <button id="expressionEditorViewHelpBtn" class="expression-editor-view-tab" type="button" data-expression-view="help" data-i18n="expr.view.help"></button>
+          </div>
           <div id="expressionEditorHint" class="expression-editor-hint" data-i18n="expr.hint"></div>
         </div>
         <div class="expression-editor-layout">
-          <div class="expression-editor-main">
+          <div id="expressionEditorMain" class="expression-editor-main">
+            <div id="expressionEditorCore" class="expression-editor-core">
             <div id="expressionStateInitialBlock" class="expression-state-initial hidden">
               <div class="expression-field-head">
                 <label for="expressionStateInitialInput" class="expression-preview-label" data-i18n="label.initialState" data-title-i18n="tooltip.node.initialState"></label>
@@ -420,7 +426,8 @@
               <pre id="expressionEditorHighlight" class="expression-editor-highlight" aria-hidden="true"></pre>
               <textarea id="expressionEditorTextarea" class="expression-editor-textarea" spellcheck="false"></textarea>
             </div>
-            <div class="expression-main-docs">
+            </div>
+            <div id="expressionMainDocs" class="expression-main-docs">
               <div id="expressionDescriptionBox" class="expression-formula-notes">
                 <label for="expressionDescriptionInput" class="expression-preview-label" data-i18n="label.description" data-title-i18n="tooltip.node.description"></label>
                 <textarea id="expressionDescriptionInput" class="panel-textarea expression-formula-notes-input" rows="2" data-title-i18n="tooltip.node.description"></textarea>

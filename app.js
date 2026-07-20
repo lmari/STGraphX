@@ -170,6 +170,10 @@ const canvasContent = document.getElementById("canvasContent");
 const widgetLayer = document.getElementById("widgetLayer");
 const expressionEditorModal = document.getElementById("expressionEditorModal");
 const expressionEditorTitle = document.getElementById("expressionEditorTitle");
+const expressionEditorViewTabs = document.getElementById("expressionEditorViewTabs");
+const expressionEditorViewEditorBtn = document.getElementById("expressionEditorViewEditorBtn");
+const expressionEditorViewNotesBtn = document.getElementById("expressionEditorViewNotesBtn");
+const expressionEditorViewHelpBtn = document.getElementById("expressionEditorViewHelpBtn");
 const expressionStateInitialBlock = document.getElementById("expressionStateInitialBlock");
 const expressionStateInitialHighlight = document.getElementById("expressionStateInitialHighlight");
 const expressionStateInitialInput = document.getElementById("expressionStateInitialInput");
@@ -182,6 +186,8 @@ const expressionEditorHighlight = document.getElementById("expressionEditorHighl
 const expressionEditorSurface = document.querySelector(".expression-editor-surface");
 const expressionEditorCard = expressionEditorModal?.querySelector(".expression-editor-card");
 const expressionEditorMain = expressionEditorModal?.querySelector(".expression-editor-main");
+const expressionEditorCore = document.getElementById("expressionEditorCore");
+const expressionMainDocs = document.getElementById("expressionMainDocs");
 const expressionSymbolsFilter = document.getElementById("expressionSymbolsFilter");
 const expressionSidebar = document.getElementById("expressionSidebar");
 const expressionHelp = document.getElementById("expressionHelp");
@@ -863,6 +869,7 @@ const ui = {
   showGraph: true,
   showWidgets: true,
   expressionEditor: null,
+  expressionEditorView: "editor",
   modalDrag: null,
   modalResize: null,
   tooltipTarget: null,
@@ -5459,6 +5466,46 @@ function resetExpressionEditorCardPosition() {
   card.style.transform = "translate(-50%, -50%)";
 }
 
+function isTabletExpressionEditorMode() {
+  return document.body.classList.contains("tablet-sidebar-layout");
+}
+
+function setExpressionEditorView(view, options = {}) {
+  const nextView = view === "notes" || view === "help" ? view : "editor";
+  ui.expressionEditorView = nextView;
+  const card = expressionEditorCard;
+  if (card) {
+    card.classList.toggle("expression-view-editor", nextView === "editor");
+    card.classList.toggle("expression-view-notes", nextView === "notes");
+    card.classList.toggle("expression-view-help", nextView === "help");
+  }
+  const viewButtons = [
+    [expressionEditorViewEditorBtn, "editor"],
+    [expressionEditorViewNotesBtn, "notes"],
+    [expressionEditorViewHelpBtn, "help"],
+  ];
+  viewButtons.forEach(([btn, btnView]) => {
+    if (!btn) {
+      return;
+    }
+    const active = btnView === nextView;
+    btn.classList.toggle("active", active);
+    btn.setAttribute("aria-selected", active ? "true" : "false");
+    btn.tabIndex = active ? 0 : -1;
+  });
+  if (options.focus !== false && isTabletExpressionEditorMode()) {
+    if (nextView === "help") {
+      expressionSymbolsFilter?.focus();
+    } else if (nextView === "notes") {
+      (expressionDescriptionInput || expressionFormulaNotesInput)?.focus();
+    } else if (ui.expressionEditor?.activeEditor === "initial" && !expressionStateInitialBlock?.classList.contains("hidden")) {
+      expressionStateInitialInput?.focus();
+    } else {
+      expressionEditorTextarea?.focus();
+    }
+  }
+}
+
 function clearExpressionPreviewTimer() {
   if (ui.expressionPreviewTimer != null) {
     window.clearTimeout(ui.expressionPreviewTimer);
@@ -5775,6 +5822,7 @@ function closeExpressionEditor() {
     expressionSymbolsFilter.value = "";
   }
   expressionSidebar?.classList.remove("hidden");
+  setExpressionEditorView("editor", { focus: false });
   setExpressionHelp(null);
   hideExpressionStatus(expressionEditorStatus);
   hideExpressionStatus(expressionStateInitialStatus);
@@ -5934,6 +5982,7 @@ function openExpressionEditor(fieldKey) {
   expressionEditorTextarea.value = String(ui.expressionEditor.initialValue ?? "");
   expressionEditorModal.classList.remove("hidden");
   resetExpressionEditorCardPosition();
+  setExpressionEditorView("editor", { focus: false });
   syncExpressionEditorFormulaNotes();
   setActiveExpressionEditor(isStateNode(node) && fieldKey === "initial" ? "initial" : "main");
   refreshExpressionEditorValidation();
@@ -5984,6 +6033,7 @@ function openCustomExpressionEditor(title, initialValue, onApply) {
   expressionEditorTextarea.value = String(initialValue ?? "");
   expressionEditorModal.classList.remove("hidden");
   resetExpressionEditorCardPosition();
+  setExpressionEditorView("editor", { focus: false });
   syncExpressionEditorFormulaNotes();
   refreshExpressionEditorValidation();
   expressionEditorTextarea.focus();
@@ -14624,6 +14674,11 @@ nodeInitialStateInput.addEventListener("input", () => {
 });
 
 if (expressionDescriptionInput) {
+  expressionDescriptionInput.addEventListener("focus", () => {
+    if (isTabletExpressionEditorMode()) {
+      setExpressionEditorView("notes", { focus: false });
+    }
+  });
   expressionDescriptionInput.addEventListener("input", () => {
     const node = ui.expressionEditor?.nodeId ? getNodeById(ui.expressionEditor.nodeId) : null;
     if (!node) {
@@ -14636,6 +14691,11 @@ if (expressionDescriptionInput) {
 }
 
 if (expressionFormulaNotesInput) {
+  expressionFormulaNotesInput.addEventListener("focus", () => {
+    if (isTabletExpressionEditorMode()) {
+      setExpressionEditorView("notes", { focus: false });
+    }
+  });
   expressionFormulaNotesInput.addEventListener("input", () => {
     const node = ui.expressionEditor?.nodeId ? getNodeById(ui.expressionEditor.nodeId) : null;
     if (!node) {
@@ -14656,6 +14716,9 @@ if (editNodeValueExprBtn) {
 if (expressionEditorTextarea) {
   expressionEditorTextarea.addEventListener("focus", () => {
     setActiveExpressionEditor("main");
+    if (isTabletExpressionEditorMode()) {
+      setExpressionEditorView("editor", { focus: false });
+    }
   });
   expressionEditorTextarea.addEventListener("input", () => {
     refreshExpressionEditorValidation();
@@ -14702,6 +14765,9 @@ if (expressionEditorTextarea) {
 if (expressionStateInitialInput) {
   expressionStateInitialInput.addEventListener("focus", () => {
     setActiveExpressionEditor("initial");
+    if (isTabletExpressionEditorMode()) {
+      setExpressionEditorView("editor", { focus: false });
+    }
   });
   expressionStateInitialInput.addEventListener("input", () => {
     refreshExpressionEditorValidation();
@@ -14765,6 +14831,11 @@ if (expressionStatusCopyBtn) {
   });
 }
 if (expressionSymbolsFilter) {
+  expressionSymbolsFilter.addEventListener("focus", () => {
+    if (isTabletExpressionEditorMode()) {
+      setExpressionEditorView("help", { focus: false });
+    }
+  });
   expressionSymbolsFilter.addEventListener("input", () => {
     renderExpressionLibrary();
   });
@@ -14790,6 +14861,18 @@ if (expressionSymbolsFilter) {
     }
   });
 }
+[
+  [expressionEditorViewEditorBtn, "editor"],
+  [expressionEditorViewNotesBtn, "notes"],
+  [expressionEditorViewHelpBtn, "help"],
+].forEach(([btn, view]) => {
+  if (!btn) {
+    return;
+  }
+  btn.addEventListener("click", () => {
+    setExpressionEditorView(view);
+  });
+});
 if (expressionEditorModal) {
   const modalCard = expressionEditorModal.querySelector(".expression-editor-card");
   bindModalDragHandle(expressionEditorModal, ".expression-editor-card");

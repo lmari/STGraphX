@@ -20,9 +20,11 @@ STGraphX è un'applicazione JavaScript con tre opzioni di uso:
 
 * editor con doppia shell e logica condivisa:
   * web, per accesso da browser via `http:` (e con qualche limitazione anche `file:`);
-  * desktop, mediante `Electron`;
+  * desktop, mediante `Electron`, per MS Windows, Mac, Linux;
 * visualizzatore via browser;
 * API Javascript.
+
+Ha un'interfaccia utente responsive, che lo rende utilizzabile anche su tablet.
 
 ### Implementati (senza librerie esterne)
 

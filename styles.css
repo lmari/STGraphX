@@ -2452,8 +2452,6 @@ button:disabled {
 .expression-editor-highlight,
 .expression-editor-textarea {
   width: 100%;
-  min-height: 0;
-  height: 100%;
   padding: 10px 12px;
   border: 1px solid var(--line);
   border-radius: 8px;
@@ -2475,7 +2473,9 @@ button:disabled {
 
 .expression-editor-textarea {
   position: relative;
-  resize: none;
+  min-height: 220px;
+  height: 220px;
+  resize: vertical;
   background: transparent;
   color: transparent;
   caret-color: var(--text);
@@ -2608,6 +2608,30 @@ button:disabled {
   gap: 10px;
 }
 
+.expression-editor-view-tabs {
+  display: none;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+}
+
+.expression-editor-view-tab {
+  min-width: 0;
+  padding: 6px 10px;
+  border: 1px solid #cbd8e4;
+  border-radius: 999px;
+  background: #f5f9fc;
+  color: #2e4b61;
+  font-size: 0.8rem;
+  line-height: 1.1;
+}
+
+.expression-editor-view-tab.active {
+  background: #dceefc;
+  border-color: #7fb0d6;
+  color: #0f5f96;
+}
+
 .expression-editor-layout {
   display: grid;
   grid-template-columns: minmax(0, 1.55fr) minmax(280px, 0.95fr);
@@ -2626,6 +2650,13 @@ button:disabled {
   gap: 10px;
   overflow: auto;
   padding-right: 4px;
+}
+
+.expression-editor-core {
+  display: grid;
+  gap: 10px;
+  min-width: 0;
+  min-height: 0;
 }
 
 .expression-editor-card.state-node-editor {
@@ -2676,8 +2707,14 @@ button:disabled {
 }
 
 .expression-state-initial-input {
-  min-height: 42px;
+  min-height: 52px;
+  height: 52px;
   resize: vertical;
+}
+
+.expression-editor-main.state-node-editor > .expression-editor-surface:not(.expression-editor-surface-compact) .expression-editor-textarea {
+  min-height: 260px;
+  height: 260px;
 }
 
 .expression-main-docs {
@@ -2837,9 +2874,138 @@ button:disabled {
     height: min(36vh, 320px);
   }
 
+  .expression-state-initial-input {
+    min-height: 52px;
+    height: 52px;
+  }
+
   .expression-editor-hint {
     text-align: left;
   }
+}
+
+body.tablet-sidebar-layout .expression-editor-card {
+  width: min(100vw - 8px, 980px);
+  max-width: calc(100vw - 8px);
+  height: min(96vh, 980px);
+  max-height: calc(100vh - 8px);
+  min-width: 0;
+  min-height: 0;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  border-radius: 14px;
+  padding: 10px;
+}
+
+body.tablet-sidebar-layout .expression-editor-toolbar {
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+}
+
+body.tablet-sidebar-layout .expression-editor-view-tabs {
+  display: inline-flex;
+  flex: 1 1 auto;
+  overflow-x: auto;
+  padding-bottom: 2px;
+}
+
+body.tablet-sidebar-layout .expression-editor-layout {
+  grid-template-columns: 1fr;
+  gap: 10px;
+}
+
+body.tablet-sidebar-layout .expression-editor-main {
+  grid-template-rows: minmax(0, 1fr);
+  overflow: visible;
+  padding-right: 0;
+}
+
+body.tablet-sidebar-layout .expression-editor-main.state-node-editor {
+  grid-template-rows: minmax(0, 1fr);
+}
+
+body.tablet-sidebar-layout .expression-editor-main > .expression-editor-surface:not(.expression-editor-surface-compact) {
+  min-height: 240px;
+}
+
+body.tablet-sidebar-layout .expression-editor-core,
+body.tablet-sidebar-layout .expression-main-docs,
+body.tablet-sidebar-layout .expression-sidebar {
+  min-height: 0;
+}
+
+body.tablet-sidebar-layout .expression-editor-textarea {
+  min-height: min(38vh, 360px);
+  height: min(38vh, 360px);
+  font-size: 16px;
+}
+
+body.tablet-sidebar-layout .expression-state-initial-input {
+  min-height: 52px;
+  height: 52px;
+}
+
+body.tablet-sidebar-layout .expression-main-docs {
+  grid-template-columns: 1fr;
+  gap: 8px;
+}
+
+body.tablet-sidebar-layout .expression-sidebar {
+  grid-template-rows: auto minmax(120px, 1fr) auto auto;
+  max-height: min(36vh, 320px);
+  overflow: auto;
+  padding-right: 0;
+  border-top: 1px solid #d9e4ee;
+  padding-top: 8px;
+}
+
+body.tablet-sidebar-layout .expression-editor-card.expression-view-editor .expression-main-docs,
+body.tablet-sidebar-layout .expression-editor-card.expression-view-editor .expression-sidebar {
+  display: none;
+}
+
+body.tablet-sidebar-layout .expression-editor-card.expression-view-notes .expression-editor-core,
+body.tablet-sidebar-layout .expression-editor-card.expression-view-notes .expression-sidebar {
+  display: none;
+}
+
+body.tablet-sidebar-layout .expression-editor-card.expression-view-help .expression-editor-main {
+  display: none;
+}
+
+body.tablet-sidebar-layout .expression-editor-card.expression-view-help .expression-sidebar {
+  display: grid;
+  max-height: none;
+  border-top: 0;
+  padding-top: 0;
+}
+
+body.tablet-sidebar-layout .expression-library {
+  min-height: 120px;
+}
+
+body.tablet-sidebar-layout .expression-help {
+  max-height: 140px;
+  overflow: auto;
+}
+
+body.tablet-sidebar-layout .expression-preview-value {
+  max-height: 120px;
+  overflow: auto;
+}
+
+body.tablet-sidebar-layout .expression-status-row,
+body.tablet-sidebar-layout .modal-actions {
+  position: sticky;
+  bottom: 0;
+  background: linear-gradient(180deg, rgba(250, 252, 254, 0.92) 0%, rgba(250, 252, 254, 0.98) 100%);
+  padding-top: 6px;
+}
+
+body.tablet-sidebar-layout .expression-editor-resize-handle {
+  display: none;
 }
 
 .edge-hit {
