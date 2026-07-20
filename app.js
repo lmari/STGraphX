@@ -13541,7 +13541,7 @@ menuTitles.forEach((title) => {
     }
   });
   title.addEventListener("click", (evt) => {
-    if (isCompactTouchPointerEvent(evt)) {
+    if (isCompactTabletLayout()) {
       return;
     }
     evt.stopPropagation();
@@ -13594,9 +13594,10 @@ if (recentModelsMenuBtn) {
     toggleRecentModelsSubmenu(evt);
   });
   recentModelsMenuBtn.addEventListener("click", (evt) => {
-    if (isCompactTabletLayout()) {
-      toggleRecentModelsSubmenu(evt);
+    if (!isCompactTabletLayout()) {
+      return;
     }
+    toggleRecentModelsSubmenu(evt);
   });
 }
 
