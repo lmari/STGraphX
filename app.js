@@ -13665,6 +13665,10 @@ menuTitles.forEach((title) => {
   });
   title.addEventListener("click", (evt) => {
     if (isCompactTabletLayout()) {
+      if ((Date.now() - ui.lastMenuTouchAt) < 700) {
+        return;
+      }
+      openCompactMenu(evt);
       return;
     }
     evt.stopPropagation();
@@ -13725,6 +13729,9 @@ if (recentModelsMenuBtn) {
   });
   recentModelsMenuBtn.addEventListener("click", (evt) => {
     if (!isCompactTabletLayout()) {
+      return;
+    }
+    if ((Date.now() - ui.lastMenuTouchAt) < 700) {
       return;
     }
     toggleRecentModelsSubmenu(evt);
