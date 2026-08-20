@@ -2273,8 +2273,8 @@ button:disabled {
 .expression-formula-notes {
   display: flex;
   flex-direction: column;
-  gap: 3px;
-  padding: 7px 10px;
+  gap: 1px;
+  padding: 5px 10px 6px;
   border: 1px solid #d9e3ec;
   border-radius: 8px;
   background: #fbfcfe;
@@ -2283,14 +2283,14 @@ button:disabled {
 
 .expression-formula-notes-input {
   width: 100%;
-  min-height: 88px;
+  min-height: 84px;
   border: 0;
   border-radius: 0;
   background: transparent;
   box-sizing: border-box;
   resize: vertical;
   margin: 0;
-  padding-top: 2px;
+  padding-top: 0;
 }
 
 .about-app-content {
@@ -2682,11 +2682,28 @@ button:disabled {
   padding-right: 4px;
 }
 
+.expression-editor-card:not(.state-node-editor) .expression-editor-main {
+  grid-template-rows: auto auto;
+  align-content: start;
+}
+
 .expression-editor-core {
   display: grid;
   gap: 6px;
   min-width: 0;
   min-height: 0;
+}
+
+.expression-main-field {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+  min-height: 0;
+}
+
+.expression-editor-card:not(.state-node-editor) .expression-main-field {
+  gap: 1px;
 }
 
 .expression-editor-card.state-node-editor {
@@ -2716,7 +2733,7 @@ button:disabled {
 .expression-state-initial {
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: 2px;
 }
 
 .expression-state-initial.hidden,
@@ -2728,12 +2745,13 @@ button:disabled {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 6px;
+  gap: 4px;
   margin: 0;
+  line-height: 1;
 }
 
 .expression-editor-core > .expression-field-head {
-  margin-bottom: -7px;
+  margin-bottom: 0;
 }
 
 .expression-formula-notes > label,
@@ -3005,6 +3023,11 @@ body.tablet-sidebar-layout .expression-editor-main {
   padding-right: 0;
 }
 
+body.tablet-sidebar-layout .expression-editor-card:not(.state-node-editor) .expression-editor-main {
+  grid-template-rows: auto auto;
+  align-content: start;
+}
+
 body.tablet-sidebar-layout .expression-editor-main.state-node-editor {
   grid-template-rows: minmax(0, 1fr);
 }
@@ -3014,11 +3037,15 @@ body.tablet-sidebar-layout .expression-editor-core {
 }
 
 body.tablet-sidebar-layout .expression-state-initial {
-  gap: 4px;
+  gap: 2px;
 }
 
 body.tablet-sidebar-layout .expression-field-head {
-  gap: 6px;
+  gap: 4px;
+}
+
+body.tablet-sidebar-layout .expression-editor-card:not(.state-node-editor) .expression-main-field {
+  gap: 1px;
 }
 
 body.tablet-sidebar-layout .expression-editor-main > .expression-editor-surface:not(.expression-editor-surface-compact) {
@@ -3050,12 +3077,12 @@ body.tablet-sidebar-layout .expression-main-docs {
 }
 
 body.tablet-sidebar-layout .expression-formula-notes {
-  gap: 2px;
-  padding: 5px 8px;
+  gap: 1px;
+  padding: 4px 8px 5px;
 }
 
 body.tablet-sidebar-layout .expression-formula-notes-input {
-  min-height: 68px;
+  min-height: 64px;
 }
 
 body.tablet-sidebar-layout .expression-sidebar {
