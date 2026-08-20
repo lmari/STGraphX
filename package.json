@@ -10,7 +10,7 @@
     "start": "npm run start:desktop",
     "start:desktop": "electron .",
     "start:web": "node scripts/dev-server.js",
-    "check": "node --check app.js && node --check widgets.js && node --check semantic.js && node --check graph-functions.js && node --check runtime-shared.js && node --check runtime-core.js && node --check runtime-loader.js && node --check runtime-session.js && node --check runtime-controller.js && node --check headless-runtime.js && node --check player-shell.js && node --check player-runtime-loader.js && node --check electron/main.js && node --check electron/preload.js && node --check scripts/dev-server.js && node --check scripts/build-player-bundle.js",
+    "check": "node --check app.js && node --check widgets.js && node --check semantic.js && node --check graph-functions.js && node --check runtime-shared.js && node --check runtime-core.js && node --check runtime-loader.js && node --check runtime-session.js && node --check runtime-controller.js && node --check headless-runtime.js && node --check player-shell.js && node --check player-runtime-loader.js && node --check electron/main.js && node --check electron/preload.js && node --check platform/path-handles.js && node --check platform/install-platform.js && node --check platform/electron-platform.js && node --check scripts/dev-server.js && node --check scripts/build-player-bundle.js",
     "build:player": "node scripts/build-player-bundle.js",
     "pack": "electron-builder --dir",
     "dist": "electron-builder",
@@ -45,6 +45,7 @@
       "icon.png",
       "icon.ico",
       "electron/**/*",
+      "platform/**/*",
       "package.json"
     ],
     "directories": {

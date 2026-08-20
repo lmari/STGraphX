@@ -1,0 +1,181 @@
+{
+  "version": 1,
+  "modelTitle": "Un serbatoio: accumulo, afflusso e deflusso",
+  "modelProperties": [
+    { "key": "scopo", "value": "Mostrare come un livello cambia nel tempo per effetto della differenza tra due flussi." }
+  ],
+  "view": {
+    "zoom": 0.9,
+    "showGrid": true,
+    "gridSize": 20,
+    "scrollLeft": 0,
+    "scrollTop": 0
+  },
+  "execution": {
+    "t0": 0,
+    "dt": 0.1,
+    "t1": 20,
+    "delayMs": 30,
+    "decimals": 2,
+    "integrator": "euler",
+    "strictDefinitions": false
+  },
+  "nodes": [
+    {
+      "id": 1,
+      "name": "afflusso",
+      "output": true,
+      "input": true,
+      "type": "algebraic",
+      "x": 40,
+      "y": 90,
+      "width": 140,
+      "height": 70,
+      "fillColor": "",
+      "strokeColor": "",
+      "properties": [{ "key": "descrizione", "value": "Quantità d'acqua che entra nel serbatoio per unità di tempo." }],
+      "valueExpression": "5"
+    },
+    {
+      "id": 2,
+      "name": "deflusso",
+      "output": true,
+      "input": true,
+      "type": "algebraic",
+      "x": 40,
+      "y": 260,
+      "width": 140,
+      "height": 70,
+      "fillColor": "",
+      "strokeColor": "",
+      "properties": [{ "key": "descrizione", "value": "Quantità d'acqua che esce dal serbatoio per unità di tempo." }],
+      "valueExpression": "3"
+    },
+    {
+      "id": 3,
+      "name": "variazione_acqua",
+      "output": true,
+      "type": "algebraic",
+      "x": 280,
+      "y": 175,
+      "width": 160,
+      "height": 70,
+      "fillColor": "",
+      "strokeColor": "",
+      "properties": [{ "key": "descrizione", "value": "Bilancio istantaneo: afflusso meno deflusso." }],
+      "valueExpression": "afflusso - deflusso"
+    },
+    {
+      "id": 4,
+      "name": "acqua",
+      "output": true,
+      "type": "state",
+      "x": 560,
+      "y": 175,
+      "width": 150,
+      "height": 76,
+      "fillColor": "",
+      "strokeColor": "",
+      "properties": [{ "key": "descrizione", "value": "Quantità accumulata nel serbatoio." }],
+      "stateTransition": "integral(variazione_acqua)",
+      "initialState": "20"
+    }
+  ],
+  "edges": [
+    { "id": 1, "from": 1, "to": 3, "controlPoints": [] },
+    { "id": 2, "from": 2, "to": 3, "controlPoints": [] },
+    { "id": 3, "from": 3, "to": 4, "controlPoints": [] }
+  ],
+  "textItems": [
+    {
+      "id": 1,
+      "x": 20,
+      "y": -35,
+      "width": 700,
+      "height": 60,
+      "fillColor": "",
+      "strokeColor": "",
+      "html": "<p><strong>La regola del modello:</strong> acqua(t + dt) = acqua(t) + (afflusso − deflusso) · dt.</p>"
+    }
+  ],
+  "widgets": [
+    {
+      "id": 1,
+      "type": "slider",
+      "customTitle": "Afflusso",
+      "x": 780,
+      "y": 30,
+      "width": 240,
+      "height": 105,
+      "minimized": false,
+      "outputOnly": false,
+      "showHistory": false,
+      "xMin": "auto", "xMax": "auto", "yMin": "auto", "yMax": "auto",
+      "showGrid": true,
+      "legendPosition": "top-right",
+      "source": "afflusso",
+      "showNumericValues": true,
+      "showIndices": true,
+      "autoFitCells": true,
+      "cellSize": 28,
+      "valueMin": "auto", "valueMax": "auto",
+      "displayRows": null, "displayCols": null,
+      "colorScheme": "blue",
+      "min": 0, "max": 8, "step": 0.5, "value": 5,
+      "options": [], "mappings": [], "columns": [], "xyPairs": []
+    },
+    {
+      "id": 2,
+      "type": "slider",
+      "customTitle": "Deflusso",
+      "x": 780,
+      "y": 155,
+      "width": 240,
+      "height": 105,
+      "minimized": false,
+      "outputOnly": false,
+      "showHistory": false,
+      "xMin": "auto", "xMax": "auto", "yMin": "auto", "yMax": "auto",
+      "showGrid": true,
+      "legendPosition": "top-right",
+      "source": "deflusso",
+      "showNumericValues": true,
+      "showIndices": true,
+      "autoFitCells": true,
+      "cellSize": 28,
+      "valueMin": "auto", "valueMax": "auto",
+      "displayRows": null, "displayCols": null,
+      "colorScheme": "blue",
+      "min": 0, "max": 8, "step": 0.5, "value": 3,
+      "options": [], "mappings": [], "columns": [], "xyPairs": []
+    },
+    {
+      "id": 3,
+      "type": "xychart",
+      "customTitle": "Acqua nel serbatoio",
+      "x": 760,
+      "y": 295,
+      "width": 360,
+      "height": 300,
+      "minimized": false,
+      "outputOnly": false,
+      "showHistory": false,
+      "xMin": 0, "xMax": 20, "yMin": 0, "yMax": "auto",
+      "showGrid": true,
+      "legendPosition": "top-right",
+      "source": "",
+      "showNumericValues": true,
+      "showIndices": true,
+      "autoFitCells": true,
+      "cellSize": 28,
+      "valueMin": "auto", "valueMax": "auto",
+      "displayRows": null, "displayCols": null,
+      "colorScheme": "blue",
+      "min": 0, "max": 100, "step": 1, "value": 0,
+      "options": [], "mappings": [], "columns": [],
+      "xyPairs": [
+        { "label": "acqua", "xSource": "time", "ySource": "acqua", "color": "#1479b8", "showLine": true, "lineWidth": 2.5, "lineStyle": "solid", "pointMode": "none", "pointSize": 2 }
+      ]
+    }
+  ]
+}

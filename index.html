@@ -103,6 +103,14 @@
             </label>
             <label class="menu-field" for="gridSizeInput" data-i18n="menu.view.gridStep" data-title-i18n="tooltip.menu.view.gridStep"></label>
             <input id="gridSizeInput" type="number" min="5" max="100" step="1" value="20" data-title-i18n="tooltip.menu.view.gridStep" />
+            <label class="menu-field" for="tooltipDelayInput" data-i18n="menu.view.tooltipDelay" data-title-i18n="tooltip.menu.view.tooltipDelay"></label>
+            <select id="tooltipDelayInput" data-title-i18n="tooltip.menu.view.tooltipDelay">
+              <option value="0" data-i18n="menu.view.tooltipDelayMode.none"></option>
+              <option value="150" data-i18n="menu.view.tooltipDelayMode.fast"></option>
+              <option value="300" data-i18n="menu.view.tooltipDelayMode.normal"></option>
+              <option value="600" data-i18n="menu.view.tooltipDelayMode.slow"></option>
+              <option value="1000" data-i18n="menu.view.tooltipDelayMode.slower"></option>
+            </select>
             <label class="menu-field" for="decimalDigitsInput" data-i18n="label.decimals" data-title-i18n="tooltip.model.decimals"></label>
             <input id="decimalDigitsInput" type="number" min="0" max="12" step="1" data-title-i18n="tooltip.model.decimals" />
           </div>

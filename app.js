@@ -86,6 +86,7 @@ const snapToGridInput = document.getElementById("snapToGridInput");
 const showGridInput = document.getElementById("showGridInput");
 const highlightNodeEdgesInput = document.getElementById("highlightNodeEdgesInput");
 const gridSizeInput = document.getElementById("gridSizeInput");
+const tooltipDelayInput = document.getElementById("tooltipDelayInput");
 
 const noSelection = document.getElementById("noSelection");
 const globalPanel = document.getElementById("globalPanel");
@@ -856,6 +857,7 @@ const ui = {
   showGrid: true,
   highlightNodeEdges: false,
   gridSize: 20,
+  tooltipDelayMs: 300,
   zoom: 1,
   nodeNameEditStart: null,
   timedRunHandle: null,
@@ -1030,6 +1032,9 @@ function updateCanvasGridAppearance() {
   }
   if (gridSizeInput && document.activeElement !== gridSizeInput) {
     gridSizeInput.value = String(ui.gridSize);
+  }
+  if (tooltipDelayInput && document.activeElement !== tooltipDelayInput) {
+    tooltipDelayInput.value = String(normalizeTooltipDelayMs(ui.tooltipDelayMs));
   }
 }
 
@@ -1278,6 +1283,11 @@ function setTooltipText(el, text) {
   el.setAttribute("data-tooltip", value);
 }
 
+function normalizeTooltipDelayMs(value) {
+  const numeric = Math.round(Number(value));
+  return [0, 150, 300, 600, 1000].includes(numeric) ? numeric : 300;
+}
+
 function cancelTooltipTimers() {
   if (ui.tooltipShowTimer != null) {
     window.clearTimeout(ui.tooltipShowTimer);
@@ -1374,10 +1384,14 @@ function scheduleShowAppTooltip(target, clientX, clientY, delay = 280) {
   if (!target) {
     return;
   }
+  if (ui.tooltipDelayMs <= 0) {
+    hideAppTooltip();
+    return;
+  }
   ui.tooltipShowTimer = window.setTimeout(() => {
     ui.tooltipShowTimer = null;
     showAppTooltip(target, clientX, clientY);
-  }, delay);
+  }, normalizeTooltipDelayMs(delay));
 }
 
 function tooltipInfoForTarget(target) {
@@ -2995,6 +3009,46 @@ function expressionFieldMeta(fieldKey, node = selectedNodeForSidebar()) {
   return null;
 }
 
+function expressionEditorNodeTypeLabel(node) {
+  if (!node) {
+    return "";
+  }
+  if (node.shape === "diamond") {
+    return t("expr.editor.nodeType.parameter");
+  }
+  if (isStateNode(node)) {
+    return t("expr.editor.nodeType.state");
+  }
+  return t("expr.editor.nodeType.algebraic");
+}
+
+function expressionEditorBaseTitleForNode(node) {
+  if (!node) {
+    return "";
+  }
+  return t("expr.editor.nodeTitle", {
+    name: String(node.name ?? ""),
+    type: expressionEditorNodeTypeLabel(node),
+  });
+}
+
+function expressionEditorMainFieldLabel(node) {
+  if (!node) {
+    return "";
+  }
+  if (isStateNode(node)) {
+    return t("label.stateTransition");
+  }
+  return node.shape === "diamond" ? t("label.value") : t("label.behaviorFunction");
+}
+
+function syncExpressionEditorHeadLabel(node) {
+  if (!expressionStateTransitionLabel) {
+    return;
+  }
+  expressionStateTransitionLabel.textContent = expressionEditorMainFieldLabel(node);
+}
+
 function expressionEditorMeta() {
   if (!ui.expressionEditor) {
     return null;
@@ -3064,7 +3118,7 @@ function syncExpressionEditorToSelectedNode() {
   }
   ui.expressionEditor.nodeId = selectedNode.id;
   ui.expressionEditor.fieldKey = meta.key;
-  ui.expressionEditor.baseTitle = isStateNode(selectedNode) ? t("label.state") : meta.title;
+  ui.expressionEditor.baseTitle = expressionEditorBaseTitleForNode(selectedNode);
   ui.expressionEditor.initialValue = meta.value;
   ui.expressionEditor.secondaryInitialValue = isStateNode(selectedNode)
     ? String(selectedNode.initialStateExpression ?? "")
@@ -3093,7 +3147,8 @@ function syncExpressionEditorFormulaNotes() {
     ui.expressionEditor.activeEditor = "main";
   }
   expressionStateInitialBlock?.classList.toggle("hidden", !stateVisible);
-  expressionStateTransitionHead?.classList.toggle("hidden", !stateVisible);
+  expressionStateTransitionHead?.classList.toggle("hidden", !visible);
+  syncExpressionEditorHeadLabel(node);
   if (expressionStateInitialInput) {
     expressionStateInitialInput.value = stateVisible ? String(node.initialStateExpression ?? "") : "";
     expressionStateInitialInput.disabled = !stateVisible || isEditingUiLocked();
@@ -5983,7 +6038,7 @@ function openExpressionEditor(fieldKey) {
     nodeId: node.id,
     fieldKey: isStateNode(node) ? "value" : meta.key,
     syntaxOk: true,
-    baseTitle: isStateNode(node) ? t("label.state") : meta.title,
+    baseTitle: expressionEditorBaseTitleForNode(node),
     initialValue: isStateNode(node) ? String(node.valueExpression ?? "") : meta.value,
     secondaryInitialValue: isStateNode(node) ? String(node.initialStateExpression ?? "") : "",
     librarySelectedName: "",
@@ -6108,7 +6163,7 @@ function commitExpressionEditorValue(closeAfter = true) {
     if (nextInitialValue != null) {
       ui.expressionEditor.secondaryInitialValue = nextInitialValue;
     }
-    ui.expressionEditor.baseTitle = meta.title;
+    ui.expressionEditor.baseTitle = expressionEditorBaseTitleForNode(node);
     refreshExpressionEditorValidation();
   }
   return true;
@@ -8513,6 +8568,7 @@ function exportGraphData() {
       showGrid: ui.showGrid !== false,
       highlightNodeEdges: ui.highlightNodeEdges === true,
       gridSize: clamp(Number(ui.gridSize) || 20, 5, 100),
+      tooltipDelayMs: normalizeTooltipDelayMs(ui.tooltipDelayMs),
       scrollLeft: Math.max(0, Number(graphViewport?.scrollLeft) || 0),
       scrollTop: Math.max(0, Number(graphViewport?.scrollTop) || 0),
     },
@@ -8608,7 +8664,7 @@ function exportGraphData() {
       yMin: serializeAutoNullableNumber(w.yMin),
       yMax: serializeAutoNullableNumber(w.yMax),
       showGrid: w.showGrid !== false,
-      legendPosition: ["top-right", "top-left", "bottom-right", "bottom-left"].includes(String(w.legendPosition ?? ""))
+      legendPosition: ["none", "top-right", "top-left", "bottom-right", "bottom-left"].includes(String(w.legendPosition ?? ""))
         ? String(w.legendPosition)
         : "top-right",
       source: String(w.source ?? ""),
@@ -8652,6 +8708,7 @@ function exportGraphData() {
           showTimeSeries: normalizeChartSeriesToggle(pair?.showTimeSeries, pair?.seriesMode !== "instant"),
           showInstantProfile: normalizeChartSeriesToggle(pair?.showInstantProfile, pair?.seriesMode === "instant" ? true : false),
           color: /^#[0-9a-fA-F]{6}$/.test(String(pair?.color ?? "")) ? String(pair.color) : defaultChartSeriesColor(idx),
+          pointColor: /^#[0-9a-fA-F]{6}$/.test(String(pair?.pointColor ?? "")) ? String(pair.pointColor) : (/^#[0-9a-fA-F]{6}$/.test(String(pair?.color ?? "")) ? String(pair.color) : defaultChartSeriesColor(idx)),
           showLine: pair?.showLine !== false,
           lineWidth: Number.isFinite(Number(pair?.lineWidth)) ? clamp(Number(pair.lineWidth), 1, 8) : 2.2,
           lineStyle: normalizeChartLineStyle(pair?.lineStyle),
@@ -8685,6 +8742,7 @@ function captureCurrentModelContext(nodeName = "") {
       showGrid: ui.showGrid,
       highlightNodeEdges: ui.highlightNodeEdges,
       gridSize: ui.gridSize,
+      tooltipDelayMs: normalizeTooltipDelayMs(ui.tooltipDelayMs),
       scrollLeft: graphViewport.scrollLeft,
       scrollTop: graphViewport.scrollTop,
     },
@@ -8711,6 +8769,7 @@ function restoreModelContext(context) {
   ui.showGrid = context.view?.showGrid !== false;
   ui.highlightNodeEdges = context.view?.highlightNodeEdges === true;
   ui.gridSize = clamp(Number(context.view?.gridSize) || ui.gridSize || 20, 5, 100);
+  ui.tooltipDelayMs = normalizeTooltipDelayMs(context.view?.tooltipDelayMs);
   setStatus(String(context.statusMessage || t("status.ready")));
   updateHistoryButtons();
   updateFileStatusLabel(dirtySinceLastSave);
@@ -8847,7 +8906,7 @@ function applyGraphData(data) {
         yMin: parseAutoNullableNumber(w.yMin),
         yMax: parseAutoNullableNumber(w.yMax),
         showGrid: w.showGrid !== false,
-        legendPosition: ["top-right", "top-left", "bottom-right", "bottom-left"].includes(String(w.legendPosition ?? ""))
+        legendPosition: ["none", "top-right", "top-left", "bottom-right", "bottom-left"].includes(String(w.legendPosition ?? ""))
           ? String(w.legendPosition)
           : "top-right",
         source: String(w.source ?? ""),
@@ -8896,6 +8955,7 @@ function applyGraphData(data) {
             showTimeSeries: normalizeChartSeriesToggle(pair?.showTimeSeries, pair?.seriesMode !== "instant"),
             showInstantProfile: normalizeChartSeriesToggle(pair?.showInstantProfile, pair?.seriesMode === "instant" ? true : false),
             color: /^#[0-9a-fA-F]{6}$/.test(String(pair?.color ?? "")) ? String(pair.color) : defaultChartSeriesColor(idx),
+            pointColor: /^#[0-9a-fA-F]{6}$/.test(String(pair?.pointColor ?? "")) ? String(pair.pointColor) : (/^#[0-9a-fA-F]{6}$/.test(String(pair?.color ?? "")) ? String(pair.color) : defaultChartSeriesColor(idx)),
             showLine: pair?.showLine !== false,
             lineWidth: Number.isFinite(Number(pair?.lineWidth)) ? clamp(Number(pair.lineWidth), 1, 8) : 2.2,
             lineStyle: normalizeChartLineStyle(pair?.lineStyle),
@@ -8938,6 +8998,7 @@ function applyGraphData(data) {
   ui.showGrid = savedView?.showGrid !== false;
   ui.highlightNodeEdges = savedView?.highlightNodeEdges === true;
   ui.gridSize = clamp(Number(savedView?.gridSize) || ui.gridSize || 20, 5, 100);
+  ui.tooltipDelayMs = normalizeTooltipDelayMs(savedView?.tooltipDelayMs);
   normalizeInputNodeFlags();
   initializeStateNodes(graph.execution.t0);
 
@@ -10953,7 +11014,7 @@ function importGraphData(data) {
         yMin: parseAutoNullableNumber(w.yMin),
         yMax: parseAutoNullableNumber(w.yMax),
         showGrid: w.showGrid !== false,
-        legendPosition: ["top-right", "top-left", "bottom-right", "bottom-left"].includes(String(w.legendPosition ?? ""))
+        legendPosition: ["none", "top-right", "top-left", "bottom-right", "bottom-left"].includes(String(w.legendPosition ?? ""))
           ? String(w.legendPosition)
           : "top-right",
         source: String(w.source ?? ""),
@@ -11000,6 +11061,7 @@ function importGraphData(data) {
           xSource: String(pair.xSource ?? "time"),
           ySource: String(pair.ySource ?? ""),
           color: /^#[0-9a-fA-F]{6}$/.test(String(pair?.color ?? "")) ? String(pair.color) : defaultChartSeriesColor(idx),
+          pointColor: /^#[0-9a-fA-F]{6}$/.test(String(pair?.pointColor ?? "")) ? String(pair.pointColor) : (/^#[0-9a-fA-F]{6}$/.test(String(pair?.color ?? "")) ? String(pair.color) : defaultChartSeriesColor(idx)),
           showLine: pair?.showLine !== false,
           lineWidth: Number.isFinite(Number(pair?.lineWidth)) ? clamp(Number(pair.lineWidth), 1, 8) : 2.2,
           lineStyle: normalizeChartLineStyle(pair?.lineStyle),
@@ -11040,6 +11102,7 @@ function importGraphData(data) {
         showGrid: data.view.showGrid !== false,
         highlightNodeEdges: data.view.highlightNodeEdges === true,
         gridSize: clamp(Number(data.view.gridSize) || 20, 5, 100),
+        tooltipDelayMs: normalizeTooltipDelayMs(data.view.tooltipDelayMs),
         scrollLeft: Math.max(0, Number(data.view.scrollLeft) || 0),
         scrollTop: Math.max(0, Number(data.view.scrollTop) || 0),
       }
@@ -11102,7 +11165,7 @@ async function extractFileHandlePath(fileHandle) {
 function saveRecentModelsToStorage() {
   try {
     const payload = recentModelEntries
-      .filter((entry) => entry && entry.path)
+      .filter((entry) => entry && (entry.path || entry.name))
       .slice(0, MAX_RECENT_MODELS)
       .map((entry) => ({
         name: String(entry.name || ""),
@@ -11285,17 +11348,34 @@ async function openPreparedJsonEntryInNewTab(rootEntry) {
 
 async function openRecentModelEntry(entry) {
   try {
+    let rootEntry = null;
     const handle = await resolveRecentModelHandle(entry);
-    if (!handle) {
-      notifyMissingRecentModelEntry(entry);
-      return false;
+    if (handle) {
+      rootEntry = await prepareSelectedJsonEntries([handle]);
+    } else if (supportsOpenFilePicker()) {
+      const handles = await showOpenFilePickerCompat({
+        multiple: true,
+        types: [{
+          description: "JSON",
+          accept: { "application/json": [".json"] },
+        }],
+      });
+      if (!handles || handles.length === 0) {
+        return false;
+      }
+      rootEntry = await prepareSelectedJsonEntries(handles);
+    } else {
+      const files = await pickSubmodelFilesWithInput();
+      rootEntry = await prepareSelectedJsonEntries(files);
     }
-    const rootEntry = await prepareSelectedJsonEntries([handle]);
     if (!rootEntry) {
       return false;
     }
     return openPreparedJsonEntryInNewTab(rootEntry);
-  } catch (_err) {
+  } catch (err) {
+    if (err && (err.name === "AbortError" || String(err.message || "") === t("error.loadCancelled"))) {
+      return false;
+    }
     notifyMissingRecentModelEntry(entry);
     return false;
   }
@@ -14089,6 +14169,15 @@ gridSizeInput.addEventListener("change", () => {
   setStatusKey("status.gridStep", { value: ui.gridSize });
 });
 
+if (tooltipDelayInput) {
+  tooltipDelayInput.addEventListener("change", () => {
+    ui.tooltipDelayMs = normalizeTooltipDelayMs(tooltipDelayInput.value);
+    tooltipDelayInput.value = String(ui.tooltipDelayMs);
+    scheduleFileStatusRefresh();
+    hideAppTooltip();
+  });
+}
+
 if (graphViewport) {
   graphViewport.addEventListener("scroll", () => {
     scheduleFileStatusRefresh();
@@ -15184,7 +15273,7 @@ document.addEventListener("pointerover", (evt) => {
     return;
   }
   ui.tooltipPointer = { x: evt.clientX, y: evt.clientY };
-  scheduleShowAppTooltip(target, evt.clientX, evt.clientY);
+  scheduleShowAppTooltip(target, evt.clientX, evt.clientY, ui.tooltipDelayMs);
 });
 
 document.addEventListener("pointermove", (evt) => {
@@ -15195,11 +15284,13 @@ document.addEventListener("pointermove", (evt) => {
   }
   ui.tooltipPointer = { x: evt.clientX, y: evt.clientY };
   if (ui.tooltipTarget !== target) {
-    scheduleShowAppTooltip(target, evt.clientX, evt.clientY);
+    scheduleShowAppTooltip(target, evt.clientX, evt.clientY, ui.tooltipDelayMs);
     return;
   }
   cancelTooltipTimers();
-  positionAppTooltip(evt.clientX, evt.clientY);
+  if (ui.tooltipDelayMs > 0) {
+    positionAppTooltip(evt.clientX, evt.clientY);
+  }
 });
 
 document.addEventListener("pointerout", (evt) => {
@@ -15218,6 +15309,9 @@ document.addEventListener("focusin", (evt) => {
   }
   const target = activeTooltipTarget(evt.target);
   if (!target) {
+    return;
+  }
+  if (ui.tooltipDelayMs <= 0) {
     return;
   }
   const rect = target.getBoundingClientRect();

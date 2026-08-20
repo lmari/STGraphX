@@ -392,11 +392,19 @@ body {
 }
 
 .menu-field {
-  margin: 6px 8px 4px;
+  display: block;
+  margin: 6px 8px 3px;
+}
+
+.menu-panel > input[type="number"],
+.menu-panel > select {
+  width: calc(100% - 16px);
+  margin: 0 8px 4px;
+  box-sizing: border-box;
 }
 
 #gridSizeInput {
-  width: 100%;
+  width: calc(100% - 16px);
 }
 
 .layout {
@@ -1627,12 +1635,12 @@ button:disabled {
 
 .chart-pair-style-main select,
 .chart-pair-style-secondary select {
-  flex: 1 1 120px;
+  flex: 1 1 92px;
 }
 
 .chart-pair-style-main input[type="number"],
 .chart-pair-style-secondary input[type="number"] {
-  flex: 0 0 76px;
+  flex: 0 0 58px;
 }
 
 #widgetPanel .row2-exec {
@@ -2243,9 +2251,11 @@ button:disabled {
 }
 
 .expression-preview-label {
+  display: inline-block;
   font-size: 0.8rem;
   font-weight: 600;
   color: #54687c;
+  line-height: 1.15;
 }
 
 .expression-preview-value {
@@ -2263,8 +2273,8 @@ button:disabled {
 .expression-formula-notes {
   display: flex;
   flex-direction: column;
-  gap: 6px;
-  padding: 8px 10px;
+  gap: 3px;
+  padding: 7px 10px;
   border: 1px solid #d9e3ec;
   border-radius: 8px;
   background: #fbfcfe;
@@ -2273,12 +2283,14 @@ button:disabled {
 
 .expression-formula-notes-input {
   width: 100%;
-  min-height: 96px;
+  min-height: 88px;
   border: 0;
   border-radius: 0;
   background: transparent;
   box-sizing: border-box;
   resize: vertical;
+  margin: 0;
+  padding-top: 2px;
 }
 
 .about-app-content {
@@ -2665,14 +2677,14 @@ button:disabled {
   grid-template-rows: minmax(220px, 1fr) auto;
   min-width: 0;
   min-height: 0;
-  gap: 10px;
+  gap: 8px;
   overflow: auto;
   padding-right: 4px;
 }
 
 .expression-editor-core {
   display: grid;
-  gap: 10px;
+  gap: 6px;
   min-width: 0;
   min-height: 0;
 }
@@ -2680,6 +2692,12 @@ button:disabled {
 .expression-editor-card.state-node-editor {
   height: min(84vh, 860px);
   min-height: 560px;
+}
+
+.expression-editor-card label,
+.expression-editor-card .expression-preview-label {
+  margin-top: 0;
+  margin-bottom: 0;
 }
 
 .expression-editor-main.state-node-editor {
@@ -2698,7 +2716,7 @@ button:disabled {
 .expression-state-initial {
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: 4px;
 }
 
 .expression-state-initial.hidden,
@@ -2710,7 +2728,19 @@ button:disabled {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 8px;
+  gap: 6px;
+  margin: 0;
+}
+
+.expression-editor-core > .expression-field-head {
+  margin-bottom: -7px;
+}
+
+.expression-formula-notes > label,
+.expression-field-head > label,
+.expression-help-head > .expression-preview-label,
+#expressionPreviewBox > .expression-preview-label {
+  margin: 0;
 }
 
 .expr-status.inline {
@@ -2740,7 +2770,7 @@ button:disabled {
 .expression-main-docs {
   display: grid;
   grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.1fr);
-  gap: 10px;
+  gap: 8px;
   min-width: 0;
 }
 
@@ -3020,12 +3050,12 @@ body.tablet-sidebar-layout .expression-main-docs {
 }
 
 body.tablet-sidebar-layout .expression-formula-notes {
-  gap: 4px;
-  padding: 6px 8px;
+  gap: 2px;
+  padding: 5px 8px;
 }
 
 body.tablet-sidebar-layout .expression-formula-notes-input {
-  min-height: 72px;
+  min-height: 68px;
 }
 
 body.tablet-sidebar-layout .expression-sidebar {

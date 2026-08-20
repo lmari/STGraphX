@@ -239,6 +239,7 @@ function addXYChartWidget(at = null) {
         showTimeSeries: true,
         showInstantProfile: false,
         color: defaultChartSeriesColor(0),
+        pointColor: defaultChartSeriesColor(0),
         showLine: true,
         lineWidth: 2.2,
         lineStyle: "solid",
@@ -395,6 +396,7 @@ function sanitizeWidgetXYPairs(widget) {
       showTimeSeries: normalizeChartSeriesToggle(pair?.showTimeSeries, pair?.seriesMode !== "instant"),
       showInstantProfile: normalizeChartSeriesToggle(pair?.showInstantProfile, pair?.seriesMode === "instant" ? true : false),
       color: /^#[0-9a-fA-F]{6}$/.test(String(pair?.color ?? "")) ? String(pair.color) : defaultChartSeriesColor(idx),
+      pointColor: /^#[0-9a-fA-F]{6}$/.test(String(pair?.pointColor ?? "")) ? String(pair.pointColor) : (/^#[0-9a-fA-F]{6}$/.test(String(pair?.color ?? "")) ? String(pair.color) : defaultChartSeriesColor(idx)),
       showLine: pair?.showLine !== false,
       lineWidth: Number.isFinite(Number(pair?.lineWidth)) ? clamp(Number(pair.lineWidth), 1, 8) : 2.2,
       lineStyle: normalizeChartLineStyle(pair?.lineStyle),
@@ -448,7 +450,7 @@ function sanitizeXYChartOptions(widget) {
   widget.yMin = parseNumOrNull(widget.yMin);
   widget.yMax = parseNumOrNull(widget.yMax);
   widget.showGrid = widget.showGrid !== false;
-  widget.legendPosition = ["top-right", "top-left", "bottom-right", "bottom-left"].includes(String(widget.legendPosition ?? ""))
+  widget.legendPosition = ["none", "top-right", "top-left", "bottom-right", "bottom-left"].includes(String(widget.legendPosition ?? ""))
     ? String(widget.legendPosition)
     : "top-right";
 }
@@ -750,6 +752,7 @@ function drawXYChart(canvas, seriesList = [], options = null) {
     .map((s, idx) => ({
       label: String(s?.label ?? ""),
       color: /^#[0-9a-fA-F]{6}$/.test(String(s?.color ?? "")) ? String(s.color) : defaultChartSeriesColor(idx),
+      pointColor: /^#[0-9a-fA-F]{6}$/.test(String(s?.pointColor ?? "")) ? String(s.pointColor) : (/^#[0-9a-fA-F]{6}$/.test(String(s?.color ?? "")) ? String(s.color) : defaultChartSeriesColor(idx)),
       showLine: s?.showLine !== false,
       lineWidth: Number.isFinite(Number(s?.lineWidth)) ? clamp(Number(s.lineWidth), 1, 8) : 2.2,
       lineStyle: normalizeChartLineStyle(s?.lineStyle),
@@ -787,7 +790,7 @@ function drawXYChart(canvas, seriesList = [], options = null) {
     yMin: parseAxisLimit(options?.yMin),
     yMax: parseAxisLimit(options?.yMax),
     showGrid: options?.showGrid !== false,
-    legendPosition: ["top-right", "top-left", "bottom-right", "bottom-left"].includes(String(options?.legendPosition ?? ""))
+    legendPosition: ["none", "top-right", "top-left", "bottom-right", "bottom-left"].includes(String(options?.legendPosition ?? ""))
       ? String(options.legendPosition)
       : "top-right",
   };
@@ -952,7 +955,7 @@ function drawXYChart(canvas, seriesList = [], options = null) {
     }
     ctx.setLineDash([]);
     if (series.pointMode !== "none") {
-      ctx.fillStyle = color;
+      ctx.fillStyle = series.pointColor || color;
       const pointsToDraw = series.pointMode === "last"
         ? [chartPoints[chartPoints.length - 1]].filter(Boolean)
         : chartPoints;
@@ -1024,7 +1027,7 @@ function drawXYChart(canvas, seriesList = [], options = null) {
     legendSeries.push({ ...series, legendIndex: idx });
   });
   const visibleLegend = legendSeries.slice(0, 10);
-  if (visibleLegend.length > 0) {
+  if (cfg.legendPosition !== "none" && visibleLegend.length > 0) {
   ctx.font = "11px \"Noto Sans\", \"DejaVu Sans\", \"Liberation Sans\", Arial, sans-serif";
     const sampleWidth = 18;
     const sampleGap = 8;
@@ -1068,7 +1071,7 @@ function drawXYChart(canvas, seriesList = [], options = null) {
       ctx.stroke();
       ctx.setLineDash([]);
       if (series.pointMode !== "none") {
-        ctx.fillStyle = series.color || defaultChartSeriesColor(series.legendIndex ?? idx);
+        ctx.fillStyle = series.pointColor || series.color || defaultChartSeriesColor(series.legendIndex ?? idx);
         ctx.beginPath();
         ctx.arc(sampleX + sampleWidth / 2, rowY, Math.min(3, series.pointSize || 2.4), 0, Math.PI * 2);
         ctx.fill();
@@ -1761,6 +1764,7 @@ function refreshChartWidgetRuntimeBody(root, widget, nodeMap = buildNodeNameMap(
       out.push(...seriesData.map((series, idx) => ({
         label: series.label || `${pair.xSource} -> ${pair.ySource}${seriesData.length > 1 ? ` [${idx}]` : ""}`,
         color: pair.color,
+        pointColor: pair.pointColor,
         showLine: pair.showLine,
         lineWidth: pair.lineWidth,
         lineStyle: pair.lineStyle,
@@ -1776,6 +1780,7 @@ function refreshChartWidgetRuntimeBody(root, widget, nodeMap = buildNodeNameMap(
       out.push(...instantSeriesData.map((series) => ({
         label: series.label || `${pair.xSource} -> ${pair.ySource}`,
         color: pair.color,
+        pointColor: pair.pointColor,
         showLine: pair.showLine,
         lineWidth: pair.lineWidth,
         lineStyle: pair.lineStyle,
@@ -2153,6 +2158,7 @@ function renderWidgets() {
           out.push(...seriesData.map((series, idx) => ({
             label: series.label || `${pair.xSource} -> ${pair.ySource}${seriesData.length > 1 ? ` [${idx}]` : ""}`,
             color: pair.color,
+            pointColor: pair.pointColor,
             showLine: pair.showLine,
             lineWidth: pair.lineWidth,
             lineStyle: pair.lineStyle,
@@ -2168,6 +2174,7 @@ function renderWidgets() {
           out.push(...instantSeriesData.map((series) => ({
             label: series.label || `${pair.xSource} -> ${pair.ySource}`,
             color: pair.color,
+            pointColor: pair.pointColor,
             showLine: pair.showLine,
             lineWidth: pair.lineWidth,
             lineStyle: pair.lineStyle,
@@ -3966,6 +3973,7 @@ function refreshWidgetConfigPanel(widget) {
           showTimeSeries: true,
           showInstantProfile: false,
           color: defaultChartSeriesColor(widget.xyPairs.length),
+          pointColor: defaultChartSeriesColor(widget.xyPairs.length),
           showLine: true,
           lineWidth: 2.2,
           lineStyle: "solid",
@@ -4072,31 +4080,27 @@ function refreshWidgetConfigPanel(widget) {
     const styleRow = document.createElement("div");
     styleRow.className = "chart-pair-style-row";
 
-    const colorInput = document.createElement("input");
-    colorInput.type = "color";
-    colorInput.value = /^#[0-9a-fA-F]{6}$/.test(String(pair.color ?? "")) ? String(pair.color) : defaultChartSeriesColor(activePairIndex);
-    setTooltipText(colorInput, t("widget.seriesColor"));
-    colorInput.addEventListener("change", () => {
+    const lineColorInput = document.createElement("input");
+    lineColorInput.type = "color";
+    lineColorInput.value = /^#[0-9a-fA-F]{6}$/.test(String(pair.color ?? "")) ? String(pair.color) : defaultChartSeriesColor(activePairIndex);
+    setTooltipText(lineColorInput, t("widget.lineColor"));
+    lineColorInput.addEventListener("change", () => {
       runAction(() => {
-        widget.xyPairs[activePairIndex].color = colorInput.value;
+        widget.xyPairs[activePairIndex].color = lineColorInput.value;
       });
     });
 
-    const lineLabel = document.createElement("label");
-    lineLabel.className = "menu-check compact-bool";
-    setTooltipText(lineLabel, t("widget.seriesLine"));
-    const lineInput = document.createElement("input");
-    lineInput.type = "checkbox";
-    lineInput.checked = pair.showLine !== false;
-    lineInput.addEventListener("change", () => {
+    const pointColorInput = document.createElement("input");
+    pointColorInput.type = "color";
+    pointColorInput.value = /^#[0-9a-fA-F]{6}$/.test(String(pair.pointColor ?? ""))
+      ? String(pair.pointColor)
+      : (/^#[0-9a-fA-F]{6}$/.test(String(pair.color ?? "")) ? String(pair.color) : defaultChartSeriesColor(activePairIndex));
+    setTooltipText(pointColorInput, t("widget.pointColor"));
+    pointColorInput.addEventListener("change", () => {
       runAction(() => {
-        widget.xyPairs[activePairIndex].showLine = lineInput.checked;
+        widget.xyPairs[activePairIndex].pointColor = pointColorInput.value;
       });
     });
-    const lineText = document.createElement("span");
-    lineText.textContent = t("widget.seriesLine");
-    lineLabel.appendChild(lineInput);
-    lineLabel.appendChild(lineText);
 
     const pointsSelect = document.createElement("select");
     setTooltipText(pointsSelect, t("widget.seriesPoints"));
@@ -4111,6 +4115,7 @@ function refreshWidgetConfigPanel(widget) {
       runAction(() => {
         widget.xyPairs[activePairIndex].pointMode = pointsSelect.value;
       });
+      updateSeriesStyleControls();
     });
 
     const pointSizeInput = document.createElement("input");
@@ -4128,17 +4133,23 @@ function refreshWidgetConfigPanel(widget) {
 
     const lineStyleSelect = document.createElement("select");
     setTooltipText(lineStyleSelect, t("widget.lineStyle"));
-    ["solid", "dashed", "dotted"].forEach((mode) => {
+    ["none", "solid", "dashed", "dotted"].forEach((mode) => {
       const opt = document.createElement("option");
       opt.value = mode;
       opt.textContent = t(`widget.lineStyleMode.${mode}`);
       lineStyleSelect.appendChild(opt);
     });
-    lineStyleSelect.value = normalizeChartLineStyle(pair.lineStyle);
+    lineStyleSelect.value = pair.showLine === false ? "none" : normalizeChartLineStyle(pair.lineStyle);
     lineStyleSelect.addEventListener("change", () => {
       runAction(() => {
+        if (lineStyleSelect.value === "none") {
+          widget.xyPairs[activePairIndex].showLine = false;
+          return;
+        }
+        widget.xyPairs[activePairIndex].showLine = true;
         widget.xyPairs[activePairIndex].lineStyle = normalizeChartLineStyle(lineStyleSelect.value);
       });
+      refreshWidgetConfigPanel(widget);
     });
 
     const lineWidthInput = document.createElement("input");
@@ -4154,17 +4165,28 @@ function refreshWidgetConfigPanel(widget) {
       });
     });
 
+    const updateSeriesStyleControls = () => {
+      const lineDisabled = lineStyleSelect.value === "none";
+      const pointsDisabled = pointsSelect.value === "none";
+      lineWidthInput.disabled = lineDisabled;
+      pointSizeInput.disabled = pointsDisabled;
+      lineColorInput.disabled = lineDisabled;
+      pointColorInput.disabled = pointsDisabled;
+    };
+
     const primaryStyleRow = document.createElement("div");
     primaryStyleRow.className = "chart-pair-style-main";
-    primaryStyleRow.appendChild(colorInput);
-    primaryStyleRow.appendChild(lineLabel);
     primaryStyleRow.appendChild(createCompactField("widget.lineStyle", lineStyleSelect));
-    primaryStyleRow.appendChild(createCompactField("widget.lineWidth", lineWidthInput));
+    primaryStyleRow.appendChild(createCompactField("widget.lineWidthShort", lineWidthInput));
+    primaryStyleRow.appendChild(createCompactField("widget.seriesPoints", pointsSelect));
+    primaryStyleRow.appendChild(createCompactField("widget.pointSizeShort", pointSizeInput));
 
     const secondaryStyleRow = document.createElement("div");
     secondaryStyleRow.className = "chart-pair-style-secondary";
-    secondaryStyleRow.appendChild(createCompactField("widget.seriesPoints", pointsSelect));
-    secondaryStyleRow.appendChild(createCompactField("widget.pointSize", pointSizeInput));
+    secondaryStyleRow.appendChild(createCompactField("widget.lineColor", lineColorInput));
+    secondaryStyleRow.appendChild(createCompactField("widget.pointColor", pointColorInput));
+
+    updateSeriesStyleControls();
 
     styleRow.appendChild(primaryStyleRow);
     styleRow.appendChild(secondaryStyleRow);
@@ -4257,7 +4279,7 @@ function refreshWidgetConfigPanel(widget) {
   chartAxisSection.appendChild(gridLabel);
 
   const legendPositionSelect = document.createElement("select");
-  ["top-right", "top-left", "bottom-right", "bottom-left"].forEach((pos) => {
+  ["none", "top-right", "top-left", "bottom-right", "bottom-left"].forEach((pos) => {
     const opt = document.createElement("option");
     opt.value = pos;
     opt.textContent = t(`widget.legendPositionMode.${pos}`);

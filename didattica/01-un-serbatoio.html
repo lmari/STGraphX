@@ -1,0 +1,87 @@
+<!doctype html>
+<html lang="it">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Un serbatoio: il primo modello dinamico — STGraphX</title>
+    <script src="../player-runtime-loader.js"></script>
+    <style>
+      :root { --ink: #203541; --muted: #5c6c73; --paper: #fcfcf8; --line: #d9e2df; --accent: #1479b8; --soft: #eaf4f8; }
+      * { box-sizing: border-box; }
+      body { margin: 0; color: var(--ink); background: var(--paper); font: 18px/1.62 Georgia, "Iowan Old Style", "Palatino Linotype", serif; }
+      main { width: min(1120px, calc(100% - 40px)); margin: 0 auto; }
+      .masthead { border-bottom: 1px solid var(--line); padding: 20px 0 18px; color: var(--muted); font: 14px/1.4 system-ui, sans-serif; letter-spacing: .03em; }
+      article { max-width: 760px; padding: 52px 0 36px; }
+      .eyebrow { margin: 0 0 10px; color: var(--accent); font: 700 14px/1.2 system-ui, sans-serif; letter-spacing: .08em; text-transform: uppercase; }
+      h1 { max-width: 680px; margin: 0 0 20px; font-size: clamp(2.15rem, 5vw, 3.45rem); line-height: 1.08; letter-spacing: -.025em; }
+      h2 { margin: 2.4em 0 .55em; font-size: 1.55rem; line-height: 1.2; }
+      p { margin: 0 0 1.1em; }
+      .lead { color: #40545c; font-size: 1.22rem; line-height: 1.55; }
+      .key-idea { margin: 30px 0; padding: 20px 24px; border-left: 4px solid var(--accent); background: var(--soft); }
+      .key-idea p:last-child { margin-bottom: 0; }
+      .formula { margin: 24px 0; padding: 16px 20px; overflow-x: auto; border: 1px solid var(--line); background: #fff; font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: .92em; }
+      .lab { width: min(1120px, calc(100vw - 40px)); margin: 38px 0 42px; padding: 28px; border: 1px solid var(--line); background: #fff; box-shadow: 0 12px 28px rgb(31 53 65 / .08); }
+      .lab h2 { margin: 0 0 .35em; }
+      .lab-intro { max-width: 720px; color: var(--muted); }
+      stgraphx-player { display: block; min-height: 610px; margin-top: 22px; }
+      .experiment { margin: 24px 0 0; padding: 20px 24px; background: #f5f8f7; }
+      .experiment h3 { margin: 0 0 .45em; font-size: 1.1rem; }
+      .experiment ol { margin: .4em 0 0; padding-left: 1.35em; }
+      .experiment li + li { margin-top: .25em; }
+      .distinction { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; margin: 26px 0; }
+      .distinction section { padding: 18px 20px; border-top: 3px solid var(--accent); background: #f6f8f7; }
+      .distinction h3 { margin: 0 0 .35em; font: 700 .85rem/1.2 system-ui, sans-serif; letter-spacing: .05em; text-transform: uppercase; }
+      .distinction p { margin: 0; font-size: .94em; }
+      .question { margin: 30px 0; padding: 22px 24px; border: 1px solid #bed6e3; background: #f1f8fb; }
+      .question strong { color: #095b8f; }
+      @media (max-width: 700px) { article { padding-top: 34px; } .lab { padding: 18px; } .distinction { grid-template-columns: 1fr; } stgraphx-player { min-height: 520px; } }
+    </style>
+  </head>
+  <body>
+    <main>
+      <header class="masthead">STGraphX · Introduzione alla modellistica dei sistemi dinamici</header>
+      <article>
+        <p class="eyebrow">Capitolo 1 · Accumulazioni</p>
+        <h1>Un serbatoio non è un istante</h1>
+        <p class="lead">Se in un serbatoio entrano e ne escono quantità d’acqua, il suo livello non dipende soltanto da ciò che accade ora: dipende da quanto vi si è accumulato fino a ora. Questa semplice distinzione è il punto di partenza per pensare dinamicamente.</p>
+        <p>Chiamiamo <em>afflusso</em> la quantità che entra per unità di tempo e <em>deflusso</em> quella che esce. La quantità d’acqua contenuta nel serbatoio è invece uno <em>stock</em>: una grandezza che conserva la traccia del passato.</p>
+        <aside class="key-idea">
+          <p><strong>Idea chiave.</strong> I flussi dicono quanto velocemente cambia qualcosa; uno stock dice quanto ce n’è. Confondere i due significa perdere il meccanismo che produce il comportamento nel tempo.</p>
+        </aside>
+        <p>Se l’afflusso resta maggiore del deflusso, lo stock cresce. Se è minore, diminuisce. Se i due flussi sono uguali, il livello resta costante: non perché non accada nulla, ma perché entrate e uscite si compensano.</p>
+        <div class="formula">variazione dell’acqua = afflusso − deflusso<br>acqua al passo successivo = acqua attuale + variazione × intervallo di tempo</div>
+      </article>
+
+      <section class="lab" aria-labelledby="laboratorio">
+        <h2 id="laboratorio">Laboratorio: esplorare un bilancio</h2>
+        <p class="lab-intro">Il grafo rende esplicita l’ipotesi del modello; gli slider rendono modificabili due condizioni; il grafico mostra la conseguenza nel tempo. Avvia l’esecuzione con <em>Esegui</em> dopo ogni modifica.</p>
+        <stgraphx-player src="modelli/serbatoio-elementare.json" lang="it" zoom="0.82" controls="full"></stgraphx-player>
+        <div class="experiment">
+          <h3>Un esperimento guidato</h3>
+          <ol>
+            <li>Conserva i valori iniziali: afflusso 5, deflusso 3. Prima di eseguire, prevedi la forma del grafico.</li>
+            <li>Porta il deflusso a 5. Che cosa cambia nel grafico? Quale processo continua comunque ad avvenire?</li>
+            <li>Porta il deflusso a 7. In quale istante il serbatoio si svuoterebbe, se il modello non imponesse un limite inferiore?</li>
+          </ol>
+        </div>
+      </section>
+
+      <article>
+        <h2>Che cosa il modello afferma — e che cosa tace</h2>
+        <p>Questo modello è deliberatamente essenziale. Assume che afflusso e deflusso siano costanti e indipendenti dal livello dell’acqua. Non descrive una valvola, la geometria del serbatoio, né il fatto fisico che la quantità d’acqua non possa diventare negativa. Non sono difetti nascosti: sono scelte di confine che vanno dichiarate.</p>
+        <div class="distinction">
+          <section>
+            <h3>Modellistica</h3>
+            <p>Decidere quali grandezze rappresentare, quali relazioni assumere e per quale domanda il modello sia adeguato.</p>
+          </section>
+          <section>
+            <h3>Uso di STGraphX</h3>
+            <p>Esprimere queste decisioni in nodi, legami, formule, condizioni iniziali, widget e simulazioni confrontabili.</p>
+          </section>
+        </div>
+        <p>STGraphX non decide al posto nostro che cosa sia rilevante; ci costringe però a rendere le decisioni abbastanza precise da poterle osservare nelle loro conseguenze. In questo senso il modello non è solo un risultato: è una domanda resa esplorabile.</p>
+        <aside class="question"><strong>Per continuare.</strong> Come cambierebbe il modello se il deflusso aumentasse quando aumenta il livello dell’acqua? Qui comparirebbe una prima retroazione: lo stock non sarebbe più soltanto l’esito dei flussi, ma contribuirebbe a determinarne uno.</aside>
+      </article>
+    </main>
+  </body>
+</html>

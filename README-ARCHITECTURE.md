@@ -165,6 +165,20 @@ Questi wrapper preferiscono:
 
 Le API esposte imitano il più possibile gli handle del File System Access API del browser, così il renderer non deve conoscere la piattaforma concreta.
 
+### Shared platform layer
+
+Il bridge desktop non definisce più direttamente gli handle e le API di piattaforma dentro il preload. La logica condivisa è ora isolata in:
+
+- `platform/path-handles.js`
+- `platform/install-platform.js`
+- `platform/electron-platform.js`
+
+In questo modo:
+
+- `electron/preload.js` resta un adapter sottile;
+- gli handle file/cartella restano riusabili;
+- l'app è preparata a future shell desktop alternative, per esempio Tauri, senza toccare la logica del renderer.
+
 ## Packaging
 
 Il packaging desktop usa `electron-builder` via `package.json`.
