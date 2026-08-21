@@ -7,19 +7,22 @@
     "showGrid": true,
     "highlightNodeEdges": false,
     "gridSize": 20,
+    "tooltipDelayMs": 300,
     "scrollLeft": 180,
     "scrollTop": 180
   },
   "debug": {
-    "watches": [],
-    "breakpointEnabled": false,
-    "breakpointExpression": ""
+    "watches": [
+      "n3"
+    ],
+    "breakpointEnabled": true,
+    "breakpointExpression": "n3>20"
   },
   "modelProperties": [],
-  "nodeCounter": 12,
-  "edgeCounter": 10,
-  "widgetCounter": 5,
-  "textItemCounter": 4,
+  "nodeCounter": 13,
+  "edgeCounter": 11,
+  "widgetCounter": 6,
+  "textItemCounter": 5,
   "execution": {
     "t0": 0,
     "dt": 1,
@@ -64,7 +67,15 @@
         ],
         "outputs": [
           "n1"
-        ]
+        ],
+        "inputDetails": {
+          "in1": {
+            "description": "valore iniziale"
+          },
+          "in2": {
+            "description": "incremento"
+          }
+        }
       }
     },
     {
@@ -97,7 +108,12 @@
         ],
         "outputs": [
           "n1"
-        ]
+        ],
+        "inputDetails": {
+          "n0": {
+            "description": ""
+          }
+        }
       }
     },
     {
@@ -239,6 +255,8 @@
       "max": 100,
       "step": 1,
       "value": 0,
+      "falseLabel": "",
+      "trueLabel": "",
       "options": [],
       "mappings": [],
       "columns": [

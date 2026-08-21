@@ -7,6 +7,7 @@
     "showGrid": true,
     "highlightNodeEdges": false,
     "gridSize": 20,
+    "tooltipDelayMs": 300,
     "scrollLeft": 208,
     "scrollTop": 326
   },
@@ -16,10 +17,10 @@
     "breakpointExpression": ""
   },
   "modelProperties": [],
-  "nodeCounter": 7,
-  "edgeCounter": 6,
-  "widgetCounter": 3,
-  "textItemCounter": 3,
+  "nodeCounter": 8,
+  "edgeCounter": 7,
+  "widgetCounter": 4,
+  "textItemCounter": 4,
   "execution": {
     "t0": 0,
     "dt": 0.01,
@@ -237,6 +238,7 @@
           "showTimeSeries": true,
           "showInstantProfile": false,
           "color": "#0e7ac4",
+          "pointColor": "#44c40e",
           "showLine": false,
           "lineWidth": 2.2,
           "lineStyle": "solid",

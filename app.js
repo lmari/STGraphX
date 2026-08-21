@@ -268,6 +268,22 @@ const expressionEditorSwitchDiscardBtn = document.getElementById("expressionEdit
 const expressionEditorSwitchApplyBtn = document.getElementById("expressionEditorSwitchApplyBtn");
 const appTooltip = document.getElementById("appTooltip");
 
+window.__stgraphxBootError = null;
+window.addEventListener("error", (event) => {
+  const message = event?.error?.stack || event?.message || "Unknown error";
+  window.__stgraphxBootError = String(message);
+  if (statusText && !statusText.textContent) {
+    statusText.textContent = String(message);
+  }
+});
+window.addEventListener("unhandledrejection", (event) => {
+  const reason = event?.reason?.stack || event?.reason?.message || event?.reason || "Unhandled promise rejection";
+  window.__stgraphxBootError = String(reason);
+  if (statusText && !statusText.textContent) {
+    statusText.textContent = String(reason);
+  }
+});
+
 const {
   addCanvasText,
   addLedWidget,
@@ -292,6 +308,7 @@ const {
   clearAllXYChartPoints,
   clearAllTableWidgetRows,
   refreshRuntimeView,
+  refreshWidgetFrame,
   startEdgeCreateFromNode,
   startEdgeCreateFromMouse,
   updateEdgeCreateFromClient,
@@ -332,6 +349,7 @@ const RECENT_MODELS_STORAGE_KEY = "stgraphx.recentModels.v1";
 const MODEL_CLIPBOARD_STORAGE_KEY = "stgraphx.modelClipboard.v1";
 const MODEL_CLIPBOARD_PREFIX = "STGraphX clipboard v1\n";
 const MAX_RECENT_MODELS = 8;
+const SUBMODEL_DEFERRED_RESOLUTION = "__submodel_deferred_resolution__";
 const NODE_FILL_COLOR_PRESETS = [
   { key: "default", value: "" },
   { key: "blue", value: "#dff2ff" },
@@ -395,6 +413,152 @@ function normalizeTableColumnName(column) {
 }
 
 const graphFunctionHelpers = globalThis.GraphFunctions?.helpers || {};
+const recentModelsStore = globalThis.STGraphXRecentModels?.createRecentModelsStore({
+  storageKey: RECENT_MODELS_STORAGE_KEY,
+  maxEntries: MAX_RECENT_MODELS,
+  getHandlePath: extractFileHandlePath,
+  supportsPaths: supportsRecentModelPaths,
+  createHandleFromPath(filePath) {
+    return window.STGraphXPlatform.createFileHandleFromPath(filePath);
+  },
+  unnamedLabel: () => t("file.unnamed"),
+});
+
+if (!recentModelsStore) {
+  throw new Error("STGraphX recent models helpers are unavailable");
+}
+
+const modelSessionHelpers = globalThis.STGraphXModelSession?.createModelSessionHelpers({
+  deriveDirectoryHandleFromFileHandle,
+  hasPlatformApi,
+  getPlatform: () => window.STGraphXPlatform,
+  normalizeSubmodelPath,
+  basenameOfSubmodelPath,
+  buildRuntimeModelFromData,
+  showSaveFilePickerCompat,
+  normalizeJsonFilename,
+  normalizeCsvFilename,
+});
+
+if (!modelSessionHelpers) {
+  throw new Error("STGraphX model session helpers are unavailable");
+}
+
+const modelPersistenceHelpers = globalThis.STGraphXModelPersistence?.createModelPersistenceHelpers();
+
+if (!modelPersistenceHelpers) {
+  throw new Error("STGraphX model persistence helpers are unavailable");
+}
+
+const modelLoadingHelpers = globalThis.STGraphXModelLoading?.createModelLoadingHelpers({
+  deriveDirectoryHandleFromFileHandle,
+  loadGraphFromJsonText,
+  rememberRecentModel,
+  preloadSubmodelsAfterLoad,
+  maybeSelectModelDirectoryForSubmodels,
+  prepareSelectedJsonEntries,
+  resolveRecentModelHandle,
+  supportsOpenFilePicker,
+  showOpenFilePickerCompat,
+  pickSubmodelFilesWithInput,
+  notifyMissingRecentModelEntry,
+  isLoadCancelledError: (err) => err && (err.name === "AbortError" || String(err.message || "") === t("error.loadCancelled")),
+  beforeOpenInNewTab() {
+    saveActiveWorkspaceTabState();
+    closeDocumentTransientUi();
+    const previousActiveTabId = workspace.activeTabId;
+    workspace.activeTabId = null;
+    modelContextStack.length = 0;
+    return { previousActiveTabId };
+  },
+  afterOpenInNewTab() {
+    createWorkspaceTabFromCurrentState({ activate: true });
+    refreshWorkspaceTabBar();
+  },
+  onOpenPreparedStart() {
+    submodelTemplateCache.clear();
+    submodelFileHandleCache.clear();
+    submodelSourceCache.clear();
+  },
+  onOpenPreparedFailure(checkpoint) {
+    workspace.activeTabId = checkpoint?.previousActiveTabId ?? workspace.activeTabId ?? null;
+    refreshWorkspaceTabBar();
+  },
+});
+
+if (!modelLoadingHelpers) {
+  throw new Error("STGraphX model loading helpers are unavailable");
+}
+
+const submodelSupportHelpers = globalThis.STGraphXSubmodelSupport?.createSubmodelSupportHelpers({
+  normalizeSubmodelPath,
+  basenameOfSubmodelPath,
+  parseSelectedJsonEntry,
+  buildRuntimeModelFromData,
+  descriptionPropertyKeys,
+  supportsOpenFilePicker,
+  showOpenFilePickerCompat,
+  pickSubmodelFilesWithInput,
+  getCurrentModelDirectoryHandle: () => currentModelDirectoryHandle,
+  deriveDirectoryHandleFromCurrentFile: () => deriveDirectoryHandleFromFileHandle(currentFileHandle),
+  setCurrentModelDirectoryHandle: (handle) => {
+    currentModelDirectoryHandle = handle || null;
+  },
+  ensureCurrentModelDirectoryHandle,
+  supportsDirectoryInputSelection,
+  supportsDirectoryPicker,
+  confirmSelectModelFolder: () => window.confirm(t("confirm.selectModelFolder")),
+  onModelFolderSelected: () => setStatusKey("status.modelFolderSelected"),
+  hasCachedSubmodel: (name) => Boolean(name && (submodelSourceCache.has(name) || submodelTemplateCache.has(name))),
+  cacheSubmodel: (baseName, payload) => {
+    submodelSourceCache.set(baseName, payload.text);
+    if (payload.fileHandle) {
+      submodelFileHandleCache.set(baseName, payload.fileHandle);
+    }
+    if (payload.template) {
+      submodelTemplateCache.set(baseName, payload.template);
+    }
+  },
+  invalidJsonMessage: () => t("error.invalidJson"),
+});
+
+if (!submodelSupportHelpers) {
+  throw new Error("STGraphX submodel support helpers are unavailable");
+}
+
+const submodelResolutionHelpers = globalThis.STGraphXSubmodelResolution?.createSubmodelResolutionHelpers({
+  normalizeSubmodelPath,
+  basenameOfSubmodelPath,
+  buildRuntimeModelFromData,
+  extractSubmodelInterfaceFromData: (data) => submodelSupportHelpers.extractSubmodelInterfaceFromData(data),
+  supportsDirectoryInputSelection,
+  supportsDirectoryPicker,
+  ensureCurrentModelDirectoryHandle,
+  supportsOpenFilePicker,
+  showOpenFilePickerCompat,
+  pickSubmodelFileWithInput,
+  t,
+  getCurrentModelDirectoryHandle: () => currentModelDirectoryHandle,
+  getCachedSubmodelHandle: (name) => submodelFileHandleCache.get(name),
+  deleteCachedSubmodelHandle: (name) => submodelFileHandleCache.delete(name),
+  getCachedSubmodelSource: (name) => submodelSourceCache.get(name),
+  hasCachedSubmodelSource: (name) => submodelSourceCache.has(name),
+  cacheResolvedSubmodel: (name, payload) => {
+    submodelSourceCache.set(name, payload.text);
+    if (payload.fileHandle) {
+      submodelFileHandleCache.set(name, payload.fileHandle);
+    }
+  },
+  hasSubmodelTemplate: (name) => submodelTemplateCache.has(name),
+  getSubmodelTemplate: (name) => submodelTemplateCache.get(name),
+  setSubmodelTemplate: (name, template) => submodelTemplateCache.set(name, template),
+  isSubmodelNode,
+  deferredResolutionToken: SUBMODEL_DEFERRED_RESOLUTION,
+});
+
+if (!submodelResolutionHelpers) {
+  throw new Error("STGraphX submodel resolution helpers are unavailable");
+}
 
 function appendUniqueNames(target, names) {
   (names || []).forEach((name) => {
@@ -532,17 +696,11 @@ function persistSharedModelClipboard(raw) {
     window.localStorage.setItem(MODEL_CLIPBOARD_STORAGE_KEY, raw);
   } catch {}
   try {
-    globalThis.STGraphXPlatform?.writeClipboardText?.(raw);
+    void Promise.resolve(globalThis.STGraphXPlatform?.writeClipboardText?.(raw)).catch(() => {});
   } catch {}
 }
 
-function readSharedModelClipboardRaw() {
-  try {
-    const platformText = globalThis.STGraphXPlatform?.readClipboardText?.();
-    if (parseModelClipboardPayload(platformText)) {
-      return String(platformText);
-    }
-  } catch {}
+function readStoredModelClipboardRaw() {
   try {
     const stored = window.localStorage.getItem(MODEL_CLIPBOARD_STORAGE_KEY);
     if (parseModelClipboardPayload(stored)) {
@@ -552,8 +710,18 @@ function readSharedModelClipboardRaw() {
   return "";
 }
 
-function syncClipboardFromSharedSource() {
-  const raw = readSharedModelClipboardRaw();
+async function readSharedModelClipboardRaw() {
+  try {
+    const platformText = await Promise.resolve(globalThis.STGraphXPlatform?.readClipboardText?.());
+    if (parseModelClipboardPayload(platformText)) {
+      return String(platformText);
+    }
+  } catch {}
+  return readStoredModelClipboardRaw();
+}
+
+async function syncClipboardFromSharedSource() {
+  const raw = await readSharedModelClipboardRaw();
   if (!raw) {
     return false;
   }
@@ -580,7 +748,6 @@ let lastSavedSnapshot = "";
 let currentFileHandle = null;
 let currentFileName = "";
 let currentModelDirectoryHandle = null;
-let recentModelEntries = [];
 const modelContextStack = [];
 const workspace = {
   tabs: [],
@@ -590,7 +757,6 @@ const workspace = {
 const submodelTemplateCache = new Map();
 const submodelFileHandleCache = new Map();
 const submodelSourceCache = new Map();
-const SUBMODEL_DEFERRED_RESOLUTION = "__submodel_deferred_resolution__";
 const READ_DATA_CALL_PATTERN = /\breadData\s*\(/;
 const READ_DATA_LITERAL_CALL_PATTERN = /\breadData\s*\(\s*(['"])((?:\\.|(?!\1).)*)\1\s*\)/g;
 function descriptionPropertyKey() {
@@ -607,192 +773,6 @@ function formulaNotesPropertyKey() {
 
 function formulaNotesPropertyKeys() {
   return new Set(["note formula", "formula notes"]);
-}
-
-function ensureDebugConfig(model = graph) {
-  if (!model.debug || typeof model.debug !== "object") {
-    model.debug = {};
-  }
-  if (!Array.isArray(model.debug.watches)) {
-    model.debug.watches = [];
-  }
-  model.debug.breakpointEnabled = Boolean(model.debug.breakpointEnabled);
-  model.debug.breakpointExpression = String(model.debug.breakpointExpression ?? "");
-  return model.debug;
-}
-
-function sanitizeDebugConfig(model = graph) {
-  const debug = ensureDebugConfig(model);
-  const validNames = new Set((model?.nodes || []).map((node) => String(node?.name ?? "").trim()).filter(Boolean));
-  debug.watches = [...new Set(
-    debug.watches
-      .map((name) => String(name ?? "").trim())
-      .filter((name) => validNames.has(name)),
-  )];
-  debug.breakpointEnabled = Boolean(debug.breakpointEnabled);
-  debug.breakpointExpression = String(debug.breakpointExpression ?? "");
-  return debug;
-}
-
-function ensureLocalFunctions(model = graph) {
-  if (!Array.isArray(model.localFunctions)) {
-    model.localFunctions = [];
-  }
-  return model.localFunctions;
-}
-
-function sanitizeLocalFunctionName(name) {
-  return String(name ?? "").trim();
-}
-
-function sanitizeLocalFunctionParams(params) {
-  if (Array.isArray(params)) {
-    return params.map((param) => sanitizeLocalFunctionName(param)).filter(Boolean);
-  }
-  return String(params ?? "")
-    .split(",")
-    .map((param) => sanitizeLocalFunctionName(param))
-    .filter(Boolean);
-}
-
-function sanitizeLocalFunctionDefinition(definition = {}) {
-  return runtimeShared.sanitizeLocalFunctionDefinition(definition);
-}
-
-function sanitizeLocalFunctions(model = graph) {
-  const definitions = ensureLocalFunctions(model)
-    .map((definition) => sanitizeLocalFunctionDefinition(definition))
-    .filter((definition) => definition.name);
-  model.localFunctions = definitions;
-  return definitions;
-}
-
-function localFunctionMapForModel(model = graph) {
-  return semantics.normalizeLocalFunctionDefinitions(sanitizeLocalFunctions(model));
-}
-
-function localFunctionNamesForModel(model = graph) {
-  return Array.from(localFunctionMapForModel(model).keys());
-}
-
-function localFunctionSignature(definition) {
-  const sanitized = sanitizeLocalFunctionDefinition(definition);
-  return `${sanitized.name}(${sanitized.params.join(", ")})`;
-}
-
-function localFunctionCallNames(expression, availableNames) {
-  const names = new Set();
-  const source = String(expression ?? "");
-  const pattern = /\b([A-Za-z_][A-Za-z0-9_]*)\s*\(/g;
-  let match = null;
-  while ((match = pattern.exec(source))) {
-    const name = String(match[1] ?? "").trim();
-    if (name && availableNames.has(name)) {
-      names.add(name);
-    }
-  }
-  return names;
-}
-
-function validateLocalFunctions(definitions, options = {}) {
-  const sanitized = definitions.map((definition) => sanitizeLocalFunctionDefinition(definition));
-  const nodeNameSet = new Set((options.model?.nodes || graph.nodes || []).map((node) => String(node?.name ?? "").trim()).filter(Boolean));
-  const nameSet = new Set();
-  const order = [];
-  for (const definition of sanitized) {
-    if (!definition.name) {
-      return { ok: false, message: t("localFunctions.error.nameRequired") };
-    }
-    if (!semantics.isValidVariableName(definition.name)) {
-      return { ok: false, message: t("localFunctions.error.invalidName", { name: definition.name }) };
-    }
-    if (semantics.isReservedWord(definition.name) || semantics.isFunctionName(definition.name)) {
-      return { ok: false, message: t("localFunctions.error.reservedName", { name: definition.name }) };
-    }
-    if (nameSet.has(definition.name)) {
-      return { ok: false, message: t("localFunctions.error.duplicateName", { name: definition.name }) };
-    }
-    if (nodeNameSet.has(definition.name)) {
-      return { ok: false, message: t("localFunctions.error.conflictNode", { name: definition.name }) };
-    }
-    nameSet.add(definition.name);
-    order.push(definition.name);
-    const paramSet = new Set();
-    for (const paramName of definition.params) {
-      if (!semantics.isValidVariableName(paramName) || semantics.isReservedWord(paramName) || semantics.isFunctionName(paramName)) {
-        return { ok: false, message: t("localFunctions.error.invalidParam", { name: paramName, fn: definition.name }) };
-      }
-      if (paramSet.has(paramName)) {
-        return { ok: false, message: t("localFunctions.error.duplicateParam", { name: paramName, fn: definition.name }) };
-      }
-      paramSet.add(paramName);
-    }
-    if (!definition.expression) {
-      return { ok: false, message: t("localFunctions.error.expressionRequired", { fn: definition.name }) };
-    }
-  }
-
-  const dependencies = new Map();
-  sanitized.forEach((definition) => {
-    const validation = semantics.validateExpressionSyntax(definition.expression, definition.params, {
-      allowThisAlias: false,
-      allowIntegral: false,
-      localFunctions: sanitized,
-    });
-    if (!validation.ok) {
-      return dependencies.set(definition.name, {
-        error: t("localFunctions.error.invalidExpression", {
-          fn: definition.name,
-          reason: localizeExpressionErrorMessage(validation.message || ""),
-        }),
-      });
-    }
-    dependencies.set(definition.name, {
-      calls: localFunctionCallNames(definition.expression, nameSet),
-    });
-  });
-  for (const entry of dependencies.values()) {
-    if (entry?.error) {
-      return { ok: false, message: entry.error };
-    }
-  }
-
-  const visiting = new Set();
-  const visited = new Set();
-  const visit = (name, stack = []) => {
-    if (visiting.has(name)) {
-      return stack.concat(name);
-    }
-    if (visited.has(name)) {
-      return null;
-    }
-    visiting.add(name);
-    const calls = dependencies.get(name)?.calls || new Set();
-    for (const calledName of calls) {
-      const cycle = visit(calledName, [...stack, name]);
-      if (cycle) {
-        return cycle;
-      }
-    }
-    visiting.delete(name);
-    visited.add(name);
-    return null;
-  };
-  for (const name of order) {
-    const cycle = visit(name, []);
-    if (cycle) {
-      return { ok: false, message: t("localFunctions.error.cycle", { chain: cycle.join(" -> ") }) };
-    }
-  }
-
-  if (options.requireAtLeastOne && sanitized.length === 0) {
-    return { ok: false, message: t("localFunctions.error.empty") };
-  }
-  return { ok: true, definitions: sanitized };
-}
-
-function localFunctionsForSemantics(model = graph) {
-  return sanitizeLocalFunctions(model);
 }
 
 function commitDebugConfigChange(mutator) {
@@ -900,6 +880,174 @@ const ui = {
   touchHold: null,
   lastMenuTouchAt: 0,
 };
+
+const submodelOrchestrationHelpers = globalThis.STGraphXSubmodelOrchestration?.createSubmodelOrchestrationHelpers({
+  graph,
+  ui,
+  t,
+  isSubmodelNode,
+  normalizeSubmodelPath,
+  loadSubmodelTemplateByPath,
+  loadSubmodelInterfaceByPath,
+  resolveSubmodelFileByPath,
+  isDeferredSubmodelResolutionError,
+  getNodeDescription,
+  emptySubmodelInterfaceCache,
+  normalizeSubmodelInterfaceCache,
+  sanitizeSubmodelBindings,
+  sanitizeAllEdgesForNode,
+  refreshSidebar,
+  render,
+  setStatusKey,
+  invalidateExecutionPlan,
+  scheduleFileStatusRefresh,
+  deriveDirectoryHandleFromFileHandle,
+  loadGraphFromJsonText,
+  preloadSubmodelsAfterLoadRef: () => preloadSubmodelsAfterLoad(),
+  captureCurrentModelContext,
+  pushModelContext: (context) => {
+    modelContextStack.push(context);
+  },
+  beforeOpenSubmodelInNewTab() {
+    const previousActiveTabId = workspace.activeTabId;
+    saveActiveWorkspaceTabState();
+    closeDocumentTransientUi();
+    workspace.activeTabId = null;
+    modelContextStack.length = 0;
+    return { previousActiveTabId };
+  },
+  afterOpenSubmodelInNewTab(node, checkpoint) {
+    createWorkspaceTabFromCurrentState({
+      activate: true,
+      meta: {
+        kind: "submodel",
+        parentTabId: checkpoint?.previousActiveTabId ?? null,
+        parentNodeName: String(node?.name || ""),
+        parentTitle: checkpoint?.previousActiveTabId != null
+          ? displayFileNameFromContext(getWorkspaceTabById(checkpoint.previousActiveTabId)?.state?.context)
+          : "",
+      },
+    });
+    refreshWorkspaceTabBar();
+  },
+  onOpenSubmodelInNewTabFailure(checkpoint) {
+    workspace.activeTabId = workspace.activeTabId || checkpoint?.previousActiveTabId || null;
+    refreshWorkspaceTabBar();
+  },
+});
+
+if (!submodelOrchestrationHelpers) {
+  throw new Error("STGraphX submodel orchestration helpers are unavailable");
+}
+
+const helpContentHelpers = globalThis.STGraphXHelpContent?.createHelpContentHelpers({
+  t,
+  hasPlatformApi,
+  getCurrentLang: () => currentLang,
+  openPreparedJsonEntryInNewTab,
+  setStatus,
+  setStatusKey,
+  closeTopMenus,
+  normalizeJsonFilename,
+  copyTextToClipboard,
+  supportsSaveFilePicker,
+  showSaveFilePickerCompat,
+  writeTextToFileHandle,
+  getGraph: () => graph,
+  getCurrentFileName: () => currentFileName,
+  getCurrentModelTitle: () => graph?.modelTitle || "",
+  getNodeDescription,
+  isStateNode,
+  isAlgebraicNode,
+  isSubmodelNode,
+  examplesHelpModal,
+  examplesHelpTitle,
+  examplesHelpIntro,
+  examplesHelpContent,
+  eightTupleModal,
+  eightTupleContent,
+  eightTupleCopyBtn,
+  eightTupleExportBtn,
+  aboutAppModal,
+  aboutAppVersionValue,
+  aboutAppAuthorValue,
+  aboutAppLicenseValue,
+  aboutAppCopyrightValue,
+});
+
+if (!helpContentHelpers) {
+  throw new Error("STGraphX help content helpers are unavailable");
+}
+
+const modelAnalysisUiHelpers = globalThis.STGraphXModelAnalysisUi?.createModelAnalysisUiHelpers({
+  t,
+  modelAnalysisModal,
+  modelAnalysisSummary,
+  modelAnalysisContent,
+  modelAnalysisChecksModal,
+  modelAnalysisChecksContent,
+  analyzeModelStaticIssues,
+  setStatusKey,
+  onFocusIssueTarget: focusAnalysisIssueTarget,
+});
+
+if (!modelAnalysisUiHelpers) {
+  throw new Error("STGraphX model analysis UI helpers are unavailable");
+}
+
+const watchDebuggerUiHelpers = globalThis.STGraphXWatchDebuggerUi?.createWatchDebuggerUiHelpers({
+  t,
+  watchDebuggerModal,
+  watchDebuggerSummary,
+  watchBreakpointEnabledInput,
+  watchBreakpointInput,
+  watchBreakpointStatus,
+  watchAddSelectedBtn,
+  watchDebuggerList,
+  isEditingUiLocked,
+  getDebugConfig: () => sanitizeDebugConfig(graph),
+  getSelectedWatchableNode: () => selectedWatchableNode(),
+  validateBreakpointExpressionText,
+  getBreakpointExpressionSource: () => breakpointExpressionSource(),
+  getBreakpointLastResult: () => ui.breakpointLastResult,
+  formatNumberValue,
+  showExpressionStatus,
+  hideExpressionStatus,
+  localizeExpressionErrorMessage,
+  formatErrorReason: evalReasonText,
+  summarizeValue: summarizeExpressionPreviewValue,
+  getWatchEntries: () => {
+    const debug = sanitizeDebugConfig(graph);
+    return debug.watches
+      .map((name) => {
+        const node = getNodeByName(name);
+        if (!node) {
+          return null;
+        }
+        const previous = ui.watchPreviousSnapshot instanceof Map ? ui.watchPreviousSnapshot.get(name) : null;
+        return {
+          name,
+          currentValue: node.computedValue,
+          currentError: node.computedError,
+          previousSummary: previous?.summary ?? "—",
+          isState: isStateNode(node),
+          nextValue: node.pendingStateValue,
+          nextError: node.pendingStateError,
+        };
+      })
+      .filter(Boolean);
+  },
+  onRemoveWatch: (name) => {
+    commitDebugConfigChange(() => {
+      ensureDebugConfig(graph).watches = ensureDebugConfig(graph).watches.filter((entry) => entry !== name);
+    });
+    watchDebuggerUiHelpers.renderWatchDebugger();
+  },
+});
+
+if (!watchDebuggerUiHelpers) {
+  throw new Error("STGraphX watch debugger UI helpers are unavailable");
+}
 
 const history = {
   undo: [],
@@ -1236,16 +1384,31 @@ function bundledI18nMessages(lang) {
   return fallback ? { ...fallback } : null;
 }
 
-function resolveLangFromUrl() {
-  const params = new URLSearchParams(window.location.search);
-  const raw = (params.get("lang") || "it").trim().toLowerCase();
-  const base = raw.split("-")[0];
-  if (SUPPORTED_LANGS.has(raw)) {
-    return raw;
+function normalizeSupportedLanguage(raw) {
+  const value = String(raw ?? "").trim().toLowerCase();
+  const base = value.split("-")[0];
+  if (SUPPORTED_LANGS.has(value)) {
+    return value;
   }
   if (SUPPORTED_LANGS.has(base)) {
     return base;
   }
+  return "";
+}
+
+async function resolveLangFromUrl() {
+  const params = new URLSearchParams(window.location.search);
+  const urlLanguage = normalizeSupportedLanguage(params.get("lang"));
+  if (urlLanguage) {
+    return urlLanguage;
+  }
+  try {
+    const startupLanguage = await Promise.resolve(globalThis.STGraphXPlatform?.getStartupLanguage?.());
+    const platformLanguage = normalizeSupportedLanguage(startupLanguage);
+    if (platformLanguage) {
+      return platformLanguage;
+    }
+  } catch {}
   return "it";
 }
 
@@ -2239,276 +2402,96 @@ function nodeDefinitionIssueText(issue) {
   return t("error.evalReason.runtime");
 }
 
+const localFunctionsCoreHelpers = globalThis.STGraphXLocalFunctionsCore?.createLocalFunctionsCoreHelpers({
+  t,
+  getGraph: () => graph,
+  sanitizeDefinition: (definition) => runtimeShared.sanitizeLocalFunctionDefinition(definition),
+  semantics,
+  localizeExpressionErrorMessage,
+});
+
+if (!localFunctionsCoreHelpers) {
+  throw new Error("STGraphX local functions core helpers are unavailable");
+}
+
+function ensureLocalFunctions(model = graph) {
+  return localFunctionsCoreHelpers.ensureLocalFunctions(model);
+}
+
+function sanitizeLocalFunctionName(name) {
+  return localFunctionsCoreHelpers.sanitizeLocalFunctionName(name);
+}
+
+function sanitizeLocalFunctionParams(params) {
+  return localFunctionsCoreHelpers.sanitizeLocalFunctionParams(params);
+}
+
+function sanitizeLocalFunctionDefinition(definition = {}) {
+  return localFunctionsCoreHelpers.sanitizeLocalFunctionDefinition(definition);
+}
+
+function sanitizeLocalFunctions(model = graph) {
+  return localFunctionsCoreHelpers.sanitizeLocalFunctions(model);
+}
+
+function localFunctionMapForModel(model = graph) {
+  return localFunctionsCoreHelpers.localFunctionMapForModel(model);
+}
+
+function localFunctionNamesForModel(model = graph) {
+  return localFunctionsCoreHelpers.localFunctionNamesForModel(model);
+}
+
+function localFunctionSignature(definition) {
+  return localFunctionsCoreHelpers.localFunctionSignature(definition);
+}
+
+function validateLocalFunctions(definitions, options = {}) {
+  return localFunctionsCoreHelpers.validateLocalFunctions(definitions, options);
+}
+
+function localFunctionsForSemantics(model = graph) {
+  return sanitizeLocalFunctions(model);
+}
+
 function collectExpressionIdentifierReferences(expression) {
-  const src = String(expression ?? "");
-  const refs = new Set();
-  const skipped = new Set(["true", "false", "null", "this", "self", "__self", "$i", "$j", "$value", "time", "t0", "t1", "dt"]);
-  let i = 0;
-  let mode = "code";
-  while (i < src.length) {
-    const ch = src[i];
-    if (mode === "code") {
-      if (ch === "'" || ch === "\"" || ch === "`") {
-        mode = ch;
-        i += 1;
-        continue;
-      }
-      if (/[A-Za-z_$]/u.test(ch)) {
-        let j = i + 1;
-        while (j < src.length && /[A-Za-z0-9_$]/u.test(src[j])) {
-          j += 1;
-        }
-        const token = src.slice(i, j);
-        const prev = i > 0 ? src[i - 1] : "";
-        let k = j;
-        while (k < src.length && /\s/u.test(src[k])) {
-          k += 1;
-        }
-        const isFunctionCall = src[k] === "(";
-        if (
-          prev !== "."
-          && !isFunctionCall
-          && !skipped.has(token)
-          && !/^\$[0-9]+$/u.test(token)
-        ) {
-          refs.add(token);
-        }
-        i = j;
-        continue;
-      }
-      i += 1;
-      continue;
-    }
-    if (ch === "\\") {
-      i += 2;
-      continue;
-    }
-    if (ch === mode) {
-      mode = "code";
-    }
-    i += 1;
-  }
-  return refs;
+  return modelAnalysisCoreHelpers.collectExpressionIdentifierReferences(expression);
 }
 
 function incomingEdgesForNode(nodeId, model = graph) {
-  return (model?.edges || []).filter((edge) => edge.to === nodeId);
+  return modelAnalysisCoreHelpers.incomingEdgesForNode(nodeId, model);
 }
 
 function outgoingEdgesForNode(nodeId, model = graph) {
-  return (model?.edges || []).filter((edge) => edge.from === nodeId);
+  return modelAnalysisCoreHelpers.outgoingEdgesForNode(nodeId, model);
 }
 
 function pureTimeConfigIssue(execution = graph.execution) {
-  const t0 = Number(execution?.t0);
-  const dt = Number(execution?.dt);
-  const t1 = Number(execution?.t1);
-  if (!Number.isFinite(t0) || !Number.isFinite(dt) || !Number.isFinite(t1)) {
-    return t("error.timeInvalid");
-  }
-  if (dt === 0) {
-    return t("error.timeStepZero");
-  }
-  if ((dt > 0 && t0 > t1) || (dt < 0 && t0 < t1)) {
-    return t("error.timeDirection");
-  }
-  return "";
+  return modelAnalysisCoreHelpers.pureTimeConfigIssue(execution);
 }
 
 function pureTimedDelayIssue(execution = graph.execution) {
-  const delay = Number(execution?.delayMs);
-  if (!Number.isFinite(delay) || delay <= 0) {
-    return t("error.timeDelayInvalid");
-  }
-  return "";
+  return modelAnalysisCoreHelpers.pureTimedDelayIssue(execution);
 }
 
 function expressionReferencesForAnalysis(node, fieldKey = "value") {
-  if (!node || isSubmodelNode(node)) {
-    return new Set();
-  }
-  const expr = fieldKey === "initial"
-    ? String(node.initialStateExpression ?? "")
-    : String(node.valueExpression ?? "");
-  const refs = collectExpressionIdentifierReferences(expr);
-  accessibleAgentFieldAliasNames(node, fieldKey).forEach((name) => {
-    refs.delete(name);
-  });
-  return refs;
+  return modelAnalysisCoreHelpers.expressionReferencesForAnalysis(node, fieldKey);
 }
 
 function nodeIsImplicitlyReferenced(targetNode, model = graph) {
-  if (!targetNode) {
-    return false;
-  }
-  const targetName = String(targetNode.name ?? "").trim();
-  if (!targetName) {
-    return false;
-  }
-  return (model?.nodes || []).some((node) => {
-    if (!node || node.id === targetNode.id) {
-      return false;
-    }
-    if (expressionReferencesForAnalysis(node, "value").has(targetName)) {
-      return true;
-    }
-    if (isStateNode(node) && expressionReferencesForAnalysis(node, "initial").has(targetName)) {
-      return true;
-    }
-    if (isSubmodelNode(node)) {
-      for (const refs of submodelBindingReferences(node).values()) {
-        if (refs.has(targetName)) {
-          return true;
-        }
-      }
-    }
-    return false;
-  });
+  return modelAnalysisCoreHelpers.nodeIsImplicitlyReferenced(targetNode, model);
 }
 
 function submodelBindingReferences(node) {
-  const refs = new Map();
-  Object.entries(node?.inputBindings || {}).forEach(([inputName, expr]) => {
-    refs.set(String(inputName || "").trim(), collectExpressionIdentifierReferences(String(expr ?? "")));
-  });
-  return refs;
+  return modelAnalysisCoreHelpers.submodelBindingReferences(node);
 }
 
-function detectNonStateCycles() {
-  const nodeById = new Map();
-  const adjacency = new Map();
-  graph.nodes
-    .filter((node) => isAlgebraicNode(node) || isSubmodelNode(node))
-    .forEach((node) => {
-      nodeById.set(node.id, node);
-      adjacency.set(node.id, []);
-    });
-  graph.edges.forEach((edge) => {
-    if (adjacency.has(edge.from) && adjacency.has(edge.to)) {
-      adjacency.get(edge.from).push(edge.to);
-    }
-  });
-
-  const visited = new Set();
-  const stack = [];
-  const inStack = new Set();
-  const found = new Map();
-
-  const visit = (nodeId) => {
-    visited.add(nodeId);
-    stack.push(nodeId);
-    inStack.add(nodeId);
-    (adjacency.get(nodeId) || []).forEach((nextId) => {
-      if (!visited.has(nextId)) {
-        visit(nextId);
-        return;
-      }
-      if (inStack.has(nextId)) {
-        const start = stack.indexOf(nextId);
-        const cycleIds = start >= 0 ? stack.slice(start) : [nextId];
-        const key = cycleIds.slice().sort((a, b) => a - b).join(",");
-        if (!found.has(key)) {
-          found.set(key, cycleIds);
-        }
-      }
-    });
-    stack.pop();
-    inStack.delete(nodeId);
-  };
-
-  [...adjacency.keys()].forEach((nodeId) => {
-    if (!visited.has(nodeId)) {
-      visit(nodeId);
-    }
-  });
-
-  return [...found.values()].map((cycleIds) => ({
-    ids: cycleIds,
-    names: cycleIds.map((id) => nodeById.get(id)?.name || String(id)),
-  }));
+function detectNonStateCycles(model = graph) {
+  return modelAnalysisCoreHelpers.detectNonStateCycles(model);
 }
 
 function stateTransitionPreviewForAnalysis(node, previewState) {
-  if (!node || !isStateNode(node) || !previewState?.model) {
-    return null;
-  }
-  const runtimeNode = getModelNodeById(previewState.model, node.id);
-  if (!runtimeNode) {
-    return null;
-  }
-  const initialContext = {
-    ...previewState.globals,
-    ...nodePropertyAccessForContext(runtimeNode),
-  };
-  globalParameterNodesForModel(previewState.model, runtimeNode.id).forEach((depNode) => {
-    if (!depNode.computedError) {
-      initialContext[depNode.name] = depNode.computedValue;
-    }
-  });
-  incomingEdgesForNode(runtimeNode.id, previewState.model)
-    .map((edge) => getModelNodeById(previewState.model, edge.from))
-    .filter((depNode) => depNode && depNode.shape === "diamond")
-    .forEach((depNode) => {
-      if (!depNode.computedError) {
-        initialContext[depNode.name] = depNode.computedValue;
-      }
-    });
-  const currentValueResult = semantics.evaluateValueExpression(
-    String(runtimeNode.initialStateExpression ?? ""),
-    initialContext,
-    { localFunctions: localFunctionsForSemantics(previewState.model) },
-  );
-  if (!currentValueResult.ok) {
-    return { ok: false, current: currentValueResult };
-  }
-  const context = {
-    ...previewState.globals,
-    ...nodePropertyAccessForContext(runtimeNode),
-    __self: currentValueResult.value,
-  };
-  globalParameterNodesForModel(previewState.model, runtimeNode.id).forEach((depNode) => {
-    if (!depNode.computedError) {
-      context[depNode.name] = depNode.computedValue;
-    }
-  });
-  incomingEdgesForNode(runtimeNode.id, previewState.model)
-    .map((edge) => getModelNodeById(previewState.model, edge.from))
-    .filter(Boolean)
-    .forEach((depNode) => {
-      if (!depNode.computedError) {
-        context[depNode.name] = depNode.computedValue;
-      }
-    });
-  const source = String(runtimeNode.valueExpression ?? "");
-  const nextValueResult = source.includes("integral(")
-    ? (() => {
-        const derivativeList = semantics.evaluateIntegralDerivativeList(source, context, {
-          allowThisAlias: true,
-          localFunctions: localFunctionsForSemantics(previewState.model),
-        });
-        if (!derivativeList.ok) {
-          return derivativeList;
-        }
-        const dt = Number(previewState.model?.execution?.dt ?? graph.execution.dt);
-        const integralValues = (derivativeList.value || [])
-          .map((derivativeValue) => addTensorValues(currentValueResult.value, scaleTensorValue(derivativeValue, dt)));
-        return semantics.evaluateStateTransitionExpressionWithIntegralValues(
-          source,
-          context,
-          integralValues,
-          { allowThisAlias: true, localFunctions: localFunctionsForSemantics(previewState.model) },
-        );
-      })()
-    : semantics.evaluateValueExpression(source, context, {
-        allowThisAlias: true,
-        allowIntegral: true,
-        localFunctions: localFunctionsForSemantics(previewState.model),
-      });
-  return {
-    ok: Boolean(currentValueResult.ok && nextValueResult.ok),
-    current: currentValueResult,
-    next: nextValueResult,
-  };
+  return modelAnalysisCoreHelpers.stateTransitionPreviewForAnalysis(node, previewState);
 }
 
 function widgetDisplayName(widget) {
@@ -2536,13 +2519,59 @@ function widgetDisplayName(widget) {
   return `${typeLabel}${suffix}`;
 }
 
-function pushAnalysisIssue(issues, severity, key, vars, target = null) {
-  issues.push({
-    severity,
-    message: t(key, vars || null),
-    key,
-    target,
-  });
+const modelAnalysisCoreHelpers = globalThis.STGraphXModelAnalysisCore?.createModelAnalysisCoreHelpers({
+  t,
+  getGraph: () => graph,
+  isSubmodelNode,
+  isStateNode,
+  isAlgebraicNode,
+  accessibleAgentFieldAliasNames,
+  buildNodeNameMap,
+  getNodeById,
+  getModelNodeById,
+  globalParameterNodesForModel,
+  isGlobalParameterNode,
+  validateNodeDefinition,
+  nodeDefinitionIssueText,
+  localizeExpressionErrorMessage,
+  localFunctionsForSemantics,
+  semantics,
+  nodePropertyAccessForContext,
+  addTensorValues,
+  scaleTensorValue,
+  getExpressionPreviewInitializationState,
+  describeExpressionPreviewShape,
+  canBindButtonToNode,
+  canBindSliderToNode,
+  widgetDisplayName,
+});
+
+if (!modelAnalysisCoreHelpers) {
+  throw new Error("STGraphX model analysis core helpers are unavailable");
+}
+
+const watchDebuggerCoreHelpers = globalThis.STGraphXWatchDebuggerCore?.createWatchDebuggerCoreHelpers({
+  t,
+  getGraph: () => graph,
+  getNodeByName,
+  isStateNode,
+  buildExecutionGlobals,
+  localFunctionsForSemantics,
+  semantics,
+  localizeExpressionErrorMessage,
+  summarizeWatchValue: (value, error) => formatWatchValue(value, error),
+});
+
+if (!watchDebuggerCoreHelpers) {
+  throw new Error("STGraphX watch debugger core helpers are unavailable");
+}
+
+function ensureDebugConfig(model = graph) {
+  return watchDebuggerCoreHelpers.ensureDebugConfig(model);
+}
+
+function sanitizeDebugConfig(model = graph) {
+  return watchDebuggerCoreHelpers.sanitizeDebugConfig(model);
 }
 
 function isAnalysisFocusActive(targetType, targetId) {
@@ -2579,352 +2608,7 @@ function setAnalysisFocus(target) {
 }
 
 function analyzeModelStaticIssues() {
-  const issues = [];
-  const timeIssue = pureTimeConfigIssue(graph.execution);
-  if (timeIssue) {
-    pushAnalysisIssue(issues, "error", "analysis.issue.invalidTimeConfig", { reason: timeIssue }, { type: "model" });
-  }
-  const delayIssue = pureTimedDelayIssue(graph.execution);
-  if (delayIssue) {
-    pushAnalysisIssue(issues, "warning", "analysis.issue.invalidDelay", { reason: delayIssue }, { type: "model" });
-  }
-
-  const nodeMap = buildNodeNameMap();
-  graph.edges.forEach((edge) => {
-    const fromNode = getNodeById(edge.from);
-    const toNode = getNodeById(edge.to);
-    if (fromNode && toNode) {
-      return;
-    }
-    pushAnalysisIssue(
-      issues,
-      "error",
-      "analysis.issue.danglingEdge",
-      { name: `${fromNode?.name || edge.from} -> ${toNode?.name || edge.to}` },
-      { type: "edge", id: edge.id, name: `${fromNode?.name || edge.from} -> ${toNode?.name || edge.to}` },
-    );
-  });
-  const edgeGroups = new Map();
-  graph.edges.forEach((edge) => {
-    const fromNode = getNodeById(edge.from);
-    const toNode = getNodeById(edge.to);
-    const signature = [edge.from, edge.to].join("|");
-    if (!edgeGroups.has(signature)) {
-      edgeGroups.set(signature, []);
-    }
-    edgeGroups.get(signature).push({ edge, fromNode, toNode });
-  });
-  edgeGroups.forEach((entries) => {
-    if (entries.length < 2) {
-      return;
-    }
-    entries.forEach(({ edge, fromNode, toNode }) => {
-      pushAnalysisIssue(
-        issues,
-        "warning",
-        "analysis.issue.duplicateEdge",
-        { name: `${fromNode?.name || edge.from} -> ${toNode?.name || edge.to}` },
-        { type: "edge", id: edge.id, name: `${fromNode?.name || edge.from} -> ${toNode?.name || edge.to}` },
-      );
-    });
-  });
-  graph.edges.forEach((edge) => {
-    if (edge.from !== edge.to) {
-      return;
-    }
-    const node = getNodeById(edge.from);
-    pushAnalysisIssue(
-      issues,
-      "warning",
-      "analysis.issue.selfLoop",
-      { name: `${node?.name || edge.from} -> ${node?.name || edge.from}` },
-      { type: "edge", id: edge.id, name: `${node?.name || edge.from} -> ${node?.name || edge.from}` },
-    );
-  });
-  detectNonStateCycles().forEach((cycle) => {
-    pushAnalysisIssue(
-      issues,
-      "error",
-      "analysis.issue.algebraicCycle",
-      { path: [...cycle.names, cycle.names[0]].join(" -> ") },
-      { type: "node", id: cycle.ids[0], name: cycle.names[0] },
-    );
-  });
-
-  graph.nodes.forEach((node) => {
-    const definitionIssue = validateNodeDefinition(node);
-    if (!definitionIssue.ok) {
-      issues.push({
-        severity: "error",
-        message: nodeDefinitionIssueText(definitionIssue),
-        target: { type: "node", id: node.id, name: node.name },
-      });
-    }
-  });
-
-  graph.nodes.forEach((node) => {
-    if (isSubmodelNode(node)) {
-      const incomingEdges = incomingEdgesForNode(node.id);
-      const incomingNameToEdges = new Map();
-      incomingEdges.forEach((edge) => {
-        const fromNode = getNodeById(edge.from);
-        if (!fromNode) {
-          return;
-        }
-        const list = incomingNameToEdges.get(fromNode.name) || [];
-        list.push(edge);
-        incomingNameToEdges.set(fromNode.name, list);
-      });
-      const availableInputs = new Set(
-        Array.isArray(node.interfaceCache?.inputs)
-          ? node.interfaceCache.inputs.map((value) => String(value).trim()).filter(Boolean)
-          : [],
-      );
-      const bindingRefs = submodelBindingReferences(node);
-      Object.entries(node.inputBindings || {}).forEach(([inputName, expr]) => {
-        const normalizedInput = String(inputName || "").trim();
-        const source = String(expr ?? "");
-        if (!source.trim()) {
-          return;
-        }
-        if (availableInputs.size > 0 && normalizedInput && !availableInputs.has(normalizedInput)) {
-          pushAnalysisIssue(
-            issues,
-            "warning",
-            "analysis.issue.unknownSubmodelBinding",
-            { name: node.name, input: normalizedInput },
-            { type: "node", id: node.id, name: node.name },
-          );
-        }
-        const extraNames = [...incomingNameToEdges.keys()];
-        globalParameterNodesForModel(graph, node.id).forEach((depNode) => {
-          extraNames.push(depNode.name);
-        });
-        const validation = semantics.validateExpressionSyntax(source, extraNames, {
-          localFunctions: localFunctionsForSemantics(graph),
-        });
-        if (!validation.ok) {
-          pushAnalysisIssue(
-            issues,
-            "error",
-            "analysis.issue.invalidSubmodelBinding",
-            { name: node.name, input: normalizedInput, reason: localizeExpressionErrorMessage(validation.message || "") },
-            { type: "node", id: node.id, name: node.name },
-          );
-        }
-      });
-      bindingRefs.forEach((refs) => {
-        refs.forEach((name) => {
-          const depNode = nodeMap.get(name);
-          if (!depNode || depNode.id === node.id) {
-            return;
-          }
-          if (!incomingNameToEdges.has(name) && !isGlobalParameterNode(depNode)) {
-            pushAnalysisIssue(
-              issues,
-              "warning",
-              "analysis.issue.missingIncomingEdge",
-              { target: node.name, source: name },
-              { type: "node", id: node.id, name: node.name },
-            );
-          }
-        });
-      });
-      return;
-    }
-    const incomingEdges = incomingEdgesForNode(node.id);
-    const incomingNameToEdges = new Map();
-    incomingEdges.forEach((edge) => {
-      const fromNode = getNodeById(edge.from);
-      if (!fromNode) {
-        return;
-      }
-      const list = incomingNameToEdges.get(fromNode.name) || [];
-      list.push(edge);
-      incomingNameToEdges.set(fromNode.name, list);
-    });
-
-    const valueRefs = expressionReferencesForAnalysis(node, "value");
-    const initialRefs = isStateNode(node) ? expressionReferencesForAnalysis(node, "initial") : new Set();
-
-    valueRefs.forEach((name) => {
-      const depNode = nodeMap.get(name);
-      if (!depNode || depNode.id === node.id) {
-        return;
-      }
-      if (!incomingNameToEdges.has(name) && !isGlobalParameterNode(depNode)) {
-        pushAnalysisIssue(
-          issues,
-          "warning",
-          "analysis.issue.missingIncomingEdge",
-          { target: node.name, source: name },
-          { type: "node", id: node.id, name: node.name },
-        );
-      }
-    });
-
-    initialRefs.forEach((name) => {
-      const depNode = nodeMap.get(name);
-      if (!depNode || depNode.id === node.id || depNode.shape !== "diamond") {
-        return;
-      }
-      if (!incomingNameToEdges.has(name) && !isGlobalParameterNode(depNode)) {
-        pushAnalysisIssue(
-          issues,
-          "warning",
-          "analysis.issue.missingIncomingEdge",
-          { target: node.name, source: name },
-          { type: "node", id: node.id, name: node.name },
-        );
-      }
-    });
-
-    incomingNameToEdges.forEach((edgesForName, sourceName) => {
-      const sourceNode = nodeMap.get(sourceName);
-      if (!sourceNode) {
-        return;
-      }
-      const usedInValue = valueRefs.has(sourceName);
-      const usedInInitial = isStateNode(node) && sourceNode.shape === "diamond" && initialRefs.has(sourceName);
-      if (usedInValue || usedInInitial) {
-        return;
-      }
-      edgesForName.forEach((edge) => {
-        pushAnalysisIssue(
-          issues,
-          "warning",
-          "analysis.issue.unusedEdge",
-          { from: sourceName, to: node.name },
-          { type: "edge", id: edge.id, name: `${sourceName} -> ${node.name}` },
-        );
-      });
-    });
-  });
-
-  graph.nodes.forEach((node) => {
-    const hasOutgoingEdges = graph.edges.some((edge) => edge.from === node.id);
-    const usedByTable = graph.widgets.some((widget) => widget.type === "table" && Array.isArray(widget.columns) && widget.columns.includes(node.name));
-    const usedByChart = graph.widgets.some((widget) => widget.type === "xychart"
-      && Array.isArray(widget.xyPairs)
-      && widget.xyPairs.some((pair) => pair?.xSource === node.name || pair?.ySource === node.name));
-    const usedBySourceWidget = graph.widgets.some((widget) => widget.source === node.name);
-    const usedImplicitly = nodeIsImplicitlyReferenced(node, graph);
-    const observed = Boolean(node.output || hasOutgoingEdges || usedByTable || usedByChart || usedBySourceWidget || usedImplicitly);
-    if (!observed) {
-      pushAnalysisIssue(
-        issues,
-        "info",
-        "analysis.issue.unusedNode",
-        { name: node.name },
-        { type: "node", id: node.id, name: node.name },
-      );
-    }
-  });
-
-  graph.widgets.forEach((widget) => {
-    const widgetName = widgetDisplayName(widget);
-    if (widget.type === "slider" || widget.type === "button" || widget.type === "select") {
-      if (!widget.source) {
-        pushAnalysisIssue(issues, "warning", "analysis.issue.widgetNoSource", { name: widgetName }, { type: "widget", id: widget.id, name: widgetName });
-        return;
-      }
-      const sourceNode = nodeMap.get(widget.source);
-      if (!sourceNode) {
-        pushAnalysisIssue(issues, "error", "analysis.issue.widgetMissingSource", { name: widgetName, source: widget.source }, { type: "widget", id: widget.id, name: widgetName });
-        return;
-      }
-      const bindable = widget.type === "button" ? canBindButtonToNode(sourceNode) : canBindSliderToNode(sourceNode);
-      if (!bindable) {
-        pushAnalysisIssue(issues, "error", "analysis.issue.widgetSourceNotBindable", { name: widgetName, source: widget.source }, { type: "widget", id: widget.id, name: widgetName });
-      }
-      return;
-    }
-
-    if (widget.type === "matrix" || widget.type === "led" || widget.type === "text") {
-      if (!widget.source) {
-        pushAnalysisIssue(issues, "warning", "analysis.issue.widgetNoSource", { name: widgetName }, { type: "widget", id: widget.id, name: widgetName });
-        return;
-      }
-      const sourceNode = nodeMap.get(widget.source);
-      if (!sourceNode) {
-        pushAnalysisIssue(issues, "error", "analysis.issue.widgetMissingSource", { name: widgetName, source: widget.source }, { type: "widget", id: widget.id, name: widgetName });
-        return;
-      }
-      if (!sourceNode.output) {
-        pushAnalysisIssue(issues, "warning", "analysis.issue.widgetSourceNotOutput", { name: widgetName, source: widget.source }, { type: "widget", id: widget.id, name: widgetName });
-      }
-      return;
-    }
-
-    if (widget.type === "table") {
-      if (!Array.isArray(widget.columns) || widget.columns.length === 0) {
-        pushAnalysisIssue(issues, "warning", "analysis.issue.tableNoColumns", { name: widgetName }, { type: "widget", id: widget.id, name: widgetName });
-        return;
-      }
-      widget.columns.forEach((columnName) => {
-        if (columnName === "time") {
-          return;
-        }
-        const sourceNode = nodeMap.get(columnName);
-        if (!sourceNode) {
-          pushAnalysisIssue(issues, "error", "analysis.issue.tableMissingColumn", { name: widgetName, source: columnName }, { type: "widget", id: widget.id, name: widgetName });
-          return;
-        }
-        if (!sourceNode.output) {
-          pushAnalysisIssue(issues, "warning", "analysis.issue.tableColumnNotOutput", { name: widgetName, source: columnName }, { type: "widget", id: widget.id, name: widgetName });
-        }
-      });
-      return;
-    }
-
-    if (widget.type === "xychart") {
-      if (!Array.isArray(widget.xyPairs) || widget.xyPairs.length === 0) {
-        pushAnalysisIssue(issues, "warning", "analysis.issue.chartNoPairs", { name: widgetName }, { type: "widget", id: widget.id, name: widgetName });
-        return;
-      }
-      widget.xyPairs.forEach((pair) => {
-        [pair?.xSource, pair?.ySource].forEach((sourceName) => {
-          if (!sourceName) {
-            return;
-          }
-          if (sourceName === "time") {
-            return;
-          }
-          const sourceNode = nodeMap.get(sourceName);
-          if (!sourceNode) {
-            pushAnalysisIssue(issues, "error", "analysis.issue.chartMissingSeriesSource", { name: widgetName, source: sourceName }, { type: "widget", id: widget.id, name: widgetName });
-            return;
-          }
-          if (!sourceNode.output) {
-            pushAnalysisIssue(issues, "warning", "analysis.issue.chartSeriesNotOutput", { name: widgetName, source: sourceName }, { type: "widget", id: widget.id, name: widgetName });
-          }
-        });
-      });
-    }
-  });
-
-  const previewState = getExpressionPreviewInitializationState();
-  graph.nodes
-    .filter((node) => isStateNode(node))
-    .forEach((node) => {
-      const preview = stateTransitionPreviewForAnalysis(node, previewState);
-      if (!preview?.current?.ok || !preview?.next?.ok) {
-        return;
-      }
-      const currentShape = describeExpressionPreviewShape(preview.current.value);
-      const nextShape = describeExpressionPreviewShape(preview.next.value);
-      if (currentShape && nextShape && currentShape !== nextShape) {
-        pushAnalysisIssue(
-          issues,
-          "warning",
-          "analysis.issue.stateShapeMismatch",
-          { name: node.name, current: currentShape, next: nextShape },
-          { type: "node", id: node.id, name: node.name },
-        );
-      }
-    });
-
-  return issues;
+  return modelAnalysisCoreHelpers.analyzeModelStaticIssues();
 }
 
 function enforceStrictDefinitionsIfNeeded() {
@@ -3445,712 +3129,40 @@ function closeFunctionsHelp() {
   functionsHelpModal.classList.add("hidden");
 }
 
-const EXAMPLE_CATALOG_PATH = "examples/examples-catalog.json";
-const EXAMPLE_STYLE_PATH = "examples/examples-help.css";
-const EIGHT_TUPLE_TEMPLATE_PATH = "help/eight-tuple-template.json";
-const EXAMPLE_LAYOUT_VARIANTS = new Set(["list", "compact", "stack"]);
-const EXAMPLES_HELP_STYLE_TAG_ID = "examples-help-external-style";
-let eightTupleTemplateCache = null;
-
-function localizedExampleText(record) {
-  if (typeof record === "string") {
-    return record.trim();
-  }
-  if (!record || typeof record !== "object") {
-    return "";
-  }
-  return String(record[currentLang] ?? record.en ?? record.it ?? "").trim();
-}
-
-function normalizeExampleEntry(entry) {
-  if (!entry || typeof entry !== "object") {
-    return null;
-  }
-  const file = String(entry.file || "").trim();
-  if (!file) {
-    return null;
-  }
-  return {
-    file,
-    label: localizedExampleText(entry.label ?? entry.title) || file,
-    summary: localizedExampleText(entry.summary ?? entry.description),
-  };
-}
-
-function normalizeExamplesLayout(layout) {
-  const source = layout && typeof layout === "object" ? layout : {};
-  const variant = String(source.variant || "").trim();
-  return {
-    variant: EXAMPLE_LAYOUT_VARIANTS.has(variant) ? variant : "list",
-    showPaths: source.showPaths !== false,
-    dense: source.dense === true,
-    openLabel: localizedExampleText(source.openLabel) || "",
-  };
-}
-
-function normalizeExamplesCatalog(parsed) {
-  if (Array.isArray(parsed)) {
-    return {
-      title: "",
-      intro: "",
-      layout: normalizeExamplesLayout(null),
-      entries: parsed.map(normalizeExampleEntry).filter(Boolean),
-      sections: [],
-    };
-  }
-  if (!parsed || typeof parsed !== "object") {
-    return {
-      title: "",
-      intro: "",
-      layout: normalizeExamplesLayout(null),
-      entries: [],
-      sections: [],
-    };
-  }
-  const sections = Array.isArray(parsed.sections)
-    ? parsed.sections
-      .map((section) => {
-        if (!section || typeof section !== "object") {
-          return null;
-        }
-        const entries = Array.isArray(section.entries)
-          ? section.entries.map(normalizeExampleEntry).filter(Boolean)
-          : [];
-        if (!entries.length) {
-          return null;
-        }
-        return {
-          title: localizedExampleText(section.title),
-          intro: localizedExampleText(section.intro),
-          entries,
-        };
-      })
-      .filter(Boolean)
-    : [];
-  return {
-    title: localizedExampleText(parsed.title),
-    intro: localizedExampleText(parsed.intro),
-    layout: normalizeExamplesLayout(parsed.layout),
-    entries: Array.isArray(parsed.entries) ? parsed.entries.map(normalizeExampleEntry).filter(Boolean) : [],
-    sections,
-  };
-}
-
-async function openExampleModel(fileName) {
-  const normalized = String(fileName || "").trim();
-  if (!normalized) {
-    return false;
-  }
-  try {
-    let text = "";
-    let fileHandle = null;
-    let directoryHandle = null;
-    if (hasPlatformApi("createFileHandleFromPath") && hasPlatformApi("createDirectoryHandleFromDirectoryPath")) {
-      try {
-        const pageUrl = new URL(window.location.href);
-        const basePath = decodeURIComponent(pageUrl.pathname || "");
-        const baseDir = basePath.replace(/\/[^/]*$/, "");
-        const filePath = `${baseDir}/examples/${normalized}`;
-        fileHandle = window.STGraphXPlatform.createFileHandleFromPath(filePath);
-        directoryHandle = window.STGraphXPlatform.createDirectoryHandleFromDirectoryPath(`${baseDir}/examples`);
-        const file = await fileHandle.getFile();
-        text = await file.text();
-      } catch (_err) {
-        fileHandle = null;
-        directoryHandle = null;
-      }
-    }
-    if (!text) {
-      const response = await fetch(`examples/${encodeURIComponent(normalized)}`, { cache: "no-store" });
-      if (!response.ok) {
-        throw new Error(`${response.status}`);
-      }
-      text = await response.text();
-    }
-    const rootEntry = {
-      name: normalized,
-      text,
-      fileHandle,
-      directoryHandle,
-      data: JSON.parse(text),
-    };
-    const opened = await openPreparedJsonEntryInNewTab(rootEntry);
-    if (!opened) {
-      return false;
-    }
-    closeExamplesHelp();
-    return true;
-  } catch (err) {
-    const message = `${t("examples.openError")} ${String(err?.message || "")}`.trim();
-    setStatus(message, true);
-    window.alert(message);
-    return false;
-  }
-}
-
-async function loadExamplesAssetText(relativePath) {
-  let text = "";
-  if (hasPlatformApi("createFileHandleFromPath")) {
-    try {
-      const pageUrl = new URL(window.location.href);
-      const basePath = decodeURIComponent(pageUrl.pathname || "");
-      const baseDir = basePath.replace(/\/[^/]*$/, "");
-      const assetPath = `${baseDir}/${relativePath}`;
-      const fileHandle = window.STGraphXPlatform.createFileHandleFromPath(assetPath);
-      const file = await fileHandle.getFile();
-      text = await file.text();
-    } catch (_err) {
-      text = "";
-    }
-  }
-  if (!text) {
-    const response = await fetch(relativePath, { cache: "no-store" });
-    if (!response.ok) {
-      throw new Error(`${response.status}`);
-    }
-    text = await response.text();
-  }
-  return text;
-}
-
-function localizedAssetText(record) {
-  if (typeof record === "string") {
-    return record.trim();
-  }
-  if (!record || typeof record !== "object") {
-    return "";
-  }
-  return String(record[currentLang] ?? record.en ?? record.it ?? "").trim();
-}
-
-function normalizeEightTupleTemplate(parsed) {
-  const source = parsed && typeof parsed === "object" ? parsed : {};
-  const normalizeRecordMap = (record) => {
-    if (!record || typeof record !== "object") {
-      return {};
-    }
-    return Object.fromEntries(
-      Object.entries(record).map(([key, value]) => [key, localizedAssetText(value)]),
-    );
-  };
-  return {
-    title: localizedAssetText(source.title) || t("eightTuple.title"),
-    intro: localizedAssetText(source.intro) || t("eightTuple.intro"),
-    copyMarkdownLabel: localizedAssetText(source.copyMarkdownLabel) || t("eightTuple.copyMarkdown"),
-    exportMarkdownLabel: localizedAssetText(source.exportMarkdownLabel) || t("eightTuple.exportMarkdown"),
-    exportPickerTitle: localizedAssetText(source.exportPickerTitle) || t("eightTuple.exportMarkdown"),
-    exportSuccess: localizedAssetText(source.exportSuccess) || t("status.clipboardTextCopied"),
-    exportFailed: localizedAssetText(source.exportFailed) || t("error.saveFailed"),
-    sections: normalizeRecordMap(source.sections),
-    text: normalizeRecordMap(source.text),
-  };
-}
-
-async function loadEightTupleTemplate(forceReload = false) {
-  if (!forceReload && eightTupleTemplateCache) {
-    return eightTupleTemplateCache;
-  }
-  try {
-    const text = await loadExamplesAssetText(EIGHT_TUPLE_TEMPLATE_PATH);
-    const parsed = JSON.parse(text);
-    eightTupleTemplateCache = normalizeEightTupleTemplate(parsed);
-  } catch (_err) {
-    eightTupleTemplateCache = normalizeEightTupleTemplate(null);
-  }
-  return eightTupleTemplateCache;
-}
-
-function getEightTupleTemplateText(template, key, fallbackKey) {
-  const direct = String(template?.text?.[key] || "").trim();
-  if (direct) {
-    return direct;
-  }
-  return fallbackKey ? t(fallbackKey) : "";
-}
-
-function getEightTupleSectionTitle(template, key, fallbackKey) {
-  const direct = String(template?.sections?.[key] || "").trim();
-  if (direct) {
-    return direct;
-  }
-  return fallbackKey ? t(fallbackKey) : "";
-}
-
-function interpolateEightTupleText(text, vars = {}) {
-  return String(text || "").replace(/\{([a-zA-Z0-9_]+)\}/g, (_match, key) => {
-    if (Object.prototype.hasOwnProperty.call(vars, key)) {
-      return String(vars[key] ?? "");
-    }
-    return "";
-  });
-}
-
-async function ensureExamplesHelpStyles() {
-  const cssText = await loadExamplesAssetText(EXAMPLE_STYLE_PATH);
-  let styleTag = document.getElementById(EXAMPLES_HELP_STYLE_TAG_ID);
-  if (!styleTag) {
-    styleTag = document.createElement("style");
-    styleTag.id = EXAMPLES_HELP_STYLE_TAG_ID;
-    document.head.appendChild(styleTag);
-  }
-  styleTag.textContent = cssText;
-}
-
-async function loadExamplesCatalog() {
-  const text = await loadExamplesAssetText(EXAMPLE_CATALOG_PATH);
-  const parsed = JSON.parse(text);
-  return normalizeExamplesCatalog(parsed);
-}
-
-async function renderExamplesHelp() {
-  if (!examplesHelpContent) {
-    return;
-  }
-  examplesHelpContent.innerHTML = "";
-  await ensureExamplesHelpStyles();
-  if (examplesHelpTitle) {
-    examplesHelpTitle.textContent = t("examples.title");
-  }
-  if (examplesHelpIntro) {
-    examplesHelpIntro.textContent = t("examples.intro");
-  }
-  let catalog = { title: "", intro: "", layout: normalizeExamplesLayout(null), entries: [], sections: [] };
-  try {
-    catalog = await loadExamplesCatalog();
-  } catch (err) {
-    const message = `${t("examples.openError")} ${String(err?.message || "")}`.trim();
-    const row = document.createElement("div");
-    row.className = "example-entry";
-    row.textContent = message;
-    examplesHelpContent.appendChild(row);
-    return;
-  }
-  if (examplesHelpTitle && catalog.title) {
-    examplesHelpTitle.textContent = catalog.title;
-  }
-  if (examplesHelpIntro && catalog.intro) {
-    examplesHelpIntro.textContent = catalog.intro;
-  }
-  examplesHelpContent.dataset.layoutVariant = catalog.layout.variant;
-  examplesHelpContent.classList.toggle("dense", catalog.layout.dense);
-  const openLabel = catalog.layout.openLabel || t("examples.open");
-  const showPaths = catalog.layout.showPaths !== false;
-
-  function createExampleRow(entry) {
-    const row = document.createElement("div");
-    row.className = "example-entry";
-    const openBtn = document.createElement("button");
-    openBtn.type = "button";
-    openBtn.className = "small-btn";
-    openBtn.textContent = openLabel;
-    openBtn.addEventListener("click", () => {
-      void openExampleModel(entry.file);
-    });
-    const content = document.createElement("div");
-    const title = document.createElement("div");
-    title.className = "example-entry-title";
-    title.textContent = entry.label || entry.file;
-    content.appendChild(title);
-    if (showPaths) {
-      const path = document.createElement("div");
-      path.className = "example-entry-path";
-      path.textContent = `examples/${entry.file}`;
-      content.appendChild(path);
-    }
-    const desc = document.createElement("p");
-    desc.className = "example-entry-desc";
-    desc.textContent = entry.summary;
-    content.appendChild(desc);
-    row.appendChild(openBtn);
-    row.appendChild(content);
-    return row;
-  }
-
-  catalog.entries.forEach((entry) => {
-    examplesHelpContent.appendChild(createExampleRow(entry));
-  });
-  catalog.sections.forEach((section) => {
-    const block = document.createElement("section");
-    block.className = "examples-section";
-    if (section.title) {
-      const heading = document.createElement("h4");
-      heading.className = "examples-section-title";
-      heading.textContent = section.title;
-      block.appendChild(heading);
-    }
-    if (section.intro) {
-      const intro = document.createElement("p");
-      intro.className = "examples-section-intro";
-      intro.textContent = section.intro;
-      block.appendChild(intro);
-    }
-    const list = document.createElement("div");
-    list.className = "examples-section-list";
-    section.entries.forEach((entry) => {
-      list.appendChild(createExampleRow(entry));
-    });
-    block.appendChild(list);
-    examplesHelpContent.appendChild(block);
-  });
-}
-
 function openExamplesHelp() {
-  if (!examplesHelpModal) {
-    return;
-  }
-  void renderExamplesHelp();
-  examplesHelpModal.classList.remove("hidden");
+  helpContentHelpers.openExamplesHelp();
 }
 
 function closeExamplesHelp() {
-  if (!examplesHelpModal) {
-    return;
-  }
-  examplesHelpModal.classList.add("hidden");
-}
-
-function eightTupleNodeAnnotation(node, extraText = "") {
-  const parts = [];
-  const description = getNodeDescription(node);
-  if (description) {
-    parts.push(description);
-  }
-  if (extraText) {
-    parts.push(extraText);
-  }
-  return parts.length ? ` [${parts.join(" | ")}]` : "";
-}
-
-function eightTupleBehaviorExpression(node, template = eightTupleTemplateCache) {
-  if (!node) {
-    return "";
-  }
-  if (isStateNode(node)) {
-    return interpolateEightTupleText(
-      getEightTupleTemplateText(template, "stateOutputIdentity", "eightTuple.stateOutputIdentity"),
-      { name: node.name },
-    );
-  }
-  return String(node.valueExpression ?? "").trim() || getEightTupleTemplateText(template, "unspecified", "eightTuple.unspecified");
-}
-
-function buildEightTupleSections(model = graph, template = eightTupleTemplateCache) {
-  const nodes = Array.isArray(model?.nodes) ? model.nodes : [];
-  const execution = model?.execution || {};
-  const t0 = Number(execution.t0);
-  const dt = Number(execution.dt);
-  const t1 = Number(execution.t1);
-  const integrator = String(execution.integrator || "euler");
-  const delayMs = Number(execution.delayMs);
-
-  const parameterNodes = nodes.filter((node) => node?.shape === "diamond");
-  const inputNodes = nodes.filter((node) => Boolean(node?.input) && node?.shape !== "diamond");
-  const outputNodes = nodes.filter((node) => Boolean(node?.output));
-  const stateNodes = nodes.filter((node) => isStateNode(node));
-  const internalAlgebraicNodes = nodes.filter((node) => isAlgebraicNode(node) && !node.input && !node.output);
-  const submodelNodes = nodes.filter((node) => isSubmodelNode(node));
-  const localFunctions = Array.isArray(model?.localFunctions) ? model.localFunctions : [];
-
-  const productOf = (names, emptyText) => (
-    names.length ? names.join(" × ") : emptyText
-  );
-  const listOrNone = (lines, noneText) => (
-    lines.length ? lines : [noneText]
-  );
-
-  const parameterLines = [
-    ...parameterNodes.map((node) => (
-      `${node.name} = ${String(node.valueExpression ?? "").trim() || getEightTupleTemplateText(template, "unspecified", "eightTuple.unspecified")}${eightTupleNodeAnnotation(
-        node,
-        node.global ? t("label.global") : "",
-      )}`
-    )),
-    ...stateNodes.map((node) => (
-      `${node.name}(t0) = ${String(node.initialStateExpression ?? "").trim() || getEightTupleTemplateText(template, "unspecified", "eightTuple.unspecified")}${eightTupleNodeAnnotation(node)}`
-    )),
-  ];
-
-  const inputLines = inputNodes.map((node) => (
-    `${node.name}: ${getEightTupleTemplateText(template, "rangeUndeclared", "eightTuple.rangeUndeclared")}${eightTupleNodeAnnotation(node)}`
-  ));
-
-  const outputLines = outputNodes.map((node) => (
-    `${node.name}: ${getEightTupleTemplateText(template, "rangeUndeclared", "eightTuple.rangeUndeclared")}${eightTupleNodeAnnotation(node)}`
-  ));
-
-  const stateRangeLines = stateNodes.map((node) => (
-    `${node.name}: ${getEightTupleTemplateText(template, "rangeUndeclared", "eightTuple.rangeUndeclared")}${eightTupleNodeAnnotation(node)}`
-  ));
-
-  const phiLines = stateNodes.map((node) => (
-    `${node.name}(t + Δt) = ${String(node.valueExpression ?? "").trim() || getEightTupleTemplateText(template, "unspecified", "eightTuple.unspecified")}${eightTupleNodeAnnotation(node)}`
-  ));
-
-  const etaLines = outputNodes.map((node) => (
-    `${node.name}(t) = ${eightTupleBehaviorExpression(node, template)}${eightTupleNodeAnnotation(node)}`
-  ));
-
-  const internalNames = internalAlgebraicNodes.map((node) => node.name);
-  const submodelNames = submodelNodes.map((node) => (
-    node.modelPath ? `${node.name} → ${node.modelPath}` : node.name
-  ));
-  const localFunctionNames = localFunctions
-    .map((definition) => String(definition?.name ?? "").trim())
-    .filter(Boolean);
-
-  const tLines = [];
-  if (Number.isFinite(t0) && Number.isFinite(dt) && Number.isFinite(t1)) {
-    tLines.push(`T = {${t0}, ${t0} + Δt, ..., ${t1}}`);
-    tLines.push(`t0 = ${t0}`);
-    tLines.push(`Δt = ${dt}`);
-    tLines.push(`t1 = ${t1}`);
-  } else {
-    tLines.push(`T = ${getEightTupleTemplateText(template, "timeUndeclared", "eightTuple.timeUndeclared")}`);
-  }
-
-  return [
-    {
-      title: getEightTupleSectionTitle(template, "tuple", "eightTuple.section.tuple"),
-      intro: model?.modelTitle ? `${t("label.modelTitle")}: ${model.modelTitle}` : "",
-      lines: ["〈T, K, U, Ω, Y, X, φ, η〉"],
-    },
-    {
-      title: getEightTupleSectionTitle(template, "T", "eightTuple.section.T"),
-      lines: tLines,
-    },
-    {
-      title: getEightTupleSectionTitle(template, "K", "eightTuple.section.K"),
-      intro: getEightTupleTemplateText(template, "KIntro", "eightTuple.KIntro"),
-      lines: listOrNone(parameterLines, "K = ∅"),
-    },
-    {
-      title: getEightTupleSectionTitle(template, "U", "eightTuple.section.U"),
-      intro: inputNodes.length
-        ? `U = ${productOf(inputNodes.map((node) => `U_${node.name}`), "U")}`
-        : getEightTupleTemplateText(template, "closedModel", "eightTuple.closedModel"),
-      lines: listOrNone(inputLines, "U = ∅"),
-    },
-    {
-      title: getEightTupleSectionTitle(template, "Omega", "eightTuple.section.Omega"),
-      lines: inputNodes.length
-        ? [getEightTupleTemplateText(template, "omegaUndeclared", "eightTuple.omegaUndeclared")]
-        : [getEightTupleTemplateText(template, "omegaUndefined", "eightTuple.omegaUndefined")],
-    },
-    {
-      title: getEightTupleSectionTitle(template, "Y", "eightTuple.section.Y"),
-      intro: outputNodes.length
-        ? `Y = ${productOf(outputNodes.map((node) => `Y_${node.name}`), "Y")}`
-        : getEightTupleTemplateText(template, "noOutputs", "eightTuple.noOutputs"),
-      lines: listOrNone(outputLines, getEightTupleTemplateText(template, "noOutputs", "eightTuple.noOutputs")),
-    },
-    {
-      title: getEightTupleSectionTitle(template, "X", "eightTuple.section.X"),
-      intro: stateNodes.length
-        ? `X = ${productOf(stateNodes.map((node) => `X_${node.name}`), "X")}`
-        : getEightTupleTemplateText(template, "algebraicModel", "eightTuple.algebraicModel"),
-      lines: listOrNone(stateRangeLines, "X = ∅"),
-    },
-    {
-      title: getEightTupleSectionTitle(template, "phi", "eightTuple.section.phi"),
-      intro: stateNodes.length ? getEightTupleTemplateText(template, "phiIntro", "eightTuple.phiIntro") : getEightTupleTemplateText(template, "phiUndefined", "eightTuple.phiUndefined"),
-      lines: listOrNone(phiLines, getEightTupleTemplateText(template, "phiUndefined", "eightTuple.phiUndefined")),
-    },
-    {
-      title: getEightTupleSectionTitle(template, "eta", "eightTuple.section.eta"),
-      intro: getEightTupleTemplateText(template, "etaIntro", "eightTuple.etaIntro"),
-      lines: listOrNone(etaLines, getEightTupleTemplateText(template, "noOutputs", "eightTuple.noOutputs")),
-    },
-    {
-      title: getEightTupleSectionTitle(template, "notes", "eightTuple.section.notes"),
-      lines: [
-        `${getEightTupleTemplateText(template, "noteImplementation", "eightTuple.noteImplementation")}: ${t(`integrator.${integrator}`)}; delayMs = ${Number.isFinite(delayMs) ? delayMs : getEightTupleTemplateText(template, "unspecified", "eightTuple.unspecified")}`,
-        `${getEightTupleTemplateText(template, "noteInternal", "eightTuple.noteInternal")}: ${internalNames.length ? internalNames.join(", ") : getEightTupleTemplateText(template, "none", "eightTuple.none")}`,
-        `${getEightTupleTemplateText(template, "noteSubmodels", "eightTuple.noteSubmodels")}: ${submodelNames.length ? submodelNames.join(", ") : getEightTupleTemplateText(template, "none", "eightTuple.none")}`,
-        `${getEightTupleTemplateText(template, "noteLocalFunctions", "eightTuple.noteLocalFunctions")}: ${localFunctionNames.length ? localFunctionNames.join(", ") : getEightTupleTemplateText(template, "none", "eightTuple.none")}`,
-        getEightTupleTemplateText(template, "noteGaps", "eightTuple.noteGaps"),
-      ],
-    },
-  ];
-}
-
-function buildEightTuplePlainText(model = graph, template = eightTupleTemplateCache) {
-  return buildEightTupleSections(model, template)
-    .map((section) => {
-      const parts = [section.title];
-      if (section.intro) {
-        parts.push(section.intro);
-      }
-      if (Array.isArray(section.lines) && section.lines.length) {
-        parts.push(section.lines.join("\n"));
-      }
-      return parts.join("\n");
-    })
-    .join("\n\n");
-}
-
-function buildEightTupleMarkdown(model = graph, template = eightTupleTemplateCache) {
-  const sections = buildEightTupleSections(model, template);
-  const lines = [];
-  lines.push(`# ${template?.title || t("eightTuple.title")}`);
-  if (template?.intro) {
-    lines.push("");
-    lines.push(template.intro);
-  }
-  sections.forEach((section) => {
-    lines.push("");
-    lines.push(`## ${section.title}`);
-    if (section.intro) {
-      lines.push("");
-      lines.push(section.intro);
-    }
-    if (Array.isArray(section.lines) && section.lines.length) {
-      lines.push("");
-      section.lines.forEach((line) => {
-        lines.push(`- ${line}`);
-      });
-    }
-  });
-  lines.push("");
-  return lines.join("\n");
-}
-
-async function renderEightTuple() {
-  if (!eightTupleContent) {
-    return;
-  }
-  const template = await loadEightTupleTemplate(true);
-  eightTupleContent.innerHTML = "";
-  const introNode = document.getElementById("eightTupleIntro");
-  const titleNode = document.getElementById("eightTupleTitle");
-  if (titleNode) {
-    titleNode.textContent = template.title || t("eightTuple.title");
-  }
-  if (introNode) {
-    introNode.textContent = template.intro || t("eightTuple.intro");
-  }
-  if (eightTupleCopyBtn) {
-    eightTupleCopyBtn.textContent = template.copyMarkdownLabel || t("eightTuple.copyMarkdown");
-  }
-  if (eightTupleExportBtn) {
-    eightTupleExportBtn.textContent = template.exportMarkdownLabel || t("eightTuple.exportMarkdown");
-  }
-  buildEightTupleSections(graph, template).forEach((section) => {
-    const block = document.createElement("section");
-    block.className = "eight-tuple-section";
-    const heading = document.createElement("h4");
-    heading.textContent = section.title;
-    block.appendChild(heading);
-    if (section.intro) {
-      const intro = document.createElement("p");
-      intro.textContent = section.intro;
-      block.appendChild(intro);
-    }
-    const pre = document.createElement("pre");
-    pre.className = "eight-tuple-pre";
-    pre.textContent = Array.isArray(section.lines) ? section.lines.join("\n") : "";
-    block.appendChild(pre);
-    eightTupleContent.appendChild(block);
-  });
+  helpContentHelpers.closeExamplesHelp();
 }
 
 function openEightTuple() {
-  if (!eightTupleModal) {
-    return;
-  }
-  void renderEightTuple();
-  eightTupleModal.classList.remove("hidden");
+  helpContentHelpers.openEightTuple();
 }
 
 function closeEightTuple() {
-  if (!eightTupleModal) {
-    return;
-  }
-  eightTupleModal.classList.add("hidden");
-}
-
-function suggestedEightTupleMarkdownName() {
-  const baseName = String(currentFileName || graph?.modelTitle || "model").trim() || "model";
-  return normalizeJsonFilename(baseName).replace(/\.json$/i, "-8tuple.md");
+  helpContentHelpers.closeEightTuple();
 }
 
 async function copyEightTupleText() {
-  const template = await loadEightTupleTemplate();
-  const ok = await copyTextToClipboard(buildEightTupleMarkdown(graph, template));
-  if (ok) {
-    setStatusKey("status.clipboardTextCopied");
-    return;
-  }
-  setStatusKey("error.clipboardTextCopyFailed");
+  return helpContentHelpers.copyEightTupleText();
 }
 
 async function exportEightTupleMarkdown() {
-  const template = await loadEightTupleTemplate();
-  try {
-    if (!supportsSaveFilePicker()) {
-      throw new Error("unsupported");
-    }
-    const fileHandle = await showSaveFilePickerCompat({
-      suggestedName: suggestedEightTupleMarkdownName(),
-      types: [
-        {
-          description: template.exportPickerTitle || "Markdown",
-          accept: { "text/markdown": [".md"], "text/plain": [".md"] },
-        },
-      ],
-    });
-    const ok = await writeTextToFileHandle(fileHandle, buildEightTupleMarkdown(graph, template));
-    if (!ok) {
-      throw new Error("write-failed");
-    }
-    setStatus(template.exportSuccess || t("status.clipboardTextCopied"));
-  } catch (_err) {
-    const markdown = buildEightTupleMarkdown(graph, template);
-    const ok = await copyTextToClipboard(markdown);
-    if (ok) {
-      setStatus(`${template.exportFailed || t("error.saveFailed")} ${t("status.clipboardTextCopied")}`, true);
-      return;
-    }
-    window.alert(template.exportFailed || t("error.saveFailed"));
-    setStatus(template.exportFailed || t("error.saveFailed"), true);
-  }
+  return helpContentHelpers.exportEightTupleMarkdown();
 }
 
 function openAboutApp() {
-  if (!aboutAppModal) {
-    return;
-  }
-  const appMeta = window.STGraphXAppMeta || {};
-  const releaseDate = String(appMeta.releaseDate || "").trim();
-  const author = String(appMeta.author || "").trim();
-  const license = String(appMeta.license || "").trim();
-  const copyright = String(appMeta.copyright || "").trim();
-  if (aboutAppVersionValue) {
-    aboutAppVersionValue.textContent = releaseDate;
-  }
-  if (aboutAppAuthorValue) {
-    aboutAppAuthorValue.textContent = author;
-  }
-  if (aboutAppLicenseValue) {
-    aboutAppLicenseValue.textContent = license;
-  }
-  if (aboutAppCopyrightValue) {
-    aboutAppCopyrightValue.textContent = copyright;
-  }
-  aboutAppModal.classList.remove("hidden");
+  helpContentHelpers.openAboutApp();
 }
 
 function closeAboutApp() {
-  if (!aboutAppModal) {
-    return;
-  }
-  aboutAppModal.classList.add("hidden");
+  helpContentHelpers.closeAboutApp();
 }
 
 function closeModelAnalysis() {
-  if (!modelAnalysisModal) {
-    return;
-  }
-  modelAnalysisModal.classList.add("hidden");
+  modelAnalysisUiHelpers.closeModelAnalysis();
 }
 
 function showLocalFunctionsStatus(message = "", isError = false) {
@@ -4336,50 +3348,11 @@ function selectedWatchableNode() {
 }
 
 function formatWatchValue(value, error = "") {
-  if (String(error || "").trim()) {
-    return t("text.valueError", { reason: evalReasonText(error) });
-  }
-  if (value === null || value === undefined) {
-    return "—";
-  }
-  try {
-    return summarizeExpressionPreviewValue(value);
-  } catch (_err) {
-    try {
-      return String(value);
-    } catch (_err2) {
-      return "<?>"; 
-    }
-  }
+  return watchDebuggerUiHelpers.formatWatchValue(value, error);
 }
 
 function captureWatchSnapshot() {
-  try {
-    const debug = sanitizeDebugConfig(graph);
-    const snapshot = new Map();
-    debug.watches.forEach((name) => {
-      const node = getNodeByName(name);
-      if (!node) {
-        return;
-      }
-      snapshot.set(name, {
-        summary: formatWatchValue(node.computedValue, node.computedError),
-      });
-    });
-    ui.watchPreviousSnapshot = snapshot;
-  } catch (_err) {
-    ui.watchPreviousSnapshot = new Map();
-  }
-}
-
-function breakpointAvailableNames() {
-  return [...new Set([
-    "time",
-    "t0",
-    "t1",
-    "dt",
-    ...graph.nodes.map((node) => String(node.name ?? "")).filter(Boolean),
-  ])];
+  ui.watchPreviousSnapshot = watchDebuggerCoreHelpers.captureWatchSnapshot();
 }
 
 function breakpointExpressionSource() {
@@ -4390,67 +3363,11 @@ function breakpointExpressionSource() {
 }
 
 function validateBreakpointExpressionText(source = breakpointExpressionSource()) {
-  const text = String(source ?? "").trim();
-  if (!text) {
-    return { ok: true, empty: true };
-  }
-  return semantics.validateExpressionSyntax(text, breakpointAvailableNames(), {
-    localFunctions: localFunctionsForSemantics(graph),
-  });
-}
-
-function breakpointResultTruthy(value) {
-  if (typeof value === "number") {
-    return value !== 0;
-  }
-  if (typeof value === "string") {
-    return value.trim().length > 0 && value.trim().toLowerCase() !== "false";
-  }
-  return Boolean(value);
-}
-
-function breakpointNodeContextValue(node) {
-  if (!node) {
-    return undefined;
-  }
-  if (isStateNode(node) && node.pendingStateValue !== null && node.pendingStateValue !== undefined) {
-    return node.pendingStateValue;
-  }
-  return node.computedValue;
-}
-
-function buildBreakpointContext(timeValue) {
-  const context = buildExecutionGlobals(timeValue);
-  graph.nodes.forEach((node) => {
-    const value = breakpointNodeContextValue(node);
-    if (value !== undefined && value !== null) {
-      context[node.name] = value;
-    }
-  });
-  return context;
+  return watchDebuggerCoreHelpers.validateBreakpointExpressionText(source);
 }
 
 function evaluateBreakpointConditionAtTime(timeValue) {
-  const debug = sanitizeDebugConfig(graph);
-  if (!debug.breakpointEnabled) {
-    return { enabled: false, hit: false };
-  }
-  const expression = String(debug.breakpointExpression ?? "").trim();
-  if (!expression) {
-    return { enabled: true, hit: false, invalid: true, message: t("watch.breakpointEmpty") };
-  }
-  const result = semantics.evaluateValueExpression(expression, buildBreakpointContext(timeValue), {
-    localFunctions: localFunctionsForSemantics(graph),
-  });
-  if (!result.ok) {
-    return {
-      enabled: true,
-      hit: false,
-      invalid: true,
-      message: localizeExpressionErrorMessage(result.message || result.reason || ""),
-    };
-  }
-  return { enabled: true, hit: breakpointResultTruthy(result.value), value: result.value, expression };
+  return watchDebuggerCoreHelpers.evaluateBreakpointConditionAtTime(timeValue);
 }
 
 function ensureBreakpointReadyForExecution() {
@@ -4474,243 +3391,35 @@ function ensureBreakpointReadyForExecution() {
 }
 
 function renderWatchDebugger() {
-  if (!watchDebuggerList || !watchDebuggerSummary || !watchBreakpointEnabledInput || !watchAddSelectedBtn) {
-    return;
-  }
-  const debug = sanitizeDebugConfig(graph);
-  const selectedNode = selectedWatchableNode();
-  const canAddSelected = Boolean(selectedNode && !debug.watches.includes(selectedNode.name) && !isEditingUiLocked());
-  watchAddSelectedBtn.disabled = !canAddSelected;
-  if (watchBreakpointEnabledInput) {
-    watchBreakpointEnabledInput.checked = Boolean(debug.breakpointEnabled);
-    watchBreakpointEnabledInput.disabled = isEditingUiLocked();
-  }
-  if (watchBreakpointInput && document.activeElement !== watchBreakpointInput) {
-    watchBreakpointInput.value = String(debug.breakpointExpression ?? "");
-  }
-  if (watchBreakpointInput) {
-    watchBreakpointInput.disabled = isEditingUiLocked();
-  }
-  watchDebuggerSummary.textContent = t("watch.summary", { count: debug.watches.length });
-
-  const breakpointValidation = validateBreakpointExpressionText();
-  if (watchBreakpointStatus) {
-    if (debug.breakpointEnabled) {
-      if (!String(breakpointExpressionSource() || "").trim()) {
-        showExpressionStatus(watchBreakpointStatus, { ok: false, message: t("watch.breakpointEmpty") }, false);
-      } else if (!breakpointValidation.ok) {
-        showExpressionStatus(
-          watchBreakpointStatus,
-          { ok: false, message: localizeExpressionErrorMessage(breakpointValidation.message || "") },
-          false,
-        );
-      } else if (ui.breakpointLastResult?.hit) {
-        watchBreakpointStatus.classList.remove("invalid", "hidden");
-        watchBreakpointStatus.textContent = t("watch.breakpointHit", {
-          time: formatNumberValue(Number(ui.breakpointLastResult.time)),
-        });
-      } else {
-        showExpressionStatus(watchBreakpointStatus, { ok: true }, true);
-      }
-    } else {
-      hideExpressionStatus(watchBreakpointStatus);
-    }
-  }
-
-  watchDebuggerList.innerHTML = "";
-  if (debug.watches.length === 0) {
-    const empty = document.createElement("div");
-    empty.className = "empty-props";
-    empty.textContent = t("watch.empty");
-    watchDebuggerList.appendChild(empty);
-    return;
-  }
-
-  debug.watches.forEach((name) => {
-    const node = getNodeByName(name);
-    if (!node) {
-      return;
-    }
-    try {
-      const item = document.createElement("div");
-      item.className = "watch-item";
-      const head = document.createElement("div");
-      head.className = "watch-item-head";
-      const title = document.createElement("strong");
-      title.textContent = name;
-      const removeBtn = document.createElement("button");
-      removeBtn.type = "button";
-      removeBtn.className = "small-btn";
-      removeBtn.textContent = t("action.remove");
-      removeBtn.disabled = isEditingUiLocked();
-      removeBtn.addEventListener("click", () => {
-        commitDebugConfigChange(() => {
-          ensureDebugConfig(graph).watches = ensureDebugConfig(graph).watches.filter((entry) => entry !== name);
-        });
-        renderWatchDebugger();
-      });
-      head.appendChild(title);
-      head.appendChild(removeBtn);
-      item.appendChild(head);
-
-      const currentRow = document.createElement("div");
-      currentRow.className = "watch-item-row";
-      currentRow.textContent = `${t("watch.current")}: ${formatWatchValue(node.computedValue, node.computedError)}`;
-      item.appendChild(currentRow);
-
-      const previousRow = document.createElement("div");
-      previousRow.className = "watch-item-row";
-      const previous = ui.watchPreviousSnapshot instanceof Map ? ui.watchPreviousSnapshot.get(name) : null;
-      previousRow.textContent = `${t("watch.previous")}: ${previous?.summary ?? "—"}`;
-      item.appendChild(previousRow);
-
-      if (isStateNode(node)) {
-        const nextRow = document.createElement("div");
-        nextRow.className = "watch-item-row";
-        nextRow.textContent = `${t("watch.next")}: ${formatWatchValue(node.pendingStateValue, node.pendingStateError)}`;
-        item.appendChild(nextRow);
-      }
-
-      watchDebuggerList.appendChild(item);
-    } catch (_err) {
-      const item = document.createElement("div");
-      item.className = "watch-item";
-      item.textContent = `${name}: <?>`;
-      watchDebuggerList.appendChild(item);
-    }
-  });
+  return watchDebuggerUiHelpers.renderWatchDebugger();
 }
 
 function openWatchDebugger() {
-  if (!watchDebuggerModal) {
-    return;
-  }
-  renderWatchDebugger();
-  watchDebuggerModal.classList.remove("hidden");
+  return watchDebuggerUiHelpers.openWatchDebugger();
 }
 
 function closeWatchDebugger() {
-  if (!watchDebuggerModal) {
-    return;
-  }
-  watchDebuggerModal.classList.add("hidden");
+  return watchDebuggerUiHelpers.closeWatchDebugger();
 }
 
 function modelAnalysisCheckEntries() {
-  return [
-    { severity: "error", nameKey: "analysis.issue.invalidTimeConfig", descKey: "analysis.checks.invalidTimeConfig" },
-    { severity: "warning", nameKey: "analysis.issue.invalidDelay", descKey: "analysis.checks.invalidDelay" },
-    { severity: "error", nameKey: "analysis.issue.danglingEdge", descKey: "analysis.checks.danglingEdge" },
-    { severity: "warning", nameKey: "analysis.issue.duplicateEdge", descKey: "analysis.checks.duplicateEdge" },
-    { severity: "warning", nameKey: "analysis.issue.selfLoop", descKey: "analysis.checks.selfLoop" },
-    { severity: "error", nameKey: "analysis.issue.algebraicCycle", descKey: "analysis.checks.algebraicCycle" },
-    { severity: "warning", nameKey: "analysis.issue.missingIncomingEdge", descKey: "analysis.checks.missingIncomingEdge" },
-    { severity: "warning", nameKey: "analysis.issue.unusedEdge", descKey: "analysis.checks.unusedEdge" },
-    { severity: "info", nameKey: "analysis.issue.unusedNode", descKey: "analysis.checks.unusedNode" },
-    { severity: "error", nameKey: "analysis.issue.invalidSubmodelBinding", descKey: "analysis.checks.invalidSubmodelBinding" },
-    { severity: "warning", nameKey: "analysis.issue.unknownSubmodelBinding", descKey: "analysis.checks.unknownSubmodelBinding" },
-    { severity: "warning", nameKey: "analysis.issue.widgetNoSource", descKey: "analysis.checks.widgetNoSource" },
-    { severity: "error", nameKey: "analysis.issue.widgetMissingSource", descKey: "analysis.checks.widgetMissingSource" },
-    { severity: "warning", nameKey: "analysis.issue.widgetSourceNotOutput", descKey: "analysis.checks.widgetSourceNotOutput" },
-    { severity: "error", nameKey: "analysis.issue.widgetSourceNotBindable", descKey: "analysis.checks.widgetSourceNotBindable" },
-    { severity: "warning", nameKey: "analysis.issue.tableNoColumns", descKey: "analysis.checks.tableNoColumns" },
-    { severity: "error", nameKey: "analysis.issue.tableMissingColumn", descKey: "analysis.checks.tableMissingColumn" },
-    { severity: "warning", nameKey: "analysis.issue.tableColumnNotOutput", descKey: "analysis.checks.tableColumnNotOutput" },
-    { severity: "warning", nameKey: "analysis.issue.chartNoPairs", descKey: "analysis.checks.chartNoPairs" },
-    { severity: "error", nameKey: "analysis.issue.chartMissingSeriesSource", descKey: "analysis.checks.chartMissingSeriesSource" },
-    { severity: "warning", nameKey: "analysis.issue.chartSeriesNotOutput", descKey: "analysis.checks.chartSeriesNotOutput" },
-    { severity: "warning", nameKey: "analysis.issue.stateShapeMismatch", descKey: "analysis.checks.stateShapeMismatch" },
-  ];
+  return modelAnalysisUiHelpers.modelAnalysisCheckEntries();
 }
 
 function renderModelAnalysisChecksHelp() {
-  if (!modelAnalysisChecksContent) {
-    return;
-  }
-  modelAnalysisChecksContent.innerHTML = "";
-  const groups = new Map();
-  modelAnalysisCheckEntries().forEach((entry) => {
-    if (!groups.has(entry.severity)) {
-      groups.set(entry.severity, []);
-    }
-    groups.get(entry.severity).push(entry);
-  });
-  ["error", "warning", "info"].forEach((severity) => {
-    const entries = groups.get(severity) || [];
-    if (!entries.length) {
-      return;
-    }
-    const section = document.createElement("section");
-    section.className = "model-analysis-checks-group";
-    const title = document.createElement("h4");
-    title.className = "model-analysis-checks-group-title";
-    title.textContent = t(`analysis.section.${severity}`);
-    section.appendChild(title);
-    entries.forEach((entry) => {
-      const item = document.createElement("div");
-      item.className = `model-analysis-check-item ${severity}`;
-      const badge = document.createElement("span");
-      badge.className = "model-analysis-check-badge";
-      badge.textContent = t(`analysis.badge.${severity}`);
-      const text = document.createElement("div");
-      text.className = "model-analysis-check-text";
-      const name = document.createElement("div");
-      name.className = "model-analysis-check-name";
-      name.textContent = t(entry.nameKey, {
-        reason: "…",
-        from: "A",
-        to: "B",
-        name: "X",
-        target: "B",
-        source: "A",
-        input: "in1",
-        path: "A -> B -> C",
-        current: "vettore",
-        next: "matrice",
-      });
-      const desc = document.createElement("div");
-      desc.className = "model-analysis-check-desc";
-      desc.textContent = t(entry.descKey);
-      text.appendChild(name);
-      text.appendChild(desc);
-      item.appendChild(badge);
-      item.appendChild(text);
-      section.appendChild(item);
-    });
-    modelAnalysisChecksContent.appendChild(section);
-  });
+  return modelAnalysisUiHelpers.renderModelAnalysisChecksHelp();
 }
 
 function openModelAnalysisChecksHelp() {
-  if (!modelAnalysisChecksModal) {
-    return;
-  }
-  renderModelAnalysisChecksHelp();
-  modelAnalysisChecksModal.classList.remove("hidden");
+  return modelAnalysisUiHelpers.openModelAnalysisChecksHelp();
 }
 
 function closeModelAnalysisChecksHelp() {
-  if (!modelAnalysisChecksModal) {
-    return;
-  }
-  modelAnalysisChecksModal.classList.add("hidden");
+  return modelAnalysisUiHelpers.closeModelAnalysisChecksHelp();
 }
 
 function analysisIssueTargetLabel(issue) {
-  const target = issue?.target;
-  if (!target) {
-    return "";
-  }
-  if (target.type === "node") {
-    return t("analysis.target.node", { name: target.name || "?" });
-  }
-  if (target.type === "edge") {
-    return t("analysis.target.edge", { name: target.name || "?" });
-  }
-  if (target.type === "widget") {
-    return t("analysis.target.widget", { name: target.name || "?" });
-  }
-  return t("analysis.target.model");
+  return modelAnalysisUiHelpers.analysisIssueTargetLabel(issue);
 }
 
 function focusAnalysisIssueTarget(issue) {
@@ -4736,90 +3445,11 @@ function focusAnalysisIssueTarget(issue) {
 }
 
 function renderModelAnalysisReport(issues) {
-  if (!modelAnalysisSummary || !modelAnalysisContent) {
-    return;
-  }
-  const safeIssues = Array.isArray(issues) ? issues : [];
-  const counts = {
-    total: safeIssues.length,
-    error: safeIssues.filter((issue) => issue.severity === "error").length,
-    warning: safeIssues.filter((issue) => issue.severity === "warning").length,
-    info: safeIssues.filter((issue) => issue.severity === "info").length,
-  };
-
-  modelAnalysisSummary.innerHTML = "";
-  [
-    ["total", t("analysis.summary.total", { count: counts.total })],
-    ["error", t("analysis.summary.errors", { count: counts.error })],
-    ["warning", t("analysis.summary.warnings", { count: counts.warning })],
-    ["info", t("analysis.summary.info", { count: counts.info })],
-  ].forEach(([kind, text]) => {
-    const pill = document.createElement("div");
-    pill.className = `model-analysis-pill ${kind}`;
-    pill.textContent = text;
-    modelAnalysisSummary.appendChild(pill);
-  });
-
-  modelAnalysisContent.innerHTML = "";
-  if (safeIssues.length === 0) {
-    const empty = document.createElement("div");
-    empty.className = "model-analysis-empty";
-    empty.textContent = t("analysis.empty");
-    modelAnalysisContent.appendChild(empty);
-    return;
-  }
-
-  ["error", "warning", "info"].forEach((severity) => {
-    const items = safeIssues.filter((issue) => issue.severity === severity);
-    if (items.length === 0) {
-      return;
-    }
-    const section = document.createElement("section");
-    section.className = "model-analysis-section";
-    const title = document.createElement("h4");
-    title.className = "model-analysis-section-title";
-    title.textContent = t(`analysis.section.${severity}`);
-    section.appendChild(title);
-    const list = document.createElement("div");
-    list.className = "model-analysis-list";
-    items.forEach((issue) => {
-      const button = document.createElement("button");
-      button.type = "button";
-      button.className = `model-analysis-item ${severity}`;
-      const badge = document.createElement("span");
-      badge.className = "model-analysis-badge";
-      badge.textContent = t(`analysis.badge.${severity}`);
-      const message = document.createElement("div");
-      message.className = "model-analysis-message";
-      message.textContent = issue.message;
-      const target = document.createElement("div");
-      target.className = "model-analysis-target";
-      target.textContent = analysisIssueTargetLabel(issue);
-      button.appendChild(badge);
-      button.appendChild(message);
-      button.appendChild(target);
-      button.addEventListener("click", () => {
-        focusAnalysisIssueTarget(issue);
-      });
-      list.appendChild(button);
-    });
-    section.appendChild(list);
-    modelAnalysisContent.appendChild(section);
-  });
+  return modelAnalysisUiHelpers.renderModelAnalysisReport(issues);
 }
 
 function openModelAnalysis() {
-  if (!modelAnalysisModal) {
-    return;
-  }
-  const issues = analyzeModelStaticIssues();
-  renderModelAnalysisReport(issues);
-  modelAnalysisModal.classList.remove("hidden");
-  setStatusKey("status.modelAnalyzed", {
-    count: issues.length,
-    errors: issues.filter((issue) => issue.severity === "error").length,
-    warnings: issues.filter((issue) => issue.severity === "warning").length,
-  });
+  return modelAnalysisUiHelpers.openModelAnalysis();
 }
 
 function expressionEditorHasUnsavedChanges() {
@@ -6241,7 +4871,7 @@ function applyI18nTooltipsToSubtree(root) {
 }
 
 async function loadI18n() {
-  currentLang = resolveLangFromUrl();
+  currentLang = await resolveLangFromUrl();
   const bundledCurrent = bundledI18nMessages(currentLang);
   if (bundledCurrent) {
     i18n = bundledCurrent;
@@ -9074,7 +7704,7 @@ function runAction(mutator) {
 
 function updateHistoryButtons() {
   const frozen = isEditingUiLocked();
-  const hasPasteData = Boolean(clipboard.data || syncClipboardFromSharedSource());
+  const hasPasteData = Boolean(clipboard.data || readStoredModelClipboardRaw() || hasPlatformApi("readClipboardText"));
   undoBtn.disabled = frozen || history.undo.length === 0;
   redoBtn.disabled = frozen || history.redo.length === 0;
   pasteBtn.disabled = frozen || !hasPasteData;
@@ -9376,8 +8006,8 @@ function cutSelectionToClipboard() {
   setStatusKey("status.clipboardCut");
 }
 
-function pasteFromClipboard() {
-  syncClipboardFromSharedSource();
+async function pasteFromClipboard() {
+  await syncClipboardFromSharedSource();
   if (!clipboard.data || !Array.isArray(clipboard.data.nodes) || clipboard.data.nodes.length === 0) {
     setStatusKey("status.clipboardEmpty");
     return;
@@ -10174,7 +8804,7 @@ function refreshSidebar() {
   }
 }
 
-function render() {
+function render(options = {}) {
   clearStrictInvalidNodeValues();
   updateModelRunButtons();
   updateMenuTimeLabel();
@@ -10846,7 +9476,7 @@ function render() {
   refreshActiveTooltip();
 
   updateCanvasSize();
-  if (ui.sliderInteraction == null) {
+  if (!options.preserveWidgets && ui.sliderInteraction == null) {
     renderWidgets();
   } else {
     applyWidgetDrivenNodeValues();
@@ -11058,16 +9688,18 @@ function importGraphData(data) {
         columns: Array.isArray(w.columns) ? w.columns.map(normalizeTableColumnName) : [],
         xyPairs: Array.isArray(w.xyPairs)
           ? w.xyPairs.map((pair, idx) => ({
-          xSource: String(pair.xSource ?? "time"),
-          ySource: String(pair.ySource ?? ""),
-          color: /^#[0-9a-fA-F]{6}$/.test(String(pair?.color ?? "")) ? String(pair.color) : defaultChartSeriesColor(idx),
-          pointColor: /^#[0-9a-fA-F]{6}$/.test(String(pair?.pointColor ?? "")) ? String(pair.pointColor) : (/^#[0-9a-fA-F]{6}$/.test(String(pair?.color ?? "")) ? String(pair.color) : defaultChartSeriesColor(idx)),
-          showLine: pair?.showLine !== false,
-          lineWidth: Number.isFinite(Number(pair?.lineWidth)) ? clamp(Number(pair.lineWidth), 1, 8) : 2.2,
-          lineStyle: normalizeChartLineStyle(pair?.lineStyle),
-          pointMode: normalizeChartPointMode(pair?.pointMode, pair?.showPoints),
-          pointSize: Number.isFinite(Number(pair?.pointSize)) ? clamp(Number(pair.pointSize), 1, 12) : 2.4,
-          points: [],
+            xSource: String(pair.xSource ?? "time"),
+            ySource: String(pair.ySource ?? ""),
+            showTimeSeries: normalizeChartSeriesToggle(pair?.showTimeSeries, pair?.seriesMode !== "instant"),
+            showInstantProfile: normalizeChartSeriesToggle(pair?.showInstantProfile, pair?.seriesMode === "instant" ? true : false),
+            color: /^#[0-9a-fA-F]{6}$/.test(String(pair?.color ?? "")) ? String(pair.color) : defaultChartSeriesColor(idx),
+            pointColor: /^#[0-9a-fA-F]{6}$/.test(String(pair?.pointColor ?? "")) ? String(pair.pointColor) : (/^#[0-9a-fA-F]{6}$/.test(String(pair?.color ?? "")) ? String(pair.color) : defaultChartSeriesColor(idx)),
+            showLine: pair?.showLine !== false,
+            lineWidth: Number.isFinite(Number(pair?.lineWidth)) ? clamp(Number(pair.lineWidth), 1, 8) : 2.2,
+            lineStyle: normalizeChartLineStyle(pair?.lineStyle),
+            pointMode: normalizeChartPointMode(pair?.pointMode, pair?.showPoints),
+            pointSize: Number.isFinite(Number(pair?.pointSize)) ? clamp(Number(pair.pointSize), 1, 12) : 2.4,
+            points: [],
           }))
           : (() => {
             const legacyX = String(w.xSource ?? w.xNode ?? "time");
@@ -11077,6 +9709,8 @@ function importGraphData(data) {
             return legacyYNodes.map((yNode, idx) => ({
               xSource: legacyX,
               ySource: yNode,
+              showTimeSeries: true,
+              showInstantProfile: false,
               color: defaultChartSeriesColor(idx),
               showLine: true,
               lineWidth: 2.2,
@@ -11132,79 +9766,30 @@ function defaultGraphFilename() {
   return `grafo-${stamp}.json`;
 }
 
+const modelFileHelpers = globalThis.STGraphXModelFiles?.createModelFileHelpers({
+  defaultJsonFilename: defaultGraphFilename,
+  hasPlatformApi,
+  getPlatform: () => window.STGraphXPlatform,
+});
+
+if (!modelFileHelpers) {
+  throw new Error("STGraphX model files helpers are unavailable");
+}
+
 function normalizeJsonFilename(name) {
-  const trimmed = String(name || "").trim();
-  if (!trimmed) {
-    return defaultGraphFilename();
-  }
-  return trimmed.toLowerCase().endsWith(".json") ? trimmed : `${trimmed}.json`;
+  return modelFileHelpers.normalizeJsonFilename(name);
 }
 
 function supportsRecentModelPaths() {
-  return hasPlatformApi("createFileHandleFromPath");
+  return modelFileHelpers.supportsRecentModelPaths();
 }
 
 async function extractFileHandlePath(fileHandle) {
-  if (!fileHandle) {
-    return "";
-  }
-  if (typeof fileHandle.getPath === "function") {
-    try {
-      const path = String(await fileHandle.getPath()).trim();
-      if (path) {
-        return path;
-      }
-    } catch (_err) {
-      // Fall back below.
-    }
-  }
-  const directPath = String(fileHandle.path ?? "").trim();
-  return directPath;
-}
-
-function saveRecentModelsToStorage() {
-  try {
-    const payload = recentModelEntries
-      .filter((entry) => entry && (entry.path || entry.name))
-      .slice(0, MAX_RECENT_MODELS)
-      .map((entry) => ({
-        name: String(entry.name || ""),
-        path: String(entry.path || ""),
-      }));
-    window.localStorage.setItem(RECENT_MODELS_STORAGE_KEY, JSON.stringify(payload));
-  } catch (_err) {
-    // Ignore storage failures.
-  }
-}
-
-function loadRecentModelsFromStorage() {
-  try {
-    const raw = window.localStorage.getItem(RECENT_MODELS_STORAGE_KEY);
-    if (!raw) {
-      recentModelEntries = [];
-      return;
-    }
-    const parsed = JSON.parse(raw);
-    if (!Array.isArray(parsed)) {
-      recentModelEntries = [];
-      return;
-    }
-    recentModelEntries = parsed
-      .map((entry) => ({
-        name: String(entry?.name || ""),
-        path: String(entry?.path || "").trim(),
-        handle: null,
-      }))
-      .filter((entry) => entry.path)
-      .slice(0, MAX_RECENT_MODELS);
-  } catch (_err) {
-    recentModelEntries = [];
-  }
+  return modelFileHelpers.extractFileHandlePath(fileHandle);
 }
 
 function clearRecentModels() {
-  recentModelEntries = [];
-  saveRecentModelsToStorage();
+  recentModelsStore.clear();
   renderRecentModelsMenu();
 }
 
@@ -11220,8 +9805,7 @@ async function maybeSaveUnsavedChangesBeforeModelReplace(confirmKey) {
 }
 
 function notifyMissingRecentModelEntry(entry) {
-  recentModelEntries = recentModelEntries.filter((item) => item !== entry);
-  saveRecentModelsToStorage();
+  recentModelsStore.remove(entry);
   renderRecentModelsMenu();
   setStatusKey("status.recentMissing");
   window.alert(t("error.recentMissing"));
@@ -11232,14 +9816,15 @@ function renderRecentModelsMenu() {
     return;
   }
   recentModelsSection.innerHTML = "";
-  const hasRecent = recentModelEntries.length > 0;
+  const entries = recentModelsStore.entries();
+  const hasRecent = entries.length > 0;
   recentModelsMenuRoot.classList.toggle("hidden", !hasRecent);
   recentModelsSep.classList.toggle("hidden", !hasRecent);
   clearRecentModelsBtn.classList.toggle("hidden", !hasRecent);
   if (!hasRecent) {
     return;
   }
-  recentModelEntries.forEach((entry, idx) => {
+  entries.forEach((entry, idx) => {
     const btn = document.createElement("button");
     btn.type = "button";
     btn.className = "menu-command";
@@ -11256,187 +9841,36 @@ function renderRecentModelsMenu() {
 }
 
 async function rememberRecentModel(name, fileHandle = null) {
-  const trimmedName = String(name || "").trim();
-  const path = supportsRecentModelPaths() ? await extractFileHandlePath(fileHandle) : "";
-  const handle = fileHandle || null;
-  if (!trimmedName && !path && !handle) {
-    return;
-  }
-  const dedupeIndex = recentModelEntries.findIndex((entry) => {
-    if (path && entry.path) {
-      return entry.path === path;
-    }
-    if (!path && !entry.path && handle && entry.handle) {
-      return entry.handle === handle;
-    }
-    return !path && !entry.path && trimmedName && entry.name === trimmedName;
-  });
-  if (dedupeIndex >= 0) {
-    recentModelEntries.splice(dedupeIndex, 1);
-  }
-  recentModelEntries.unshift({
-    name: trimmedName || path || t("file.unnamed"),
-    path,
-    handle,
-  });
-  recentModelEntries = recentModelEntries.slice(0, MAX_RECENT_MODELS);
-  saveRecentModelsToStorage();
+  await recentModelsStore.remember(name, fileHandle);
   renderRecentModelsMenu();
 }
 
 async function resolveRecentModelHandle(entry) {
-  if (entry?.handle) {
-    return entry.handle;
-  }
-  if (entry?.path && supportsRecentModelPaths()) {
-    try {
-      const handle = window.STGraphXPlatform.createFileHandleFromPath(entry.path);
-      entry.handle = handle;
-      return handle;
-    } catch (_err) {
-      return null;
-    }
-  }
-  return null;
+  return recentModelsStore.resolveHandle(entry);
 }
 
 async function openPreparedJsonEntry(rootEntry) {
-  if (!rootEntry) {
-    return false;
-  }
-  submodelTemplateCache.clear();
-  submodelFileHandleCache.clear();
-  submodelSourceCache.clear();
-  const handle = rootEntry.fileHandle;
-  const file = rootEntry.file;
-  const text = rootEntry.text;
-  const rootData = rootEntry.data || JSON.parse(text);
-  const directoryHandle = rootEntry.directoryHandle || await deriveDirectoryHandleFromFileHandle(handle) || null;
-  loadGraphFromJsonText(
-    text,
-    rootEntry.name || (handle && handle.name) || (file && file.name) || "graph.json",
-    handle || null,
-    directoryHandle,
-    true,
-  );
-  await rememberRecentModel(rootEntry.name || (handle && handle.name) || (file && file.name) || "graph.json", handle || null);
-  await preloadSubmodelsAfterLoad();
-  await maybeSelectModelDirectoryForSubmodels(rootData);
-  await preloadSubmodelsAfterLoad();
-  return true;
+  return modelLoadingHelpers.openPreparedJsonEntry(rootEntry);
 }
 
 async function openPreparedJsonEntryInNewTab(rootEntry) {
-  if (!rootEntry) {
-    return false;
-  }
-  saveActiveWorkspaceTabState();
-  closeDocumentTransientUi();
-  const previousActiveTabId = workspace.activeTabId;
-  workspace.activeTabId = null;
-  modelContextStack.length = 0;
-  const opened = await openPreparedJsonEntry(rootEntry);
-  if (!opened) {
-    workspace.activeTabId = previousActiveTabId;
-    refreshWorkspaceTabBar();
-    return false;
-  }
-  createWorkspaceTabFromCurrentState({ activate: true });
-  refreshWorkspaceTabBar();
-  return true;
+  return modelLoadingHelpers.openPreparedJsonEntryInNewTab(rootEntry);
 }
 
 async function openRecentModelEntry(entry) {
-  try {
-    let rootEntry = null;
-    const handle = await resolveRecentModelHandle(entry);
-    if (handle) {
-      rootEntry = await prepareSelectedJsonEntries([handle]);
-    } else if (supportsOpenFilePicker()) {
-      const handles = await showOpenFilePickerCompat({
-        multiple: true,
-        types: [{
-          description: "JSON",
-          accept: { "application/json": [".json"] },
-        }],
-      });
-      if (!handles || handles.length === 0) {
-        return false;
-      }
-      rootEntry = await prepareSelectedJsonEntries(handles);
-    } else {
-      const files = await pickSubmodelFilesWithInput();
-      rootEntry = await prepareSelectedJsonEntries(files);
-    }
-    if (!rootEntry) {
-      return false;
-    }
-    return openPreparedJsonEntryInNewTab(rootEntry);
-  } catch (err) {
-    if (err && (err.name === "AbortError" || String(err.message || "") === t("error.loadCancelled"))) {
-      return false;
-    }
-    notifyMissingRecentModelEntry(entry);
-    return false;
-  }
+  return modelLoadingHelpers.openRecentModelEntry(entry);
 }
 
 function tryDeriveDirectoryHandleFromFileHandle(fileHandle) {
-  const filePath = String(fileHandle?.path ?? "").trim();
-  if (!filePath || !hasPlatformApi("createDirectoryHandleFromPath")) {
-    return null;
-  }
-  try {
-    return window.STGraphXPlatform.createDirectoryHandleFromPath(filePath);
-  } catch (_err) {
-    return null;
-  }
+  return modelFileHelpers.tryDeriveDirectoryHandleFromFileHandle(fileHandle);
 }
 
 async function deriveDirectoryHandleFromFileHandle(fileHandle) {
-  if (!fileHandle) {
-    return null;
-  }
-  if (
-    typeof fileHandle.getParentDirectoryPath === "function" &&
-    hasPlatformApi("createDirectoryHandleFromDirectoryPath")
-  ) {
-    try {
-      const directoryPath = String(await fileHandle.getParentDirectoryPath()).trim();
-      if (directoryPath) {
-        return window.STGraphXPlatform.createDirectoryHandleFromDirectoryPath(directoryPath);
-      }
-    } catch (_err) {
-      // Fall back to other derivation strategies below.
-    }
-  }
-  if (typeof fileHandle.getPath === "function" && hasPlatformApi("createDirectoryHandleFromPath")) {
-    try {
-      const filePath = String(await fileHandle.getPath()).trim();
-      if (filePath) {
-        return window.STGraphXPlatform.createDirectoryHandleFromPath(filePath);
-      }
-    } catch (_err) {
-      // Fall back to any remaining strategies below.
-    }
-  }
-  if (typeof fileHandle.getParentDirectoryHandle === "function") {
-    try {
-      const handle = await fileHandle.getParentDirectoryHandle();
-      if (handle) {
-        return handle;
-      }
-    } catch (_err) {
-      // Fall back to any path-based derivation below.
-    }
-  }
-  return tryDeriveDirectoryHandleFromFileHandle(fileHandle);
+  return modelFileHelpers.deriveDirectoryHandleFromFileHandle(fileHandle);
 }
 
 function derivedDirectoryHandleDisplayName(handle) {
-  const name = String(handle?.name ?? "").trim();
-  const rawPath = String(handle?.path ?? "").trim();
-  return name || rawPath || "";
+  return modelFileHelpers.derivedDirectoryHandleDisplayName(handle);
 }
 
 function loadGraphFromJsonText(jsonText, sourceName = "", fileHandle = null, directoryHandle = null, preserveSubmodelCache = false) {
@@ -11487,23 +9921,11 @@ function loadGraphFromJsonText(jsonText, sourceName = "", fileHandle = null, dir
 }
 
 function downloadJsonFile(filename, json) {
-  const blob = new Blob([json], { type: "application/json" });
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement("a");
-  a.href = url;
-  a.download = normalizeJsonFilename(filename);
-  a.click();
-  URL.revokeObjectURL(url);
+  modelFileHelpers.downloadJsonFile(filename, json);
 }
 
 function downloadTextFile(filename, text, mimeType = "text/plain;charset=utf-8") {
-  const blob = new Blob([text], { type: mimeType });
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement("a");
-  a.href = url;
-  a.download = filename;
-  a.click();
-  URL.revokeObjectURL(url);
+  modelFileHelpers.downloadTextFile(filename, text, mimeType);
 }
 
 async function ensureCurrentModelDirectoryHandle() {
@@ -11678,551 +10100,85 @@ function pickModelDirectoryWithInput() {
 }
 
 async function parseSelectedJsonEntry(entry) {
-  if (!entry) {
-    return null;
-  }
-  if (typeof entry.getFile === "function") {
-    const file = await entry.getFile();
-    const directoryHandle = await deriveDirectoryHandleFromFileHandle(entry);
-    return {
-      name: String(file?.name || entry.name || ""),
-      text: await file.text(),
-      file,
-      fileHandle: entry,
-      directoryHandle,
-    };
-  }
-  const filePath = String(entry?.path || entry?.webkitRelativePath || "").trim();
-  const directoryHandle = filePath && hasPlatformApi("createDirectoryHandleFromPath")
-    ? window.STGraphXPlatform.createDirectoryHandleFromPath(filePath)
-    : null;
-  return {
-    name: String(entry?.name || ""),
-    text: await entry.text(),
-    file: entry,
-    fileHandle: null,
-    directoryHandle,
-  };
+  return modelSessionHelpers.parseSelectedJsonEntry(entry);
 }
 
 function collectReferencedSubmodelNames(data) {
-  if (!data || !Array.isArray(data.nodes)) {
-    return [];
-  }
-  return data.nodes
-    .filter((node) => String(node?.type ?? "") === "submodel")
-    .map((node) => normalizeSubmodelPath(node?.modelPath))
-    .filter(Boolean);
+  return submodelSupportHelpers.collectReferencedSubmodelNames(data);
 }
 
 function rootModelHasSubmodels(data) {
-  return Boolean(data && Array.isArray(data.nodes) && data.nodes.some((node) => String(node?.type ?? "") === "submodel"));
+  return submodelSupportHelpers.rootModelHasSubmodels(data);
 }
 
 function rootModelHasUnresolvedSubmodels(data) {
-  const names = collectReferencedSubmodelNames(data);
-  return names.some((name) => name && !submodelSourceCache.has(name) && !submodelTemplateCache.has(name));
+  return submodelSupportHelpers.rootModelHasUnresolvedSubmodels(data);
 }
 
 async function maybeSelectModelDirectoryForSubmodels(data) {
-  if (!rootModelHasSubmodels(data)) {
-    return null;
-  }
-  const derivedFromCurrentFile = await deriveDirectoryHandleFromFileHandle(currentFileHandle);
-  if (derivedFromCurrentFile) {
-    currentModelDirectoryHandle = derivedFromCurrentFile;
-    return currentModelDirectoryHandle;
-  }
-  if (currentModelDirectoryHandle) {
-    return currentModelDirectoryHandle;
-  }
-  if (!rootModelHasUnresolvedSubmodels(data)) {
-    return null;
-  }
-  if (!supportsDirectoryInputSelection() && !supportsDirectoryPicker()) {
-    return null;
-  }
-  const shouldSelect = window.confirm(t("confirm.selectModelFolder"));
-  if (!shouldSelect) {
-    return null;
-  }
-  const handle = await ensureCurrentModelDirectoryHandle();
-  setStatusKey("status.modelFolderSelected");
-  return handle;
+  return submodelSupportHelpers.maybeSelectModelDirectoryForSubmodels(data);
 }
 
 async function prepareSelectedJsonEntries(entries) {
-  const parsed = [];
-  for (const entry of entries) {
-    const item = await parseSelectedJsonEntry(entry);
-    if (!item?.name) {
-      continue;
-    }
-    try {
-      item.data = JSON.parse(item.text);
-    } catch (_err) {
-      item.data = null;
-    }
-    item.baseName = normalizeSubmodelPath(item.name) || basenameOfSubmodelPath(item.name);
-    parsed.push(item);
-  }
-  const referenced = new Set();
-  parsed.forEach((item) => {
-    collectReferencedSubmodelNames(item.data).forEach((name) => referenced.add(name));
-  });
-  let root = parsed.find((item) => item.baseName && !referenced.has(item.baseName)) || parsed[0] || null;
-  if (!root) {
-    return null;
-  }
-  parsed.forEach((item) => {
-    if (!item.baseName || item === root) {
-      return;
-    }
-    submodelSourceCache.set(item.baseName, item.text);
-    if (item.fileHandle) {
-      submodelFileHandleCache.set(item.baseName, item.fileHandle);
-    }
-    if (item.data) {
-      try {
-        submodelTemplateCache.set(item.baseName, buildRuntimeModelFromData(item.data, {
-          directoryPath: String(item.directoryHandle?.path ?? ""),
-        }));
-      } catch (_err) {
-        // Ignore invalid child cache candidates; the actual load path will surface errors.
+  return modelSessionHelpers.prepareSelectedJsonEntries(entries, {
+    onCacheSubmodelSource(baseName, payload) {
+      submodelSourceCache.set(baseName, payload.text);
+      if (payload.fileHandle) {
+        submodelFileHandleCache.set(baseName, payload.fileHandle);
       }
-    }
+      if (payload.template) {
+        submodelTemplateCache.set(baseName, payload.template);
+      }
+    },
   });
-  return root;
 }
 
 async function cacheSelectedSubmodelEntries(entries, allowedNames = null) {
-  const allowed = allowedNames instanceof Set ? allowedNames : null;
-  for (const entry of entries) {
-    const item = await parseSelectedJsonEntry(entry);
-    if (!item?.name) {
-      continue;
-    }
-    const baseName = normalizeSubmodelPath(item.name) || basenameOfSubmodelPath(item.name);
-    if (!baseName || (allowed && !allowed.has(baseName))) {
-      continue;
-    }
-    submodelSourceCache.set(baseName, item.text);
-    if (item.fileHandle) {
-      submodelFileHandleCache.set(baseName, item.fileHandle);
-    }
-    try {
-      const data = JSON.parse(item.text);
-      submodelTemplateCache.set(baseName, buildRuntimeModelFromData(data, {
-        directoryPath: String(item.directoryHandle?.path ?? ""),
-      }));
-    } catch (_err) {
-      // Ignore invalid JSON here; the actual submodel load path will report the error.
-    }
-  }
+  return submodelSupportHelpers.cacheSelectedSubmodelEntries(entries, allowedNames);
 }
 
 async function promptForMissingSubmodelFiles(missingPaths) {
-  const unresolved = new Set(
-    Array.from(missingPaths || [])
-      .map((value) => normalizeSubmodelPath(value))
-      .filter(Boolean),
-  );
-  if (!unresolved.size) {
-    return false;
-  }
-  try {
-    if (supportsOpenFilePicker()) {
-      const handles = await showOpenFilePickerCompat({
-        multiple: true,
-        types: [{
-          description: "JSON",
-          accept: { "application/json": [".json"] },
-        }],
-      });
-      if (!handles || handles.length === 0) {
-        return false;
-      }
-      await cacheSelectedSubmodelEntries(handles, unresolved);
-    } else {
-      const files = await pickSubmodelFilesWithInput();
-      await cacheSelectedSubmodelEntries(files, unresolved);
-    }
-    return Array.from(unresolved).every((name) => submodelTemplateCache.has(name) || submodelSourceCache.has(name));
-  } catch (_err) {
-    return false;
-  }
+  return submodelSupportHelpers.promptForMissingSubmodelFiles(missingPaths);
 }
 
 async function resolveSubmodelFileByPath(modelPath, options = {}) {
-  const normalizedPath = normalizeSubmodelPath(modelPath);
-  if (!normalizedPath) {
-    throw new Error(t("error.submodelPathInvalid"));
-  }
-  const allowPrompt = options.allowPrompt !== false;
-  const expectedName = basenameOfSubmodelPath(normalizedPath);
-
-  async function readFromFileHandle(fileHandle, directoryHandle = null) {
-    const file = await fileHandle.getFile();
-    const text = await file.text();
-    submodelFileHandleCache.set(normalizedPath, fileHandle);
-    submodelSourceCache.set(normalizedPath, text);
-    return {
-      file,
-      fileHandle,
-      directoryHandle,
-      text,
-    };
-  }
-
-  if (currentModelDirectoryHandle) {
-    const fileHandle = await currentModelDirectoryHandle.getFileHandle(normalizedPath);
-    return readFromFileHandle(fileHandle, currentModelDirectoryHandle);
-  }
-
-  const cachedHandle = submodelFileHandleCache.get(normalizedPath);
-  if (cachedHandle) {
-    try {
-      return await readFromFileHandle(cachedHandle, null);
-    } catch (err) {
-      submodelFileHandleCache.delete(normalizedPath);
-    }
-  }
-
-  if (submodelSourceCache.has(normalizedPath) && !options.forcePrompt) {
-    return {
-      file: null,
-      fileHandle: null,
-      directoryHandle: null,
-      text: submodelSourceCache.get(normalizedPath),
-    };
-  }
-
-  if (!allowPrompt) {
-    throw new Error(SUBMODEL_DEFERRED_RESOLUTION);
-  }
-
-  if (supportsDirectoryInputSelection() || supportsDirectoryPicker()) {
-    const directoryHandle = await ensureCurrentModelDirectoryHandle();
-    const fileHandle = await directoryHandle.getFileHandle(normalizedPath);
-    return readFromFileHandle(fileHandle, directoryHandle);
-  }
-
-  if (supportsOpenFilePicker()) {
-    const handles = await showOpenFilePickerCompat({
-      multiple: false,
-      types: [{
-        description: "JSON",
-        accept: { "application/json": [".json"] },
-      }],
-    });
-    const fileHandle = handles?.[0] || null;
-    if (!fileHandle) {
-      throw new Error(t("error.loadCancelled"));
-    }
-    if (expectedName && fileHandle.name !== expectedName) {
-      throw new Error(`${t("error.submodelPathInvalid")}: ${expectedName}`);
-    }
-    return readFromFileHandle(fileHandle, null);
-  }
-
-  const file = await pickSubmodelFileWithInput();
-  if (expectedName && file.name !== expectedName) {
-    throw new Error(`${t("error.submodelPathInvalid")}: ${expectedName}`);
-  }
-  const text = await file.text();
-  submodelSourceCache.set(normalizedPath, text);
-  return {
-    file,
-    fileHandle: null,
-    directoryHandle: null,
-    text,
-  };
+  return submodelResolutionHelpers.resolveSubmodelFileByPath(modelPath, options);
 }
 
 function extractSubmodelInterfaceFromData(data) {
-  if (!data || !Array.isArray(data.nodes)) {
-    throw new Error(t("error.invalidJson"));
-  }
-  const inputs = [];
-  const outputs = [];
-  const inputDetails = {};
-  data.nodes.forEach((node) => {
-    const nodeType = String(node?.type ?? "");
-    const name = String(node?.name ?? "").trim();
-    if (!name) {
-      return;
-    }
-    if (nodeType === "parameter" || (nodeType === "algebraic" && node.input === true)) {
-      inputs.push(name);
-      const description = Array.isArray(node?.properties)
-        ? String(
-          (node.properties.find((prop) => descriptionPropertyKeys().has(String(prop?.key ?? "").trim().toLowerCase()))?.value) ?? "",
-        ).trim()
-        : "";
-      inputDetails[name] = { description };
-    }
-    if (node.output === true) {
-      outputs.push(name);
-    }
-  });
-  return {
-    inputs: [...new Set(inputs)],
-    outputs: [...new Set(outputs)],
-    inputDetails,
-  };
+  return submodelSupportHelpers.extractSubmodelInterfaceFromData(data);
 }
 
 async function loadSubmodelInterfaceByPath(modelPath) {
-  const normalizedPath = normalizeSubmodelPath(modelPath);
-  if (!normalizedPath) {
-    throw new Error(t("error.submodelPathInvalid"));
-  }
-  const { text, directoryHandle } = await resolveSubmodelFileByPath(normalizedPath);
-  const data = JSON.parse(text);
-  submodelTemplateCache.set(normalizedPath, buildRuntimeModelFromData(data, {
-    directoryPath: String(directoryHandle?.path ?? ""),
-  }));
-  return extractSubmodelInterfaceFromData(data);
+  return submodelResolutionHelpers.loadSubmodelInterfaceByPath(modelPath);
 }
 
 async function loadSubmodelTemplateByPath(modelPath, visited = new Set(), options = {}) {
-  const normalizedPath = normalizeSubmodelPath(modelPath);
-  if (!normalizedPath) {
-    throw new Error(t("error.submodelPathInvalid"));
-  }
-  if (visited.has(normalizedPath)) {
-    throw new Error(t("error.submodelRecursiveReference"));
-  }
-  if (submodelTemplateCache.has(normalizedPath)) {
-    const cachedTemplate = submodelTemplateCache.get(normalizedPath);
-    const nextVisited = new Set(visited);
-    nextVisited.add(normalizedPath);
-    for (const childNode of cachedTemplate.nodes.filter((node) => isSubmodelNode(node) && String(node.modelPath ?? "").trim())) {
-      await loadSubmodelTemplateByPath(childNode.modelPath, nextVisited, options);
-    }
-    return cachedTemplate;
-  }
-  const { text, directoryHandle } = await resolveSubmodelFileByPath(normalizedPath, {
-    allowPrompt: options.allowPrompt !== false,
-  });
-  const data = JSON.parse(text);
-  const template = buildRuntimeModelFromData(data, {
-    directoryPath: String(directoryHandle?.path ?? ""),
-  });
-  submodelTemplateCache.set(normalizedPath, template);
-  const nextVisited = new Set(visited);
-  nextVisited.add(normalizedPath);
-  for (const childNode of template.nodes.filter((node) => isSubmodelNode(node) && String(node.modelPath ?? "").trim())) {
-    await loadSubmodelTemplateByPath(childNode.modelPath, nextVisited, options);
-  }
-  return template;
+  return submodelResolutionHelpers.loadSubmodelTemplateByPath(modelPath, visited, options);
 }
 
 async function ensureSubmodelTemplatesReady(options = {}) {
-  const submodelNodes = graph.nodes.filter((node) => isSubmodelNode(node));
-  if (!submodelNodes.length) {
-    ui.submodelsPrepared = true;
-    return true;
-  }
-  if (ui.submodelsPrepared) {
-    return true;
-  }
-  try {
-    for (const node of submodelNodes) {
-      const normalizedPath = normalizeSubmodelPath(node.modelPath);
-      if (!normalizedPath) {
-        node.submodelError = t("error.nodeDefinition.missingSubmodelPath");
-        continue;
-      }
-      const template = await loadSubmodelTemplateByPath(normalizedPath, new Set(), options);
-      node.interfaceCache = {
-        inputs: template.nodes
-          .filter((child) => child.shape === "diamond" || child.input)
-          .map((child) => child.name),
-        outputs: template.nodes.filter((child) => child.output).map((child) => child.name),
-        inputDetails: Object.fromEntries(
-          template.nodes
-            .filter((child) => child.shape === "diamond" || child.input)
-            .map((child) => [child.name, { description: getNodeDescription(child) }]),
-        ),
-      };
-      node.submodelError = "";
-      sanitizeSubmodelBindings(node);
-      sanitizeAllEdgesForNode(node.id);
-    }
-    ui.submodelsPrepared = true;
-    refreshSidebar();
-    render();
-    return true;
-  } catch (err) {
-    if (options.allowPrompt === false && isDeferredSubmodelResolutionError(err)) {
-      return false;
-    }
-    ui.submodelsPrepared = false;
-    setStatusKey("error.submodelPrepareFailed", { message: String(err?.message || t("error.load")) });
-    return false;
-  }
+  return submodelOrchestrationHelpers.ensureSubmodelTemplatesReady(options);
 }
 
 async function refreshSubmodelInterface(node, updateStatus = true, options = {}) {
-  if (!node || !isSubmodelNode(node)) {
-    return false;
-  }
-  const modelPath = String(node.modelPath ?? "").trim();
-  if (!modelPath) {
-    node.interfaceCache = emptySubmodelInterfaceCache();
-    node.submodelError = t("error.nodeDefinition.missingSubmodelPath");
-    ui.submodelsPrepared = false;
-    if (updateStatus) {
-      setStatusKey("error.submodelMissingPath");
-    }
-    render();
-    return false;
-  }
-  try {
-    const normalizedPath = normalizeSubmodelPath(modelPath);
-    const { text, directoryHandle } = await resolveSubmodelFileByPath(normalizedPath, {
-      allowPrompt: options.allowPrompt !== false,
-    });
-    const data = JSON.parse(text);
-    submodelTemplateCache.set(normalizedPath, buildRuntimeModelFromData(data, {
-      directoryPath: String(directoryHandle?.path ?? ""),
-    }));
-    const iface = extractSubmodelInterfaceFromData(data);
-    node.interfaceCache = normalizeSubmodelInterfaceCache(iface);
-    sanitizeSubmodelBindings(node);
-    sanitizeAllEdgesForNode(node.id);
-    node.submodelError = "";
-    invalidateExecutionPlan();
-    ui.submodelsPrepared = false;
-    scheduleFileStatusRefresh();
-    if (updateStatus) {
-      setStatusKey("status.submodelInterfaceLoaded", { name: node.name });
-    }
-    render();
-    return true;
-  } catch (err) {
-    if (options.allowPrompt === false && isDeferredSubmodelResolutionError(err)) {
-      return false;
-    }
-    node.interfaceCache = emptySubmodelInterfaceCache();
-    node.submodelError = String(err?.message || t("error.load"));
-    ui.submodelsPrepared = false;
-    sanitizeAllEdgesForNode(node.id);
-    invalidateExecutionPlan();
-    scheduleFileStatusRefresh();
-    if (updateStatus) {
-      setStatusKey("error.submodelLoadFailed", { message: node.submodelError });
-    }
-    render();
-    return false;
-  }
+  return submodelOrchestrationHelpers.refreshSubmodelInterface(node, updateStatus, options);
 }
 
 async function refreshAllSubmodelInterfaces() {
-  const submodelNodes = graph.nodes.filter((node) => isSubmodelNode(node) && String(node.modelPath ?? "").trim());
-  if (!submodelNodes.length) {
-    return;
-  }
-  for (const node of submodelNodes) {
-    // Best-effort refresh without spamming the status bar.
-    await refreshSubmodelInterface(node, false, { allowPrompt: false });
-  }
+  return submodelOrchestrationHelpers.refreshAllSubmodelInterfaces();
 }
 
 async function preloadSubmodelsAfterLoad() {
-  const submodelNodes = graph.nodes.filter((node) => isSubmodelNode(node) && String(node.modelPath ?? "").trim());
-  if (!submodelNodes.length) {
-    return;
-  }
-  try {
-    await refreshAllSubmodelInterfaces();
-    await ensureSubmodelTemplatesReady({ allowPrompt: false });
-  } catch (_err) {
-    // Best-effort preload. Errors are already surfaced by the preparation path.
-  }
+  return submodelOrchestrationHelpers.preloadSubmodelsAfterLoad();
 }
 
 async function openSubmodelNode(node) {
-  if (!node || !isSubmodelNode(node)) {
-    return false;
-  }
-  const modelPath = normalizeSubmodelPath(node.modelPath);
-  if (!modelPath) {
-    setStatusKey("error.submodelMissingPath");
-    return false;
-  }
-  try {
-    const { text, fileHandle, file, directoryHandle } = await resolveSubmodelFileByPath(modelPath);
-    submodelTemplateCache.set(modelPath, buildRuntimeModelFromData(JSON.parse(text), {
-      directoryPath: String(directoryHandle?.path ?? ""),
-    }));
-    modelContextStack.push(captureCurrentModelContext(node.name));
-    const effectiveDirectoryHandle = directoryHandle || await deriveDirectoryHandleFromFileHandle(fileHandle) || null;
-    loadGraphFromJsonText(
-      text,
-      (fileHandle && fileHandle.name) || (file && file.name) || modelPath,
-      fileHandle,
-      effectiveDirectoryHandle,
-      true,
-    );
-    await preloadSubmodelsAfterLoad();
-    setStatusKey("status.submodelOpened", { name: node.name });
-    return true;
-  } catch (err) {
-    setStatusKey("error.submodelOpenFailed", { message: String(err?.message || t("error.load")) });
-    return false;
-  }
+  return submodelOrchestrationHelpers.openSubmodelNode(node);
 }
 
 async function openSubmodelNodeInNewTab(node) {
-  if (!node || !isSubmodelNode(node)) {
-    return false;
-  }
-  const modelPath = normalizeSubmodelPath(node.modelPath);
-  if (!modelPath) {
-    setStatusKey("error.submodelMissingPath");
-    return false;
-  }
-  const previousActiveTabId = workspace.activeTabId;
-  try {
-    const { text, fileHandle, file, directoryHandle } = await resolveSubmodelFileByPath(modelPath);
-    submodelTemplateCache.set(modelPath, buildRuntimeModelFromData(JSON.parse(text), {
-      directoryPath: String(directoryHandle?.path ?? ""),
-    }));
-    saveActiveWorkspaceTabState();
-    closeDocumentTransientUi();
-    workspace.activeTabId = null;
-    modelContextStack.length = 0;
-    const effectiveDirectoryHandle = directoryHandle || await deriveDirectoryHandleFromFileHandle(fileHandle) || null;
-    loadGraphFromJsonText(
-      text,
-      (fileHandle && fileHandle.name) || (file && file.name) || modelPath,
-      fileHandle,
-      effectiveDirectoryHandle,
-      true,
-    );
-    await preloadSubmodelsAfterLoad();
-    createWorkspaceTabFromCurrentState({
-      activate: true,
-      meta: {
-        kind: "submodel",
-        parentTabId: previousActiveTabId,
-        parentNodeName: String(node.name || ""),
-        parentTitle: previousActiveTabId != null
-          ? displayFileNameFromContext(getWorkspaceTabById(previousActiveTabId)?.state?.context)
-          : "",
-      },
-    });
-    refreshWorkspaceTabBar();
-    setStatusKey("status.submodelOpened", { name: node.name });
-    return true;
-  } catch (err) {
-    workspace.activeTabId = workspace.activeTabId || previousActiveTabId || null;
-    refreshWorkspaceTabBar();
-    setStatusKey("error.submodelOpenFailed", { message: String(err?.message || t("error.load")) });
-    return false;
-  }
+  return submodelOrchestrationHelpers.openSubmodelNodeInNewTab(node);
 }
 
 async function exitCurrentSubmodel() {
@@ -12244,62 +10200,25 @@ async function exitCurrentSubmodel() {
 }
 
 async function writeJsonToFileHandle(fileHandle, json) {
-  if (!fileHandle) {
-    return false;
-  }
-  try {
-    const writable = await fileHandle.createWritable();
-    await writable.write(json);
-    await writable.close();
-    return true;
-  } catch (_err) {
-    return false;
-  }
+  return modelPersistenceHelpers.writeJsonToFileHandle(fileHandle, json);
 }
 
 async function writeTextToFileHandle(fileHandle, text) {
-  if (!fileHandle) {
-    return false;
-  }
-  try {
-    const writable = await fileHandle.createWritable();
-    await writable.write(text);
-    await writable.close();
-    return true;
-  } catch (_err) {
-    return false;
-  }
+  return modelPersistenceHelpers.writeTextToFileHandle(fileHandle, text);
 }
 
 async function pickSaveAsHandle(suggestedName) {
-  if (supportsSaveFilePicker()) {
-    return showSaveFilePickerCompat({
-      suggestedName: normalizeJsonFilename(suggestedName),
-      types: [
-        {
-          description: "JSON",
-          accept: { "application/json": [".json"] },
-        },
-      ],
-    });
+  if (!supportsSaveFilePicker()) {
+    return null;
   }
-
-  return null;
+  return modelSessionHelpers.pickSaveAsHandle(suggestedName);
 }
 
 async function pickSaveCsvHandle(suggestedName) {
-  if (supportsSaveFilePicker()) {
-    return showSaveFilePickerCompat({
-      suggestedName: normalizeCsvFilename(suggestedName),
-      types: [
-        {
-          description: "CSV",
-          accept: { "text/csv": [".csv"] },
-        },
-      ],
-    });
+  if (!supportsSaveFilePicker()) {
+    return null;
   }
-  return null;
+  return modelSessionHelpers.pickSaveCsvHandle(suggestedName);
 }
 
 async function exportSimulationCsv() {
@@ -12354,158 +10273,41 @@ async function exportSimulationCsv() {
 }
 
 async function saveGraphJson(forceSaveAs = false) {
-  forceSaveAs = forceSaveAs === true;
-
-  if (!forceSaveAs && !dirtySinceLastSave) {
-    setStatusKey("status.alreadySaved");
-    return true;
-  }
-
-  const data = exportGraphData();
-  const json = JSON.stringify(data, null, 2);
-  let filename = currentFileName || defaultGraphFilename();
-
-  if (!forceSaveAs && currentFileHandle) {
-    const ok = await writeJsonToFileHandle(currentFileHandle, json);
-    if (!ok) {
-      setStatusKey("error.saveFailed");
-      return false;
-    }
-    filename = currentFileHandle.name || filename;
-    currentFileName = filename;
-    currentModelDirectoryHandle = currentModelDirectoryHandle || await deriveDirectoryHandleFromFileHandle(currentFileHandle) || null;
-    graph.__directoryPath = String(currentModelDirectoryHandle?.path ?? graph.__directoryPath ?? "");
-    submodelTemplateCache.set(String(currentFileName || filename), buildRuntimeModelFromData(data, {
-      directoryPath: String(currentModelDirectoryHandle?.path ?? ""),
-    }));
-    markSavedSnapshot();
-    await rememberRecentModel(currentFileName || filename, currentFileHandle);
-    setStatusKey("status.saved");
-    return true;
-  }
-
-  if (!forceSaveAs && !currentFileHandle) {
-    try {
-      currentFileHandle = await pickSaveAsHandle(filename);
-      if (currentFileHandle) {
-        currentFileName = currentFileHandle.name || normalizeJsonFilename(filename);
-        const ok = await writeJsonToFileHandle(currentFileHandle, json);
-        if (!ok) {
-          setStatusKey("error.saveFailed");
-          return false;
-        }
-        currentModelDirectoryHandle = await deriveDirectoryHandleFromFileHandle(currentFileHandle) || currentModelDirectoryHandle || null;
-        graph.__directoryPath = String(currentModelDirectoryHandle?.path ?? graph.__directoryPath ?? "");
-        submodelTemplateCache.set(String(currentFileName || filename), buildRuntimeModelFromData(data, {
-          directoryPath: String(currentModelDirectoryHandle?.path ?? ""),
-        }));
-        markSavedSnapshot();
-        await rememberRecentModel(currentFileName || filename, currentFileHandle);
-        setStatusKey("status.saved");
-        return true;
-      }
-    } catch (err) {
-      if (err && err.name === "AbortError") {
-        setStatusKey("status.saveCanceled");
-        return false;
-      }
-      currentFileHandle = null;
-    }
-
-    let selectedName = normalizeJsonFilename(filename);
-    if (isFirefoxBrowser()) {
-      const proposed = window.prompt(t("prompt.saveAs"), selectedName);
-      if (proposed == null) {
-        setStatusKey("status.saveCanceled");
-        return false;
-      }
-      selectedName = normalizeJsonFilename(proposed);
-    }
-    currentFileName = selectedName;
-    submodelTemplateCache.set(String(currentFileName || selectedName), buildRuntimeModelFromData(data, {
-      directoryPath: String(currentModelDirectoryHandle?.path ?? ""),
-    }));
-    downloadJsonFile(selectedName, json);
-    markSavedSnapshot();
-    await rememberRecentModel(currentFileName || selectedName, currentFileHandle);
-    setStatusKey("status.saved");
-    return true;
-  }
-
-  if (forceSaveAs) {
-    const hasNativeSavePicker = supportsSaveFilePicker();
-    try {
-      currentFileHandle = await pickSaveAsHandle(filename);
-      if (currentFileHandle) {
-        currentFileName = currentFileHandle.name || normalizeJsonFilename(filename);
-      }
-    } catch (err) {
-      if (err && err.name === "AbortError") {
-        setStatusKey("status.saveCanceled");
-        return false;
-      }
-      if (hasNativeSavePicker) {
-        setStatusKey("error.saveFailed");
-        return false;
-      }
-      currentFileHandle = null;
-    }
-    if (currentFileHandle) {
-      const ok = await writeJsonToFileHandle(currentFileHandle, json);
-      if (!ok) {
-        setStatusKey("error.saveFailed");
-        return false;
-      } else {
-        filename = currentFileHandle.name || filename;
-        currentFileName = filename;
-        currentModelDirectoryHandle = await deriveDirectoryHandleFromFileHandle(currentFileHandle) || currentModelDirectoryHandle || null;
-        graph.__directoryPath = String(currentModelDirectoryHandle?.path ?? graph.__directoryPath ?? "");
-        submodelTemplateCache.set(String(currentFileName || filename), buildRuntimeModelFromData(data, {
-          directoryPath: String(currentModelDirectoryHandle?.path ?? ""),
-        }));
-        markSavedSnapshot();
-        await rememberRecentModel(currentFileName || filename, currentFileHandle);
-        setStatusKey("status.savedAs");
-        return true;
-      }
-    }
-  }
-
-  if (forceSaveAs) {
-    if (isFirefoxBrowser()) {
-      const proposed = window.prompt(t("prompt.saveAs"), normalizeJsonFilename(filename));
-      if (proposed == null) {
-        setStatusKey("status.saveCanceled");
-        return false;
-      }
-      filename = normalizeJsonFilename(proposed);
-    } else {
-      filename = normalizeJsonFilename(filename);
-    }
-    currentFileName = filename;
-  } else {
-    filename = normalizeJsonFilename(filename);
-    currentFileName = filename;
-  }
-
-  downloadJsonFile(filename, json);
-  submodelTemplateCache.set(String(currentFileName || filename), buildRuntimeModelFromData(data, {
-    directoryPath: String(currentModelDirectoryHandle?.path ?? ""),
-  }));
-  markSavedSnapshot();
-  await rememberRecentModel(currentFileName || filename, currentFileHandle);
-  setStatusKey(forceSaveAs ? "status.savedAs" : "status.saved");
-  return true;
+  const result = await modelPersistenceHelpers.saveJsonModel({
+    forceSaveAs,
+    dirtySinceLastSave,
+    exportGraphData,
+    currentFileHandle,
+    currentFileName,
+    currentModelDirectoryHandle,
+    defaultGraphFilename,
+    normalizeJsonFilename,
+    pickSaveAsHandle,
+    deriveDirectoryHandleFromFileHandle,
+    rememberRecentModel,
+    markSavedSnapshot,
+    isFirefoxBrowser,
+    promptSaveAs: (suggestedName) => window.prompt(t("prompt.saveAs"), suggestedName),
+    downloadJsonFile,
+    hasNativeSavePicker: supportsSaveFilePicker(),
+    setStatusKey,
+    async onAfterSave({ fileName, fileHandle, directoryHandle, data }) {
+      currentFileHandle = fileHandle || null;
+      currentFileName = fileName;
+      currentModelDirectoryHandle = directoryHandle || null;
+      graph.__directoryPath = String(currentModelDirectoryHandle?.path ?? graph.__directoryPath ?? "");
+      submodelTemplateCache.set(String(currentFileName || fileName), buildRuntimeModelFromData(data, {
+        directoryPath: String(currentModelDirectoryHandle?.path ?? ""),
+      }));
+    },
+  });
+  return result.ok;
 }
 
 async function loadGraphJsonFile(file) {
   try {
     const extraFiles = Array.from(loadJsonInput.files || []).filter((entry) => entry !== file);
-    const rootEntry = await prepareSelectedJsonEntries([file, ...extraFiles]);
-    if (!rootEntry) {
-      return;
-    }
-    await openPreparedJsonEntryInNewTab(rootEntry);
+    await modelLoadingHelpers.loadGraphJsonFile(file, extraFiles);
   } catch (_err) {
     cancelTransaction();
     setStatusKey("status.readError");
@@ -12515,27 +10317,10 @@ async function loadGraphJsonFile(file) {
 async function openGraphJson() {
   if (supportsOpenFilePicker()) {
     try {
-      const handles = await showOpenFilePickerCompat({
-        multiple: true,
-        types: [
-          {
-            description: "JSON",
-            accept: { "application/json": [".json"] },
-          },
-        ],
-      });
-      if (!handles || handles.length === 0) {
+      const opened = await modelLoadingHelpers.openGraphJson();
+      if (opened) {
         return;
       }
-      submodelTemplateCache.clear();
-      submodelFileHandleCache.clear();
-      submodelSourceCache.clear();
-      const rootEntry = await prepareSelectedJsonEntries(handles);
-      if (!rootEntry) {
-        return;
-      }
-      await openPreparedJsonEntryInNewTab(rootEntry);
-      return;
     } catch (err) {
       if (err && err.name === "AbortError") {
         return;
@@ -12837,11 +10622,7 @@ function recordSimulationOutputSnapshot(timeValue) {
 }
 
 function normalizeCsvFilename(name) {
-  const trimmed = String(name || "").trim();
-  if (!trimmed) {
-    return "simulation-output.csv";
-  }
-  return trimmed.toLowerCase().endsWith(".csv") ? trimmed : `${trimmed}.csv`;
+  return modelFileHelpers.normalizeCsvFilename(name);
 }
 
 function suggestedCsvFilename() {
@@ -13363,7 +11144,9 @@ window.addEventListener("pointermove", (evt) => {
       const dragSnap = ui.snapToGrid && !ui.widgetDrag.snapOnRelease;
       widget.x = dragSnap ? snap(ui.widgetDrag.startX + dx) : ui.widgetDrag.startX + dx;
       widget.y = dragSnap ? snap(ui.widgetDrag.startY + dy) : ui.widgetDrag.startY + dy;
-      renderWidgets();
+      if (!refreshWidgetFrame(widget)) {
+        renderWidgets();
+      }
     }
     return;
   }
@@ -13378,7 +11161,9 @@ window.addEventListener("pointermove", (evt) => {
       const minSize = widgetMinDimensions(widget);
       widget.width = clamp(nextWidth, minSize.width, 1200);
       widget.height = clamp(nextHeight, minSize.height, 900);
-      renderWidgets();
+      if (!refreshWidgetFrame(widget)) {
+        renderWidgets();
+      }
     }
     return;
   }
@@ -14038,11 +11823,35 @@ if (topRunStepBtn) {
     void runManualStep();
   });
 }
-if (topRunTimedBtn) {
-  topRunTimedBtn.addEventListener("click", () => {
+function bindTimedExecutionToggle(button) {
+  if (!button) {
+    return;
+  }
+  let lastPointerActivationAt = -Infinity;
+  const activate = () => {
     void toggleTimedExecution();
+  };
+
+  // WebKit can lose a click while a timed execution refreshes the toolbar.
+  // Pointer activation keeps the stop command responsive in the Tauri shell.
+  button.addEventListener("pointerup", (evt) => {
+    if (!evt.pointerType) {
+      return;
+    }
+    lastPointerActivationAt = performance.now();
+    evt.preventDefault();
+    activate();
+  });
+  button.addEventListener("click", (evt) => {
+    if (performance.now() - lastPointerActivationAt < 600) {
+      evt.preventDefault();
+      return;
+    }
+    activate();
   });
 }
+
+bindTimedExecutionToggle(topRunTimedBtn);
 if (topRunResetBtn) {
   topRunResetBtn.addEventListener("click", resetExecution);
 }
@@ -14064,11 +11873,7 @@ if (tabletStepBtn) {
     void runManualStep();
   });
 }
-if (tabletTimedBtn) {
-  tabletTimedBtn.addEventListener("click", () => {
-    void toggleTimedExecution();
-  });
-}
+bindTimedExecutionToggle(tabletTimedBtn);
 if (tabletResetBtn) {
   tabletResetBtn.addEventListener("click", resetExecution);
 }
@@ -14078,9 +11883,7 @@ runEvalBtn.addEventListener("click", () => {
 runStepBtn.addEventListener("click", () => {
   void runManualStep();
 });
-runTimedToggleBtn.addEventListener("click", () => {
-  void toggleTimedExecution();
-});
+bindTimedExecutionToggle(runTimedToggleBtn);
 runResetBtn.addEventListener("click", resetExecution);
 
 undoBtn.addEventListener("click", undo);
@@ -14757,9 +12560,7 @@ if (textEditorDismissBtn) {
 manualStepBtn.addEventListener("click", () => {
   void runManualStep();
 });
-timedToggleBtn.addEventListener("click", () => {
-  void toggleTimedExecution();
-});
+bindTimedExecutionToggle(timedToggleBtn);
 resetExecBtn.addEventListener("click", resetExecution);
 
 nodeValueExprInput.addEventListener("input", () => {
@@ -15737,7 +13538,7 @@ async function boot() {
       setTabletSidebarExpanded(!ui.tabletSidebarExpanded);
     });
   }
-  loadRecentModelsFromStorage();
+  recentModelsStore.loadFromStorage();
   renderRecentModelsMenu();
 
   runAction(() => {
@@ -15760,4 +13561,11 @@ async function boot() {
   render();
 }
 
-boot();
+boot().catch((err) => {
+  const message = err?.stack || err?.message || String(err);
+  window.__stgraphxBootError = String(message);
+  console.error(err);
+  if (statusText) {
+    statusText.textContent = String(message);
+  }
+});

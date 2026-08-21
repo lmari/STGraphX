@@ -1,6 +1,6 @@
 # STGraphX: readme
 
-Luca Mari, versione 20 luglio 2026
+Luca Mari, versione 21 agosto 2026
 
 Copyright (c) 2026 Luca Mari
 
@@ -18,9 +18,10 @@ Il file QUICK-START.md contiene informazioni sull'installazione, l'uso, e lo svi
 
 STGraphX è un'applicazione JavaScript con tre opzioni di uso:
 
-* editor con doppia shell e logica condivisa:
+* editor con tre shell e logica condivisa:
   * web, per accesso da browser via `http:` (e con qualche limitazione anche `file:`);
   * desktop, mediante `Electron`, per MS Windows, Mac, Linux;
+  * desktop, mediante `Tauri` (build alternativa sperimentale);
 * visualizzatore via browser;
 * API Javascript.
 

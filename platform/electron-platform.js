@@ -11,6 +11,7 @@ const {
   createDirectoryHandle,
   createDirectoryHandleFromFilePath,
 } = require("./path-handles.js");
+const { PLATFORM_API_VERSION, normalizePlatformApi } = require("./platform-contract.js");
 
 function createElectronPlatform({ ipcRenderer, clipboard }) {
   if (!ipcRenderer || typeof ipcRenderer.invoke !== "function") {
@@ -19,8 +20,15 @@ function createElectronPlatform({ ipcRenderer, clipboard }) {
   if (!clipboard || typeof clipboard.readText !== "function" || typeof clipboard.writeText !== "function") {
     throw new Error("clipboard is required to create the Electron platform bridge");
   }
-  return {
+  return normalizePlatformApi({
+    apiVersion: PLATFORM_API_VERSION,
+    platformId: "electron",
     isElectron: true,
+    capabilities: {
+      filePaths: true,
+      directoryPicker: true,
+      clipboard: true,
+    },
     createFileHandleFromPath(filePath) {
       return createFileHandle(String(filePath || ""));
     },
@@ -29,6 +37,9 @@ function createElectronPlatform({ ipcRenderer, clipboard }) {
     },
     createDirectoryHandleFromDirectoryPath(directoryPath) {
       return createDirectoryHandle(String(directoryPath || ""));
+    },
+    getStartupLanguage() {
+      return "";
     },
     readClipboardText() {
       return clipboard.readText();
@@ -65,7 +76,7 @@ function createElectronPlatform({ ipcRenderer, clipboard }) {
       }
       return createDirectoryHandle(result.directoryPath);
     },
-  };
+  });
 }
 
 module.exports = {

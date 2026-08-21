@@ -6,10 +6,11 @@ STGraphX è un editor ed esecutore di modelli dinamici a grafo orientato.
 
 ## Architettura
 
-STGraphX mantiene un unico codice applicativo per due shell:
+STGraphX mantiene un unico codice applicativo per tre shell:
 
 - web, per accesso da browser via `http:` (e con qualche limitazione anche `file:`);
 - desktop, mediante `Electron`.
+- desktop, mediante `Tauri`.
 
 L'obiettivo è evitare duplicazione del codice applicativo e isolare le differenze di piattaforma, relative solo al layer di accesso a file e cartelle.
 
@@ -20,6 +21,12 @@ Frontend condiviso:
 - `index.html`
 - `styles.css`
 - `app.js`
+- `local-functions-core.js`
+- `help-content.js`
+- `model-analysis-core.js`
+- `model-analysis-ui.js`
+- `watch-debugger-core.js`
+- `watch-debugger-ui.js`
 - `widgets.js`
 - `semantic.js`
 - `graph-functions.js`
@@ -29,6 +36,12 @@ Shell Electron:
 
 - `electron/main.js`
 - `electron/preload.js`
+
+Shell Tauri:
+
+- `src-tauri/`
+- `platform/tauri-platform.js`
+- `scripts/build-tauri-frontend.js`
 
 Supporto sviluppo:
 
@@ -66,6 +79,89 @@ Il renderer contiene:
 - gestione file e recenti
 - esecuzione del modello
 - coordinamento tra sidebar, canvas, semantica e widget
+
+### Modulo funzioni locali
+
+`local-functions-core.js` contiene la logica di dominio per le funzioni definite nel modello:
+
+- normalizzazione di nomi, parametri e definizioni;
+- gestione della collezione memorizzata nel modello;
+- costruzione delle firme e della mappa delle funzioni;
+- validazione sintattica, conflitti con i nodi e rilevamento dei cicli di chiamata.
+
+Espone nel renderer:
+
+- `window.STGraphXLocalFunctionsCore.createLocalFunctionsCoreHelpers(...)`
+
+L’editor delle funzioni locali e la sua integrazione con undo/redo restano nella shell `app.js`.
+
+### Modulo help
+
+`help-content.js` contiene la logica delle finestre informative derivate dal modello:
+
+- pagina esempi
+- generazione e rendering della 8-upla
+- finestra about
+
+Espone nel renderer:
+
+- `window.STGraphXHelpContent.createHelpContentHelpers(...)`
+
+In questo modo la logica di caricamento asset, rendering dei contenuti help ed esportazione markdown non resta più incorporata direttamente in `app.js`.
+
+### Modulo analisi modello
+
+`model-analysis-core.js` contiene il motore dell’analisi statica:
+
+- raccolta dei riferimenti nelle espressioni
+- analisi delle dipendenze implicite
+- rilevazione di cicli non di stato
+- controlli su nodi, archi, widget e binding dei sottomodelli
+- preview di coerenza tra stato iniziale e stato prossimo
+
+Espone nel renderer:
+
+- `window.STGraphXModelAnalysisCore.createModelAnalysisCoreHelpers(...)`
+
+In questo modo la logica diagnostica del modello non resta più incorporata direttamente in `app.js` ed è riusabile separatamente dalla UI.
+
+`model-analysis-ui.js` contiene la logica UI della funzione `Analizza modello`:
+
+- help dei controlli eseguiti
+- rendering del report errori / warning / info
+- apertura e chiusura delle relative finestre
+
+Espone nel renderer:
+
+- `window.STGraphXModelAnalysisUi.createModelAnalysisUiHelpers(...)`
+
+In questo modo la presentazione dei risultati dell’analisi non resta più mescolata alla logica generale del renderer ed è separata dal motore di analisi statica.
+
+### Modulo watch debugger
+
+`watch-debugger-core.js` contiene la logica indipendente dalla UI del debugging:
+
+- normalizzazione e pulizia della configurazione persistita dei watch;
+- acquisizione dello snapshot dei valori precedenti;
+- nomi disponibili, validazione e valutazione delle espressioni di breakpoint;
+- costruzione del contesto del breakpoint, inclusi tempo e valori correnti o prossimi degli stati.
+
+Espone:
+
+- `window.STGraphXWatchDebuggerCore.createWatchDebuggerCoreHelpers(...)`
+
+`watch-debugger-ui.js` contiene la logica UI del pannello di debugging:
+
+- rendering della lista watch
+- riepilogo dei valori corrente / precedente / prossimo
+- rendering dello stato del breakpoint
+- apertura e chiusura della finestra
+
+Espone nel renderer:
+
+- `window.STGraphXWatchDebuggerUi.createWatchDebuggerUiHelpers(...)`
+
+In questo modo configurazione e valutazione dei breakpoint non restano mescolate alla UI. `app.js` mantiene soltanto l’integrazione con undo/redo, stato della shell e controller di esecuzione.
 
 ### Modulo widget
 
@@ -170,14 +266,55 @@ Le API esposte imitano il più possibile gli handle del File System Access API d
 Il bridge desktop non definisce più direttamente gli handle e le API di piattaforma dentro il preload. La logica condivisa è ora isolata in:
 
 - `platform/path-handles.js`
+- `platform/platform-contract.js`
 - `platform/install-platform.js`
 - `platform/electron-platform.js`
+- `platform/tauri-platform.js`
+- `platform/model-files.js`
+- `platform/model-session.js`
+- `platform/model-persistence.js`
+- `platform/model-loading.js`
+- `platform/submodel-support.js`
+- `platform/submodel-resolution.js`
+- `platform/submodel-orchestration.js`
+- `platform/recent-models.js`
 
 In questo modo:
 
 - `electron/preload.js` resta un adapter sottile;
+- il contratto `STGraphXPlatform` è versionato e dichiara identità della shell e capacità disponibili, così un adapter Tauri può offrire gli stessi handle e selettori senza modificare il renderer;
 - gli handle file/cartella restano riusabili;
+- gli helper di nomi file, download e derivazione delle cartelle modello non restano più dispersi dentro `app.js`;
+- la preparazione delle entry JSON e la scelta degli handle di salvataggio non restano più incorporate direttamente nella shell editor;
+- la persistenza JSON del modello e la scrittura su handle non restano più mescolate alla logica UI del renderer;
+- il flusso di apertura del modello e di materializzazione del root entry non resta più incorporato direttamente nella shell editor;
+- il supporto comune ai sottomodelli (analisi del root model, interfacce input/output, caching delle entry selezionate) non resta più disperso nella shell editor;
+- la risoluzione dei file dei sottomodelli e il caricamento dei relativi template/interfacce non restano più dispersi nella shell editor;
+- la coordinazione UI dei sottomodelli, inclusi preload, refresh delle interfacce e apertura nel modello corrente o in un nuovo tab, non resta più mescolata al renderer principale;
+- la gestione dei modelli recenti è isolata dalla UI e riusabile tra shell diverse;
 - l'app è preparata a future shell desktop alternative, per esempio Tauri, senza toccare la logica del renderer.
+
+### Shell Tauri
+
+La shell Tauri è una seconda build desktop, affiancata a Electron. Riusa `index.html` e tutti i moduli del renderer; `scripts/build-tauri-frontend.js` copia soltanto gli asset necessari in `dist/tauri/` prima del packaging.
+
+`platform/tauri-platform.js` implementa il contratto `STGraphXPlatform` in un WebView Tauri. I comandi Rust in `src-tauri/src/lib.rs` forniscono:
+
+- apertura e salvataggio file JSON;
+- scelta della cartella del modello;
+- lettura e scrittura di file;
+- accesso alla clipboard.
+
+Comandi principali:
+
+```bash
+npm run start:tauri
+npm run start:tauri -- --lang=en
+npm run build:tauri:frontend
+npm run build:tauri
+```
+
+La shell richiede una toolchain Rust stabile oltre alle dipendenze JavaScript. `npm run build:tauri` genera prima la cartella statica e poi il pacchetto Tauri; i prodotti Rust intermedi in `src-tauri/target/` non sono versionati.
 
 ## Packaging
 

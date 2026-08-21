@@ -282,6 +282,8 @@
           label: String(pair?.label ?? ""),
           xSource: String(pair?.xSource ?? "time"),
           ySource: String(pair?.ySource ?? ""),
+          showTimeSeries: pair?.showTimeSeries !== false,
+          showInstantProfile: pair?.showInstantProfile === true || pair?.seriesMode === "instant",
           color: /^#[0-9a-fA-F]{6}$/.test(String(pair?.color ?? "")) ? String(pair.color) : "#2d7ff9",
           showLine: pair?.showLine !== false,
           lineWidth: Number.isFinite(Number(pair?.lineWidth)) ? clamp(Number(pair.lineWidth), 1, 8) : 2,

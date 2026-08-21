@@ -1,122 +1,87 @@
 # STGraphX Quick Start For Developers
 
-Luca Mari, versione 20 luglio 2026
+Luca Mari, versione 21 agosto 2026
 
 Copyright (c) 2026 Luca Mari
 
-Questo file descrive ciò che serve a chi sviluppa o distribuisce STGraphX nelle tre modalità basilari:
+Questa guida serve a sviluppare e distribuire STGraphX. Le modalità basilari sono:
 
-- editor completo;
-- visualizzatore via browser;
-- API JavaScript.
+- editor completo via web;
+- editor desktop con Electron;
+- editor desktop con Tauri;
+- visualizzatore embedded via browser (player);
+- API JavaScript, nel player o in Node.js.
 
-Per dettagli ulteriori:
-
-- `README.md`
-- `README-ARCHITECTURE.md`
-- `README-PLAYER.md`
+Per l'uso dell'applicazione, invece che per il suo sviluppo, si veda `QUICK-START-USERS.md`. Per dettagli architetturali si veda `README-ARCHITECTURE.md`. Per il player si veda `README-PLAYER.md`.
 
 ## Licenza
 
 STGraphX è distribuito sotto licenza Mozilla Public License 2.0 (`MPL-2.0`).
 
-Quando distribuisci l'editor, il player o l'API JavaScript, includi sempre anche il file `LICENSE`.
+In ogni distribuzione si deve includere `LICENSE`. Se si distribuisce anche codice di terze parti separatamente, conservare le rispettive note di licenza.
 
-## 1. Prima di cominciare
+## 1. Preparazione dell'ambiente di sviluppo
 
-### 1.1 Prerequisiti generali
-
-Nella cartella del progetto:
+Nella radice del repository:
 
 ```bash
 npm install
 npm run check
 ```
 
-Versioni utili da verificare:
+Verificare le versioni di Node e npm:
 
 ```bash
 node -v
 npm -v
 ```
 
-### 1.2 Risorse da tenere presenti
+Per produrre la versione Tauri serve inoltre una toolchain Rust stabile:
 
-In tutte le modalità possono entrare in gioco anche:
+```bash
+rustup default stable
+cargo --version
+rustc --version
+```
 
-- file JSON di modelli;
-- file JSON di sottomodelli;
-- file CSV usati da `readData(...)`.
-
-Quando prepari distribuzioni o demo, devi includere anche queste risorse, non solo gli script.
+Su Linux, la macchina di build Tauri deve avere anche le librerie di sviluppo del WebView di sistema. Non sono richieste agli utenti finali che installano un pacchetto Tauri già costruito.
 
 ## 2. Editor completo
 
-### 2.1 A cosa serve
+L'editor costruisce, modifica ed esegue modelli e comprende widget, help, analisi, debugger e generazione della 8-upla. Il renderer è condiviso tra le tre shell (web, Electron, Tauri); cambiano solo avvio, accesso al filesystem e packaging.
 
-L'editor serve per:
+### 2.1 Componenti del renderer condiviso
 
-- costruire modelli;
-- modificarli;
-- eseguirli;
-- configurare widget;
-- usare strumenti di supporto come help, analisi, debugger e 8-upla.
+Le shell usano `index.html` e i file JavaScript/CSS referenziati da esso. In particolare sono necessari:
 
-L'editor ha due shell:
+- `app.js`, `styles.css`, `widgets.js`;
+- `semantic.js`, `graph-functions.js`, `i18n-inline.js`;
+- `runtime-*.js`;
+- `local-functions-core.js`, `help-content.js`, `model-analysis-*.js`, `watch-debugger-*.js`;
+- `platform/*.js`;
+- `examples/`, `help/`, `icon.svg`, `icon.png`, `icon.ico`.
 
-- web;
-- desktop con Electron.
+Non si dovrebbe creare a mano una lista alternativa per Electron o Tauri: i rispettivi processi di packaging includono le risorse necessarie.
 
-### 2.2 Cosa ti serve per svilupparlo
+### 2.2 Editor web
 
-Ti serve il repository completo, con almeno:
+#### Sviluppo
 
-- `index.html`
-- `styles.css`
-- `app.js`
-- `widgets.js`
-- `semantic.js`
-- `graph-functions.js`
-- `i18n-inline.js`
-- `examples/`
-- `help/`
-- `electron/main.js`
-- `electron/preload.js`
-- `scripts/dev-server.js`
-- `package.json`
+```bash
+npm run start:web
+```
 
-### 2.3 Quali file devono essere presenti per farlo funzionare
+Aprire con:
 
-Per la shell web editor:
+```text
+http://127.0.0.1:8000/
+```
 
-- `index.html`
-- `styles.css`
-- `app.js`
-- `widgets.js`
-- `semantic.js`
-- `graph-functions.js`
-- `i18n-inline.js`
-- `examples/`
-- `help/`
+Il server di sviluppo fa riferimento alla radice del repository. L'editor web va usato tramite `http:` o `https:`. L'apertura diretta di `index.html` con `file:` ha limitazioni nel caricamento di risorse e nell'accesso ai file.
 
-Per la shell desktop editor:
+#### Distribuzione
 
-- tutti i file della shell web;
-- `electron/main.js`
-- `electron/preload.js`
-- `package.json`
-
-Se vuoi aprire modelli di esempio o modelli reali che usano risorse esterne, devono essere presenti anche:
-
-- i modelli `.json`;
-- i sottomodelli;
-- i file CSV.
-
-### 2.4 Dove devono stare i file
-
-Nel repository di sviluppo, i file stanno già nelle posizioni corrette.
-
-Per una distribuzione web dell'editor, una struttura minima coerente è:
+Non esiste per ora un comando separato `build:web`: occorre preparare una directory pubblicabile che conservi la struttura relativa del renderer. Una distribuzione minima affidabile è:
 
 ```text
 site/
@@ -127,77 +92,71 @@ site/
   semantic.js
   graph-functions.js
   i18n-inline.js
+  runtime-shared.js
+  runtime-core.js
+  runtime-loader.js
+  runtime-session.js
+  runtime-controller.js
+  local-functions-core.js
+  help-content.js
+  model-analysis-core.js
+  model-analysis-ui.js
+  watch-debugger-core.js
+  watch-debugger-ui.js
+  platform/
   examples/
   help/
+  icon.svg
+  icon.png
+  icon.ico
+  LICENSE
 ```
 
-Per la distribuzione desktop, non devi ricostruire a mano la struttura: la genera il packaging Electron.
+Pubblicare `site/` come document root di un server HTTP(S). I modelli dell'utente possono stare, per esempio, in `site/models/`; sottomodelli e CSV devono rispettare i path relativi dichiarati nel JSON.
 
-### 2.5 Serve un server web?
+Non distribuire `node_modules/`, `electron/`, `src-tauri/`, `package-lock.json` o gli script di sviluppo se si sta distribuendo soltanto l'editor web.
 
-Per la shell web:
+### 2.3 Shell desktop Electron
 
-- sì, di fatto sì;
-- l'uso corretto è via `http:` o `https:`.
-
-Avvio in sviluppo:
-
-```bash
-npm run start:web
-```
-
-URL tipico:
-
-```text
-http://localhost:8080/
-```
-
-Per la shell desktop:
-
-- no, non serve un server web separato.
-
-Avvio in sviluppo:
+#### Sviluppo
 
 ```bash
 npm run start:desktop
 ```
 
-Lingua forzata:
+Per forzare la lingua:
 
 ```bash
 npm run start:desktop -- --lang=it
 npm run start:desktop -- --lang=en
 ```
 
-### 2.6 Cosa distribuire
+Electron non richiede un server web esterno: carica l'editor dal pacchetto dell'applicazione e il preload espone il bridge filesystem.
 
-Per distribuire l'editor web:
-
-- `index.html`
-- `styles.css`
-- `app.js`
-- `widgets.js`
-- `semantic.js`
-- `graph-functions.js`
-- `i18n-inline.js`
-- `examples/`
-- `help/`
-
-Per distribuire l'editor desktop:
-
-1. genera la build unpacked:
+#### Build di prova
 
 ```bash
 npm run pack
 ```
 
-2. genera il pacchetto distribuibile:
+Questo genera una directory completa, non un installer. Su Linux corrente il risultato è tipicamente:
+
+```text
+dist/linux-unpacked/
+  stgraphx
+  resources/
+  ... librerie Electron necessarie ...
+```
+
+Per una prova interna eseguire `dist/linux-unpacked/stgraphx`. Se si distribuisce questa variante, occorre distribuire l'intera directory `linux-unpacked/`, e non il solo eseguibile.
+
+#### Build da distribuire
 
 ```bash
 npm run dist
 ```
 
-oppure:
+Oppure, quando supportato dalla macchina o dalla CI:
 
 ```bash
 npm run dist:linux
@@ -205,65 +164,110 @@ npm run dist:win
 npm run dist:mac
 ```
 
-Distribuisci:
+Gli artefatti finali sono in `dist/`. In base al target configurato possono essere:
 
-- il contenuto generato in `dist/`;
-- oppure, per test interni, la build unpacked nella sottocartella della piattaforma, per esempio `dist/linux-unpacked/`.
+- Linux: `.AppImage` e archivio `.tar.gz`;
+- Windows: installer NSIS e variante portabile;
+- macOS: `.dmg` e `.zip`.
 
-## 3. Visualizzatore Via Browser
+Distribuire il singolo installer, archivio o artefatto portabile destinato alla piattaforma dell'utente. Non distribuire l'intera cartella `dist/`, che contiene anche file tecnici di `electron-builder`, metadata e, se presente, lo staging Tauri `dist/tauri/`.
+
+### 2.4 Shell desktop Tauri
+
+Tauri è una build desktop alternativa sperimentale. Riusa il renderer dell'editor, ma usa WebView di sistema e comandi Rust per file, cartelle, dialoghi e clipboard.
+
+#### Sviluppo
+
+```bash
+npm run start:tauri
+```
+
+Per forzare la lingua:
+
+```bash
+npm run start:tauri -- --lang=it
+npm run start:tauri -- --lang=en
+```
+
+Il comando avvia il server web di sviluppo sulla porta `8000` e la finestra Tauri. Non avviare separatamente `npm run start:web` sulla stessa porta.
+
+#### Staging del frontend
+
+```bash
+npm run build:tauri:frontend
+```
+
+Questo copia gli asset del renderer in:
+
+```text
+dist/tauri/
+```
+
+Quella cartella è un input temporaneo del packaging Tauri. Non contiene l'eseguibile Rust e non è, da sola, una distribuzione desktop Tauri. Può essere rigenerata e non va consegnata agli utenti finali.
+
+#### Build di prova
+
+```bash
+npm run build:tauri -- --debug --no-bundle
+```
+
+Questo compila un eseguibile di debug, tipicamente:
+
+```text
+src-tauri/target/debug/stgraphx-tauri
+```
+
+È utile per verifiche locali, ma non è da distribuire: non è un pacchetto installabile e dipende dall'ambiente di build.
+
+#### Build da distribuire
+
+```bash
+npm run build:tauri
+```
+
+Il comando esegue prima lo staging `dist/tauri/`, poi la build Rust in release. Gli artefatti distribuibili sono generati sotto:
+
+```text
+src-tauri/target/release/bundle/
+```
+
+Le sottocartelle e i formati dipendono dal sistema operativo e dagli strumenti presenti nella macchina di build. Su Linux la build corrente genera AppImage, `.deb` e `.rpm`; su Windows e macOS vengono generati i formati previsti da Tauri per quelle piattaforme. Sui sistemi Linux recenti, lo script imposta automaticamente `NO_STRIP=1` per l'AppImage: evita un'incompatibilita di `linuxdeploy` con librerie che usano `SHT_RELR`, al solo costo di un possibile aumento delle dimensioni del pacchetto.
+
+Distribuisci il pacchetto o installer nella sottocartella `bundle/` appropriata, non `dist/tauri/`, `src-tauri/target/debug/`, `src-tauri/target/release/` nel suo insieme, né il repository. In una release pubblica includi anche `LICENSE` accanto all'artefatto se il formato non la incorpora visibilmente.
+
+### 2.5 Confronto rapido delle build desktop
+
+| Shell | Comando di prova | Output di prova | Comando distribuibile | Cosa distribuire |
+| --- | --- | --- | --- | --- |
+| Electron | `npm run pack` | `dist/<piattaforma>-unpacked/` | `npm run dist` | installer, archivio o portabile in `dist/` |
+| Tauri | `npm run build:tauri -- --debug --no-bundle` | `src-tauri/target/debug/stgraphx-tauri` | `npm run build:tauri` | pacchetto in `src-tauri/target/release/bundle/` |
+
+Le build sono native alla piattaforma sulla quale vengono eseguite. Per produrre tutte le piattaforme in modo affidabile, usa build machine o CI dedicate.
+
+## 3. Visualizzatore via browser
 
 ### 3.1 A cosa serve
 
-Il visualizzatore via browser, cioè il player, serve per:
+Il player pubblica un modello già costruito, senza strumenti di editing, e può essere incorporato in una pagina web.
 
-- pubblicare un modello già costruito;
-- usarlo senza strumenti di editing;
-- incorporarlo in pagine web.
+### 3.2 Build del player
 
-### 3.2 Cosa ti serve per svilupparlo
+```bash
+npm run build:player
+```
 
-Ti serve il repository completo oppure almeno questi file:
+Il comando genera:
 
-- `player-runtime-loader.js`
-- `i18n-inline.js`
-- `graph-functions.js`
-- `semantic.js`
-- `runtime-shared.js`
-- `runtime-core.js`
-- `runtime-loader.js`
-- `runtime-session.js`
-- `runtime-controller.js`
-- `player-shell.js`
-- `scripts/build-player-bundle.js`
+```text
+build/player/stgraphx-player.js
+build/player/stgraphx-player.min.js
+```
 
-Se vuoi usare il bundle unico, devi anche generarlo.
+La versione `.min.js` viene generata perché `terser` è già una dipendenza di sviluppo del progetto. Non installarlo nuovamente.
 
-### 3.3 Quali file devono essere presenti per farlo funzionare
+### 3.3 Cosa distribuire
 
-Configurazione consigliata:
-
-- una pagina HTML che usa il player;
-- `player-runtime-loader.js`;
-- `build/player/stgraphx-player.min.js`
-- il modello JSON;
-- eventuali sottomodelli;
-- eventuali CSV.
-
-Se non usi il bundle unico, devono essere presenti invece i singoli file runtime:
-
-- `i18n-inline.js`
-- `graph-functions.js`
-- `semantic.js`
-- `runtime-shared.js`
-- `runtime-core.js`
-- `runtime-loader.js`
-- `runtime-session.js`
-- `runtime-controller.js`
-- `player-shell.js`
-
-### 3.4 Dove devono stare i file
-
-Una struttura semplice e consigliata è:
+Distribuzione consigliata:
 
 ```text
 site/
@@ -274,11 +278,12 @@ site/
       stgraphx-player.min.js
   models/
     mio-modello.json
-    sotto1.json
+    sotto-modello.json
     dati.csv
+  LICENSE
 ```
 
-Esempio minimo in `mypage.html`:
+In `mypage.html`:
 
 ```html
 <script src="player-runtime-loader.js"></script>
@@ -291,192 +296,26 @@ Esempio minimo in `mypage.html`:
 </stgraphx-player>
 ```
 
-### 3.5 Serve un server web?
+Servire la directory `site/` via HTTP(S). Il player non va distribuito o provato affidandosi a `file:`.
 
-Sì.
+Se non si usa il bundle, distribuire invece `player-runtime-loader.js` e i singoli moduli runtime elencati in `scripts/build-player-bundle.js`, mantenendoli nelle stesse posizioni relative.
 
-Per sviluppare e provare il player usa:
+Per le prove locali:
 
 ```bash
 npm run build:player
 npm run start:web
 ```
 
-URL utili:
-
-```text
-http://localhost:8080/player-demo.html
-http://localhost:8080/tests/index.html
-http://localhost:8080/tests/player_smoke_widgets.html
-http://localhost:8080/tests/player_matrix_smoke.html
-http://localhost:8080/tests/player_abm_space_smoke.html
-```
-
-Il caricamento diretto via `file:` non è una base affidabile per il player.
-
-### 3.6 Cosa distribuire
-
-Strada consigliata:
-
-- `player-runtime-loader.js`
-- `build/player/stgraphx-player.min.js`
-- la tua pagina HTML
-- i modelli JSON
-- sottomodelli e CSV, se presenti
-
-Alternativa non minificata:
-
-- `player-runtime-loader.js`
-- `build/player/stgraphx-player.js`
-- la tua pagina HTML
-- le risorse del modello
-
-Per generare il bundle:
-
-```bash
-npm run build:player
-```
-
-Per ottenere anche la versione minificata:
-
-```bash
-npm install --save-dev terser
-npm run build:player
-```
+Apri `http://127.0.0.1:8000/player-demo.html` oppure `http://127.0.0.1:8000/tests/index.html`.
 
 ## 4. API JavaScript
 
-### 4.1 A cosa serve
+L'API può essere usata nel player in una pagina web oppure in modalità headless da Node.js.
 
-L'API JavaScript serve per controllare STGraphX da codice.
+### 4.1 API del player in una pagina web
 
-Ci sono due casi:
-
-- API del player dentro una pagina web;
-- runtime headless in Node.js.
-
-### 4.2 Cosa ti serve per svilupparla
-
-Per l'API web ti serve:
-
-- tutto ciò che serve al player;
-- una tua pagina HTML;
-- un tuo script JavaScript.
-
-Per il runtime headless Node.js ti serve:
-
-- `headless-runtime.js`
-- `i18n-inline.js`
-- `graph-functions.js`
-- `semantic.js`
-- `runtime-shared.js`
-- `runtime-core.js`
-- `runtime-loader.js`
-- `runtime-session.js`
-- `runtime-controller.js`
-- il tuo script Node.js
-
-### 4.3 Quali file devono essere presenti per farla funzionare
-
-Caso A: API del player in pagina web.
-
-Devono essere presenti:
-
-- la tua pagina HTML;
-- `player-runtime-loader.js`;
-- il bundle del player oppure i file sorgente del player;
-- il file JSON del modello;
-- il tuo script JavaScript, se separato.
-
-Caso B: runtime headless in Node.js.
-
-Devono essere presenti:
-
-- `headless-runtime.js`
-- `i18n-inline.js`
-- `graph-functions.js`
-- `semantic.js`
-- `runtime-shared.js`
-- `runtime-core.js`
-- `runtime-loader.js`
-- `runtime-session.js`
-- `runtime-controller.js`
-- il tuo script `.js`
-- il modello JSON
-- eventuali sottomodelli e CSV
-
-### 4.4 Dove devono stare i file
-
-Per l'API web, una struttura semplice può essere:
-
-```text
-site/
-  api-demo.html
-  player-runtime-loader.js
-  build/
-    player/
-      stgraphx-player.min.js
-  models/
-    sir.json
-```
-
-Per l'API headless Node.js, una struttura semplice può essere:
-
-```text
-project/
-  my-script.js
-  headless-runtime.js
-  i18n-inline.js
-  graph-functions.js
-  semantic.js
-  runtime-shared.js
-  runtime-core.js
-  runtime-loader.js
-  runtime-session.js
-  runtime-controller.js
-  models/
-    sir.json
-```
-
-Se il modello usa sottomodelli o CSV, tienili in posizioni coerenti con i path usati dal modello. Se carichi il modello da oggetto invece che da file, devi passare un `basePath` corretto quando serve.
-
-### 4.5 Serve un server web?
-
-Per l'API del player in pagina web:
-
-- sì, è fortemente consigliato usare un server web attivo;
-- valgono le stesse considerazioni del player embedded.
-
-Per il runtime headless in Node.js:
-
-- no.
-
-### 4.6 Cosa distribuire
-
-Per uso in pagina web:
-
-- gli stessi file del player embedded;
-- il tuo script applicativo;
-- la tua pagina HTML;
-- i modelli e le loro risorse.
-
-Per uso in Node.js:
-
-- `headless-runtime.js`
-- `i18n-inline.js`
-- `graph-functions.js`
-- `semantic.js`
-- `runtime-shared.js`
-- `runtime-core.js`
-- `runtime-loader.js`
-- `runtime-session.js`
-- `runtime-controller.js`
-- il tuo script
-- i modelli e le loro risorse
-
-### 4.7 Esempi minimi
-
-API del player in pagina web:
+Occorre distribuire gli stessi file del player embedded, più la pagina e gli script dell'applicazione. Serve un server HTTP(S).
 
 ```html
 <script src="player-runtime-loader.js"></script>
@@ -489,22 +328,14 @@ API del player in pagina web:
   async function demo() {
     await customElements.whenDefined("stgraphx-player");
     const player = document.getElementById("p1");
-    const stepBtn = document.getElementById("stepBtn");
-    const outputBox = document.getElementById("outputBox");
+    await player.ready;
 
-    function refreshOutput() {
-      outputBox.textContent = JSON.stringify({
+    document.getElementById("stepBtn").addEventListener("click", async () => {
+      await player.step();
+      document.getElementById("outputBox").textContent = JSON.stringify({
         time: player.getTime(),
         outputs: player.getOutputs()
       }, null, 2);
-    }
-
-    await player.ready;
-    refreshOutput();
-
-    stepBtn.addEventListener("click", async () => {
-      await player.step();
-      refreshOutput();
     });
   }
 
@@ -512,7 +343,32 @@ API del player in pagina web:
 </script>
 ```
 
-Runtime headless in Node.js:
+### 4.2 Runtime headless Node.js
+
+Non serve un server web. Metti insieme:
+
+- `headless-runtime.js`;
+- `i18n-inline.js`, `graph-functions.js`, `semantic.js`;
+- `runtime-shared.js`, `runtime-core.js`, `runtime-loader.js`, `runtime-session.js`, `runtime-controller.js`;
+- il tuo script Node.js;
+- modelli, sottomodelli e CSV.
+
+Una struttura possibile:
+
+```text
+project/
+  my-script.js
+  headless-runtime.js
+  i18n-inline.js
+  graph-functions.js
+  semantic.js
+  runtime-*.js
+  models/
+    sir.json
+  LICENSE
+```
+
+Esempio:
 
 ```js
 const { STGraphXHeadlessRuntime } = require("./headless-runtime.js");
@@ -522,47 +378,52 @@ async function main() {
     src: "models/sir.json",
     lang: "it"
   });
-
   await runtime.run();
   console.log(runtime.getOutputs());
 }
 
-main().catch((err) => {
-  console.error(err);
+main().catch((error) => {
+  console.error(error);
   process.exit(1);
 });
 ```
 
-Esecuzione:
+Esegui:
 
 ```bash
 node my-script.js
 ```
 
-## 5. Flussi Rapidi Consigliati
+## 5. Flussi Rapidi
 
-### 5.1 Editor
+### Editor Electron
 
 ```bash
 npm install
 npm run check
 npm run start:desktop
+npm run pack
+npm run dist
 ```
 
-### 5.2 Player
+### Editor Tauri
+
+```bash
+rustup default stable
+npm install
+npm run check
+npm run start:tauri
+npm run build:tauri
+```
+
+### Player
 
 ```bash
 npm run build:player
 npm run start:web
 ```
 
-Poi apri:
-
-```text
-http://localhost:8080/player-demo.html
-```
-
-### 5.3 API headless
+### API Headless
 
 ```bash
 node tests/headless-demo.js

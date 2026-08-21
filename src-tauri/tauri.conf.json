@@ -1,0 +1,34 @@
+{
+  "$schema": "https://schema.tauri.app/config/2",
+  "productName": "STGraphX",
+  "version": "0.1.0",
+  "identifier": "org.lmari.stgraphx",
+  "build": {
+    "beforeDevCommand": "npm run start:web",
+    "devUrl": "http://127.0.0.1:8000",
+    "beforeBuildCommand": "npm run build:tauri:frontend",
+    "frontendDist": "../dist/tauri"
+  },
+  "app": {
+    "withGlobalTauri": true,
+    "security": {
+      "csp": "default-src 'self'; img-src 'self' data: blob:; style-src 'self' 'unsafe-inline'; script-src 'self'; connect-src 'self'"
+    },
+    "windows": [
+      {
+        "label": "main",
+        "title": "STGraphX",
+        "width": 1600,
+        "height": 980,
+        "minWidth": 1100,
+        "minHeight": 700,
+        "resizable": true
+      }
+    ]
+  },
+  "bundle": {
+    "active": true,
+    "targets": "all",
+    "icon": ["../icon.png"]
+  }
+}

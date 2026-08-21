@@ -1925,7 +1925,7 @@ function refreshRuntimeView() {
   clearStrictInvalidNodeValues();
   updateModelRunButtons();
   updateMenuTimeLabel();
-  render();
+  render({ preserveWidgets: true });
   if (ui.sliderInteraction == null) {
     applyWidgetDrivenNodeValues();
     refreshRuntimeWidgetContents();
@@ -1936,6 +1936,24 @@ function refreshRuntimeView() {
   refreshSidebar();
   refreshActiveTooltip();
   updateEditingLockUi();
+}
+
+function refreshWidgetFrame(widget) {
+  const root = widgetLayer.querySelector(`.value-widget[data-widget-id="${widget?.id}"]`);
+  if (!root || !widget) {
+    return false;
+  }
+  const view = svg.viewBox.baseVal;
+  const zoom = Math.max(0.0001, ui.zoom || 1);
+  const viewMinX = view?.x ?? 0;
+  const viewMinY = view?.y ?? 0;
+  root.style.left = `${(widget.x - viewMinX) * zoom}px`;
+  root.style.top = `${(widget.y - viewMinY) * zoom}px`;
+  root.style.width = `${widget.width}px`;
+  root.style.height = widget.minimized ? "36px" : `${widget.height}px`;
+  root.style.transform = `scale(${zoom})`;
+  root.classList.toggle("selected", ui.selected?.type === "widget" && ui.selected.id === widget.id);
+  return true;
 }
 
 function renderWidgets() {
@@ -4062,12 +4080,20 @@ function refreshWidgetConfigPanel(widget) {
     const instantProfileInput = document.createElement("input");
     instantProfileInput.type = "checkbox";
     instantProfileInput.checked = pair.showInstantProfile === true;
-    instantProfileInput.addEventListener("change", () => {
-      runAction(() => {
-        widget.xyPairs[activePairIndex].showInstantProfile = instantProfileInput.checked;
-        widget.xyPairs[activePairIndex].instantSeriesData = [];
-      });
-    });
+    const updateInstantProfile = () => {
+      const enabled = instantProfileInput.checked === true;
+      if (pair.showInstantProfile === enabled) {
+        return;
+      }
+      beginTransaction();
+      pair.showInstantProfile = enabled;
+      pair.instantSeriesData = [];
+      dirtySinceLastSave = true;
+      updateFileStatusLabel(true);
+      commitTransaction();
+      render();
+    };
+    instantProfileInput.addEventListener("change", updateInstantProfile);
     const instantProfileText = document.createElement("span");
     instantProfileText.textContent = t("widget.showInstantProfile");
     instantProfileLabel.appendChild(instantProfileInput);
@@ -4352,6 +4378,7 @@ globalThis.Widgets = {
   updateTableWidgetsFromComputedValues,
   clearAllXYChartPoints,
   clearAllTableWidgetRows,
+  refreshWidgetFrame,
   renderWidgets,
   refreshWidgetConfigPanel,
   copyTextToClipboard,
