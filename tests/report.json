@@ -1,0 +1,20 @@
+{
+  "source": "amebe.stg",
+  "converted": {
+    "nodes": 3,
+    "edges": 2,
+    "textItems": 1
+  },
+  "skipped": {
+    "widgets": {
+      "count": 1,
+      "types": [
+        "ChartWidget"
+      ]
+    }
+  },
+  "warnings": [
+    "Nodo \"x\", stato prossimo: convertita una riduzione legacy in reduce(...).",
+    "1 widget legacy non convertiti (ChartWidget)."
+  ]
+}

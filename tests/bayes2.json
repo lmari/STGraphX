@@ -1,0 +1,362 @@
+{
+  "version": 1,
+  "modelTitle": "bayesian estimation 2D",
+  "localFunctions": [],
+  "view": {
+    "zoom": 1,
+    "showGrid": true,
+    "highlightNodeEdges": false,
+    "gridSize": 20,
+    "tooltipDelayMs": 300,
+    "scrollLeft": 0,
+    "scrollTop": 0
+  },
+  "debug": {
+    "watches": [],
+    "breakpointEnabled": false,
+    "breakpointExpression": ""
+  },
+  "modelProperties": [],
+  "nodeCounter": 12,
+  "edgeCounter": 13,
+  "widgetCounter": 2,
+  "textItemCounter": 3,
+  "execution": {
+    "t0": 0,
+    "dt": 1,
+    "t1": 50,
+    "delayMs": 1,
+    "decimals": 3,
+    "integrator": "euler",
+    "strictDefinitions": true
+  },
+  "nodes": [
+    {
+      "id": 1,
+      "name": "data",
+      "output": false,
+      "global": false,
+      "type": "algebraic",
+      "x": 110,
+      "y": 150,
+      "width": 75,
+      "height": 45,
+      "fillColor": "#ffffff",
+      "strokeColor": "#000000",
+      "properties": [
+        {
+          "key": "note formula",
+          "value": ""
+        },
+        {
+          "key": "descrizione",
+          "value": "Simulate a Gaussian observation."
+        }
+      ],
+      "input": false,
+      "valueExpression": "gaussian([par1,par2])"
+    },
+    {
+      "id": 2,
+      "name": "hyp1",
+      "output": true,
+      "global": false,
+      "type": "parameter",
+      "x": 150,
+      "y": 100,
+      "width": 75,
+      "height": 45,
+      "fillColor": "#ffffff",
+      "strokeColor": "#000000",
+      "properties": [
+        {
+          "key": "note formula",
+          "value": ""
+        },
+        {
+          "key": "descrizione",
+          "value": "Categories for hypothesis testing on expected value."
+        }
+      ],
+      "valueExpression": "range(-2.0, 2.1, 0.1)"
+    },
+    {
+      "id": 3,
+      "name": "hyp2",
+      "output": true,
+      "global": false,
+      "type": "parameter",
+      "x": 190,
+      "y": 60,
+      "width": 75,
+      "height": 45,
+      "fillColor": "#ffffff",
+      "strokeColor": "#000000",
+      "properties": [
+        {
+          "key": "note formula",
+          "value": ""
+        },
+        {
+          "key": "descrizione",
+          "value": "Categories for hypothesis testing on standard deviation."
+        }
+      ],
+      "valueExpression": "range(0.1, 3.1, 0.1)"
+    },
+    {
+      "id": 4,
+      "name": "likelihood",
+      "output": false,
+      "global": false,
+      "type": "algebraic",
+      "x": 220,
+      "y": 150,
+      "width": 75,
+      "height": 45,
+      "fillColor": "#00ffff",
+      "strokeColor": "#000000",
+      "properties": [
+        {
+          "key": "note formula",
+          "value": ""
+        },
+        {
+          "key": "descrizione",
+          "value": "Likelihood, i.e., probability of the data given the (different) hypotheses."
+        }
+      ],
+      "input": false,
+      "valueExpression": "array([size(hyp1),size(hyp2)],(1/hyp2[$1])*exp(-(hyp1[$0]-data)^2/(2*hyp2[$1]^2)))"
+    },
+    {
+      "id": 5,
+      "name": "marg1",
+      "output": true,
+      "global": false,
+      "type": "algebraic",
+      "x": 430,
+      "y": 120,
+      "width": 75,
+      "height": 45,
+      "fillColor": "#ffffff",
+      "strokeColor": "#000000",
+      "properties": [
+        {
+          "key": "note formula",
+          "value": ""
+        },
+        {
+          "key": "descrizione",
+          "value": "Estimated distribution on standard deviation, obtained by marginalization of the posterior."
+        }
+      ],
+      "input": false,
+      "valueExpression": "reduce(+, prob, 0)"
+    },
+    {
+      "id": 6,
+      "name": "marg2",
+      "output": true,
+      "global": false,
+      "type": "algebraic",
+      "x": 430,
+      "y": 180,
+      "width": 75,
+      "height": 45,
+      "fillColor": "#ffffff",
+      "strokeColor": "#000000",
+      "properties": [
+        {
+          "key": "note formula",
+          "value": ""
+        },
+        {
+          "key": "descrizione",
+          "value": "Estimated distribution on expected value, obtained by marginalization of the posterior."
+        }
+      ],
+      "input": false,
+      "valueExpression": "reduce(+, prob, 0, 0)"
+    },
+    {
+      "id": 7,
+      "name": "par1",
+      "output": false,
+      "global": false,
+      "type": "parameter",
+      "x": 10,
+      "y": 130,
+      "width": 75,
+      "height": 45,
+      "fillColor": "#ff0000",
+      "strokeColor": "#f5f5f5",
+      "properties": [
+        {
+          "key": "note formula",
+          "value": ""
+        },
+        {
+          "key": "descrizione",
+          "value": "The first parameter -- expected value -- to be estimated\n(i.e., supposed to be unknown)."
+        }
+      ],
+      "valueExpression": "-0.5"
+    },
+    {
+      "id": 8,
+      "name": "par2",
+      "output": false,
+      "global": false,
+      "type": "parameter",
+      "x": 10,
+      "y": 180,
+      "width": 75,
+      "height": 45,
+      "fillColor": "#ff0000",
+      "strokeColor": "#f5f5f5",
+      "properties": [
+        {
+          "key": "note formula",
+          "value": ""
+        },
+        {
+          "key": "descrizione",
+          "value": "The second parameter -- standard deviation -- to be estimated\n(i.e., supposed to be unknown)."
+        }
+      ],
+      "valueExpression": "0.5"
+    },
+    {
+      "id": 9,
+      "name": "prior",
+      "output": false,
+      "global": false,
+      "type": "algebraic",
+      "x": 270,
+      "y": 100,
+      "width": 75,
+      "height": 45,
+      "fillColor": "#ffffff",
+      "strokeColor": "#000000",
+      "properties": [
+        {
+          "key": "note formula",
+          "value": ""
+        },
+        {
+          "key": "descrizione",
+          "value": "Prior probability distribution, assumed uniform for maximum entropy."
+        }
+      ],
+      "input": false,
+      "valueExpression": "array([size(hyp1),size(hyp2)],1/(size(hyp1)*size(hyp2)))"
+    },
+    {
+      "id": 10,
+      "name": "prob",
+      "output": true,
+      "global": false,
+      "type": "state",
+      "x": 340,
+      "y": 150,
+      "width": 75,
+      "height": 45,
+      "fillColor": "#00ffff",
+      "strokeColor": "#000000",
+      "properties": [
+        {
+          "key": "note formula",
+          "value": ""
+        },
+        {
+          "key": "descrizione",
+          "value": "Dynamically / sequentially modified posterior distribution.\nFrom a prior distribution, it is adapted to new data by means of likelihood."
+        }
+      ],
+      "stateTransition": "(this*likelihood)/(reduce(+, reduce(+, (this*likelihood), 0), 0))",
+      "initialState": "prior"
+    }
+  ],
+  "edges": [
+    {
+      "id": 1,
+      "from": 10,
+      "to": 6,
+      "controlPoints": []
+    },
+    {
+      "id": 2,
+      "from": 8,
+      "to": 1,
+      "controlPoints": []
+    },
+    {
+      "id": 3,
+      "from": 7,
+      "to": 1,
+      "controlPoints": []
+    },
+    {
+      "id": 4,
+      "from": 4,
+      "to": 10,
+      "controlPoints": []
+    },
+    {
+      "id": 5,
+      "from": 2,
+      "to": 4,
+      "controlPoints": []
+    },
+    {
+      "id": 6,
+      "from": 1,
+      "to": 4,
+      "controlPoints": []
+    },
+    {
+      "id": 7,
+      "from": 9,
+      "to": 10,
+      "controlPoints": []
+    },
+    {
+      "id": 8,
+      "from": 2,
+      "to": 9,
+      "controlPoints": []
+    },
+    {
+      "id": 9,
+      "from": 3,
+      "to": 4,
+      "controlPoints": []
+    },
+    {
+      "id": 10,
+      "from": 3,
+      "to": 9,
+      "controlPoints": []
+    },
+    {
+      "id": 11,
+      "from": 10,
+      "to": 5,
+      "controlPoints": []
+    }
+  ],
+  "textItems": [
+    {
+      "id": 1,
+      "x": 20,
+      "y": 10,
+      "width": 1081,
+      "height": 41,
+      "fillColor": "",
+      "strokeColor": "",
+      "html": "<html>\n  <head>\n    \n  </head>\n  <body>\n    <p style=\"margin-top: 0\">\n      Parameter estimation by Bayesian inference Gaussian likelihood: \n      multivariate estimation of expected value and standard deviation\n    </p>\n  </body>\n</html>\n"
+    }
+  ],
+  "widgets": []
+}

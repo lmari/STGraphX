@@ -2419,6 +2419,25 @@ button:disabled {
   padding: 10px;
 }
 
+.functions-help-search-label {
+  display: block;
+  margin: 10px 0 4px;
+  color: #274764;
+  font-size: 0.84rem;
+  font-weight: 650;
+}
+
+.functions-help-search {
+  width: 100%;
+  min-height: 34px;
+  margin: 0 0 8px;
+}
+
+.functions-help-empty {
+  margin: 4px;
+  color: #627486;
+}
+
 .help-group + .help-group {
   margin-top: 14px;
 }

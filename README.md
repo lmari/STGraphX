@@ -114,6 +114,8 @@ Per l'uso del player e dell'API JavaScript, si veda `README-PLAYER.md`.
 
 Per l'uso di funzioni nei modelli, si veda `README-USAGE.md`.
 
+Per convertire modelli XML legacy di STGraph nel formato JSON di STGraphX, si veda `README-CONVERSION.md`.
+
 ## Licenza
 
 STGraphX è distribuito sotto licenza Mozilla Public License 2.0 (`MPL-2.0`).

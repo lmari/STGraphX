@@ -1,0 +1,188 @@
+{
+  "version": 1,
+  "modelTitle": "amebe",
+  "localFunctions": [],
+  "view": {
+    "zoom": 1,
+    "showGrid": true,
+    "highlightNodeEdges": false,
+    "gridSize": 20,
+    "tooltipDelayMs": 300,
+    "scrollLeft": 0,
+    "scrollTop": 0
+  },
+  "debug": {
+    "watches": [],
+    "breakpointEnabled": false,
+    "breakpointExpression": ""
+  },
+  "modelProperties": [],
+  "nodeCounter": 6,
+  "edgeCounter": 4,
+  "widgetCounter": 3,
+  "textItemCounter": 3,
+  "execution": {
+    "t0": 0,
+    "dt": 1,
+    "t1": 50,
+    "delayMs": 10,
+    "decimals": 3,
+    "integrator": "euler",
+    "strictDefinitions": true
+  },
+  "nodes": [
+    {
+      "id": 1,
+      "name": "p",
+      "output": false,
+      "global": false,
+      "type": "parameter",
+      "x": 50,
+      "y": 230,
+      "width": 75,
+      "height": 45,
+      "fillColor": "#ffffff",
+      "strokeColor": "#156fb8",
+      "properties": [
+        {
+          "key": "note formula",
+          "value": ""
+        },
+        {
+          "key": "descrizione",
+          "value": ""
+        }
+      ],
+      "valueExpression": "0.51"
+    },
+    {
+      "id": 2,
+      "name": "x",
+      "output": true,
+      "global": false,
+      "type": "state",
+      "x": 170,
+      "y": 180,
+      "width": 75,
+      "height": 45,
+      "fillColor": "#ffffff",
+      "strokeColor": "#000000",
+      "properties": [
+        {
+          "key": "note formula",
+          "value": ""
+        },
+        {
+          "key": "descrizione",
+          "value": ""
+        }
+      ],
+      "stateTransition": "reduce(+, (2*array(this,rand()<p)), 0)",
+      "initialState": "x0"
+    },
+    {
+      "id": 3,
+      "name": "x0",
+      "output": false,
+      "global": false,
+      "type": "parameter",
+      "x": 50,
+      "y": 130,
+      "width": 75,
+      "height": 45,
+      "fillColor": "#ffffff",
+      "strokeColor": "",
+      "properties": [
+        {
+          "key": "note formula",
+          "value": ""
+        },
+        {
+          "key": "descrizione",
+          "value": ""
+        }
+      ],
+      "valueExpression": "10"
+    }
+  ],
+  "edges": [
+    {
+      "id": 1,
+      "from": 3,
+      "to": 2,
+      "controlPoints": []
+    },
+    {
+      "id": 2,
+      "from": 1,
+      "to": 2,
+      "controlPoints": []
+    }
+  ],
+  "textItems": [
+    {
+      "id": 1,
+      "x": 10,
+      "y": 20,
+      "width": 841,
+      "height": 41,
+      "fillColor": "",
+      "strokeColor": "",
+      "html": "<html>\n  <head>\n    \n  </head>\n  <body>\n    <p style=\"margin-top: 0\">\n      Each amoeba either splits into two amoebas, with probability p, or \n      eventually dies, with probability 1 &#8722; p.\n    </p>\n  </body>\n</html>\n"
+    }
+  ],
+  "widgets": [
+    {
+      "id": 2,
+      "type": "xychart",
+      "customTitle": "",
+      "x": 260,
+      "y": 80,
+      "width": 500,
+      "height": 300,
+      "minimized": false,
+      "outputOnly": false,
+      "showHistory": false,
+      "xMin": "auto",
+      "xMax": "auto",
+      "yMin": "auto",
+      "yMax": "auto",
+      "showGrid": true,
+      "legendPosition": "none",
+      "source": "",
+      "showNumericValues": true,
+      "showIndices": true,
+      "autoFitCells": true,
+      "cellSize": 28,
+      "valueMin": "auto",
+      "valueMax": "auto",
+      "displayRows": null,
+      "displayCols": null,
+      "colorScheme": "blue",
+      "min": 0,
+      "max": 100,
+      "step": 1,
+      "value": 0,
+      "falseLabel": "",
+      "trueLabel": "",
+      "options": [],
+      "mappings": [],
+      "columns": [],
+      "xyPairs": [
+        {
+          "xSource": "time",
+          "ySource": "x",
+          "showTimeSeries": true,
+          "showInstantProfile": false,
+          "color": "#0e7ac4",
+          "pointColor": "#0e7ac4",
+          "showLine": true,
+          "lineWidth": 2.2,
+          "lineStyle": "solid",
+          "pointMode": "all",
+          "pointSize": 2.4
+        }
+      ]
+    }
+  ]
+}

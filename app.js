@@ -216,6 +216,7 @@ const functionsHelpModal = document.getElementById("functionsHelpModal");
 const functionsHelpCloseBtn = document.getElementById("functionsHelpCloseBtn");
 const functionsHelpDismissBtn = document.getElementById("functionsHelpDismissBtn");
 const functionsHelpContent = document.getElementById("functionsHelpContent");
+const functionsHelpSearch = document.getElementById("functionsHelpSearch");
 const eightTupleModal = document.getElementById("eightTupleModal");
 const eightTupleCloseBtn = document.getElementById("eightTupleCloseBtn");
 const eightTupleDismissBtn = document.getElementById("eightTupleDismissBtn");
@@ -2902,8 +2903,9 @@ function renderFunctionsHelp() {
     return;
   }
   functionsHelpContent.innerHTML = "";
+  const filter = String(functionsHelpSearch?.value || "").trim().toLocaleLowerCase();
   const groups = new Map();
-  globalHelpEntries().forEach((entry) => {
+  globalHelpEntries().filter((entry) => !filter || entry.name.toLocaleLowerCase().includes(filter)).forEach((entry) => {
     const key = entry.helpSection || entry.kind || "function";
     if (!groups.has(key)) {
       groups.set(key, []);
@@ -2911,11 +2913,13 @@ function renderFunctionsHelp() {
     groups.get(key).push(entry);
   });
 
+  let visibleEntries = 0;
   ["variable", "function", "array", "probability", "math", "agent"].forEach((kind) => {
     const entries = (groups.get(kind) || []).slice().sort((left, right) => left.name.localeCompare(right.name));
     if (!entries || !entries.length) {
       return;
     }
+    visibleEntries += entries.length;
     const group = document.createElement("section");
     group.className = "help-group";
     const title = document.createElement("h4");
@@ -2942,6 +2946,12 @@ function renderFunctionsHelp() {
     });
     functionsHelpContent.appendChild(group);
   });
+  if (!visibleEntries) {
+    const empty = document.createElement("p");
+    empty.className = "functions-help-empty";
+    empty.textContent = t("help.searchEmpty");
+    functionsHelpContent.appendChild(empty);
+  }
 }
 
 function renderExpressionLibrary() {
@@ -3120,6 +3130,7 @@ function openFunctionsHelp() {
   }
   renderFunctionsHelp();
   functionsHelpModal.classList.remove("hidden");
+  window.setTimeout(() => functionsHelpSearch?.focus(), 0);
 }
 
 function closeFunctionsHelp() {
@@ -12896,6 +12907,9 @@ if (functionsHelpCloseBtn) {
 }
 if (functionsHelpDismissBtn) {
   functionsHelpDismissBtn.addEventListener("click", closeFunctionsHelp);
+}
+if (functionsHelpSearch) {
+  functionsHelpSearch.addEventListener("input", renderFunctionsHelp);
 }
 if (examplesHelpCloseBtn) {
   examplesHelpCloseBtn.addEventListener("click", closeExamplesHelp);
