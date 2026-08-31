@@ -1060,7 +1060,10 @@
 
   function appendArrayValues(target, value) {
     if (!Array.isArray(target)) {
-      throw new Error("append expects a vector or matrix as first argument");
+      if (Array.isArray(value) && !value.some((item) => Array.isArray(item))) {
+        return [target, ...value];
+      }
+      throw new Error("append expects a vector or matrix as first argument, or a scalar followed by a vector");
     }
     const fieldNames = getAgentFieldNames(target);
     const isMatrix = Boolean(fieldNames) || (target.length > 0 && target.every((row) => Array.isArray(row)));
@@ -1076,7 +1079,7 @@
       if (fieldNames) {
         attachAgentSchema(out, fieldNames);
       }
-        return out;
+      return out;
     }
     if (!Array.isArray(value) || value.some((item) => Array.isArray(item))) {
       throw new Error("append on matrices expects a vector row as second argument");
@@ -1400,25 +1403,27 @@
         next();
         return { type: "unary", op: token.value, argument: parseUnary() };
       }
-      return parsePostfix();
+      return parsePower();
     }
 
     function parsePower() {
-      let left = parseUnary();
+      let left = parsePostfix();
       if (match("**", "^")) {
-        left = { type: "binary", op: "**", left, right: parsePower() };
+        // Exponentiation binds more tightly than a leading sign: -x^2 is
+        // -(x^2), while a signed exponent remains valid in x^-2.
+        left = { type: "binary", op: "**", left, right: parseUnary() };
       }
       return left;
     }
 
     function parseMultiplicative() {
-      let left = parsePower();
+      let left = parseUnary();
       while (true) {
         const op = match("*", "/", "%");
         if (!op) {
           return left;
         }
-        left = { type: "binary", op: op.value, left, right: parsePower() };
+        left = { type: "binary", op: op.value, left, right: parseUnary() };
       }
     }
 
@@ -2710,6 +2715,7 @@
     validateNodeName,
     makeUniqueName,
     sanitizeNodeNames,
+    collectIdentifierReferences,
     validateComputedValue,
     evaluateValueExpression,
     validateExpressionSyntax,

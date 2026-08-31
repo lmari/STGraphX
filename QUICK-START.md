@@ -1,6 +1,6 @@
-# STGraphX Quick Start
+# STGraphX: Quick start
 
-Luca Mari, versione 21 agosto 2026
+versione 31 agosto 2026
 
 Copyright (c) 2026 Luca Mari
 

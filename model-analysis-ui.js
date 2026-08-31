@@ -33,6 +33,7 @@
         { severity: "warning", nameKey: "analysis.issue.duplicateEdge", descKey: "analysis.checks.duplicateEdge" },
         { severity: "warning", nameKey: "analysis.issue.selfLoop", descKey: "analysis.checks.selfLoop" },
         { severity: "error", nameKey: "analysis.issue.algebraicCycle", descKey: "analysis.checks.algebraicCycle" },
+        { severity: "error", nameKey: "analysis.issue.initialDefinitionCycle", descKey: "analysis.checks.initialDefinitionCycle" },
         { severity: "warning", nameKey: "analysis.issue.missingIncomingEdge", descKey: "analysis.checks.missingIncomingEdge" },
         { severity: "warning", nameKey: "analysis.issue.unusedEdge", descKey: "analysis.checks.unusedEdge" },
         { severity: "info", nameKey: "analysis.issue.unusedNode", descKey: "analysis.checks.unusedNode" },

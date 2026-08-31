@@ -296,13 +296,13 @@
       }
     }
 
-    function buildInitialStateContextForModel(model, node, timeValue, rootExecution) {
+    function buildInitialStateContextForModel(model, node, timeValue, rootExecution, referencedNames = null) {
       const context = {
         ...buildExecutionGlobalsForModel(model, rootExecution, timeValue),
         ...nodePropertyAccessForContext(node),
       };
       globalParameterNodesForModel(model, node.id).forEach((depNode) => {
-        if (!depNode.computedError) {
+        if ((!referencedNames || referencedNames.has(depNode.name)) && !depNode.computedError) {
           context[depNode.name] = depNode.computedValue;
         }
       });
@@ -310,7 +310,7 @@
         .filter((edge) => edge.to === node.id)
         .forEach((edge) => {
           const fromNode = getModelNodeById(model, edge.from);
-          if (!fromNode || fromNode.shape !== "diamond" || fromNode.computedError) {
+          if (!fromNode || (referencedNames && !referencedNames.has(fromNode.name)) || fromNode.computedError) {
             return;
           }
           context[fromNode.name] = fromNode.computedValue;
@@ -320,32 +320,83 @@
 
     function initializeStateNodesForModel(model, timeValue, rootExecution) {
       evaluateParameterNodesForModel(model, timeValue, rootExecution);
-      model.nodes.forEach((node) => {
-        if (!isStateNode(node)) {
-          if (node.shape !== "diamond") {
-            node.computedValue = null;
-            node.computedError = "";
-          }
-          node.pendingStateValue = null;
-          node.pendingStateError = "";
-          return;
-        }
-        const initExpr = String(node.initialStateExpression ?? "0");
-        const initResult = semantics.evaluateValueExpression(
-          initExpr,
-          buildInitialStateContextForModel(model, node, timeValue, rootExecution),
-          { localFunctions: localFunctionsForSemantics(model) },
-        );
-        if (initResult.ok) {
-          node.computedValue = initResult.value;
-          node.computedError = "";
-        } else {
-          node.computedValue = null;
-          node.computedError = initResult.reason || "runtime";
-        }
+      const initialNodes = (model.nodes || []).filter((node) =>
+        isStateNode(node) || (node.shape === "ellipse" && !node.externalValueEnabled));
+      const pending = new Set();
+      const resolved = new Set((model.nodes || [])
+        .filter((node) => node.shape === "diamond" || (node.shape === "ellipse" && node.externalValueEnabled))
+        .map((node) => node.id));
+
+      (model.nodes || []).forEach((node) => {
         node.pendingStateValue = null;
         node.pendingStateError = "";
+        if (node.shape === "ellipse" && node.externalValueEnabled) {
+          node.computedValue = node.externalValue;
+          node.computedError = "";
+          return;
+        }
+        if (isStateNode(node) || node.shape === "ellipse") {
+          node.computedValue = null;
+          node.computedError = "";
+        }
       });
+      initialNodes.forEach((node) => pending.add(node.id));
+
+      while (pending.size > 0) {
+        let progressed = false;
+        for (const nodeId of [...pending]) {
+          const node = getModelNodeById(model, nodeId);
+          if (!node) {
+            pending.delete(nodeId);
+            continue;
+          }
+          const expression = isStateNode(node)
+            ? String(node.initialStateExpression ?? "0")
+            : String(node.valueExpression ?? "");
+          const references = semantics.collectIdentifierReferences(expression);
+          let blockedByDependency = false;
+          let dependencyFailed = false;
+
+          globalParameterNodesForModel(model, node.id).forEach((depNode) => {
+            if (!references.has(depNode.name)) return;
+            if (!resolved.has(depNode.id)) blockedByDependency = true;
+            else if (depNode.computedError) dependencyFailed = true;
+          });
+          (model.edges || [])
+            .filter((edge) => edge.to === node.id)
+            .forEach((edge) => {
+              const fromNode = getModelNodeById(model, edge.from);
+              if (!fromNode || !references.has(fromNode.name)) return;
+              if (!resolved.has(fromNode.id)) blockedByDependency = true;
+              else if (fromNode.computedError) dependencyFailed = true;
+            });
+          if (blockedByDependency) continue;
+          if (dependencyFailed) {
+            node.computedValue = null;
+            node.computedError = "dependency";
+          } else {
+            const result = semantics.evaluateValueExpression(
+              expression,
+              buildInitialStateContextForModel(model, node, timeValue, rootExecution, references),
+              { localFunctions: localFunctionsForSemantics(model) },
+            );
+            node.computedValue = result.ok ? result.value : null;
+            node.computedError = result.ok ? "" : result.reason || "runtime";
+          }
+          pending.delete(nodeId);
+          resolved.add(nodeId);
+          progressed = true;
+        }
+        if (progressed) continue;
+        pending.forEach((nodeId) => {
+          const node = getModelNodeById(model, nodeId);
+          if (node) {
+            node.computedValue = null;
+            node.computedError = "dependency";
+          }
+        });
+        break;
+      }
     }
 
     function promotePendingStateNodesForModel(model) {

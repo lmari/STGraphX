@@ -596,7 +596,7 @@ function accessibleAgentFieldAliasNames(node, fieldKey = "value") {
     .filter((edge) => edge.to === node.id)
     .map((edge) => getNodeById(edge.from))
     .filter(Boolean)
-    .filter((depNode) => fieldKey !== "initial" || depNode.shape === "diamond")
+    .filter((depNode) => fieldKey !== "initial" || !isSubmodelNode(depNode))
     .forEach((depNode) => {
       appendUniqueNames(out, declaredAgentFieldNamesForNode(depNode));
     });
@@ -628,7 +628,7 @@ function accessibleAgentFieldAliasEntries(node, fieldKey = "value") {
     .filter((edge) => edge.to === node.id)
     .map((edge) => getNodeById(edge.from))
     .filter(Boolean)
-    .filter((depNode) => fieldKey !== "initial" || depNode.shape === "diamond")
+    .filter((depNode) => fieldKey !== "initial" || !isSubmodelNode(depNode))
     .forEach(addFromNode);
   return out;
 }
@@ -1809,6 +1809,10 @@ function localizeExpressionErrorMessage(message) {
   if (notCallableMatch) {
     return t("expr.error.notCallable", { name: notCallableMatch[1] });
   }
+  const unavailableFunctionMatch = raw.match(/^([A-Za-z_$][A-Za-z0-9_$]*) is unavailable$/i);
+  if (unavailableFunctionMatch) {
+    return t("expr.error.functionUnavailable", { name: unavailableFunctionMatch[1] });
+  }
   const expectsMatrixMatch = raw.match(/^([A-Za-z_$][A-Za-z0-9_$]*) expects a matrix$/i);
   if (expectsMatrixMatch) {
     return t("expr.error.expectsMatrix", { name: expectsMatrixMatch[1] });
@@ -1844,6 +1848,22 @@ function localizeExpressionErrorMessage(message) {
   const expectsRangeArgsMatch = raw.match(/^([A-Za-z_$][A-Za-z0-9_$]*) expects (\d+) to (\d+) arguments?$/i);
   if (expectsRangeArgsMatch) {
     return t("expr.error.expectsArgRange", { name: expectsRangeArgsMatch[1], min: expectsRangeArgsMatch[2], max: expectsRangeArgsMatch[3] });
+  }
+  const finiteBoundsMatch = raw.match(/^([A-Za-z_$][A-Za-z0-9_$]*) expects finite numeric bounds$/i);
+  if (finiteBoundsMatch) {
+    return t("expr.error.finiteNumericBounds", { name: finiteBoundsMatch[1] });
+  }
+  if (lower === "mode must be 0 (pdf), 1 (cdf), or 2 (icdf)") {
+    return t("expr.error.distributionMode");
+  }
+  if (lower === "randint expects min <= max") {
+    return t("expr.error.randIntBounds");
+  }
+  if (lower === "reduce on matrices requires an axis argument") {
+    return t("expr.error.reduceMatrixAxis");
+  }
+  if (lower === "reduce expects an operator or function as first argument") {
+    return t("expr.error.reduceOperator");
   }
   const expectsOptionsArgsMatch = raw.match(/^([A-Za-z_$][A-Za-z0-9_$]*) expects (.+) arguments?$/i);
   if (expectsOptionsArgsMatch) {
@@ -1997,8 +2017,12 @@ function localizeExpressionErrorMessage(message) {
   if (lower === "reduce requires a non-empty vector when no initial value is provided") {
     return t("expr.error.reduceNeedsNonEmptyVector");
   }
-  if (lower === "append expects a vector or matrix as first argument") {
-    return t("expr.error.appendFirstArgVectorOrMatrix");
+  if (
+    lower === "append expects a vector or matrix as first argument"
+    || lower === "append requires a vector or matrix as first argument"
+    || lower === "append expects a vector or matrix as first argument, or a scalar followed by a vector"
+  ) {
+    return t("expr.error.appendArguments");
   }
   if (lower === "append on matrices expects a vector row as second argument") {
     return t("expr.error.appendSecondArgVectorRow");
@@ -2256,7 +2280,7 @@ function validateExpressionDraft(value, fieldKey = null) {
       .filter((edge) => edge.to === node.id)
       .map((edge) => getNodeById(edge.from))
       .filter(Boolean)
-      .filter((depNode) => (meta?.key !== "initial") || depNode.shape === "diamond")
+      .filter((depNode) => (meta?.key !== "initial") || !isSubmodelNode(depNode))
       .forEach((depNode) => {
         extraNames.push(depNode.name);
       });
@@ -2304,7 +2328,7 @@ function validateNodeDefinition(node) {
       .filter((edge) => edge.to === node.id)
       .map((edge) => getNodeById(edge.from))
       .filter(Boolean)
-      .filter((depNode) => fieldKey !== "initial" || depNode.shape === "diamond")
+      .filter((depNode) => fieldKey !== "initial" || !isSubmodelNode(depNode))
       .forEach((depNode) => {
         extraNames.push(depNode.name);
       });
@@ -3612,7 +3636,7 @@ function expressionCatalogForEditor() {
       .filter((edge) => edge.to === node.id)
       .map((edge) => getNodeById(edge.from))
       .filter(Boolean)
-      .filter((depNode) => meta.key !== "initial" || depNode.shape === "diamond")
+      .filter((depNode) => meta.key !== "initial" || !isSubmodelNode(depNode))
       .forEach((depNode) => {
         const nodeDescription = getNodeDescription(depNode);
         pushEntry(depNode.name, {
@@ -4310,7 +4334,7 @@ function buildExpressionPreviewBaseContext(previewState, meta = null) {
     .filter((edge) => edge.to === node.id)
     .map((edge) => getModelNodeById(previewState.model, edge.from))
     .filter(Boolean)
-    .filter((depNode) => (meta?.key !== "initial") || depNode.shape === "diamond")
+    .filter((depNode) => (meta?.key !== "initial") || !isSubmodelNode(depNode))
     .forEach((depNode) => {
       if (!depNode.computedError) {
         context[depNode.name] = depNode.computedValue;
@@ -4335,7 +4359,7 @@ function evaluateInitialStatePreviewValue(node, globals, model = graph) {
   (model?.edges || [])
     .filter((edge) => edge.to === node.id)
     .map((edge) => getModelNodeById(model, edge.from))
-    .filter((depNode) => depNode && depNode.shape === "diamond")
+    .filter((depNode) => depNode && !isSubmodelNode(depNode))
     .forEach((depNode) => {
       if (!depNode.computedError) {
         context[depNode.name] = depNode.computedValue;
@@ -7300,6 +7324,7 @@ function exportGraphData() {
       minimized: Boolean(w.minimized),
       outputOnly: Boolean(w.outputOnly),
       showHistory: Boolean(w.showHistory),
+      expandNonScalarValues: Boolean(w.expandNonScalarValues),
       xMin: serializeAutoNullableNumber(w.xMin),
       xMax: serializeAutoNullableNumber(w.xMax),
       yMin: serializeAutoNullableNumber(w.yMin),
@@ -7542,6 +7567,7 @@ function applyGraphData(data) {
         minimized: Boolean(w.minimized),
         outputOnly: Boolean(w.outputOnly),
         showHistory: Boolean(w.showHistory),
+        expandNonScalarValues: Boolean(w.expandNonScalarValues) && !Boolean(w.showHistory),
         xMin: parseAutoNullableNumber(w.xMin),
         xMax: parseAutoNullableNumber(w.xMax),
         yMin: parseAutoNullableNumber(w.yMin),
@@ -7864,9 +7890,12 @@ function releaseExecutionDisabledControls(root = document) {
 
 function updateEditingLockUi() {
   const frozen = isEditingUiLocked();
-  sidebar?.classList.toggle("execution-frozen", frozen);
+  // A manual step is still an execution session, even though editing remains
+  // available. Keep the same visual cue used while a timed run is active.
+  const executionActive = isExecutionFrozen();
+  sidebar?.classList.toggle("execution-frozen", executionActive);
   [globalPanel, nodePanel, textPanel, edgePanel, widgetPanel].forEach((panel) => {
-    panel?.classList.toggle("execution-frozen", frozen);
+    panel?.classList.toggle("execution-frozen", executionActive);
   });
   [
     addRectNodeItem,
@@ -9650,6 +9679,7 @@ function importGraphData(data) {
         minimized: Boolean(w.minimized),
         outputOnly: Boolean(w.outputOnly),
         showHistory: Boolean(w.showHistory),
+        expandNonScalarValues: Boolean(w.expandNonScalarValues) && !Boolean(w.showHistory),
         xMin: parseAutoNullableNumber(w.xMin),
         xMax: parseAutoNullableNumber(w.xMax),
         yMin: parseAutoNullableNumber(w.yMin),
@@ -10501,6 +10531,9 @@ const runtimeSession = globalThis.STGraphXRuntimeSession?.createRuntimeSession({
   model: graph,
   rootExecution: graph.execution,
   isStateNode,
+  beforeInitialize: () => {
+    applyWidgetDrivenNodeValues();
+  },
   beforeEvaluate: () => {
     captureWatchSnapshot();
     applyWidgetDrivenNodeValues();

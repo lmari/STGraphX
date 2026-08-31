@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "modelTitle": "bayesian estimation 2D",
+  "modelTitle": "bounded oscillator 2",
   "localFunctions": [],
   "view": {
     "zoom": 1,
@@ -8,7 +8,7 @@
     "highlightNodeEdges": false,
     "gridSize": 20,
     "tooltipDelayMs": 300,
-    "scrollLeft": 0,
+    "scrollLeft": 112,
     "scrollTop": 0
   },
   "debug": {
@@ -18,27 +18,27 @@
   },
   "modelProperties": [],
   "nodeCounter": 14,
-  "edgeCounter": 15,
-  "widgetCounter": 8,
-  "textItemCounter": 5,
+  "edgeCounter": 12,
+  "widgetCounter": 6,
+  "textItemCounter": 3,
   "execution": {
     "t0": 0,
-    "dt": 1,
-    "t1": 50,
+    "dt": 0.01,
+    "t1": 30,
     "delayMs": 1,
-    "decimals": 5,
-    "integrator": "euler",
+    "decimals": 3,
+    "integrator": "rk4",
     "strictDefinitions": false
   },
   "nodes": [
     {
       "id": 1,
-      "name": "data",
+      "name": "a",
       "output": false,
       "global": false,
       "type": "algebraic",
-      "x": 110,
-      "y": 150,
+      "x": 130,
+      "y": 110,
       "width": 75,
       "height": 45,
       "fillColor": "#ffffff",
@@ -50,20 +50,20 @@
         },
         {
           "key": "descrizione",
-          "value": "Simulate a Gaussian observation."
+          "value": ""
         }
       ],
       "input": false,
-      "valueExpression": "gaussian([par1,par2])"
+      "valueExpression": "k*array(n,d[$0]/abs(d[$0]^3)-d[$0+1]/abs(d[$0+1]^3))"
     },
     {
       "id": 2,
-      "name": "hyp1",
-      "output": true,
+      "name": "d",
+      "output": false,
       "global": false,
-      "type": "parameter",
-      "x": 150,
-      "y": 100,
+      "type": "algebraic",
+      "x": 280,
+      "y": 190,
       "width": 75,
       "height": 45,
       "fillColor": "#ffffff",
@@ -75,18 +75,43 @@
         },
         {
           "key": "descrizione",
-          "value": "Categories for hypothesis testing on expected value."
+          "value": ""
         }
       ],
-      "valueExpression": "range(-2.0, 2.5, 0.1)"
+      "input": false,
+      "valueExpression": "append(append(p[0], array(n-1,p[$0+1]-p[$0])), (1-p[n-1]))"
     },
     {
       "id": 3,
-      "name": "hyp2",
-      "output": true,
+      "name": "k",
+      "output": false,
       "global": false,
       "type": "parameter",
-      "x": 180,
+      "x": 10,
+      "y": 110,
+      "width": 75,
+      "height": 45,
+      "fillColor": "#ffffff",
+      "strokeColor": "#000000",
+      "properties": [
+        {
+          "key": "note formula",
+          "value": ""
+        },
+        {
+          "key": "descrizione",
+          "value": ""
+        }
+      ],
+      "valueExpression": "0.02"
+    },
+    {
+      "id": 4,
+      "name": "n",
+      "output": false,
+      "global": true,
+      "type": "parameter",
+      "x": 10,
       "y": 40,
       "width": 75,
       "height": 45,
@@ -99,44 +124,19 @@
         },
         {
           "key": "descrizione",
-          "value": "Categories for hypothesis testing on standard deviation."
+          "value": ""
         }
       ],
-      "valueExpression": "range(0.1, 3, 0.1)"
-    },
-    {
-      "id": 4,
-      "name": "likelihood",
-      "output": true,
-      "global": false,
-      "type": "algebraic",
-      "x": 220,
-      "y": 150,
-      "width": 75,
-      "height": 45,
-      "fillColor": "#00ffff",
-      "strokeColor": "#000000",
-      "properties": [
-        {
-          "key": "note formula",
-          "value": "array([size(hyp1),size(hyp2)],\n  (1/hyp2[$1])*exp(-(hyp1[$0]-data)^2/(2*hyp2[$1]^2))\n)"
-        },
-        {
-          "key": "descrizione",
-          "value": "Likelihood, i.e., probability of the data given the (different) hypotheses."
-        }
-      ],
-      "input": false,
-      "valueExpression": "array([size(hyp1),size(hyp2)],\n  (1/hyp2[$1])*exp(-(hyp1[$0]-data)^2/(2*hyp2[$1]^2))\n)"
+      "valueExpression": "2"
     },
     {
       "id": 5,
-      "name": "marg1",
+      "name": "p",
       "output": true,
       "global": false,
-      "type": "algebraic",
-      "x": 460,
-      "y": 100,
+      "type": "state",
+      "x": 430,
+      "y": 110,
       "width": 75,
       "height": 45,
       "fillColor": "#ffffff",
@@ -148,20 +148,20 @@
         },
         {
           "key": "descrizione",
-          "value": "Estimated distribution on standard deviation, obtained by marginalization of the posterior."
+          "value": ""
         }
       ],
-      "input": false,
-      "valueExpression": "reduce(+, prob, 1, 0)"
+      "stateTransition": "integral(v)",
+      "initialState": "p0"
     },
     {
       "id": 6,
-      "name": "marg2",
-      "output": true,
+      "name": "p0",
+      "output": false,
       "global": false,
-      "type": "algebraic",
-      "x": 460,
-      "y": 200,
+      "type": "parameter",
+      "x": 150,
+      "y": 40,
       "width": 75,
       "height": 45,
       "fillColor": "#ffffff",
@@ -173,24 +173,23 @@
         },
         {
           "key": "descrizione",
-          "value": "Estimated distribution on expected value, obtained by marginalization of the posterior."
+          "value": ""
         }
       ],
-      "input": false,
-      "valueExpression": "reduce(+, prob, 0, 0)"
+      "valueExpression": "[0.7,0.9]"
     },
     {
       "id": 7,
-      "name": "par1",
-      "output": false,
+      "name": "p2",
+      "output": true,
       "global": false,
-      "type": "parameter",
-      "x": 10,
-      "y": 130,
+      "type": "algebraic",
+      "x": 530,
+      "y": 110,
       "width": 75,
       "height": 45,
-      "fillColor": "#ff0000",
-      "strokeColor": "#f5f5f5",
+      "fillColor": "#ffffff",
+      "strokeColor": "#000000",
       "properties": [
         {
           "key": "note formula",
@@ -198,23 +197,74 @@
         },
         {
           "key": "descrizione",
-          "value": "The first parameter -- expected value -- to be estimated\n(i.e., supposed to be unknown)."
+          "value": ""
         }
       ],
-      "valueExpression": "-0.5"
+      "input": false,
+      "valueExpression": "p"
     },
     {
       "id": 8,
-      "name": "par2",
+      "name": "v",
       "output": false,
       "global": false,
-      "type": "parameter",
+      "type": "state",
+      "x": 280,
+      "y": 110,
+      "width": 75,
+      "height": 45,
+      "fillColor": "#ffffff",
+      "strokeColor": "#000000",
+      "properties": [
+        {
+          "key": "note formula",
+          "value": ""
+        },
+        {
+          "key": "descrizione",
+          "value": ""
+        }
+      ],
+      "stateTransition": "integral(a)",
+      "initialState": "array(n,0)"
+    },
+    {
+      "id": 9,
+      "name": "xx",
+      "output": true,
+      "global": false,
+      "type": "algebraic",
+      "x": 410,
+      "y": 190,
+      "width": 75,
+      "height": 45,
+      "fillColor": "#ffffff",
+      "strokeColor": "#000000",
+      "properties": [
+        {
+          "key": "note formula",
+          "value": ""
+        },
+        {
+          "key": "descrizione",
+          "value": ""
+        }
+      ],
+      "input": false,
+      "valueExpression": "p[0]"
+    },
+    {
+      "id": 10,
+      "name": "y",
+      "output": true,
+      "global": false,
+      "type": "algebraic",
       "x": 10,
       "y": 180,
       "width": 75,
       "height": 45,
-      "fillColor": "#ff0000",
-      "strokeColor": "#f5f5f5",
+      "fillColor": "#ffffff",
+      "strokeColor": "#000000",
       "properties": [
         {
           "key": "note formula",
@@ -222,19 +272,20 @@
         },
         {
           "key": "descrizione",
-          "value": "The second parameter -- standard deviation -- to be estimated\n(i.e., supposed to be unknown)."
+          "value": ""
         }
       ],
-      "valueExpression": "1.0"
+      "input": false,
+      "valueExpression": "array(n,0)"
     },
     {
-      "id": 9,
-      "name": "prior",
-      "output": false,
+      "id": 11,
+      "name": "yy",
+      "output": true,
       "global": false,
       "type": "algebraic",
-      "x": 270,
-      "y": 100,
+      "x": 500,
+      "y": 190,
       "width": 75,
       "height": 45,
       "fillColor": "#ffffff",
@@ -246,136 +297,89 @@
         },
         {
           "key": "descrizione",
-          "value": "Prior probability distribution, assumed uniform for maximum entropy."
+          "value": ""
         }
       ],
       "input": false,
-      "valueExpression": "array([size(hyp1),size(hyp2)],1/(size(hyp1)*size(hyp2)))"
-    },
-    {
-      "id": 10,
-      "name": "prob",
-      "output": true,
-      "global": false,
-      "type": "state",
-      "x": 340,
-      "y": 150,
-      "width": 75,
-      "height": 45,
-      "fillColor": "#00ffff",
-      "strokeColor": "#000000",
-      "properties": [
-        {
-          "key": "note formula",
-          "value": ""
-        },
-        {
-          "key": "descrizione",
-          "value": "Dynamically / sequentially modified posterior distribution.\nFrom a prior distribution, it is adapted to new data by means of likelihood."
-        }
-      ],
-      "stateTransition": "(this*likelihood)/(reduce(+, reduce(+, (this*likelihood), 0), 0))",
-      "initialState": "prior"
+      "valueExpression": "p[1]"
     }
   ],
   "edges": [
     {
       "id": 1,
-      "from": 10,
-      "to": 6,
+      "from": 5,
+      "to": 7,
       "controlPoints": []
     },
     {
       "id": 2,
-      "from": 8,
+      "from": 3,
       "to": 1,
       "controlPoints": []
     },
     {
       "id": 3,
-      "from": 7,
-      "to": 1,
+      "from": 8,
+      "to": 5,
       "controlPoints": []
     },
     {
       "id": 4,
-      "from": 4,
-      "to": 10,
+      "from": 1,
+      "to": 8,
       "controlPoints": []
     },
     {
       "id": 5,
-      "from": 2,
-      "to": 4,
+      "from": 5,
+      "to": 2,
       "controlPoints": []
     },
     {
       "id": 6,
-      "from": 1,
-      "to": 4,
+      "from": 2,
+      "to": 1,
       "controlPoints": []
     },
     {
       "id": 7,
-      "from": 9,
-      "to": 10,
+      "from": 6,
+      "to": 5,
       "controlPoints": []
     },
     {
       "id": 8,
-      "from": 2,
+      "from": 5,
       "to": 9,
       "controlPoints": []
     },
     {
       "id": 9,
-      "from": 3,
-      "to": 4,
-      "controlPoints": []
-    },
-    {
-      "id": 10,
-      "from": 3,
-      "to": 9,
-      "controlPoints": []
-    },
-    {
-      "id": 11,
-      "from": 10,
-      "to": 5,
+      "from": 5,
+      "to": 11,
       "controlPoints": []
     }
   ],
-  "textItems": [
-    {
-      "id": 1,
-      "x": -40,
-      "y": -60,
-      "width": 1081,
-      "height": 41,
-      "fillColor": "",
-      "strokeColor": "",
-      "html": "<html>\n  <head>\n    \n  </head>\n  <body>\n    <p style=\"margin-top: 0\">\n      Parameter estimation by Bayesian inference Gaussian likelihood: \n      multivariate estimation of expected value and standard deviation\n    </p>\n  </body>\n</html>\n"
-    }
-  ],
+  "textItems": [],
   "widgets": [
     {
       "id": 3,
       "type": "xychart",
       "customTitle": "",
-      "x": 118,
-      "y": 294,
-      "width": 320,
-      "height": 210,
+      "x": -140,
+      "y": 220,
+      "width": 720,
+      "height": 260,
       "minimized": false,
       "outputOnly": false,
       "showHistory": false,
+      "expandNonScalarValues": false,
       "xMin": "auto",
       "xMax": "auto",
       "yMin": "auto",
       "yMax": "auto",
       "showGrid": true,
-      "legendPosition": "top-right",
+      "legendPosition": "none",
       "source": "",
       "showNumericValues": true,
       "showIndices": true,
@@ -397,16 +401,16 @@
       "columns": [],
       "xyPairs": [
         {
-          "xSource": "hyp1",
-          "ySource": "marg1",
-          "showTimeSeries": false,
-          "showInstantProfile": true,
+          "xSource": "time",
+          "ySource": "p2",
+          "showTimeSeries": true,
+          "showInstantProfile": false,
           "color": "#0e7ac4",
           "pointColor": "#0e7ac4",
           "showLine": true,
           "lineWidth": 2.2,
           "lineStyle": "solid",
-          "pointMode": "all",
+          "pointMode": "none",
           "pointSize": 2.4
         }
       ]
@@ -415,19 +419,20 @@
       "id": 4,
       "type": "xychart",
       "customTitle": "",
-      "x": 500,
-      "y": 300,
+      "x": 580,
+      "y": 220,
       "width": 320,
-      "height": 210,
+      "height": 260,
       "minimized": false,
       "outputOnly": false,
       "showHistory": false,
+      "expandNonScalarValues": false,
       "xMin": "auto",
       "xMax": "auto",
       "yMin": "auto",
       "yMax": "auto",
       "showGrid": true,
-      "legendPosition": "top-right",
+      "legendPosition": "none",
       "source": "",
       "showNumericValues": true,
       "showIndices": true,
@@ -449,37 +454,38 @@
       "columns": [],
       "xyPairs": [
         {
-          "xSource": "hyp2",
-          "ySource": "marg2",
-          "showTimeSeries": false,
-          "showInstantProfile": true,
+          "xSource": "xx",
+          "ySource": "yy",
+          "showTimeSeries": true,
+          "showInstantProfile": false,
           "color": "#0e7ac4",
           "pointColor": "#0e7ac4",
           "showLine": true,
           "lineWidth": 2.2,
           "lineStyle": "solid",
-          "pointMode": "all",
+          "pointMode": "none",
           "pointSize": 2.4
         }
       ]
     },
     {
       "id": 5,
-      "type": "table",
+      "type": "xychart",
       "customTitle": "",
-      "x": 280,
-      "y": -240,
-      "width": 700,
-      "height": 360,
+      "x": 580,
+      "y": 0,
+      "width": 320,
+      "height": 210,
       "minimized": false,
       "outputOnly": false,
       "showHistory": false,
-      "xMin": "auto",
-      "xMax": "auto",
+      "expandNonScalarValues": false,
+      "xMin": 0,
+      "xMax": 1,
       "yMin": "auto",
       "yMax": "auto",
       "showGrid": true,
-      "legendPosition": "top-right",
+      "legendPosition": "none",
       "source": "",
       "showNumericValues": true,
       "showIndices": true,
@@ -498,48 +504,22 @@
       "trueLabel": "",
       "options": [],
       "mappings": [],
-      "columns": [
-        "likelihood"
-      ],
-      "xyPairs": []
-    },
-    {
-      "id": 7,
-      "type": "matrix",
-      "customTitle": "",
-      "x": 520,
-      "y": -340,
-      "width": 480,
-      "height": 640,
-      "minimized": false,
-      "outputOnly": true,
-      "showHistory": false,
-      "xMin": "auto",
-      "xMax": "auto",
-      "yMin": "auto",
-      "yMax": "auto",
-      "showGrid": true,
-      "legendPosition": "top-right",
-      "source": "prob",
-      "showNumericValues": false,
-      "showIndices": false,
-      "autoFitCells": true,
-      "cellSize": 12,
-      "valueMin": "auto",
-      "valueMax": "auto",
-      "displayRows": null,
-      "displayCols": null,
-      "colorScheme": "blue",
-      "min": 0,
-      "max": 100,
-      "step": 1,
-      "value": 0,
-      "falseLabel": "",
-      "trueLabel": "",
-      "options": [],
-      "mappings": [],
       "columns": [],
-      "xyPairs": []
+      "xyPairs": [
+        {
+          "xSource": "p",
+          "ySource": "y",
+          "showTimeSeries": false,
+          "showInstantProfile": true,
+          "color": "#0e7ac4",
+          "pointColor": "#c40e29",
+          "showLine": false,
+          "lineWidth": 2.2,
+          "lineStyle": "solid",
+          "pointMode": "last",
+          "pointSize": 10
+        }
+      ]
     }
   ]
 }

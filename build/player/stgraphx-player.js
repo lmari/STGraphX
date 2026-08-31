@@ -1,12 +1,21 @@
 /*!
  * STGraphX Embedded Player Bundle
- * Generated: 2026-07-16T17:35:50.426Z
+ * Generated: 2026-08-31T18:32:04.398Z
  */
 
 /* --- i18n-inline.js --- */
+/*
+ * This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at https://mozilla.org/MPL/2.0/.
+ * Copyright (c) 2026 Luca Mari
+ */
+
 window.STGraphXAppMeta = {
   author: "Luca Mari",
-  releaseDate: "2026.07.16",
+  releaseDate: "2026.08.21",
+  license: "MPL-2.0",
+  copyright: "Copyright (c) 2026 Luca Mari",
 };
 
 window.STGraphXI18nBundles = {
@@ -51,6 +60,8 @@ window.STGraphXI18nBundles = {
     "about.subtitle": "Ambiente di lavoro per il variable-based modeling",
     "about.versionLabel": "Ultimo aggiornamento",
     "about.authorLabel": "Autore",
+    "about.licenseLabel": "Licenza",
+    "about.copyrightLabel": "Copyright",
     "about.body": "Versione sperimentale con shell web ed Electron.",
     "confirm.exitSubmodel.save": "Ci sono modifiche non salvate nel sottomodello corrente. Vuoi salvarle prima di tornare al livello superiore?",
     "confirm.closeApp.save": "Ci sono modifiche non salvate. Vuoi salvarle prima di chiudere l'app?",
@@ -157,7 +168,7 @@ window.STGraphXI18nBundles = {
     "expr.help.abs": "Valore assoluto.",
     "expr.help.acos": "Arcocoseno.",
     "expr.help.array": "array(dim oppure [d0,d1,...], expr): costruisce un array valutando expr per ogni elemento; $0, $1, ... sono gli indici locali.",
-    "expr.help.append": "append(vettore, valore|vettore) oppure append(matrice, vettore-riga): aggiunge un elemento o concatena un vettore a un vettore, oppure aggiunge una riga a una matrice. Esempi: append([1,2], 3) ; append([1,2], [3,4]) ; append([[1,2],[3,4]], [5,6]).",
+    "expr.help.append": "append(vettore, valore|vettore), append(valore, vettore) oppure append(matrice, vettore-riga): aggiunge o antepone un elemento a un vettore, concatena due vettori, oppure aggiunge una riga a una matrice. Esempi: append([1,2], 3) ; append(1, [2,3]) ; append([1,2], [3,4]) ; append([[1,2],[3,4]], [5,6]).",
     "expr.help.average": "average(array[, asse]): media aritmetica di un vettore o di una matrice. Per una matrice senza asse restituisce la media complessiva; con asse=0 restituisce le medie per colonna, con asse=1 le medie per riga. Esempi: average([1,2,3]) -> 2 ; average([[1,2],[3,4]]) -> 2.5 ; average([[1,2],[3,4]], 0) -> [2,3].",
     "expr.help.asin": "Arcoseno.",
     "expr.help.atan": "Arcotangente.",
@@ -169,6 +180,9 @@ window.STGraphXI18nBundles = {
     "expr.help.dt": "Passo temporale dell'esecuzione.",
     "expr.help.empty": "Seleziona o scrivi un simbolo per vedere l'help contestuale.",
     "expr.help.title": "Help contestuale",
+    "expr.view.editor": "Formula",
+    "expr.view.notes": "Note",
+    "expr.view.help": "Help",
     "expr.help.exp": "Esponenziale naturale e^x.",
     "expr.help.exponential": "exponential([rate], x, modo): distribuzione esponenziale. Se x manca estrae un campione. Con modo=0 calcola la pdf, con modo=1 la cdf, con modo=2 la icdf. Esempi: exponential([2]) ; exponential([2], 1.5, 0) ; exponential([2], 0.9, 2).",
     "expr.help.filter": "filter(condizione, array[, modo]): filtra un vettore o una matrice. Con modo omesso o 'elements' mantiene gli elementi per cui la condizione è vera. Con modo='rows' filtra le righe di una matrice, dove $value è la riga corrente e $0 il suo indice. Con modo='cols' filtra le colonne, dove $value è la colonna corrente e $0 il suo indice. Esempi: filter($value>0, [-2,0,3]) ; filter($0===$1, [[1,2],[3,4]]) ; filter(griglia[$value]==1, coordinate, 'rows').",
@@ -212,6 +226,7 @@ window.STGraphXI18nBundles = {
     "examples.open": "Apri",
     "examples.openError": "Impossibile aprire il modello di esempio.",
     "expr.help.pow": "Potenza: base elevata a esponente.",
+    "expr.help.pos": "pos(x): restituisce x se x e positivo, altrimenti 0. Opera anche elemento per elemento su vettori e matrici.",
     "expr.help.agentIndex": "Indice di riga dell'agente o cella corrente. In esecuzione scalare vale 0; in esecuzione vettoriale identifica la componente locale; con matrici agent-based indica la riga corrente.",
     "expr.help.agentColumnIndex": "Indice di colonna dell'agente o cella corrente nei contesti matriciali agent-based. Nelle strutture non matriciali non è disponibile.",
     "expr.help.agentFieldAlias": "Alias del campo agente {name}. Vale l'indice di colonna {index}.",
@@ -314,6 +329,7 @@ window.STGraphXI18nBundles = {
     "expr.error.expectsNonEmptyVectorOrMatrix": "{name} richiede un vettore o una matrice non vuoti",
     "expr.error.notDefined": "{name} non definito",
     "expr.error.notCallable": "{name} non è invocabile",
+    "expr.error.functionUnavailable": "{name} non è disponibile",
     "expr.error.expectsVector": "{name} richiede un vettore",
     "expr.error.expectsVectorOrMatrix": "{name} richiede un vettore o una matrice",
     "expr.error.expectsTwoVectors": "{name} richiede due vettori",
@@ -322,6 +338,11 @@ window.STGraphXI18nBundles = {
     "expr.error.expectsExactlyArgs": "{name} richiede esattamente {count} argomenti",
     "expr.error.expectsArgRange": "{name} richiede da {min} a {max} argomenti",
     "expr.error.expectsArgsDescription": "{name} richiede {description} argomenti",
+    "expr.error.finiteNumericBounds": "{name} richiede estremi numerici finiti",
+    "expr.error.distributionMode": "Il modo deve essere 0 (pdf), 1 (cdf) o 2 (icdf)",
+    "expr.error.randIntBounds": "randInt richiede minore o uguale a max",
+    "expr.error.reduceMatrixAxis": "reduce su matrici richiede un argomento asse",
+    "expr.error.reduceOperator": "Il primo argomento di reduce deve essere un operatore o una funzione",
     "expr.error.probabilityOpen01": "La probabilita deve essere in (0, 1)",
     "expr.error.probabilityClosed01": "La probabilita deve essere in [0, 1]",
     "expr.error.probabilityHalfOpen01": "La probabilita deve essere in [0, 1)",
@@ -378,6 +399,7 @@ window.STGraphXI18nBundles = {
     "expr.error.axisRequiresMatrix": "L'asse di {name} richiede una matrice",
     "expr.error.reduceNeedsNonEmptyVector": "reduce richiede un vettore non vuoto se manca il valore iniziale",
     "expr.error.appendFirstArgVectorOrMatrix": "Il primo argomento di append deve essere un vettore o una matrice",
+    "expr.error.appendArguments": "append richiede un vettore o una matrice come primo argomento, oppure uno scalare seguito da un vettore",
     "expr.error.appendSecondArgVectorRow": "Su matrici, append richiede una riga vettore come secondo argomento",
     "expr.error.appendRowLength": "La lunghezza della riga aggiunta non coincide con il numero di colonne della matrice",
     "expr.error.setAtPair": "setAt richiede [riga, colonna] per sostituire una cella di matrice",
@@ -434,6 +456,9 @@ window.STGraphXI18nBundles = {
     "help.group.probability": "Funzioni statistiche e probabilistiche",
     "help.group.variables": "Variabili disponibili",
     "help.intro": "Elenco delle funzioni, delle variabili di sistema e delle utility disponibili nelle espressioni.",
+    "help.search": "Cerca per nome",
+    "help.searchPlaceholder": "Nome della funzione o variabile",
+    "help.searchEmpty": "Nessuna funzione o variabile corrispondente.",
     "help.title": "Funzioni disponibili",
     "hint.edge.1": "Clic sulla linea selezionata: aggiungi punto controllo.",
     "hint.edge.2": "Drag punto: sposta.",
@@ -442,6 +467,10 @@ window.STGraphXI18nBundles = {
     "hint.textFormatting": "Puoi usare HTML semplice come <b>, <i>, <u>, <br>, <p> e stili inline per colore, sfondo, allineamento e dimensione del testo.",
     "integrator.euler": "Euler",
     "integrator.rk4": "RK4",
+    "expr.editor.nodeTitle": "{name} ({type})",
+    "expr.editor.nodeType.parameter": "parametro",
+    "expr.editor.nodeType.algebraic": "variabile algebrica",
+    "expr.editor.nodeType.state": "variabile di stato",
     "label.behaviorFunction": "Comportamento",
     "label.decimals": "Cifre decimali max",
     "label.description": "Descrizione",
@@ -521,6 +550,12 @@ window.STGraphXI18nBundles = {
     "menu.view": "Vista",
     "menu.view.fit": "Adatta al contenuto",
     "menu.view.gridStep": "Passo griglia",
+    "menu.view.tooltipDelay": "Ritardo tooltip",
+    "menu.view.tooltipDelayMode.none": "Mai",
+    "menu.view.tooltipDelayMode.fast": "Breve",
+    "menu.view.tooltipDelayMode.normal": "Normale",
+    "menu.view.tooltipDelayMode.slow": "Lungo",
+    "menu.view.tooltipDelayMode.slower": "Molto lungo",
     "menu.view.showGrid": "Mostra griglia",
     "menu.view.highlightNodeEdges": "Evidenzia frecce nodo",
     "menu.view.snap": "Snap griglia",
@@ -704,6 +739,7 @@ window.STGraphXI18nBundles = {
     "tooltip.menu.view": "Controlli di visualizzazione, zoom e griglia.",
     "tooltip.menu.view.fit": "Adatta zoom e vista al contenuto attuale di grafo e widget.",
     "tooltip.menu.view.gridStep": "Imposta la distanza tra le linee della griglia.",
+    "tooltip.menu.view.tooltipDelay": "Imposta dopo quanto tempo compaiono i tooltip, oppure disattivali del tutto.",
     "tooltip.menu.view.showGrid": "Mostra o nasconde la griglia sul canvas.",
     "tooltip.menu.view.highlightNodeEdges": "Evidenzia con colori diversi le frecce entranti e uscenti del nodo selezionato.",
     "tooltip.menu.view.snap": "Aggancia movimenti e ridimensionamenti alla griglia.",
@@ -807,18 +843,24 @@ window.STGraphXI18nBundles = {
     "widget.autoOption": "auto",
     "widget.outputOnly": "Solo nodi output",
     "widget.pointSize": "Dim. punto",
+    "widget.pointSizeShort": "Dimensione",
     "widget.removeColumn": "Rimuovi colonna",
     "widget.removePair": "Rimuovi coppia",
     "widget.restore": "Ripristina",
     "widget.selectAll": "Tutte le Y",
     "widget.seriesColor": "Colore curva",
+    "widget.lineColor": "Colore linea",
+    "widget.pointColor": "Colore punti",
     "widget.seriesLine": "Linea",
     "widget.lineWidth": "Spessore linea",
-    "widget.lineStyle": "Tratto linea",
+    "widget.lineWidthShort": "Spessore",
+    "widget.lineStyle": "Linea",
+    "widget.lineStyleMode.none": "No linea",
     "widget.lineStyleMode.solid": "Continua",
     "widget.lineStyleMode.dashed": "Tratteggiata",
     "widget.lineStyleMode.dotted": "Punteggiata",
     "widget.legendPosition": "Posizione legenda",
+    "widget.legendPositionMode.none": "Nessuna legenda",
     "widget.legendPositionMode.top-right": "Alto destra",
     "widget.legendPositionMode.top-left": "Alto sinistra",
     "widget.legendPositionMode.bottom-right": "Basso destra",
@@ -831,6 +873,7 @@ window.STGraphXI18nBundles = {
     "widget.seriesPointsMode.none": "No punti",
     "widget.showGrid": "Griglia",
     "widget.showHistory": "Serie storica",
+    "widget.expandNonScalarValues": "Espandi valori non scalari",
     "widget.sliderMax": "Max",
     "widget.sliderMin": "Min",
     "widget.sliderRangeLabel": "Intervallo",
@@ -887,6 +930,7 @@ window.STGraphXI18nBundles = {
     "analysis.issue.duplicateEdge": "La freccia {name} è duplicata.",
     "analysis.issue.selfLoop": "La freccia {name} crea un self-loop potenzialmente sospetto.",
     "analysis.issue.algebraicCycle": "Possibile ciclo tra nodi non di stato: {path}.",
+    "analysis.issue.initialDefinitionCycle": "Ciclo nelle definizioni iniziali: {path}.",
     "analysis.issue.missingIncomingEdge": "L'espressione di {target} usa {source}, ma manca la freccia {source} -> {target}.",
     "analysis.issue.unusedNode": "Il nodo {name} non risulta usato da altri nodi, output o widget.",
     "analysis.issue.invalidSubmodelBinding": "Nel sottomodello {name}, il binding di ingresso {input} non è valido: {reason}",
@@ -908,6 +952,7 @@ window.STGraphXI18nBundles = {
     "analysis.checks.duplicateEdge": "Segnala frecce duplicate con stessa sorgente, destinazione e stesse porte.",
     "analysis.checks.selfLoop": "Segnala self-loop che possono essere voluti, ma spesso indicano una connessione sospetta.",
     "analysis.checks.algebraicCycle": "Segnala possibili cicli tra nodi non di stato, che rischiano di rendere le definizioni non risolvibili.",
+    "analysis.checks.initialDefinitionCycle": "Segnala cicli tra stati e nodi algebrici necessari per calcolare gli stati iniziali.",
     "analysis.checks.missingIncomingEdge": "Segnala espressioni che usano un altro nodo senza la corrispondente freccia entrante.",
     "analysis.checks.unusedEdge": "Segnala frecce entranti che non sembrano essere usate nelle espressioni attive del nodo destinazione.",
     "analysis.checks.unusedNode": "Segnala nodi che non risultano usati da altri nodi, output o widget.",
@@ -966,6 +1011,8 @@ window.STGraphXI18nBundles = {
     "about.subtitle": "Variable-based modeling workbench",
     "about.versionLabel": "Last update",
     "about.authorLabel": "Author",
+    "about.licenseLabel": "License",
+    "about.copyrightLabel": "Copyright",
     "about.body": "Experimental release with web and Electron shells.",
     "confirm.exitSubmodel.save": "There are unsaved changes in the current submodel. Save them before returning to the upper level?",
     "confirm.closeApp.save": "There are unsaved changes. Save them before closing the app?",
@@ -1072,7 +1119,7 @@ window.STGraphXI18nBundles = {
     "expr.help.abs": "Absolute value.",
     "expr.help.acos": "Arc cosine.",
     "expr.help.array": "array(dim or [d0,d1,...], expr): builds an array by evaluating expr for each element; $0, $1, ... are local indices.",
-    "expr.help.append": "append(vector, value|vector) or append(matrix, rowVector): appends a value or concatenates a vector to a vector, or appends a row to a matrix. Examples: append([1,2], 3) ; append([1,2], [3,4]) ; append([[1,2],[3,4]], [5,6]).",
+    "expr.help.append": "append(vector, value|vector), append(value, vector), or append(matrix, rowVector): appends or prepends an element to a vector, concatenates two vectors, or appends a row to a matrix. Examples: append([1,2], 3) ; append(1, [2,3]) ; append([1,2], [3,4]) ; append([[1,2],[3,4]], [5,6]).",
     "expr.help.average": "average(array[, axis]): arithmetic mean of a vector or matrix. For a matrix without axis it returns the overall mean; with axis=0 it returns column means, with axis=1 row means. Examples: average([1,2,3]) -> 2 ; average([[1,2],[3,4]]) -> 2.5 ; average([[1,2],[3,4]], 0) -> [2,3].",
     "expr.help.asin": "Arc sine.",
     "expr.help.atan": "Arc tangent.",
@@ -1084,6 +1131,9 @@ window.STGraphXI18nBundles = {
     "expr.help.dt": "Execution time step.",
     "expr.help.empty": "Select or type a symbol to see contextual help.",
     "expr.help.title": "Contextual help",
+    "expr.view.editor": "Formula",
+    "expr.view.notes": "Notes",
+    "expr.view.help": "Help",
     "expr.help.exp": "Natural exponential e^x.",
     "expr.help.exponential": "exponential([rate], x, mode): exponential distribution. If x is omitted it samples a value. With mode=0 it computes the pdf, with mode=1 the cdf, with mode=2 the icdf. Examples: exponential([2]) ; exponential([2], 1.5, 0) ; exponential([2], 0.9, 2).",
     "expr.help.filter": "filter(condition, array[, mode]): filters a vector or matrix. With omitted mode or 'elements' it keeps the elements for which the condition is true. With mode='rows' it filters matrix rows, where $value is the current row and $0 its index. With mode='cols' it filters matrix columns, where $value is the current column and $0 its index. Examples: filter($value>0, [-2,0,3]) ; filter($0===$1, [[1,2],[3,4]]) ; filter(grid[$value]==1, coordinates, 'rows').",
@@ -1127,6 +1177,7 @@ window.STGraphXI18nBundles = {
     "examples.open": "Open",
     "examples.openError": "Unable to open the example model.",
     "expr.help.pow": "Power: base raised to exponent.",
+    "expr.help.pos": "pos(x): returns x if it is positive, otherwise 0. It also operates element by element on vectors and matrices.",
     "expr.help.agentIndex": "Row index of the current agent or cell. In scalar execution it is 0; in vector execution it identifies the local component; in matrix agent-based contexts it is the current row.",
     "expr.help.agentColumnIndex": "Column index of the current agent or cell in matrix agent-based contexts. It is not available for non-matrix structures.",
     "expr.help.agentFieldAlias": "Alias for agent field {name}. It resolves to column index {index}.",
@@ -1229,6 +1280,7 @@ window.STGraphXI18nBundles = {
     "expr.error.expectsNonEmptyVectorOrMatrix": "{name} expects a non-empty vector or matrix",
     "expr.error.notDefined": "{name} is not defined",
     "expr.error.notCallable": "{name} is not callable",
+    "expr.error.functionUnavailable": "{name} is unavailable",
     "expr.error.expectsVector": "{name} expects a vector",
     "expr.error.expectsVectorOrMatrix": "{name} expects a vector or matrix",
     "expr.error.expectsTwoVectors": "{name} expects two vectors",
@@ -1237,6 +1289,11 @@ window.STGraphXI18nBundles = {
     "expr.error.expectsExactlyArgs": "{name} expects exactly {count} arguments",
     "expr.error.expectsArgRange": "{name} expects {min} to {max} arguments",
     "expr.error.expectsArgsDescription": "{name} expects {description} arguments",
+    "expr.error.finiteNumericBounds": "{name} expects finite numeric bounds",
+    "expr.error.distributionMode": "Mode must be 0 (pdf), 1 (cdf), or 2 (icdf)",
+    "expr.error.randIntBounds": "randInt expects min <= max",
+    "expr.error.reduceMatrixAxis": "reduce on matrices requires an axis argument",
+    "expr.error.reduceOperator": "reduce expects an operator or function as first argument",
     "expr.error.probabilityOpen01": "Probability must be in (0, 1)",
     "expr.error.probabilityClosed01": "Probability must be in [0, 1]",
     "expr.error.probabilityHalfOpen01": "Probability must be in [0, 1)",
@@ -1293,6 +1350,7 @@ window.STGraphXI18nBundles = {
     "expr.error.axisRequiresMatrix": "{name} axis requires a matrix",
     "expr.error.reduceNeedsNonEmptyVector": "reduce requires a non-empty vector when no initial value is provided",
     "expr.error.appendFirstArgVectorOrMatrix": "append expects a vector or matrix as first argument",
+    "expr.error.appendArguments": "append expects a vector or matrix as first argument, or a scalar followed by a vector",
     "expr.error.appendSecondArgVectorRow": "append on matrices expects a row vector as second argument",
     "expr.error.appendRowLength": "Appended row length does not match matrix column count",
     "expr.error.setAtPair": "setAt expects [row, col] for matrix cell replacement",
@@ -1349,6 +1407,9 @@ window.STGraphXI18nBundles = {
     "help.group.probability": "Statistical and probabilistic functions",
     "help.group.variables": "Available variables",
     "help.intro": "List of functions, system variables, and utilities available in expressions.",
+    "help.search": "Search by name",
+    "help.searchPlaceholder": "Function or variable name",
+    "help.searchEmpty": "No matching function or variable.",
     "help.title": "Available functions",
     "hint.edge.1": "Click selected edge line: add control point.",
     "hint.edge.2": "Drag point: move it.",
@@ -1357,6 +1418,10 @@ window.STGraphXI18nBundles = {
     "hint.textFormatting": "You can use simple HTML such as <b>, <i>, <u>, <br>, <p> and inline styles for color, background, alignment, and text size.",
     "integrator.euler": "Euler",
     "integrator.rk4": "RK4",
+    "expr.editor.nodeTitle": "{name} ({type})",
+    "expr.editor.nodeType.parameter": "parameter",
+    "expr.editor.nodeType.algebraic": "algebraic variable",
+    "expr.editor.nodeType.state": "state variable",
     "label.behaviorFunction": "Behavior",
     "label.decimals": "Max decimal digits",
     "label.description": "Description",
@@ -1436,6 +1501,12 @@ window.STGraphXI18nBundles = {
     "menu.view": "View",
     "menu.view.fit": "Fit to content",
     "menu.view.gridStep": "Grid step",
+    "menu.view.tooltipDelay": "Tooltip delay",
+    "menu.view.tooltipDelayMode.none": "Never",
+    "menu.view.tooltipDelayMode.fast": "Short",
+    "menu.view.tooltipDelayMode.normal": "Normal",
+    "menu.view.tooltipDelayMode.slow": "Long",
+    "menu.view.tooltipDelayMode.slower": "Very long",
     "menu.view.showGrid": "Show grid",
     "menu.view.highlightNodeEdges": "Highlight node edges",
     "menu.view.snap": "Snap to grid",
@@ -1619,6 +1690,7 @@ window.STGraphXI18nBundles = {
     "tooltip.menu.view": "View, zoom, and grid controls.",
     "tooltip.menu.view.fit": "Fits zoom and viewport to the current graph and widget content.",
     "tooltip.menu.view.gridStep": "Sets the spacing between grid lines.",
+    "tooltip.menu.view.tooltipDelay": "Sets how long the UI waits before showing tooltips, or disables them entirely.",
     "tooltip.menu.view.showGrid": "Shows or hides the grid on the canvas.",
     "tooltip.menu.view.highlightNodeEdges": "Highlights incoming and outgoing edges of the selected node with different colors.",
     "tooltip.menu.view.snap": "Snaps moves and resizes to the grid.",
@@ -1722,18 +1794,24 @@ window.STGraphXI18nBundles = {
     "widget.autoOption": "auto",
     "widget.outputOnly": "Output nodes only",
     "widget.pointSize": "Point size",
+    "widget.pointSizeShort": "Size",
     "widget.removeColumn": "Remove column",
     "widget.removePair": "Remove pair",
     "widget.restore": "Restore",
     "widget.selectAll": "All Y",
     "widget.seriesColor": "Series color",
+    "widget.lineColor": "Line color",
+    "widget.pointColor": "Point color",
     "widget.seriesLine": "Line",
     "widget.lineWidth": "Line width",
-    "widget.lineStyle": "Line style",
+    "widget.lineWidthShort": "Width",
+    "widget.lineStyle": "Line",
+    "widget.lineStyleMode.none": "No line",
     "widget.lineStyleMode.solid": "Solid",
     "widget.lineStyleMode.dashed": "Dashed",
     "widget.lineStyleMode.dotted": "Dotted",
     "widget.legendPosition": "Legend position",
+    "widget.legendPositionMode.none": "No legend",
     "widget.legendPositionMode.top-right": "Top right",
     "widget.legendPositionMode.top-left": "Top left",
     "widget.legendPositionMode.bottom-right": "Bottom right",
@@ -1746,6 +1824,7 @@ window.STGraphXI18nBundles = {
     "widget.seriesPointsMode.none": "No points",
     "widget.showGrid": "Grid",
     "widget.showHistory": "History series",
+    "widget.expandNonScalarValues": "Expand non-scalar values",
     "widget.sliderMax": "Max",
     "widget.sliderMin": "Min",
     "widget.sliderRangeLabel": "Range",
@@ -1802,6 +1881,7 @@ window.STGraphXI18nBundles = {
     "analysis.issue.duplicateEdge": "Edge {name} is duplicated.",
     "analysis.issue.selfLoop": "Edge {name} creates a potentially suspicious self-loop.",
     "analysis.issue.algebraicCycle": "Possible cycle among non-state nodes: {path}.",
+    "analysis.issue.initialDefinitionCycle": "Cycle in initial definitions: {path}.",
     "analysis.issue.missingIncomingEdge": "The expression of {target} uses {source}, but the edge {source} -> {target} is missing.",
     "analysis.issue.unusedNode": "Node {name} does not appear to be used by other nodes, outputs, or widgets.",
     "analysis.issue.invalidSubmodelBinding": "In submodel {name}, input binding {input} is invalid: {reason}",
@@ -1823,6 +1903,7 @@ window.STGraphXI18nBundles = {
     "analysis.checks.duplicateEdge": "Reports duplicate edges with the same source, target, and ports.",
     "analysis.checks.selfLoop": "Reports self-loops that may be intentional, but often indicate a suspicious connection.",
     "analysis.checks.algebraicCycle": "Reports possible cycles among non-state nodes, which may make definitions unsolvable.",
+    "analysis.checks.initialDefinitionCycle": "Reports cycles among states and algebraic nodes needed to calculate initial states.",
     "analysis.checks.missingIncomingEdge": "Reports expressions that use another node without the corresponding incoming edge.",
     "analysis.checks.unusedEdge": "Reports incoming edges that do not appear to be used by the active expressions of the target node.",
     "analysis.checks.unusedNode": "Reports nodes that do not appear to be used by other nodes, outputs, or widgets.",
@@ -1844,6 +1925,13 @@ window.STGraphXI18nBundles = {
 
 
 /* --- graph-functions.js --- */
+/*
+ * This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at https://mozilla.org/MPL/2.0/.
+ * Copyright (c) 2026 Luca Mari
+ */
+
 (function attachGraphFunctions(global) {
   const AGENT_SCHEMA_KEY = "__stgraphxAgentSchema";
   const AGENT_FIELD_NAME_RE = /^[A-Za-z_][A-Za-z0-9_]*$/;
@@ -3301,6 +3389,7 @@ window.STGraphXI18nBundles = {
       sqrt: vectorizeFunction(Math.sqrt),
       pow: vectorizeFunction(Math.pow),
       abs: vectorizeFunction(Math.abs),
+      pos: vectorizeFunction((value) => Math.max(0, Number(value))),
       min: vectorizeFunction(Math.min),
       max: vectorizeFunction(Math.max),
       round: vectorizeFunction(Math.round),
@@ -3422,7 +3511,7 @@ window.STGraphXI18nBundles = {
       map: { kind: "function", signature: "map(expr, array)", descriptionKey: "expr.help.map", insertText: "map()", cursorOffset: 4 },
       filter: { kind: "array", signature: "filter(cond, array[, mode])", descriptionKey: "expr.help.filter", insertText: "filter()", cursorOffset: 7 },
       reduce: { kind: "function", signature: "reduce(op|fn, vector[, init]) | reduce(op|fn, matrix, axis[, init])", descriptionKey: "expr.help.reduce", insertText: "reduce()", cursorOffset: 7 },
-      append: { kind: "array", signature: "append(vector, value|vector) | append(matrix, rowVector)", descriptionKey: "expr.help.append", insertText: "append()", cursorOffset: 7 },
+      append: { kind: "array", signature: "append(vector, value|vector) | append(value, vector) | append(matrix, rowVector)", descriptionKey: "expr.help.append", insertText: "append()", cursorOffset: 7 },
       set: { kind: "array", signature: "set(vector)", descriptionKey: "expr.help.set", insertText: "set()", cursorOffset: 4 },
       union: { kind: "array", signature: "union(vectorA, vectorB)", descriptionKey: "expr.help.union", insertText: "union()", cursorOffset: 6 },
       intersection: { kind: "array", signature: "intersection(vectorA, vectorB)", descriptionKey: "expr.help.intersection", insertText: "intersection()", cursorOffset: 13 },
@@ -3464,6 +3553,7 @@ window.STGraphXI18nBundles = {
       sqrt: { kind: "math", signature: "sqrt(x)", descriptionKey: "expr.help.sqrt", insertText: "sqrt()", cursorOffset: 5 },
       pow: { kind: "math", signature: "pow(base, exp)", descriptionKey: "expr.help.pow", insertText: "pow()", cursorOffset: 4 },
       abs: { kind: "math", signature: "abs(x)", descriptionKey: "expr.help.abs", insertText: "abs()", cursorOffset: 4 },
+      pos: { kind: "math", signature: "pos(x)", descriptionKey: "expr.help.pos", insertText: "pos()", cursorOffset: 4 },
       min: { kind: "math", signature: "min(a, b, ...)", descriptionKey: "expr.help.min", insertText: "min()", cursorOffset: 4 },
       max: { kind: "math", signature: "max(a, b, ...)", descriptionKey: "expr.help.max", insertText: "max()", cursorOffset: 4 },
       round: { kind: "math", signature: "round(x)", descriptionKey: "expr.help.round", insertText: "round()", cursorOffset: 6 },
@@ -3496,6 +3586,13 @@ window.STGraphXI18nBundles = {
 
 
 /* --- semantic.js --- */
+/*
+ * This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at https://mozilla.org/MPL/2.0/.
+ * Copyright (c) 2026 Luca Mari
+ */
+
 (function attachGraphSemantics(global) {
   const VARIABLE_NAME_RE = /^[A-Za-z_][A-Za-z0-9_]*$/;
   const RESERVED_WORDS = new Set([
@@ -4551,7 +4648,10 @@ window.STGraphXI18nBundles = {
 
   function appendArrayValues(target, value) {
     if (!Array.isArray(target)) {
-      throw new Error("append expects a vector or matrix as first argument");
+      if (Array.isArray(value) && !value.some((item) => Array.isArray(item))) {
+        return [target, ...value];
+      }
+      throw new Error("append expects a vector or matrix as first argument, or a scalar followed by a vector");
     }
     const fieldNames = getAgentFieldNames(target);
     const isMatrix = Boolean(fieldNames) || (target.length > 0 && target.every((row) => Array.isArray(row)));
@@ -4567,7 +4667,7 @@ window.STGraphXI18nBundles = {
       if (fieldNames) {
         attachAgentSchema(out, fieldNames);
       }
-        return out;
+      return out;
     }
     if (!Array.isArray(value) || value.some((item) => Array.isArray(item))) {
       throw new Error("append on matrices expects a vector row as second argument");
@@ -4891,25 +4991,27 @@ window.STGraphXI18nBundles = {
         next();
         return { type: "unary", op: token.value, argument: parseUnary() };
       }
-      return parsePostfix();
+      return parsePower();
     }
 
     function parsePower() {
-      let left = parseUnary();
+      let left = parsePostfix();
       if (match("**", "^")) {
-        left = { type: "binary", op: "**", left, right: parsePower() };
+        // Exponentiation binds more tightly than a leading sign: -x^2 is
+        // -(x^2), while a signed exponent remains valid in x^-2.
+        left = { type: "binary", op: "**", left, right: parseUnary() };
       }
       return left;
     }
 
     function parseMultiplicative() {
-      let left = parsePower();
+      let left = parseUnary();
       while (true) {
         const op = match("*", "/", "%");
         if (!op) {
           return left;
         }
-        left = { type: "binary", op: op.value, left, right: parsePower() };
+        left = { type: "binary", op: op.value, left, right: parseUnary() };
       }
     }
 
@@ -6201,6 +6303,7 @@ window.STGraphXI18nBundles = {
     validateNodeName,
     makeUniqueName,
     sanitizeNodeNames,
+    collectIdentifierReferences,
     validateComputedValue,
     evaluateValueExpression,
     validateExpressionSyntax,
@@ -6220,6 +6323,13 @@ window.STGraphXI18nBundles = {
 
 
 /* --- runtime-shared.js --- */
+/*
+ * This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at https://mozilla.org/MPL/2.0/.
+ * Copyright (c) 2026 Luca Mari
+ */
+
 (function initRuntimeShared(global) {
   function createRuntimeShared(options = {}) {
     const {
@@ -6505,6 +6615,13 @@ window.STGraphXI18nBundles = {
 
 
 /* --- runtime-core.js --- */
+/*
+ * This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at https://mozilla.org/MPL/2.0/.
+ * Copyright (c) 2026 Luca Mari
+ */
+
 (function initRuntimeCore(global) {
   function createRuntimeCore(deps = {}) {
     const {
@@ -6796,13 +6913,13 @@ window.STGraphXI18nBundles = {
       }
     }
 
-    function buildInitialStateContextForModel(model, node, timeValue, rootExecution) {
+    function buildInitialStateContextForModel(model, node, timeValue, rootExecution, referencedNames = null) {
       const context = {
         ...buildExecutionGlobalsForModel(model, rootExecution, timeValue),
         ...nodePropertyAccessForContext(node),
       };
       globalParameterNodesForModel(model, node.id).forEach((depNode) => {
-        if (!depNode.computedError) {
+        if ((!referencedNames || referencedNames.has(depNode.name)) && !depNode.computedError) {
           context[depNode.name] = depNode.computedValue;
         }
       });
@@ -6810,7 +6927,7 @@ window.STGraphXI18nBundles = {
         .filter((edge) => edge.to === node.id)
         .forEach((edge) => {
           const fromNode = getModelNodeById(model, edge.from);
-          if (!fromNode || fromNode.shape !== "diamond" || fromNode.computedError) {
+          if (!fromNode || (referencedNames && !referencedNames.has(fromNode.name)) || fromNode.computedError) {
             return;
           }
           context[fromNode.name] = fromNode.computedValue;
@@ -6820,32 +6937,83 @@ window.STGraphXI18nBundles = {
 
     function initializeStateNodesForModel(model, timeValue, rootExecution) {
       evaluateParameterNodesForModel(model, timeValue, rootExecution);
-      model.nodes.forEach((node) => {
-        if (!isStateNode(node)) {
-          if (node.shape !== "diamond") {
-            node.computedValue = null;
-            node.computedError = "";
-          }
-          node.pendingStateValue = null;
-          node.pendingStateError = "";
-          return;
-        }
-        const initExpr = String(node.initialStateExpression ?? "0");
-        const initResult = semantics.evaluateValueExpression(
-          initExpr,
-          buildInitialStateContextForModel(model, node, timeValue, rootExecution),
-          { localFunctions: localFunctionsForSemantics(model) },
-        );
-        if (initResult.ok) {
-          node.computedValue = initResult.value;
-          node.computedError = "";
-        } else {
-          node.computedValue = null;
-          node.computedError = initResult.reason || "runtime";
-        }
+      const initialNodes = (model.nodes || []).filter((node) =>
+        isStateNode(node) || (node.shape === "ellipse" && !node.externalValueEnabled));
+      const pending = new Set();
+      const resolved = new Set((model.nodes || [])
+        .filter((node) => node.shape === "diamond" || (node.shape === "ellipse" && node.externalValueEnabled))
+        .map((node) => node.id));
+
+      (model.nodes || []).forEach((node) => {
         node.pendingStateValue = null;
         node.pendingStateError = "";
+        if (node.shape === "ellipse" && node.externalValueEnabled) {
+          node.computedValue = node.externalValue;
+          node.computedError = "";
+          return;
+        }
+        if (isStateNode(node) || node.shape === "ellipse") {
+          node.computedValue = null;
+          node.computedError = "";
+        }
       });
+      initialNodes.forEach((node) => pending.add(node.id));
+
+      while (pending.size > 0) {
+        let progressed = false;
+        for (const nodeId of [...pending]) {
+          const node = getModelNodeById(model, nodeId);
+          if (!node) {
+            pending.delete(nodeId);
+            continue;
+          }
+          const expression = isStateNode(node)
+            ? String(node.initialStateExpression ?? "0")
+            : String(node.valueExpression ?? "");
+          const references = semantics.collectIdentifierReferences(expression);
+          let blockedByDependency = false;
+          let dependencyFailed = false;
+
+          globalParameterNodesForModel(model, node.id).forEach((depNode) => {
+            if (!references.has(depNode.name)) return;
+            if (!resolved.has(depNode.id)) blockedByDependency = true;
+            else if (depNode.computedError) dependencyFailed = true;
+          });
+          (model.edges || [])
+            .filter((edge) => edge.to === node.id)
+            .forEach((edge) => {
+              const fromNode = getModelNodeById(model, edge.from);
+              if (!fromNode || !references.has(fromNode.name)) return;
+              if (!resolved.has(fromNode.id)) blockedByDependency = true;
+              else if (fromNode.computedError) dependencyFailed = true;
+            });
+          if (blockedByDependency) continue;
+          if (dependencyFailed) {
+            node.computedValue = null;
+            node.computedError = "dependency";
+          } else {
+            const result = semantics.evaluateValueExpression(
+              expression,
+              buildInitialStateContextForModel(model, node, timeValue, rootExecution, references),
+              { localFunctions: localFunctionsForSemantics(model) },
+            );
+            node.computedValue = result.ok ? result.value : null;
+            node.computedError = result.ok ? "" : result.reason || "runtime";
+          }
+          pending.delete(nodeId);
+          resolved.add(nodeId);
+          progressed = true;
+        }
+        if (progressed) continue;
+        pending.forEach((nodeId) => {
+          const node = getModelNodeById(model, nodeId);
+          if (node) {
+            node.computedValue = null;
+            node.computedError = "dependency";
+          }
+        });
+        break;
+      }
     }
 
     function promotePendingStateNodesForModel(model) {
@@ -7408,6 +7576,13 @@ window.STGraphXI18nBundles = {
 
 
 /* --- runtime-loader.js --- */
+/*
+ * This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at https://mozilla.org/MPL/2.0/.
+ * Copyright (c) 2026 Luca Mari
+ */
+
 (function initRuntimeLoader(global) {
   function createRuntimeLoader(options = {}) {
     const {
@@ -7537,6 +7712,13 @@ window.STGraphXI18nBundles = {
 
 
 /* --- runtime-session.js --- */
+/*
+ * This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at https://mozilla.org/MPL/2.0/.
+ * Copyright (c) 2026 Luca Mari
+ */
+
 (function initRuntimeSession(global) {
   function createRuntimeSession(options = {}) {
     const {
@@ -7638,6 +7820,13 @@ window.STGraphXI18nBundles = {
 
 
 /* --- runtime-controller.js --- */
+/*
+ * This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at https://mozilla.org/MPL/2.0/.
+ * Copyright (c) 2026 Luca Mari
+ */
+
 (function initRuntimeController(global) {
   function createRuntimeController(options = {}) {
     const {
@@ -8066,6 +8255,13 @@ window.STGraphXI18nBundles = {
 
 
 /* --- headless-runtime.js --- */
+/*
+ * This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at https://mozilla.org/MPL/2.0/.
+ * Copyright (c) 2026 Luca Mari
+ */
+
 (function initHeadlessRuntime(global) {
   const HEADLESS_LANGS = new Set(["it", "en"]);
   const NODE_RUNTIME_FILES = [
@@ -9010,6 +9206,13 @@ window.STGraphXI18nBundles = {
 
 
 /* --- player-shell.js --- */
+/*
+ * This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at https://mozilla.org/MPL/2.0/.
+ * Copyright (c) 2026 Luca Mari
+ */
+
 (function initPlayerShell(global) {
   const SVG_NS = "http://www.w3.org/2000/svg";
   const PLAYER_LANGS = new Set(["it", "en"]);
@@ -9249,6 +9452,7 @@ window.STGraphXI18nBundles = {
       minimized: Boolean(widget?.minimized),
       outputOnly: Boolean(widget?.outputOnly),
       showHistory: Boolean(widget?.showHistory),
+      expandNonScalarValues: Boolean(widget?.expandNonScalarValues) && !Boolean(widget?.showHistory),
       source: String(widget?.source ?? ""),
       showNumericValues: widget?.showNumericValues !== false,
       showIndices: widget?.showIndices !== false,
@@ -9287,6 +9491,8 @@ window.STGraphXI18nBundles = {
           label: String(pair?.label ?? ""),
           xSource: String(pair?.xSource ?? "time"),
           ySource: String(pair?.ySource ?? ""),
+          showTimeSeries: pair?.showTimeSeries !== false,
+          showInstantProfile: pair?.showInstantProfile === true || pair?.seriesMode === "instant",
           color: /^#[0-9a-fA-F]{6}$/.test(String(pair?.color ?? "")) ? String(pair.color) : "#2d7ff9",
           showLine: pair?.showLine !== false,
           lineWidth: Number.isFinite(Number(pair?.lineWidth)) ? clamp(Number(pair.lineWidth), 1, 8) : 2,
@@ -10606,7 +10812,7 @@ window.STGraphXI18nBundles = {
     clearWidgetHistory() {
       this._state.widgetState = new Map();
       (this._state.rawModel?.widgets || []).forEach((widget) => {
-        if (widget.type === "table") {
+        if (widget.type === "table" && widget.showHistory) {
           this._state.widgetState.set(widget.id, { rows: [] });
         } else if (widget.type === "xychart") {
           this._state.widgetState.set(widget.id, {
@@ -11237,23 +11443,101 @@ window.STGraphXI18nBundles = {
         const rows = Array.isArray(widgetState?.rows) ? widgetState.rows : [];
         const table = document.createElement("table");
         table.className = "widget-table";
+        const displayedColumns = widget.outputOnly
+          ? widget.columns.filter((name) => name === "time" || nodeMap.get(name)?.output)
+          : widget.columns.slice();
+        const matrixNode = widget.expandNonScalarValues && displayedColumns.length === 1 && displayedColumns[0] !== "time"
+          ? nodeMap.get(displayedColumns[0])
+          : null;
+        const matrixValue = matrixNode?.computedValue;
+        const isMatrix = !matrixNode?.computedError
+          && Array.isArray(matrixValue)
+          && matrixValue.length > 0
+          && matrixValue.every(Array.isArray)
+          && matrixValue.every((row) => row.length === matrixValue[0].length);
+        if (isMatrix) {
+          const thead = document.createElement("thead");
+          const headRow = document.createElement("tr");
+          const corner = document.createElement("th");
+          corner.textContent = displayedColumns[0];
+          headRow.appendChild(corner);
+          for (let column = 0; column < matrixValue[0].length; column += 1) {
+            const th = document.createElement("th");
+            th.textContent = `[${column}]`;
+            headRow.appendChild(th);
+          }
+          thead.appendChild(headRow);
+          table.appendChild(thead);
+          const tbody = document.createElement("tbody");
+          matrixValue.forEach((matrixRow, rowIndex) => {
+            const tr = document.createElement("tr");
+            const rowHeader = document.createElement("th");
+            rowHeader.textContent = `[${rowIndex}]`;
+            tr.appendChild(rowHeader);
+            matrixRow.forEach((value) => {
+              const td = document.createElement("td");
+              td.textContent = formatValue(execution, value);
+              tr.appendChild(td);
+            });
+            tbody.appendChild(tr);
+          });
+          table.appendChild(tbody);
+          body.appendChild(table);
+          return;
+        }
+        const flattenValues = (value, indexPath = []) => {
+          if (!Array.isArray(value)) {
+            return [{ indexPath, value }];
+          }
+          if (value.length === 0) {
+            return [{ indexPath, value: null, empty: true }];
+          }
+          return value.flatMap((item, index) => flattenValues(item, [...indexPath, index]));
+        };
+        const expandedCells = () => displayedColumns.flatMap((name) => {
+          if (name === "time") {
+            return [{ label: "time", value: this.currentDisplayTime() }];
+          }
+          const node = nodeMap.get(name);
+          if (!node) {
+            return [{ label: name, value: null, missing: true }];
+          }
+          if (node.computedError) {
+            return [{ label: name, error: node.computedError }];
+          }
+          return flattenValues(node.computedValue).map((cell) => ({
+            label: `${name}${cell.indexPath.map((index) => `[${index}]`).join("")}`,
+            value: cell.value,
+            empty: cell.empty,
+          }));
+        });
+        const cells = widget.expandNonScalarValues ? expandedCells() : null;
         const thead = document.createElement("thead");
         const headRow = document.createElement("tr");
-        widget.columns.forEach((name) => {
+        (cells || displayedColumns).forEach((entry) => {
           const th = document.createElement("th");
-          th.textContent = name;
+          th.textContent = cells ? entry.label : entry;
           headRow.appendChild(th);
         });
         thead.appendChild(headRow);
         table.appendChild(thead);
         const tbody = document.createElement("tbody");
-        rows.slice(-50).forEach((row) => {
+        const renderedRows = widget.showHistory ? rows.slice(-50) : [{ values: {} }];
+        renderedRows.forEach((row) => {
           const tr = document.createElement("tr");
-          widget.columns.forEach((name) => {
+          (cells || displayedColumns).forEach((entry) => {
             const td = document.createElement("td");
-            td.textContent = name === "time"
-              ? formatNumberValue(execution, Number(row.time))
-              : String(row.values?.[name] ?? "");
+            if (cells) {
+              td.textContent = entry.error
+                ? this.t(`error.evalReason.${entry.error || "runtime"}`)
+                : (entry.empty || entry.missing ? "-" : formatValue(execution, entry.value));
+            } else {
+              td.textContent = entry === "time"
+                ? formatNumberValue(execution, Number(widget.showHistory ? row.time : this.currentDisplayTime()))
+                : (widget.showHistory
+                  ? String(row.values?.[entry] ?? "")
+                  : formatValue(execution, nodeMap.get(entry)?.computedValue));
+            }
             tr.appendChild(td);
           });
           tbody.appendChild(tr);

@@ -244,6 +244,7 @@
       minimized: Boolean(widget?.minimized),
       outputOnly: Boolean(widget?.outputOnly),
       showHistory: Boolean(widget?.showHistory),
+      expandNonScalarValues: Boolean(widget?.expandNonScalarValues) && !Boolean(widget?.showHistory),
       source: String(widget?.source ?? ""),
       showNumericValues: widget?.showNumericValues !== false,
       showIndices: widget?.showIndices !== false,
@@ -1603,7 +1604,7 @@
     clearWidgetHistory() {
       this._state.widgetState = new Map();
       (this._state.rawModel?.widgets || []).forEach((widget) => {
-        if (widget.type === "table") {
+        if (widget.type === "table" && widget.showHistory) {
           this._state.widgetState.set(widget.id, { rows: [] });
         } else if (widget.type === "xychart") {
           this._state.widgetState.set(widget.id, {
@@ -2234,23 +2235,101 @@
         const rows = Array.isArray(widgetState?.rows) ? widgetState.rows : [];
         const table = document.createElement("table");
         table.className = "widget-table";
+        const displayedColumns = widget.outputOnly
+          ? widget.columns.filter((name) => name === "time" || nodeMap.get(name)?.output)
+          : widget.columns.slice();
+        const matrixNode = widget.expandNonScalarValues && displayedColumns.length === 1 && displayedColumns[0] !== "time"
+          ? nodeMap.get(displayedColumns[0])
+          : null;
+        const matrixValue = matrixNode?.computedValue;
+        const isMatrix = !matrixNode?.computedError
+          && Array.isArray(matrixValue)
+          && matrixValue.length > 0
+          && matrixValue.every(Array.isArray)
+          && matrixValue.every((row) => row.length === matrixValue[0].length);
+        if (isMatrix) {
+          const thead = document.createElement("thead");
+          const headRow = document.createElement("tr");
+          const corner = document.createElement("th");
+          corner.textContent = displayedColumns[0];
+          headRow.appendChild(corner);
+          for (let column = 0; column < matrixValue[0].length; column += 1) {
+            const th = document.createElement("th");
+            th.textContent = `[${column}]`;
+            headRow.appendChild(th);
+          }
+          thead.appendChild(headRow);
+          table.appendChild(thead);
+          const tbody = document.createElement("tbody");
+          matrixValue.forEach((matrixRow, rowIndex) => {
+            const tr = document.createElement("tr");
+            const rowHeader = document.createElement("th");
+            rowHeader.textContent = `[${rowIndex}]`;
+            tr.appendChild(rowHeader);
+            matrixRow.forEach((value) => {
+              const td = document.createElement("td");
+              td.textContent = formatValue(execution, value);
+              tr.appendChild(td);
+            });
+            tbody.appendChild(tr);
+          });
+          table.appendChild(tbody);
+          body.appendChild(table);
+          return;
+        }
+        const flattenValues = (value, indexPath = []) => {
+          if (!Array.isArray(value)) {
+            return [{ indexPath, value }];
+          }
+          if (value.length === 0) {
+            return [{ indexPath, value: null, empty: true }];
+          }
+          return value.flatMap((item, index) => flattenValues(item, [...indexPath, index]));
+        };
+        const expandedCells = () => displayedColumns.flatMap((name) => {
+          if (name === "time") {
+            return [{ label: "time", value: this.currentDisplayTime() }];
+          }
+          const node = nodeMap.get(name);
+          if (!node) {
+            return [{ label: name, value: null, missing: true }];
+          }
+          if (node.computedError) {
+            return [{ label: name, error: node.computedError }];
+          }
+          return flattenValues(node.computedValue).map((cell) => ({
+            label: `${name}${cell.indexPath.map((index) => `[${index}]`).join("")}`,
+            value: cell.value,
+            empty: cell.empty,
+          }));
+        });
+        const cells = widget.expandNonScalarValues ? expandedCells() : null;
         const thead = document.createElement("thead");
         const headRow = document.createElement("tr");
-        widget.columns.forEach((name) => {
+        (cells || displayedColumns).forEach((entry) => {
           const th = document.createElement("th");
-          th.textContent = name;
+          th.textContent = cells ? entry.label : entry;
           headRow.appendChild(th);
         });
         thead.appendChild(headRow);
         table.appendChild(thead);
         const tbody = document.createElement("tbody");
-        rows.slice(-50).forEach((row) => {
+        const renderedRows = widget.showHistory ? rows.slice(-50) : [{ values: {} }];
+        renderedRows.forEach((row) => {
           const tr = document.createElement("tr");
-          widget.columns.forEach((name) => {
+          (cells || displayedColumns).forEach((entry) => {
             const td = document.createElement("td");
-            td.textContent = name === "time"
-              ? formatNumberValue(execution, Number(row.time))
-              : String(row.values?.[name] ?? "");
+            if (cells) {
+              td.textContent = entry.error
+                ? this.t(`error.evalReason.${entry.error || "runtime"}`)
+                : (entry.empty || entry.missing ? "-" : formatValue(execution, entry.value));
+            } else {
+              td.textContent = entry === "time"
+                ? formatNumberValue(execution, Number(widget.showHistory ? row.time : this.currentDisplayTime()))
+                : (widget.showHistory
+                  ? String(row.values?.[entry] ?? "")
+                  : formatValue(execution, nodeMap.get(entry)?.computedValue));
+            }
             tr.appendChild(td);
           });
           tbody.appendChild(tr);

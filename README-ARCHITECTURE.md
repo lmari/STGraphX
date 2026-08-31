@@ -1,8 +1,8 @@
-# STGraphX: readme tecnico
+# STGraphX: Readme tecnico
 
-Luca Mari, versione 20 luglio 2026
+versione 31 agosto 2026
 
-STGraphX è un editor ed esecutore di modelli dinamici a grafo orientato.
+Copyright (c) 2026 Luca Mari
 
 ## Architettura
 

@@ -25,6 +25,7 @@ function addTableWidget(at = null) {
     minimized: false,
     outputOnly: false,
     showHistory: false,
+    expandNonScalarValues: false,
     rows: [],
     columns: [],
   });
@@ -333,6 +334,7 @@ function sanitizeWidgetColumns(widget) {
 
 function sanitizeTableWidgetOptions(widget) {
   widget.showHistory = Boolean(widget.showHistory);
+  widget.expandNonScalarValues = Boolean(widget.expandNonScalarValues) && !widget.showHistory;
   if (!Array.isArray(widget.rows)) {
     widget.rows = [];
   }
@@ -1397,6 +1399,125 @@ function buildTableRowElement(displayedCols, entry) {
   return row;
 }
 
+function flattenTableScalarValues(value, indexPath = []) {
+  if (!Array.isArray(value)) {
+    return [{ indexPath, value }];
+  }
+  if (value.length === 0) {
+    return [{ indexPath, value: null, empty: true }];
+  }
+  return value.flatMap((item, index) => flattenTableScalarValues(item, [...indexPath, index]));
+}
+
+function expandedTableCells(widget, nodeMap = buildNodeNameMap()) {
+  const displayedCols = widgetDisplayedTableColumns(widget, nodeMap);
+  const currentTime = graph.execution.currentTime == null ? graph.execution.t0 : graph.execution.currentTime;
+  return displayedCols.flatMap((colName) => {
+    if (colName === "time") {
+      return [{ label: "time", value: Number(currentTime) }];
+    }
+    const node = nodeMap.get(colName);
+    if (!node) {
+      return [{ label: colName || t("widget.columnEmpty"), value: null, missing: true }];
+    }
+    if (node.computedError) {
+      return [{ label: colName, error: node.computedError }];
+    }
+    return flattenTableScalarValues(node.computedValue).map((cell) => ({
+      label: `${colName}${cell.indexPath.map((index) => `[${index}]`).join("")}`,
+      value: cell.value,
+      empty: cell.empty,
+    }));
+  });
+}
+
+function expandedTableMatrix(widget, nodeMap = buildNodeNameMap()) {
+  const displayedCols = widgetDisplayedTableColumns(widget, nodeMap);
+  if (displayedCols.length !== 1 || displayedCols[0] === "time") {
+    return null;
+  }
+  const node = nodeMap.get(displayedCols[0]);
+  const matrix = node?.computedValue;
+  if (node?.computedError || !Array.isArray(matrix) || matrix.length === 0 || !matrix.every(Array.isArray)) {
+    return null;
+  }
+  const columnCount = matrix[0].length;
+  if (!matrix.every((row) => row.length === columnCount)) {
+    return null;
+  }
+  return { name: displayedCols[0], matrix, columnCount };
+}
+
+function renderExpandedTableWidgetBody(body, widget, nodeMap = buildNodeNameMap()) {
+  const expandedMatrix = expandedTableMatrix(widget, nodeMap);
+  if (expandedMatrix) {
+    const table = document.createElement("table");
+    const thead = document.createElement("thead");
+    const headRow = document.createElement("tr");
+    const corner = document.createElement("th");
+    corner.textContent = expandedMatrix.name;
+    headRow.appendChild(corner);
+    for (let column = 0; column < expandedMatrix.columnCount; column += 1) {
+      const th = document.createElement("th");
+      th.textContent = `[${column}]`;
+      headRow.appendChild(th);
+    }
+    thead.appendChild(headRow);
+    table.appendChild(thead);
+    const tbody = document.createElement("tbody");
+    expandedMatrix.matrix.forEach((matrixRow, rowIndex) => {
+      const row = document.createElement("tr");
+      const rowHeader = document.createElement("th");
+      rowHeader.textContent = `[${rowIndex}]`;
+      row.appendChild(rowHeader);
+      for (let column = 0; column < expandedMatrix.columnCount; column += 1) {
+        const td = document.createElement("td");
+        td.textContent = formatComputedValue(matrixRow[column]);
+        row.appendChild(td);
+      }
+      tbody.appendChild(row);
+    });
+    table.appendChild(tbody);
+    body.appendChild(table);
+    return;
+  }
+  const cells = expandedTableCells(widget, nodeMap);
+  const table = document.createElement("table");
+  const colgroup = document.createElement("colgroup");
+  const columnWidth = cells.length > 0 ? `${100 / cells.length}%` : "100%";
+  cells.forEach(() => {
+    const col = document.createElement("col");
+    col.style.width = columnWidth;
+    colgroup.appendChild(col);
+  });
+  table.appendChild(colgroup);
+  const thead = document.createElement("thead");
+  const headRow = document.createElement("tr");
+  cells.forEach((cell) => {
+    const th = document.createElement("th");
+    th.textContent = cell.label;
+    headRow.appendChild(th);
+  });
+  thead.appendChild(headRow);
+  table.appendChild(thead);
+  const tbody = document.createElement("tbody");
+  const row = document.createElement("tr");
+  cells.forEach((cell) => {
+    const td = document.createElement("td");
+    if (cell.error) {
+      td.textContent = t("text.valueError", { reason: evalReasonText(cell.error) });
+    } else if (cell.empty || cell.missing) {
+      td.textContent = "-";
+    } else {
+      td.textContent = formatComputedValue(cell.value);
+    }
+    row.appendChild(td);
+  });
+  tbody.appendChild(row);
+  table.appendChild(tbody);
+  body.appendChild(table);
+}
+
 function matrixPaletteColor(scheme, ratio) {
   const tValue = clamp(Number(ratio) || 0, 0, 1);
   if (scheme === "heat") {
@@ -1612,6 +1733,11 @@ function renderMatrixWidgetBody(body, widget, nodeMap = buildNodeNameMap()) {
 
 function renderTableWidgetBody(body, widget, nodeMap = buildNodeNameMap()) {
   body.innerHTML = "";
+  sanitizeTableWidgetOptions(widget);
+  if (widget.expandNonScalarValues) {
+    renderExpandedTableWidgetBody(body, widget, nodeMap);
+    return;
+  }
   const table = document.createElement("table");
   const displayedCols = widgetDisplayedTableColumns(widget, nodeMap);
   const colgroup = document.createElement("colgroup");
@@ -1702,6 +1828,11 @@ function widgetRenderedText(widget) {
 
 function refreshTableWidgetRuntimeBody(root, widget, nodeMap = buildNodeNameMap()) {
   const body = root.querySelector(".value-widget-body");
+  sanitizeTableWidgetOptions(widget);
+  if (widget.expandNonScalarValues) {
+    renderTableWidgetBody(body, widget, nodeMap);
+    return;
+  }
   const table = body?.querySelector("table");
   const displayedCols = widgetDisplayedTableColumns(widget, nodeMap);
   const columnsKey = JSON.stringify(displayedCols);
@@ -3894,6 +4025,11 @@ function refreshWidgetConfigPanel(widget) {
         widget.columns.push("time");
       });
     });
+    tableSection.appendChild(list);
+    tableSection.appendChild(add);
+    if (widget.columns.length === 0) {
+      return;
+    }
     const modeLabel = document.createElement("label");
     modeLabel.className = "menu-check compact-bool";
     const modeInput = document.createElement("input");
@@ -3905,16 +4041,36 @@ function refreshWidgetConfigPanel(widget) {
           widget.rows = [];
         }
         widget.showHistory = modeInput.checked;
+        if (widget.showHistory) {
+          widget.expandNonScalarValues = false;
+        }
       });
     });
     const modeText = document.createElement("span");
     modeText.textContent = t("widget.showHistory");
     modeLabel.appendChild(modeInput);
     modeLabel.appendChild(modeText);
-    tableSection.appendChild(list);
-    tableSection.appendChild(add);
+    const expandLabel = document.createElement("label");
+    expandLabel.className = "menu-check compact-bool";
+    const expandInput = document.createElement("input");
+    expandInput.type = "checkbox";
+    expandInput.checked = Boolean(widget.expandNonScalarValues);
+    expandInput.addEventListener("change", () => {
+      runAction(() => {
+        widget.expandNonScalarValues = expandInput.checked;
+        if (widget.expandNonScalarValues) {
+          widget.showHistory = false;
+          widget.rows = [];
+        }
+      });
+    });
+    const expandText = document.createElement("span");
+    expandText.textContent = t("widget.expandNonScalarValues");
+    expandLabel.appendChild(expandInput);
+    expandLabel.appendChild(expandText);
     const tableModeSection = createWidgetSection(true);
     tableModeSection.appendChild(modeLabel);
+    tableModeSection.appendChild(expandLabel);
     return;
   }
 

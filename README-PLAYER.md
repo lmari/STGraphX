@@ -1,6 +1,6 @@
-# STGraphX Player Embedded
+# STGraphX: Manuale d'uso del player
 
-Luca Mari, versione 20 luglio 2026
+versione 31 agosto 2026
 
 Copyright (c) 2026 Luca Mari
 
@@ -738,6 +738,8 @@ Al momento il player supporta:
 I widget di input aggiornano la preview del modello direttamente nel player.
 
 Durante l'esecuzione temporizzata i widget di input vengono bloccati.
+
+Il widget `table` puo mostrare una serie storica oppure, con `expandNonScalarValues: true`, espandere il valore istantaneo di vettori e matrici: ogni elemento compare in una cella distinta, con intestazioni come `nodo[0]` e `nodo[1][2]`.
 
 ## Limitazioni attuali
 

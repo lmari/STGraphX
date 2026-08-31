@@ -19,5 +19,16 @@ assert.deepEqual(context.window.GraphSemantics.evaluateValueExpression("pos([-2,
 assert.deepEqual(context.window.GraphSemantics.evaluateValueExpression("range(1, 6)").value, [1, 2, 3, 4, 5]);
 assert.equal(context.window.GraphSemantics.evaluateValueExpression("size(range(1, 6))").value, 5);
 assert.deepEqual(context.window.GraphSemantics.evaluateValueExpression("array([2,2], $0+$1)").value, [[0, 1], [1, 2]]);
+assert.deepEqual(context.window.GraphSemantics.evaluateValueExpression("append(1, [2,3])").value, [1, 2, 3]);
+assert.deepEqual(context.window.GraphSemantics.evaluateValueExpression("append(1, [])").value, [1]);
+assert.equal(context.window.GraphSemantics.evaluateValueExpression("append(1, [[2,3]])").ok, false);
+assert.equal(context.window.GraphSemantics.evaluateValueExpression("-2^2").value, -4);
+assert.equal(context.window.GraphSemantics.evaluateValueExpression("(-2)^2").value, 4);
+assert.equal(context.window.GraphSemantics.evaluateValueExpression("2^-2").value, 0.25);
+assert.equal(context.window.GraphSemantics.evaluateValueExpression("2^3^2").value, 512);
+assert.equal(
+  context.window.GraphSemantics.evaluateValueExpression("exp(-(2-5)^2/(2*3^2))").value,
+  Math.exp(-0.5),
+);
 assert.equal(context.window.GraphSemantics.isFunctionName("pos"), true);
 console.log("graph-functions.test.js: ok");

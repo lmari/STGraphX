@@ -1,10 +1,12 @@
-# STGraphX Quick Start For Developers
+# STGraphX: Quick start per sviluppatori
 
-Luca Mari, versione 21 agosto 2026
+versione 31 agosto 2026
 
 Copyright (c) 2026 Luca Mari
 
-Questa guida serve a sviluppare e distribuire STGraphX. Le modalità basilari sono:
+Questa guida serve a sviluppare e distribuire STGraphX.
+
+Le modalità basilari sono:
 
 - editor completo via web;
 - editor desktop con Electron;

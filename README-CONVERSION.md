@@ -1,4 +1,8 @@
-# Conversione da STGraph
+# STGraphX: Manuale di uso del convertitore da STGraph
+
+versione 31 agosto 2026
+
+Copyright (c) 2026 Luca Mari
 
 `scripts/convert-stgraph-xml.js` converte la parte strutturale di un modello XML legacy di STGraph (`.stg`) nel formato JSON di STGraphX.
 
@@ -33,10 +37,22 @@ Il comando mostra sempre a terminale il numero di elementi convertiti e gli avvi
 
 ## Non Convertito
 
-La prima versione non converte widget, gruppi grafici e report legacy. Il report indica il numero e i tipi di widget incontrati. I sottomodelli non vengono convertiti ricorsivamente: converti ogni file `.stg` separatamente e mantieni i JSON nella struttura di cartelle attesa dal modello padre.
+Questa versione non converte widget, gruppi grafici e report legacy.  
+Il report indica il numero e i tipi di widget incontrati.  
+I sottomodelli non vengono convertiti ricorsivamente: ogni file `.stg` deve essere convertito separatamente.
 
-Le formule non sono riscritte automaticamente in generale. STGraph e STGraphX hanno parti di linguaggio comuni, ma differiscono in alcune funzioni e convenzioni. Il convertitore adatta le riduzioni associative legacy `+/x` e `*/x` nella forma rispettivamente `reduce(+, x, 0)` e `reduce(*, x, 1)`, anche se l'argomento e fra parentesi, indicizzato o una riduzione annidata. Converte anche vettori di intervallo `[1:5]` e `[1:2:5]` in `range(1, 6)` e `range(1, 6, 2)`, l'operatore dimensionale `@x` in `size(x)`, e gli indici locali `$i0`, `$i1`, ... in `$0`, `$1`, ... ma solo nel corpo di `array(...)`. Le forme non associative `-/x` e `//x` restano invece da rivedere manualmente. Il convertitore segnala inoltre costrutti sospetti, come indici legacy residui, l'operatore `#`, letture da foglio elettronico e `&&`/`||`. I nodi legacy di stato con un'espressione di output separata vengono convertiti in nodi di stato e quell'espressione viene conservata nelle `formula notes`, perché STGraphX non usa quel costrutto.
+STGraph e STGraphX hanno molte parti di linguaggio comuni, ma differiscono in alcune funzioni e convenzioni.
 
+Questa versione converte:
+
+* le riduzioni associative legacy `+/x` e `*/x` nella forma rispettivamente `reduce(+, x, 0)` e `reduce(*, x, 1)`, anche se l'argomento e fra parentesi, indicizzato o una riduzione annidata (le forme non associative `-/x` e `//x` restano invece da rivedere manualmente);
+* converte vettori di intervallo `[1:5]` e `[1:2:5]` in `range(1, 6)` e `range(1, 6, 2)`;
+* l'operatore dimensionale `@x` in `size(x)`;
+*  l'operatore di concatenazione `x#y` in `append(x, y)` (con catene convertite da sinistra a destra);
+* gli indici locali `$i0`, `$i1`, ... in `$0`, `$1`, ... ma solo nel corpo di `array(...)`.
+
+Il convertitore segnala inoltre costrutti sospetti, come indici legacy residui, eventuali operatori `#` non convertiti, letture da foglio elettronico e `&&`/`||`.  
+I nodi legacy di stato con un'espressione di output separata vengono convertiti in nodi di stato e quell'espressione viene conservata nelle `formula notes`, perché STGraphX non usa quel costrutto.  
 I metodi di integrazione legacy diversi da Eulero richiedono una verifica manuale: il JSON prodotto imposta `euler` e registra un avviso.
 
 ## Verifica Del Convertitore

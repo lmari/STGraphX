@@ -412,18 +412,76 @@ function adaptLegacyReductions(expression, location, warnings) {
   return output;
 }
 
+function convertLegacyAppendExpression(source) {
+  const parts = splitTopLevel(source, "#");
+  if (parts.length > 1 && parts.every((part) => part.trim())) {
+    const convertedParts = parts.map((part) => convertLegacyAppendExpression(part.trim()));
+    return {
+      expression: convertedParts.slice(1).reduce(
+        (result, part) => `append(${result}, ${part.expression})`,
+        convertedParts[0].expression,
+      ),
+      changed: true,
+    };
+  }
+
+  let output = "";
+  let changed = false;
+  let quote = "";
+  for (let index = 0; index < source.length; index += 1) {
+    const char = source[index];
+    if (quote) {
+      output += char;
+      if (char === "\\") {
+        output += source[index + 1] || "";
+        index += 1;
+      } else if (char === quote) {
+        quote = "";
+      }
+      continue;
+    }
+    if (char === '"' || char === "'") {
+      quote = char;
+      output += char;
+      continue;
+    }
+    if (char === "(" || char === "[") {
+      const close = char === "(" ? ")" : "]";
+      const end = findBalancedEnd(source, index, char, close);
+      if (end > 0) {
+        const nested = convertLegacyAppendExpression(source.slice(index + 1, end - 1));
+        output += `${char}${nested.expression}${close}`;
+        changed ||= nested.changed;
+        index = end - 1;
+        continue;
+      }
+    }
+    output += char;
+  }
+  return { expression: output, changed };
+}
+
+function adaptLegacyAppendOperator(expression, location, warnings) {
+  const converted = convertLegacyAppendExpression(String(expression || ""));
+  if (converted.changed) {
+    warnings.push(`${location}: convertito l'operatore legacy # in append(...).`);
+  }
+  return converted.expression;
+}
+
 function adaptLegacyExpression(expression, location, warnings) {
   let converted = adaptLegacyRanges(expression, location, warnings);
   converted = adaptLegacyArrayIndices(converted, location, warnings);
   converted = adaptLegacySizeOperator(converted, location, warnings);
-  return adaptLegacyReductions(converted, location, warnings);
+  converted = adaptLegacyReductions(converted, location, warnings);
+  return adaptLegacyAppendOperator(converted, location, warnings);
 }
 
 function expressionWarnings(expression, location, warnings) {
   const value = String(expression || "");
   const checks = [
     [/\$i\d+\b/, "indici legacy $iN"],
-    [/#/, "operatore condizionale legacy #"],
+    [/#/, "operatore legacy # non convertito"],
     [/\b(?:readFromXLS|readFromXLSX)\s*\(/i, "lettura legacy da foglio elettronico"],
     [/&&|\|\|/, "operatori JavaScript &&/|| da verificare"],
   ];

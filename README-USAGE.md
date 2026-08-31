@@ -1,8 +1,8 @@
-# STGraphX: readme di uso
+# STGraphX: Manuale di uso dell'editor (bozza)
 
-Luca Mari, versione 20 luglio 2026
+versione 31 agosto 2026
 
-STGraphX è un editor ed esecutore di modelli dinamici a grafo orientato.
+Copyright (c) 2026 Luca Mari
 
 ## Vettori e matrici
 
@@ -441,20 +441,27 @@ Esempi:
 Per un nodo di stato, l'espressione di `stato iniziale`:
 
 - puo usare costanti, funzioni, proprieta del nodo e variabili globali come `time`, `t0`, `t1`, `dt`
-- puo usare anche i parametri entranti collegati al nodo
-- non puo invece riferirsi a nodi di stato, nodi algebrici o altre quantita dinamiche
+- puo usare parametri, nodi algebrici e nodi di stato collegati da una freccia entrante, oltre ai parametri globali
+- se riferisce un nodo di stato, usa il suo stato iniziale
+- se riferisce un nodo algebrico, ne usa il valore calcolato durante l'inizializzazione
 
-Quindi, se un nodo di stato `x` ha in ingresso un parametro `p`, sono ammessi per esempio:
+STGraphX risolve insieme parametri, stati iniziali e nodi algebrici necessari, rispettando le frecce e le dipendenze effettive delle espressioni. Per esempio, con frecce `p -> a -> b -> c`:
 
-- `p`
-- `2*p`
-- `if(p > 0, p, 0)`
+```text
+a.stato iniziale = p + 1
+b.comportamento = a * 2
+c.stato iniziale = b + 3
+```
+
+`c` viene inizializzato usando il valore iniziale di `a` e il valore iniziale di `b`.
 
 La regola resta la stessa del resto del linguaggio del modello:
 
 - un nodo vede solo cio che entra in esso
 
-Nel pannello `Modifica...`, per il campo `stato iniziale`, l'elenco dei simboli disponibili mostra appunto solo i parametri entranti ammessi in quel contesto.
+Un ciclo nelle definizioni iniziali, diretto o indiretto, non e ammesso. Per esempio `a.stato iniziale = b + 1` e `b.comportamento = a + 1` genera un ciclo `a -> b -> a`, segnalato da `Help > Analizza modello` e non risolvibile in esecuzione.
+
+Nel pannello `Modifica...`, per il campo `stato iniziale`, l'elenco dei simboli disponibili mostra tutti i nodi entranti ammessi in quel contesto.
 
 ## Sottomodelli
 

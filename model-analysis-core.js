@@ -245,6 +245,55 @@
       }));
     }
 
+    function detectInitialDefinitionCycles(model = getGraph()) {
+      const nodeById = new Map();
+      const adjacency = new Map();
+      (model?.nodes || [])
+        .filter((node) => isStateNode(node) || isAlgebraicNode(node))
+        .forEach((node) => {
+          nodeById.set(node.id, node);
+          adjacency.set(node.id, []);
+        });
+      (model?.edges || []).forEach((edge) => {
+        const source = nodeById.get(edge.from);
+        const target = nodeById.get(edge.to);
+        if (!source || !target) return;
+        const references = expressionReferencesForAnalysis(target, isStateNode(target) ? "initial" : "value");
+        if (references.has(source.name)) adjacency.get(source.id).push(target.id);
+      });
+
+      const visited = new Set();
+      const stack = [];
+      const inStack = new Set();
+      const found = new Map();
+      const visit = (nodeId) => {
+        visited.add(nodeId);
+        stack.push(nodeId);
+        inStack.add(nodeId);
+        (adjacency.get(nodeId) || []).forEach((nextId) => {
+          if (!visited.has(nextId)) {
+            visit(nextId);
+            return;
+          }
+          if (inStack.has(nextId)) {
+            const start = stack.indexOf(nextId);
+            const cycleIds = start >= 0 ? stack.slice(start) : [nextId];
+            const key = cycleIds.slice().sort((a, b) => a - b).join(",");
+            if (!found.has(key)) found.set(key, cycleIds);
+          }
+        });
+        stack.pop();
+        inStack.delete(nodeId);
+      };
+      [...adjacency.keys()].forEach((nodeId) => {
+        if (!visited.has(nodeId)) visit(nodeId);
+      });
+      return [...found.values()].map((cycleIds) => ({
+        ids: cycleIds,
+        names: cycleIds.map((id) => nodeById.get(id)?.name || String(id)),
+      }));
+    }
+
     function stateTransitionPreviewForAnalysis(node, previewState) {
       const graph = getGraph();
       if (!node || !isStateNode(node) || !previewState?.model || !semantics) {
@@ -254,31 +303,10 @@
       if (!runtimeNode) {
         return null;
       }
-      const initialContext = {
-        ...previewState.globals,
-        ...nodePropertyAccessForContext(runtimeNode),
-      };
-      globalParameterNodesForModel(previewState.model, runtimeNode.id).forEach((depNode) => {
-        if (!depNode.computedError) {
-          initialContext[depNode.name] = depNode.computedValue;
-        }
-      });
-      incomingEdgesForNode(runtimeNode.id, previewState.model)
-        .map((edge) => getModelNodeById(previewState.model, edge.from))
-        .filter((depNode) => depNode && depNode.shape === "diamond")
-        .forEach((depNode) => {
-          if (!depNode.computedError) {
-            initialContext[depNode.name] = depNode.computedValue;
-          }
-        });
-      const currentValueResult = semantics.evaluateValueExpression(
-        String(runtimeNode.initialStateExpression ?? ""),
-        initialContext,
-        { localFunctions: localFunctionsForSemantics(previewState.model) },
-      );
-      if (!currentValueResult.ok) {
-        return { ok: false, current: currentValueResult };
+      if (runtimeNode.computedError) {
+        return { ok: false, current: { ok: false, reason: runtimeNode.computedError } };
       }
+      const currentValueResult = { ok: true, value: runtimeNode.computedValue };
       const context = {
         ...previewState.globals,
         ...nodePropertyAccessForContext(runtimeNode),
@@ -411,6 +439,15 @@
           { type: "node", id: cycle.ids[0], name: cycle.names[0] },
         );
       });
+      detectInitialDefinitionCycles(graph).forEach((cycle) => {
+        pushAnalysisIssue(
+          issues,
+          "error",
+          "analysis.issue.initialDefinitionCycle",
+          { path: [...cycle.names, cycle.names[0]].join(" -> ") },
+          { type: "node", id: cycle.ids[0], name: cycle.names[0] },
+        );
+      });
 
       graph.nodes.forEach((node) => {
         const definitionIssue = validateNodeDefinition(node);
@@ -526,7 +563,7 @@
 
         initialRefs.forEach((name) => {
           const depNode = nodeMap.get(name);
-          if (!depNode || depNode.id === node.id || depNode.shape !== "diamond") {
+          if (!depNode || depNode.id === node.id) {
             return;
           }
           if (!incomingNameToEdges.has(name) && !isGlobalParameterNode(depNode)) {
@@ -546,7 +583,7 @@
             return;
           }
           const usedInValue = valueRefs.has(sourceName);
-          const usedInInitial = isStateNode(node) && sourceNode.shape === "diamond" && initialRefs.has(sourceName);
+          const usedInInitial = isStateNode(node) && initialRefs.has(sourceName);
           if (usedInValue || usedInInitial) {
             return;
           }
@@ -688,6 +725,7 @@
     return {
       analyzeModelStaticIssues,
       collectExpressionIdentifierReferences,
+      detectInitialDefinitionCycles,
       detectNonStateCycles,
       expressionReferencesForAnalysis,
       incomingEdgesForNode,

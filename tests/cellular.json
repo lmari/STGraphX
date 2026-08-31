@@ -1,0 +1,227 @@
+{
+  "version": 1,
+  "modelTitle": "cell automaton 1D",
+  "localFunctions": [],
+  "view": {
+    "zoom": 1,
+    "showGrid": true,
+    "highlightNodeEdges": false,
+    "gridSize": 20,
+    "tooltipDelayMs": 300,
+    "scrollLeft": 62,
+    "scrollTop": 140
+  },
+  "debug": {
+    "watches": [],
+    "breakpointEnabled": false,
+    "breakpointExpression": ""
+  },
+  "modelProperties": [],
+  "nodeCounter": 6,
+  "edgeCounter": 7,
+  "widgetCounter": 3,
+  "textItemCounter": 4,
+  "execution": {
+    "t0": 0,
+    "dt": 1,
+    "t1": 100,
+    "delayMs": 1,
+    "decimals": 3,
+    "integrator": "euler",
+    "strictDefinitions": false
+  },
+  "nodes": [
+    {
+      "id": 1,
+      "name": "code",
+      "output": false,
+      "global": false,
+      "type": "algebraic",
+      "x": 160,
+      "y": 20,
+      "width": 75,
+      "height": 45,
+      "fillColor": "#ffffff",
+      "strokeColor": "#000000",
+      "properties": [
+        {
+          "key": "note formula",
+          "value": ""
+        },
+        {
+          "key": "descrizione",
+          "value": ""
+        }
+      ],
+      "input": false,
+      "valueExpression": "array(n,state[($0-1)%n]+2*state[$0]+4*state[($0+1)%n])"
+    },
+    {
+      "id": 2,
+      "name": "n",
+      "output": false,
+      "global": true,
+      "type": "parameter",
+      "x": 20,
+      "y": 40,
+      "width": 75,
+      "height": 45,
+      "fillColor": "#ffffff",
+      "strokeColor": "#000000",
+      "properties": [
+        {
+          "key": "note formula",
+          "value": ""
+        },
+        {
+          "key": "descrizione",
+          "value": ""
+        }
+      ],
+      "valueExpression": "100"
+    },
+    {
+      "id": 3,
+      "name": "out",
+      "output": true,
+      "global": false,
+      "type": "state",
+      "x": 160,
+      "y": 270,
+      "width": 75,
+      "height": 45,
+      "fillColor": "#ffffff",
+      "strokeColor": "#000000",
+      "properties": [
+        {
+          "key": "note formula",
+          "value": ""
+        },
+        {
+          "key": "descrizione",
+          "value": ""
+        }
+      ],
+      "stateTransition": "append(this,state*range(1, n+1))",
+      "initialState": "[state]"
+    },
+    {
+      "id": 4,
+      "name": "state",
+      "output": false,
+      "global": false,
+      "type": "state",
+      "x": 160,
+      "y": 160,
+      "width": 75,
+      "height": 45,
+      "fillColor": "#ffffff",
+      "strokeColor": "#000000",
+      "properties": [
+        {
+          "key": "note formula",
+          "value": ""
+        },
+        {
+          "key": "descrizione",
+          "value": ""
+        }
+      ],
+      "stateTransition": "code==1||code==4||code==7",
+      "initialState": "array(n,rand()<0.05)"
+    }
+  ],
+  "edges": [
+    {
+      "id": 3,
+      "from": 4,
+      "to": 3,
+      "controlPoints": []
+    },
+    {
+      "id": 5,
+      "from": 1,
+      "to": 4,
+      "controlPoints": [
+        {
+          "x": 140,
+          "y": 80
+        }
+      ]
+    },
+    {
+      "id": 6,
+      "from": 4,
+      "to": 1,
+      "controlPoints": [
+        {
+          "x": 180,
+          "y": 100
+        }
+      ]
+    }
+  ],
+  "textItems": [
+    {
+      "id": 1,
+      "x": 100,
+      "y": -60,
+      "width": 221,
+      "height": 35,
+      "fillColor": "",
+      "strokeColor": "",
+      "html": "1D cellular automaton"
+    },
+    {
+      "id": 2,
+      "x": -80,
+      "y": 320,
+      "width": 460,
+      "height": 60,
+      "fillColor": "",
+      "strokeColor": "",
+      "html": "<html>   <head>        </head>   <body>     <small>code&gt;=1&amp;&amp;code=4 is &quot;Rule 30&quot;</small><br><small>(code&gt;=1&amp;&amp;code=3)||code==5||code==6      is &quot;Rule 110&quot;... </small>   </body> </html> "
+    }
+  ],
+  "widgets": [
+    {
+      "id": 2,
+      "type": "matrix",
+      "customTitle": "",
+      "x": 360,
+      "y": -140,
+      "width": 540,
+      "height": 560,
+      "minimized": false,
+      "outputOnly": true,
+      "showHistory": false,
+      "expandNonScalarValues": false,
+      "xMin": "auto",
+      "xMax": "auto",
+      "yMin": "auto",
+      "yMax": "auto",
+      "showGrid": true,
+      "legendPosition": "top-right",
+      "source": "out",
+      "showNumericValues": false,
+      "showIndices": false,
+      "autoFitCells": false,
+      "cellSize": 5,
+      "valueMin": 0,
+      "valueMax": 1,
+      "displayRows": null,
+      "displayCols": null,
+      "colorScheme": "heat",
+      "min": 0,
+      "max": 100,
+      "step": 1,
+      "value": 0,
+      "falseLabel": "",
+      "trueLabel": "",
+      "options": [],
+      "mappings": [],
+      "columns": [],
+      "xyPairs": []
+    }
+  ]
+}
