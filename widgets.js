@@ -26,6 +26,9 @@ function addTableWidget(at = null) {
     outputOnly: false,
     showHistory: false,
     expandNonScalarValues: false,
+    tableFontSize: 13,
+    tableTextAlign: "left",
+    tableDecimalDigits: null,
     rows: [],
     columns: [],
   });
@@ -335,6 +338,17 @@ function sanitizeWidgetColumns(widget) {
 function sanitizeTableWidgetOptions(widget) {
   widget.showHistory = Boolean(widget.showHistory);
   widget.expandNonScalarValues = Boolean(widget.expandNonScalarValues) && !widget.showHistory;
+  widget.tableFontSize = Number.isFinite(Number(widget.tableFontSize))
+    ? clamp(Math.round(Number(widget.tableFontSize)), 8, 32)
+    : 13;
+  widget.tableTextAlign = ["left", "center", "right"].includes(String(widget.tableTextAlign ?? ""))
+    ? String(widget.tableTextAlign)
+    : "left";
+  widget.tableDecimalDigits = Number.isInteger(Number(widget.tableDecimalDigits))
+    && Number(widget.tableDecimalDigits) >= 0
+    && Number(widget.tableDecimalDigits) <= 12
+    ? Number(widget.tableDecimalDigits)
+    : null;
   if (!Array.isArray(widget.rows)) {
     widget.rows = [];
   }
@@ -1382,7 +1396,34 @@ function widgetDisplayedTableColumns(widget, nodeMap = buildNodeNameMap()) {
     : widget.columns.slice();
 }
 
-function buildTableRowElement(displayedCols, entry) {
+function formatTableNumber(value, widget) {
+  const numeric = Number(value);
+  if (!Number.isFinite(numeric) || widget.tableDecimalDigits == null) {
+    return formatNumberValue(numeric);
+  }
+  return numeric.toFixed(widget.tableDecimalDigits);
+}
+
+function formatTableValue(value, widget) {
+  if (value === null || value === undefined) {
+    return "-";
+  }
+  if (typeof value === "number") {
+    return formatTableNumber(value, widget);
+  }
+  if (Array.isArray(value)) {
+    return `[${value.map((item) => formatTableValue(item, widget)).join(", ")}]`;
+  }
+  return formatComputedValue(value);
+}
+
+function applyTableDisplayStyle(table, widget) {
+  table.classList.add("table-widget-table");
+  table.style.setProperty("--table-value-font-size", `${widget.tableFontSize}px`);
+  table.style.setProperty("--table-value-align", widget.tableTextAlign);
+}
+
+function buildTableRowElement(displayedCols, entry, widget) {
   const row = document.createElement("tr");
   displayedCols.forEach((colName) => {
     const td = document.createElement("td");
@@ -1390,7 +1431,7 @@ function buildTableRowElement(displayedCols, entry) {
     if (cell?.error) {
       td.textContent = t("text.valueError", { reason: evalReasonText(cell.error) });
     } else if (Object.prototype.hasOwnProperty.call(entry?.values || {}, colName)) {
-      td.textContent = formatComputedValue(cell?.value ?? null);
+      td.textContent = formatTableValue(cell?.value ?? null, widget);
     } else {
       td.textContent = "-";
     }
@@ -1452,6 +1493,7 @@ function renderExpandedTableWidgetBody(body, widget, nodeMap = buildNodeNameMap(
   const expandedMatrix = expandedTableMatrix(widget, nodeMap);
   if (expandedMatrix) {
     const table = document.createElement("table");
+    applyTableDisplayStyle(table, widget);
     const thead = document.createElement("thead");
     const headRow = document.createElement("tr");
     const corner = document.createElement("th");
@@ -1472,7 +1514,7 @@ function renderExpandedTableWidgetBody(body, widget, nodeMap = buildNodeNameMap(
       row.appendChild(rowHeader);
       for (let column = 0; column < expandedMatrix.columnCount; column += 1) {
         const td = document.createElement("td");
-        td.textContent = formatComputedValue(matrixRow[column]);
+        td.textContent = formatTableValue(matrixRow[column], widget);
         row.appendChild(td);
       }
       tbody.appendChild(row);
@@ -1483,6 +1525,7 @@ function renderExpandedTableWidgetBody(body, widget, nodeMap = buildNodeNameMap(
   }
   const cells = expandedTableCells(widget, nodeMap);
   const table = document.createElement("table");
+  applyTableDisplayStyle(table, widget);
   const colgroup = document.createElement("colgroup");
   const columnWidth = cells.length > 0 ? `${100 / cells.length}%` : "100%";
   cells.forEach(() => {
@@ -1509,7 +1552,7 @@ function renderExpandedTableWidgetBody(body, widget, nodeMap = buildNodeNameMap(
     } else if (cell.empty || cell.missing) {
       td.textContent = "-";
     } else {
-      td.textContent = formatComputedValue(cell.value);
+      td.textContent = formatTableValue(cell.value, widget);
     }
     row.appendChild(td);
   });
@@ -1739,6 +1782,7 @@ function renderTableWidgetBody(body, widget, nodeMap = buildNodeNameMap()) {
     return;
   }
   const table = document.createElement("table");
+  applyTableDisplayStyle(table, widget);
   const displayedCols = widgetDisplayedTableColumns(widget, nodeMap);
   const colgroup = document.createElement("colgroup");
   const columnWidth = displayedCols.length > 0 ? `${100 / displayedCols.length}%` : "100%";
@@ -1764,7 +1808,7 @@ function renderTableWidgetBody(body, widget, nodeMap = buildNodeNameMap()) {
   if (widget.showHistory) {
     sanitizeTableWidgetOptions(widget);
     widget.rows.forEach((entry) => {
-      tbody.appendChild(buildTableRowElement(displayedCols, entry));
+      tbody.appendChild(buildTableRowElement(displayedCols, entry, widget));
     });
     table.dataset.rowCount = String(widget.rows.length);
   } else {
@@ -1773,7 +1817,7 @@ function renderTableWidgetBody(body, widget, nodeMap = buildNodeNameMap()) {
       const td = document.createElement("td");
       if (colName === "time") {
         const tVal = graph.execution.currentTime == null ? graph.execution.t0 : graph.execution.currentTime;
-        td.textContent = formatNumberValue(Number(tVal));
+        td.textContent = formatTableNumber(Number(tVal), widget);
       } else {
         const node = nodeMap.get(colName);
         if (!node) {
@@ -1781,7 +1825,7 @@ function renderTableWidgetBody(body, widget, nodeMap = buildNodeNameMap()) {
         } else if (node.computedError) {
           td.textContent = t("text.valueError", { reason: evalReasonText(node.computedError) });
         } else {
-          td.textContent = formatComputedValue(node.computedValue);
+          td.textContent = formatTableValue(node.computedValue, widget);
         }
       }
       row.appendChild(td);
@@ -1853,7 +1897,7 @@ function refreshTableWidgetRuntimeBody(root, widget, nodeMap = buildNodeNameMap(
       return;
     }
     for (let i = renderedRows; i < widget.rows.length; i += 1) {
-      tbody.appendChild(buildTableRowElement(displayedCols, widget.rows[i]));
+      tbody.appendChild(buildTableRowElement(displayedCols, widget.rows[i], widget));
     }
     table.dataset.rowCount = String(widget.rows.length);
     window.requestAnimationFrame(() => {
@@ -4071,6 +4115,58 @@ function refreshWidgetConfigPanel(widget) {
     const tableModeSection = createWidgetSection(true);
     tableModeSection.appendChild(modeLabel);
     tableModeSection.appendChild(expandLabel);
+
+    const displayRow = document.createElement("div");
+    displayRow.className = "row3-exec table-display-options";
+    const fontSizeInput = document.createElement("input");
+    fontSizeInput.type = "number";
+    fontSizeInput.min = "8";
+    fontSizeInput.max = "32";
+    fontSizeInput.step = "1";
+    fontSizeInput.value = String(widget.tableFontSize);
+    fontSizeInput.addEventListener("change", () => {
+      runAction(() => {
+        widget.tableFontSize = Number(fontSizeInput.value);
+        sanitizeTableWidgetOptions(widget);
+      });
+      fontSizeInput.value = String(widget.tableFontSize);
+    });
+    const alignInput = document.createElement("select");
+    ["left", "center", "right"].forEach((value) => {
+      const option = document.createElement("option");
+      option.value = value;
+      option.textContent = t(`widget.tableAlign.${value}`);
+      alignInput.appendChild(option);
+    });
+    alignInput.value = widget.tableTextAlign;
+    alignInput.addEventListener("change", () => {
+      runAction(() => {
+        widget.tableTextAlign = alignInput.value;
+        sanitizeTableWidgetOptions(widget);
+      });
+    });
+    const decimalsInput = document.createElement("select");
+    const autoOption = document.createElement("option");
+    autoOption.value = "";
+    autoOption.textContent = t("widget.tableDecimalsModel");
+    decimalsInput.appendChild(autoOption);
+    for (let digits = 0; digits <= 12; digits += 1) {
+      const option = document.createElement("option");
+      option.value = String(digits);
+      option.textContent = String(digits);
+      decimalsInput.appendChild(option);
+    }
+    decimalsInput.value = widget.tableDecimalDigits == null ? "" : String(widget.tableDecimalDigits);
+    decimalsInput.addEventListener("change", () => {
+      runAction(() => {
+        widget.tableDecimalDigits = decimalsInput.value === "" ? null : Number(decimalsInput.value);
+        sanitizeTableWidgetOptions(widget);
+      });
+    });
+    displayRow.appendChild(createCompactField("widget.tableFontSize", fontSizeInput));
+    displayRow.appendChild(createCompactField("widget.tableAlign", alignInput));
+    displayRow.appendChild(createCompactField("widget.tableDecimals", decimalsInput));
+    tableModeSection.appendChild(displayRow);
     return;
   }
 

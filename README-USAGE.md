@@ -4,6 +4,16 @@ versione 31 agosto 2026
 
 Copyright (c) 2026 Luca Mari
 
+## Gruppi di presentazione
+
+Dal menu `Vista > Gruppi di presentazione...` puoi definire insiemi nominati di nodi per organizzare il grafo durante la presentazione del modello. Un gruppo non modifica frecce, formule o ordine di esecuzione.
+
+- seleziona uno o più nodi e crea il gruppo assegnandogli un nome;
+- un nodo può appartenere a più gruppi;
+- la casella `Visibile` mostra o nasconde il gruppo. Un nodo presente in più gruppi resta visibile finché almeno uno dei suoi gruppi è visibile;
+- la casella `Bordo e nome` mostra o nasconde solo la cornice e l'etichetta del gruppo, lasciandone visibili i nodi;
+- i gruppi, i nomi e la visibilità sono salvati nel JSON del modello e sono rispettati anche dal player.
+
 ## Vettori e matrici
 
 Il linguaggio delle espressioni di STGraphX supporta valori non scalari:

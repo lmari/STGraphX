@@ -1,6 +1,6 @@
 /*!
  * STGraphX Embedded Player Bundle
- * Generated: 2026-08-31T18:32:04.398Z
+ * Generated: 2026-09-03T09:57:21.562Z
  */
 
 /* --- i18n-inline.js --- */
@@ -25,6 +25,8 @@ window.STGraphXI18nBundles = {
     "action.apply": "Applica",
     "action.cancel": "Annulla",
     "action.close": "Chiudi",
+    "action.delete": "Elimina",
+    "action.select": "Seleziona",
     "action.copy": "Copia",
     "action.save": "Salva",
     "action.discard": "Scarta",
@@ -548,6 +550,7 @@ window.STGraphXI18nBundles = {
     "menu.run.timedToggle": "Temporizzato",
     "menu.time": "t = {time}",
     "menu.view": "Vista",
+    "menu.view.presentationGroups": "Gruppi di presentazione...",
     "menu.view.fit": "Adatta al contenuto",
     "menu.view.gridStep": "Passo griglia",
     "menu.view.tooltipDelay": "Ritardo tooltip",
@@ -565,6 +568,20 @@ window.STGraphXI18nBundles = {
     "menu.view.zoomOut": "Zoom indietro",
     "menu.view.zoomReset": "Zoom 100%",
     "node.defaultName": "n{id}",
+    "presentationGroups.title": "Gruppi di presentazione",
+    "presentationGroups.intro": "I gruppi organizzano visivamente i nodi senza modificare la logica del modello. Un nodo può appartenere a più gruppi.",
+    "presentationGroups.name": "Nome gruppo",
+    "presentationGroups.defaultName": "Gruppo",
+    "presentationGroups.namePlaceholder": "es. Dinamica principale",
+    "presentationGroups.createFromSelection": "Crea dalla selezione",
+    "presentationGroups.empty": "Non sono ancora definiti gruppi di presentazione.",
+    "presentationGroups.visible": "Visibile",
+    "presentationGroups.showFrame": "Bordo e nome",
+    "presentationGroups.selectNodes": "Seleziona nodi",
+    "presentationGroups.members": "{count} nodi",
+    "presentationGroups.error.selectionRequired": "Seleziona almeno un nodo prima di creare o aggiornare un gruppo.",
+    "presentationGroups.error.nameRequired": "Specifica un nome per il gruppo.",
+    "presentationGroups.error.nameDuplicate": "Esiste già un gruppo con questo nome.",
     "panel.edge": "Freccia",
     "panel.model": "Modello",
     "panel.node": "Nodo",
@@ -874,6 +891,13 @@ window.STGraphXI18nBundles = {
     "widget.showGrid": "Griglia",
     "widget.showHistory": "Serie storica",
     "widget.expandNonScalarValues": "Espandi valori non scalari",
+    "widget.tableFontSize": "Font valori",
+    "widget.tableAlign": "Allineamento",
+    "widget.tableAlign.left": "Sinistra",
+    "widget.tableAlign.center": "Centro",
+    "widget.tableAlign.right": "Destra",
+    "widget.tableDecimals": "Decimali",
+    "widget.tableDecimalsModel": "Modello",
     "widget.sliderMax": "Max",
     "widget.sliderMin": "Min",
     "widget.sliderRangeLabel": "Intervallo",
@@ -976,6 +1000,8 @@ window.STGraphXI18nBundles = {
     "action.apply": "Apply",
     "action.cancel": "Cancel",
     "action.close": "Close",
+    "action.delete": "Delete",
+    "action.select": "Select",
     "action.copy": "Copy",
     "action.save": "Save",
     "action.discard": "Discard",
@@ -1499,6 +1525,7 @@ window.STGraphXI18nBundles = {
     "menu.run.timedToggle": "Timed",
     "menu.time": "t = {time}",
     "menu.view": "View",
+    "menu.view.presentationGroups": "Presentation groups...",
     "menu.view.fit": "Fit to content",
     "menu.view.gridStep": "Grid step",
     "menu.view.tooltipDelay": "Tooltip delay",
@@ -1516,6 +1543,20 @@ window.STGraphXI18nBundles = {
     "menu.view.zoomOut": "Zoom out",
     "menu.view.zoomReset": "Zoom 100%",
     "node.defaultName": "n{id}",
+    "presentationGroups.title": "Presentation groups",
+    "presentationGroups.intro": "Groups organize nodes visually without changing the model logic. A node can belong to more than one group.",
+    "presentationGroups.name": "Group name",
+    "presentationGroups.defaultName": "Group",
+    "presentationGroups.namePlaceholder": "e.g. Main dynamics",
+    "presentationGroups.createFromSelection": "Create from selection",
+    "presentationGroups.empty": "No presentation groups have been defined yet.",
+    "presentationGroups.visible": "Visible",
+    "presentationGroups.showFrame": "Border and name",
+    "presentationGroups.selectNodes": "Select nodes",
+    "presentationGroups.members": "{count} nodes",
+    "presentationGroups.error.selectionRequired": "Select at least one node before creating or updating a group.",
+    "presentationGroups.error.nameRequired": "Provide a name for the group.",
+    "presentationGroups.error.nameDuplicate": "A group with this name already exists.",
     "panel.edge": "Edge",
     "panel.model": "Model",
     "panel.node": "Node",
@@ -1825,6 +1866,13 @@ window.STGraphXI18nBundles = {
     "widget.showGrid": "Grid",
     "widget.showHistory": "History series",
     "widget.expandNonScalarValues": "Expand non-scalar values",
+    "widget.tableFontSize": "Value font",
+    "widget.tableAlign": "Alignment",
+    "widget.tableAlign.left": "Left",
+    "widget.tableAlign.center": "Center",
+    "widget.tableAlign.right": "Right",
+    "widget.tableDecimals": "Decimals",
+    "widget.tableDecimalsModel": "Model",
     "widget.sliderMax": "Max",
     "widget.sliderMin": "Min",
     "widget.sliderRangeLabel": "Range",
@@ -9392,6 +9440,16 @@ window.STGraphXI18nBundles = {
     }
   }
 
+  function formatTableValue(execution, widget, value) {
+    if (typeof value === "number" && Number.isFinite(value) && widget?.tableDecimalDigits != null) {
+      return value.toFixed(widget.tableDecimalDigits);
+    }
+    if (Array.isArray(value)) {
+      return `[${value.map((item) => formatTableValue(execution, widget, item)).join(", ")}]`;
+    }
+    return formatValue(execution, value);
+  }
+
   function widgetBinaryStateLabel(widget, state, t) {
     const explicit = state ? String(widget?.trueLabel ?? "").trim() : String(widget?.falseLabel ?? "").trim();
     if (explicit) {
@@ -9453,6 +9511,11 @@ window.STGraphXI18nBundles = {
       outputOnly: Boolean(widget?.outputOnly),
       showHistory: Boolean(widget?.showHistory),
       expandNonScalarValues: Boolean(widget?.expandNonScalarValues) && !Boolean(widget?.showHistory),
+      tableFontSize: Number.isFinite(Number(widget?.tableFontSize)) ? clamp(Math.round(Number(widget.tableFontSize)), 8, 32) : 13,
+      tableTextAlign: ["left", "center", "right"].includes(String(widget?.tableTextAlign ?? "")) ? String(widget.tableTextAlign) : "left",
+      tableDecimalDigits: Number.isInteger(Number(widget?.tableDecimalDigits)) && Number(widget.tableDecimalDigits) >= 0 && Number(widget.tableDecimalDigits) <= 12
+        ? Number(widget.tableDecimalDigits)
+        : null,
       source: String(widget?.source ?? ""),
       showNumericValues: widget?.showNumericValues !== false,
       showIndices: widget?.showIndices !== false,
@@ -10140,6 +10203,10 @@ window.STGraphXI18nBundles = {
             font-variant-numeric: tabular-nums;
             font-size: inherit;
           }
+          .widget-table tbody td {
+            font-size: calc(var(--table-value-font-size, 0.9rem) * var(--widget-scale));
+            text-align: var(--table-value-align, left);
+          }
           .widget-table th, .matrix-table th {
             position: sticky;
             top: 0;
@@ -10325,6 +10392,19 @@ window.STGraphXI18nBundles = {
             text-anchor: middle;
             dominant-baseline: middle;
             font-weight: 700;
+          }
+          .presentation-group-frame {
+            fill: rgba(31, 122, 82, 0.035);
+            stroke: #438166;
+            stroke-width: 1.4;
+            stroke-dasharray: 8 5;
+            pointer-events: none;
+          }
+          .presentation-group-label {
+            fill: #276146;
+            font-size: 12px;
+            font-weight: 700;
+            pointer-events: none;
           }
           .node-value {
             font-size: 10px;
@@ -10831,11 +10911,11 @@ window.STGraphXI18nBundles = {
           const row = {};
           widget.columns.forEach((name) => {
             if (name === "time") {
-              row[name] = formatNumberValue(model.execution, Number(timeValue));
+              row[name] = Number(timeValue);
               return;
             }
             const node = nodeMap.get(name);
-            row[name] = node ? formatValue(model.execution, node.computedValue) : "";
+            row[name] = node ? node.computedValue : null;
           });
           state.rows.push({ time: timeValue, values: row });
           this._state.widgetState.set(widget.id, state);
@@ -11116,13 +11196,51 @@ window.STGraphXI18nBundles = {
       return execution.currentTime == null ? Number(execution.t0) : Number(execution.currentTime);
     }
 
+    visibleGraphNodeIds() {
+      const model = this._state.rawModel;
+      const nodes = Array.isArray(model?.nodes) ? model.nodes : [];
+      const validNodeIds = new Set(nodes.map((node) => node.id));
+      const memberships = new Map();
+      (Array.isArray(model?.presentationGroups) ? model.presentationGroups : []).forEach((group) => {
+        (Array.isArray(group?.nodeIds) ? group.nodeIds : []).forEach((nodeId) => {
+          if (!validNodeIds.has(nodeId)) {
+            return;
+          }
+          const items = memberships.get(nodeId) || [];
+          items.push(group);
+          memberships.set(nodeId, items);
+        });
+      });
+      return new Set(nodes.filter((node) => {
+        const groups = memberships.get(node.id);
+        return !groups || groups.some((group) => group.visible !== false);
+      }).map((node) => node.id));
+    }
+
+    presentationGroupBounds(group, visibleNodeIds) {
+      const nodes = (group?.nodeIds || [])
+        .filter((nodeId) => visibleNodeIds.has(nodeId))
+        .map((nodeId) => this._state.rawModel?.nodes?.find((node) => node.id === nodeId))
+        .filter(Boolean);
+      if (!nodes.length) {
+        return null;
+      }
+      const padding = 22;
+      const minX = Math.min(...nodes.map((node) => node.x - node.width / 2)) - padding;
+      const minY = Math.min(...nodes.map((node) => node.y - node.height / 2)) - padding;
+      const maxX = Math.max(...nodes.map((node) => node.x + node.width / 2)) + padding;
+      const maxY = Math.max(...nodes.map((node) => node.y + node.height / 2)) + padding;
+      return { minX, minY, width: maxX - minX, height: maxY - minY };
+    }
+
     graphBounds() {
       const model = this._state.rawModel;
+      const visibleNodeIds = this.visibleGraphNodeIds();
       let minX = 0;
       let minY = 0;
       let maxX = 800;
       let maxY = 600;
-      (model?.nodes || []).forEach((node) => {
+      (model?.nodes || []).filter((node) => visibleNodeIds.has(node.id)).forEach((node) => {
         const w = Number(node?.width) || 120;
         const h = Number(node?.height) || 70;
         const x = Number(node?.x) || 0;
@@ -11213,6 +11331,7 @@ window.STGraphXI18nBundles = {
 
     renderGraph() {
       const model = this._state.rawModel;
+      const visibleNodeIds = this.visibleGraphNodeIds();
       const bounds = this.graphBounds();
       const zoom = this._zoom;
       this.$canvasContent.style.width = `${bounds.width * zoom}px`;
@@ -11238,10 +11357,34 @@ window.STGraphXI18nBundles = {
       defs.appendChild(marker);
       this.$svg.appendChild(defs);
 
+      (model.presentationGroups || []).forEach((group) => {
+        if (group?.visible === false || group?.showFrame === false) {
+          return;
+        }
+        const groupBounds = this.presentationGroupBounds(group, visibleNodeIds);
+        if (!groupBounds) {
+          return;
+        }
+        const frame = document.createElementNS(SVG_NS, "rect");
+        frame.setAttribute("class", "presentation-group-frame");
+        frame.setAttribute("x", groupBounds.minX);
+        frame.setAttribute("y", groupBounds.minY);
+        frame.setAttribute("width", groupBounds.width);
+        frame.setAttribute("height", groupBounds.height);
+        frame.setAttribute("rx", "12");
+        this.$svg.appendChild(frame);
+        const label = document.createElementNS(SVG_NS, "text");
+        label.setAttribute("class", "presentation-group-label");
+        label.setAttribute("x", groupBounds.minX + 10);
+        label.setAttribute("y", groupBounds.minY + 16);
+        label.textContent = String(group?.name || "");
+        this.$svg.appendChild(label);
+      });
+
       (model.edges || []).forEach((edge) => {
         const from = (model.nodes || []).find((node) => node.id === edge.from);
         const to = (model.nodes || []).find((node) => node.id === edge.to);
-        if (!from || !to) {
+        if (!from || !to || !visibleNodeIds.has(from.id) || !visibleNodeIds.has(to.id)) {
           return;
         }
         const path = document.createElementNS(SVG_NS, "path");
@@ -11252,7 +11395,7 @@ window.STGraphXI18nBundles = {
         this.$svg.appendChild(path);
       });
 
-      (model.nodes || []).forEach((node) => {
+      (model.nodes || []).filter((node) => visibleNodeIds.has(node.id)).forEach((node) => {
         const g = document.createElementNS(SVG_NS, "g");
         g.setAttribute("class", `node ${node.type || "state"}${node.__runtimeError ? " error" : ""}${node.output ? " output" : ""}`);
         let shape;
@@ -11443,6 +11586,8 @@ window.STGraphXI18nBundles = {
         const rows = Array.isArray(widgetState?.rows) ? widgetState.rows : [];
         const table = document.createElement("table");
         table.className = "widget-table";
+        table.style.setProperty("--table-value-font-size", `${widget.tableFontSize}px`);
+        table.style.setProperty("--table-value-align", widget.tableTextAlign);
         const displayedColumns = widget.outputOnly
           ? widget.columns.filter((name) => name === "time" || nodeMap.get(name)?.output)
           : widget.columns.slice();
@@ -11476,7 +11621,7 @@ window.STGraphXI18nBundles = {
             tr.appendChild(rowHeader);
             matrixRow.forEach((value) => {
               const td = document.createElement("td");
-              td.textContent = formatValue(execution, value);
+              td.textContent = formatTableValue(execution, widget, value);
               tr.appendChild(td);
             });
             tbody.appendChild(tr);
@@ -11530,13 +11675,13 @@ window.STGraphXI18nBundles = {
             if (cells) {
               td.textContent = entry.error
                 ? this.t(`error.evalReason.${entry.error || "runtime"}`)
-                : (entry.empty || entry.missing ? "-" : formatValue(execution, entry.value));
+                : (entry.empty || entry.missing ? "-" : formatTableValue(execution, widget, entry.value));
             } else {
               td.textContent = entry === "time"
-                ? formatNumberValue(execution, Number(widget.showHistory ? row.time : this.currentDisplayTime()))
+                ? formatTableValue(execution, widget, Number(widget.showHistory ? row.time : this.currentDisplayTime()))
                 : (widget.showHistory
-                  ? String(row.values?.[entry] ?? "")
-                  : formatValue(execution, nodeMap.get(entry)?.computedValue));
+                  ? formatTableValue(execution, widget, row.values?.[entry])
+                  : formatTableValue(execution, widget, nodeMap.get(entry)?.computedValue));
             }
             tr.appendChild(td);
           });

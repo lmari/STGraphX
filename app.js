@@ -262,6 +262,14 @@ const localFunctionsApplyBtn = document.getElementById("localFunctionsApplyBtn")
 const localFunctionsAddBtn = document.getElementById("localFunctionsAddBtn");
 const localFunctionsList = document.getElementById("localFunctionsList");
 const localFunctionsStatus = document.getElementById("localFunctionsStatus");
+const managePresentationGroupsItem = document.getElementById("managePresentationGroupsItem");
+const presentationGroupsModal = document.getElementById("presentationGroupsModal");
+const presentationGroupsCloseBtn = document.getElementById("presentationGroupsCloseBtn");
+const presentationGroupsDismissBtn = document.getElementById("presentationGroupsDismissBtn");
+const presentationGroupNameInput = document.getElementById("presentationGroupNameInput");
+const presentationGroupCreateBtn = document.getElementById("presentationGroupCreateBtn");
+const presentationGroupsStatus = document.getElementById("presentationGroupsStatus");
+const presentationGroupsList = document.getElementById("presentationGroupsList");
 const expressionEditorSwitchModal = document.getElementById("expressionEditorSwitchModal");
 const expressionEditorSwitchCloseBtn = document.getElementById("expressionEditorSwitchCloseBtn");
 const expressionEditorSwitchCancelBtn = document.getElementById("expressionEditorSwitchCancelBtn");
@@ -743,6 +751,7 @@ let nodeCounter = 1;
 let edgeCounter = 1;
 let widgetCounter = 1;
 let textItemCounter = 1;
+let presentationGroupCounter = 1;
 let currentLang = "it";
 let i18n = {};
 let lastSavedSnapshot = "";
@@ -802,6 +811,7 @@ const graph = {
   edges: [],
   textItems: [],
   widgets: [],
+  presentationGroups: [],
   debug: {
     watches: [],
     breakpointEnabled: false,
@@ -1086,12 +1096,14 @@ createArrowMarker("arrow-both", "#8b5fbf");
 svg.appendChild(defs);
 
 const edgesLayer = document.createElementNS(SVG_NS, "g");
+const presentationGroupsLayer = document.createElementNS(SVG_NS, "g");
 const previewLayer = document.createElementNS(SVG_NS, "g");
 const marqueeLayer = document.createElementNS(SVG_NS, "g");
 const nodesLayer = document.createElementNS(SVG_NS, "g");
 const textLayer = document.createElementNS(SVG_NS, "g");
 const controlsLayer = document.createElementNS(SVG_NS, "g");
 svg.appendChild(edgesLayer);
+svg.insertBefore(presentationGroupsLayer, edgesLayer);
 svg.appendChild(previewLayer);
 svg.appendChild(nodesLayer);
 svg.appendChild(textLayer);
@@ -3372,6 +3384,182 @@ function commitLocalFunctionsEditor() {
   closeLocalFunctionsEditor();
   setStatus(t("localFunctions.updated"));
   return true;
+}
+
+function setPresentationGroupsStatus(message = "", isError = false) {
+  if (!presentationGroupsStatus) {
+    return;
+  }
+  presentationGroupsStatus.textContent = String(message || "");
+  presentationGroupsStatus.classList.toggle("hidden", !message);
+  presentationGroupsStatus.classList.toggle("error", Boolean(message && isError));
+  presentationGroupsStatus.classList.toggle("ok", Boolean(message && !isError));
+}
+
+function presentationGroupNameIsAvailable(name, excludeId = null) {
+  const normalized = String(name || "").trim().toLocaleLowerCase();
+  return Boolean(normalized) && !graph.presentationGroups.some((group) => (
+    group.id !== excludeId && group.name.toLocaleLowerCase() === normalized
+  ));
+}
+
+function renderPresentationGroupsEditor() {
+  if (!presentationGroupsList) {
+    return;
+  }
+  syncPresentationGroups();
+  presentationGroupsList.innerHTML = "";
+  if (!graph.presentationGroups.length) {
+    const empty = document.createElement("p");
+    empty.className = "presentation-group-empty";
+    empty.textContent = t("presentationGroups.empty");
+    presentationGroupsList.appendChild(empty);
+    return;
+  }
+  graph.presentationGroups.forEach((group) => {
+    const item = document.createElement("div");
+    item.className = "presentation-group-item";
+
+    const visibleLabel = document.createElement("label");
+    visibleLabel.className = "menu-check compact-bool";
+    const visibleInput = document.createElement("input");
+    visibleInput.type = "checkbox";
+    visibleInput.checked = group.visible !== false;
+    const visibleText = document.createElement("span");
+    visibleText.textContent = t("presentationGroups.visible");
+    visibleInput.addEventListener("change", () => {
+      commitPresentationGroupsChange(() => {
+        const target = graph.presentationGroups.find((candidate) => candidate.id === group.id);
+        if (target) {
+          target.visible = visibleInput.checked;
+        }
+      });
+      renderPresentationGroupsEditor();
+    });
+    visibleLabel.append(visibleInput, visibleText);
+
+    const frameLabel = document.createElement("label");
+    frameLabel.className = "menu-check compact-bool";
+    const frameInput = document.createElement("input");
+    frameInput.type = "checkbox";
+    frameInput.checked = group.visible !== false && group.showFrame !== false;
+    frameInput.disabled = group.visible === false;
+    const frameText = document.createElement("span");
+    frameText.textContent = t("presentationGroups.showFrame");
+    frameInput.addEventListener("change", () => {
+      commitPresentationGroupsChange(() => {
+        const target = graph.presentationGroups.find((candidate) => candidate.id === group.id);
+        if (target) {
+          target.showFrame = frameInput.checked;
+        }
+      });
+      renderPresentationGroupsEditor();
+    });
+    frameLabel.append(frameInput, frameText);
+
+    const nameInput = document.createElement("input");
+    nameInput.type = "text";
+    nameInput.maxLength = 80;
+    nameInput.value = group.name;
+    nameInput.addEventListener("change", () => {
+      const name = String(nameInput.value || "").trim();
+      if (!name) {
+        nameInput.value = group.name;
+        setPresentationGroupsStatus(t("presentationGroups.error.nameRequired"), true);
+        return;
+      }
+      if (!presentationGroupNameIsAvailable(name, group.id)) {
+        nameInput.value = group.name;
+        setPresentationGroupsStatus(t("presentationGroups.error.nameDuplicate"), true);
+        return;
+      }
+      commitPresentationGroupsChange(() => {
+        const target = graph.presentationGroups.find((candidate) => candidate.id === group.id);
+        if (target) {
+          target.name = name;
+        }
+      });
+      setPresentationGroupsStatus();
+    });
+
+    const members = document.createElement("span");
+    members.className = "presentation-group-members";
+    members.textContent = t("presentationGroups.members", { count: group.nodeIds.length });
+
+    const selectBtn = document.createElement("button");
+    selectBtn.type = "button";
+    selectBtn.className = "small-btn";
+    selectBtn.textContent = t("presentationGroups.selectNodes");
+    selectBtn.disabled = group.nodeIds.length === 0;
+    selectBtn.addEventListener("click", () => {
+      setNodeSelection(group.nodeIds);
+      render();
+    });
+
+    const deleteBtn = document.createElement("button");
+    deleteBtn.type = "button";
+    deleteBtn.className = "small-btn danger";
+    deleteBtn.textContent = t("action.delete");
+    deleteBtn.addEventListener("click", () => {
+      commitPresentationGroupsChange(() => {
+        graph.presentationGroups = graph.presentationGroups.filter((candidate) => candidate.id !== group.id);
+      });
+      setPresentationGroupsStatus();
+      renderPresentationGroupsEditor();
+    });
+
+    item.append(visibleLabel, frameLabel, nameInput, members, selectBtn, deleteBtn);
+    presentationGroupsList.appendChild(item);
+  });
+}
+
+function openPresentationGroupsEditor() {
+  if (!presentationGroupsModal) {
+    return;
+  }
+  setPresentationGroupsStatus();
+  if (presentationGroupNameInput) {
+    presentationGroupNameInput.value = "";
+  }
+  renderPresentationGroupsEditor();
+  presentationGroupsModal.classList.remove("hidden");
+  presentationGroupNameInput?.focus();
+}
+
+function closePresentationGroupsEditor() {
+  presentationGroupsModal?.classList.add("hidden");
+  setPresentationGroupsStatus();
+}
+
+function createPresentationGroupFromSelection() {
+  const nodeIds = [...ui.selectedNodes];
+  if (!nodeIds.length) {
+    setPresentationGroupsStatus(t("presentationGroups.error.selectionRequired"), true);
+    return;
+  }
+  const name = String(presentationGroupNameInput?.value || "").trim();
+  if (!name) {
+    setPresentationGroupsStatus(t("presentationGroups.error.nameRequired"), true);
+    presentationGroupNameInput?.focus();
+    return;
+  }
+  if (!presentationGroupNameIsAvailable(name)) {
+    setPresentationGroupsStatus(t("presentationGroups.error.nameDuplicate"), true);
+    presentationGroupNameInput?.focus();
+    return;
+  }
+  commitPresentationGroupsChange(() => {
+    graph.presentationGroups.push({
+      id: presentationGroupCounter++,
+      name,
+      nodeIds,
+      visible: true,
+      showFrame: true,
+    });
+  });
+  presentationGroupNameInput.value = "";
+  setPresentationGroupsStatus();
+  renderPresentationGroupsEditor();
 }
 
 function selectedWatchableNode() {
@@ -5678,6 +5866,7 @@ function closeDocumentTransientUi() {
   closeModelAnalysisChecksHelp();
   closeWatchDebugger();
   closeLocalFunctionsEditor();
+  closePresentationGroupsEditor();
 }
 
 function switchWorkspaceTab(tabId) {
@@ -6594,6 +6783,97 @@ function selectedNodesList() {
     .filter(Boolean);
 }
 
+function normalizePresentationGroupName(value, fallbackIndex = 1) {
+  const name = String(value ?? "").trim().replace(/\s+/g, " ");
+  return name || `${t("presentationGroups.defaultName")} ${fallbackIndex}`;
+}
+
+function sanitizePresentationGroups(rawGroups, nodes = graph.nodes) {
+  const validNodeIds = new Set((Array.isArray(nodes) ? nodes : []).map((node) => node.id));
+  const usedIds = new Set();
+  const usedNames = new Set();
+  const groups = [];
+  (Array.isArray(rawGroups) ? rawGroups : []).forEach((rawGroup, index) => {
+    let id = Number(rawGroup?.id);
+    if (!Number.isInteger(id) || id < 1 || usedIds.has(id)) {
+      id = index + 1;
+      while (usedIds.has(id)) {
+        id += 1;
+      }
+    }
+    usedIds.add(id);
+    const baseName = normalizePresentationGroupName(rawGroup?.name, groups.length + 1);
+    let name = baseName;
+    let suffix = 2;
+    while (usedNames.has(name.toLocaleLowerCase())) {
+      name = `${baseName} (${suffix})`;
+      suffix += 1;
+    }
+    usedNames.add(name.toLocaleLowerCase());
+    const nodeIds = [...new Set(Array.isArray(rawGroup?.nodeIds) ? rawGroup.nodeIds : [])]
+      .filter((nodeId) => validNodeIds.has(nodeId));
+    groups.push({
+      id,
+      name,
+      nodeIds,
+      visible: rawGroup?.visible !== false,
+      showFrame: rawGroup?.showFrame !== false,
+    });
+  });
+  return groups;
+}
+
+function syncPresentationGroups() {
+  graph.presentationGroups = sanitizePresentationGroups(graph.presentationGroups);
+  const maxId = graph.presentationGroups.reduce((max, group) => Math.max(max, group.id), 0);
+  presentationGroupCounter = Math.max(presentationGroupCounter, maxId + 1);
+}
+
+function visiblePresentationNodeIds() {
+  const memberships = new Map();
+  graph.presentationGroups.forEach((group) => {
+    group.nodeIds.forEach((nodeId) => {
+      const item = memberships.get(nodeId) || [];
+      item.push(group);
+      memberships.set(nodeId, item);
+    });
+  });
+  return new Set(graph.nodes
+    .filter((node) => {
+      const groups = memberships.get(node.id);
+      return !groups || groups.some((group) => group.visible);
+    })
+    .map((node) => node.id));
+}
+
+function presentationGroupBounds(group) {
+  const nodes = group.nodeIds.map((id) => getNodeById(id)).filter(Boolean);
+  if (!nodes.length) {
+    return null;
+  }
+  const padding = 22;
+  const minX = Math.min(...nodes.map((node) => node.x - node.width / 2)) - padding;
+  const minY = Math.min(...nodes.map((node) => node.y - node.height / 2)) - padding;
+  const maxX = Math.max(...nodes.map((node) => node.x + node.width / 2)) + padding;
+  const maxY = Math.max(...nodes.map((node) => node.y + node.height / 2)) + padding;
+  return { minX, minY, width: maxX - minX, height: maxY - minY };
+}
+
+function commitPresentationGroupsChange(mutator) {
+  const beforeState = exportGraphData();
+  mutator();
+  syncPresentationGroups();
+  const afterState = exportGraphData();
+  if (JSON.stringify(beforeState) !== JSON.stringify(afterState)) {
+    pushUndoState(beforeState);
+    history.redo = [];
+    dirtySinceLastSave = true;
+    updateFileStatusLabel(true);
+    updateHistoryButtons();
+  }
+  render();
+}
+
 function serializeNodeType(shape) {
   return runtimeShared.serializeNodeType(shape);
 }
@@ -6608,7 +6888,8 @@ function graphBounds() {
   let maxX = BASE_CANVAS_WIDTH;
   let maxY = BASE_CANVAS_HEIGHT;
 
-  graph.nodes.forEach((node) => {
+  const visibleNodeIds = visiblePresentationNodeIds();
+  graph.nodes.filter((node) => visibleNodeIds.has(node.id)).forEach((node) => {
     const hw = node.width / 2;
     const hh = node.height / 2;
     minX = Math.min(minX, node.x - hw);
@@ -6617,7 +6898,7 @@ function graphBounds() {
     maxY = Math.max(maxY, node.y + hh);
   });
 
-  graph.edges.forEach((edge) => {
+  graph.edges.filter((edge) => visibleNodeIds.has(edge.from) && visibleNodeIds.has(edge.to)).forEach((edge) => {
     (edge.controlPoints || []).forEach((cp) => {
       minX = Math.min(minX, cp.x);
       minY = Math.min(minY, cp.y);
@@ -6726,6 +7007,7 @@ function updateZoomButtons() {
 
 function applyCanvasVisibility() {
   svg.style.display = "block";
+  presentationGroupsLayer.style.display = ui.showGraph ? "" : "none";
   edgesLayer.style.display = ui.showGraph ? "" : "none";
   previewLayer.style.display = ui.showGraph ? "" : "none";
   nodesLayer.style.display = ui.showGraph ? "" : "none";
@@ -7184,22 +7466,17 @@ function selectSingleNode(id) {
   }, `node:${id}`);
 }
 
-function toggleNodeSelection(id) {
-  const nextSelectionKey =
-    ui.selectedNodes.size === 1 && ui.selectedNodes.has(id)
-      ? ""
-      : "";
+function addNodeToSelection(id) {
+  if (ui.selectedNodes.has(id)) {
+    return;
+  }
   requestExpressionEditorSelectionChange(() => {
-    if (ui.selectedNodes.has(id)) {
-      ui.selectedNodes.delete(id);
-    } else {
-      ui.selectedNodes.add(id);
-    }
+    ui.selectedNodes.add(id);
     ui.selectedControlPoint = null;
     ui.selected = null;
     syncNodeSelectionFocus();
     refreshSidebar();
-  }, nextSelectionKey);
+  }, "");
 }
 
 function setNodeSelection(ids, additive = false) {
@@ -7219,6 +7496,7 @@ function setNodeSelection(ids, additive = false) {
 }
 
 function exportGraphData() {
+  syncPresentationGroups();
   return {
     version: 1,
     modelTitle: String(graph.modelTitle ?? ""),
@@ -7247,6 +7525,14 @@ function exportGraphData() {
     edgeCounter,
     widgetCounter,
     textItemCounter,
+    presentationGroupCounter,
+    presentationGroups: graph.presentationGroups.map((group) => ({
+      id: group.id,
+      name: group.name,
+      nodeIds: group.nodeIds.slice(),
+      visible: group.visible !== false,
+      showFrame: group.showFrame !== false,
+    })),
     execution: {
       t0: graph.execution.t0,
       dt: graph.execution.dt,
@@ -7325,6 +7611,11 @@ function exportGraphData() {
       outputOnly: Boolean(w.outputOnly),
       showHistory: Boolean(w.showHistory),
       expandNonScalarValues: Boolean(w.expandNonScalarValues),
+      tableFontSize: Number.isFinite(Number(w.tableFontSize)) ? clamp(Math.round(Number(w.tableFontSize)), 8, 32) : 13,
+      tableTextAlign: ["left", "center", "right"].includes(String(w.tableTextAlign ?? "")) ? String(w.tableTextAlign) : "left",
+      tableDecimalDigits: Number.isInteger(Number(w.tableDecimalDigits)) && Number(w.tableDecimalDigits) >= 0 && Number(w.tableDecimalDigits) <= 12
+        ? Number(w.tableDecimalDigits)
+        : null,
       xMin: serializeAutoNullableNumber(w.xMin),
       xMax: serializeAutoNullableNumber(w.xMax),
       yMin: serializeAutoNullableNumber(w.yMin),
@@ -7471,6 +7762,7 @@ function applyGraphData(data) {
   graph.localFunctions = Array.isArray(data?.localFunctions)
     ? data.localFunctions.map((definition) => sanitizeLocalFunctionDefinition(definition))
     : [];
+  graph.presentationGroups = sanitizePresentationGroups(data?.presentationGroups, data?.nodes);
   graph.debug = {
     watches: Array.isArray(data?.debug?.watches) ? data.debug.watches.map((name) => String(name ?? "")) : [],
     breakpointEnabled: Boolean(data?.debug?.breakpointEnabled),
@@ -7568,6 +7860,11 @@ function applyGraphData(data) {
         outputOnly: Boolean(w.outputOnly),
         showHistory: Boolean(w.showHistory),
         expandNonScalarValues: Boolean(w.expandNonScalarValues) && !Boolean(w.showHistory),
+        tableFontSize: Number.isFinite(Number(w.tableFontSize)) ? clamp(Math.round(Number(w.tableFontSize)), 8, 32) : 13,
+        tableTextAlign: ["left", "center", "right"].includes(String(w.tableTextAlign ?? "")) ? String(w.tableTextAlign) : "left",
+        tableDecimalDigits: Number.isInteger(Number(w.tableDecimalDigits)) && Number(w.tableDecimalDigits) >= 0 && Number(w.tableDecimalDigits) <= 12
+          ? Number(w.tableDecimalDigits)
+          : null,
         xMin: parseAutoNullableNumber(w.xMin),
         xMax: parseAutoNullableNumber(w.xMax),
         yMin: parseAutoNullableNumber(w.yMin),
@@ -7661,6 +7958,10 @@ function applyGraphData(data) {
   edgeCounter = Number(data.edgeCounter) || 1;
   widgetCounter = Number(data.widgetCounter) || 1;
   textItemCounter = Number(data.textItemCounter) || 1;
+  presentationGroupCounter = Math.max(
+    Number(data.presentationGroupCounter) || 1,
+    graph.presentationGroups.reduce((max, group) => Math.max(max, group.id + 1), 1),
+  );
   ui.zoom = clampZoom(Number(savedView?.zoom) || 1);
   ui.showGrid = savedView?.showGrid !== false;
   ui.highlightNodeEdges = savedView?.highlightNodeEdges === true;
@@ -8851,6 +9152,9 @@ function render(options = {}) {
   updateDeleteActionLabel();
   updateEditActionButtons();
   updateModelBreadcrumb();
+  syncPresentationGroups();
+  const visibleNodeIds = visiblePresentationNodeIds();
+  presentationGroupsLayer.innerHTML = "";
   edgesLayer.innerHTML = "";
   nodesLayer.innerHTML = "";
   textLayer.innerHTML = "";
@@ -8862,7 +9166,35 @@ function render(options = {}) {
     ? [...ui.selectedNodes][0]
     : null;
 
+  graph.presentationGroups.forEach((group) => {
+    if (!group.visible || group.showFrame === false) {
+      return;
+    }
+    const bounds = presentationGroupBounds(group);
+    if (!bounds) {
+      return;
+    }
+    const frame = document.createElementNS(SVG_NS, "rect");
+    frame.classList.add("presentation-group-frame");
+    frame.setAttribute("x", bounds.minX);
+    frame.setAttribute("y", bounds.minY);
+    frame.setAttribute("width", bounds.width);
+    frame.setAttribute("height", bounds.height);
+    frame.setAttribute("rx", "12");
+    presentationGroupsLayer.appendChild(frame);
+
+    const label = document.createElementNS(SVG_NS, "text");
+    label.classList.add("presentation-group-label");
+    label.setAttribute("x", bounds.minX + 10);
+    label.setAttribute("y", bounds.minY + 16);
+    label.textContent = group.name;
+    presentationGroupsLayer.appendChild(label);
+  });
+
   graph.edges.forEach((edge) => {
+    if (!visibleNodeIds.has(edge.from) || !visibleNodeIds.has(edge.to)) {
+      return;
+    }
     const geom = buildEdgeGeometry(edge);
     if (!geom) {
       return;
@@ -9033,6 +9365,9 @@ function render(options = {}) {
   }
 
   graph.nodes.forEach((node) => {
+    if (!visibleNodeIds.has(node.id)) {
+      return;
+    }
     const g = document.createElementNS(SVG_NS, "g");
     g.classList.add("node");
     g.setAttribute("data-node-id", node.id);
@@ -9129,6 +9464,13 @@ function render(options = {}) {
       if (isTabletCanvasPanMode()) {
         return;
       }
+      if (evt.ctrlKey || evt.metaKey) {
+        evt.preventDefault();
+        evt.stopPropagation();
+        addNodeToSelection(node.id);
+        render();
+        return;
+      }
       if (isEditingUiLocked()) {
         return;
       }
@@ -9139,6 +9481,13 @@ function render(options = {}) {
 
     const startEdgeCreateMouse = (evt) => {
       if (isTabletCanvasPanMode()) {
+        return;
+      }
+      if (evt.ctrlKey || evt.metaKey) {
+        evt.preventDefault();
+        evt.stopPropagation();
+        addNodeToSelection(node.id);
+        render();
         return;
       }
       if (isEditingUiLocked()) {
@@ -9158,7 +9507,7 @@ function render(options = {}) {
       const additive = evt.ctrlKey || evt.metaKey;
 
       if (additive) {
-        toggleNodeSelection(node.id);
+        addNodeToSelection(node.id);
         render();
         return;
       }
@@ -9348,6 +9697,11 @@ function render(options = {}) {
         return;
       }
       evt.stopPropagation();
+      if (evt.ctrlKey || evt.metaKey) {
+        addNodeToSelection(node.id);
+        render();
+        return;
+      }
       if (!ui.selectedNodes.has(node.id)) {
         selectSingleNode(node.id);
       }
@@ -9680,6 +10034,11 @@ function importGraphData(data) {
         outputOnly: Boolean(w.outputOnly),
         showHistory: Boolean(w.showHistory),
         expandNonScalarValues: Boolean(w.expandNonScalarValues) && !Boolean(w.showHistory),
+        tableFontSize: Number.isFinite(Number(w.tableFontSize)) ? clamp(Math.round(Number(w.tableFontSize)), 8, 32) : 13,
+        tableTextAlign: ["left", "center", "right"].includes(String(w.tableTextAlign ?? "")) ? String(w.tableTextAlign) : "left",
+        tableDecimalDigits: Number.isInteger(Number(w.tableDecimalDigits)) && Number(w.tableDecimalDigits) >= 0 && Number(w.tableDecimalDigits) <= 12
+          ? Number(w.tableDecimalDigits)
+          : null,
         xMin: parseAutoNullableNumber(w.xMin),
         xMax: parseAutoNullableNumber(w.xMax),
         yMin: parseAutoNullableNumber(w.yMin),
@@ -9764,6 +10123,8 @@ function importGraphData(data) {
       }))
     : [];
   const maxWidgetId = widgets.reduce((max, w) => Math.max(max, w.id), 0);
+  const presentationGroups = sanitizePresentationGroups(data.presentationGroups, nodesWithValidNames);
+  const maxPresentationGroupId = presentationGroups.reduce((max, group) => Math.max(max, group.id), 0);
 
   applyGraphData({
     version: 1,
@@ -9794,6 +10155,8 @@ function importGraphData(data) {
     edgeCounter: Math.max(Number(data.edgeCounter) || 0, maxEdgeId) + 1,
     widgetCounter: Math.max(Number(data.widgetCounter) || 0, maxWidgetId) + 1,
     textItemCounter: Math.max(Number(data.textItemCounter) || 0, maxTextItemId) + 1,
+    presentationGroupCounter: Math.max(Number(data.presentationGroupCounter) || 0, maxPresentationGroupId) + 1,
+    presentationGroups,
     execution: normalizeExecutionConfig(data.execution),
     nodes: nodesWithValidNames,
     edges,
@@ -10382,6 +10745,7 @@ function resetGraphToEmptyModel() {
   graph.edges = [];
   graph.textItems = [];
   graph.widgets = [];
+  graph.presentationGroups = [];
   graph.debug = {
     watches: [],
     breakpointEnabled: false,
@@ -10406,6 +10770,7 @@ function resetGraphToEmptyModel() {
   edgeCounter = 1;
   widgetCounter = 1;
   textItemCounter = 1;
+  presentationGroupCounter = 1;
   clearAllSelection();
   history.undo = [];
   history.redo = [];
@@ -11840,6 +12205,9 @@ if (zoomRangeInput) {
     applyZoom(Number(zoomRangeInput.value) / 100);
   });
 }
+if (managePresentationGroupsItem) {
+  managePresentationGroupsItem.addEventListener("click", openPresentationGroupsEditor);
+}
 toggleGraphItem.addEventListener("click", () => {
   toggleGraphVisibility();
 });
@@ -12898,6 +13266,7 @@ bindModalDragHandle(modelAnalysisModal, ".model-analysis-card");
 bindModalDragHandle(eightTupleModal, ".eight-tuple-card");
 bindModalDragHandle(watchDebuggerModal, ".watch-debugger-card");
 bindModalDragHandle(localFunctionsModal, ".local-functions-card");
+bindModalDragHandle(presentationGroupsModal, ".presentation-groups-card");
 bindModalDragHandle(textEditorModal, ".text-editor-card");
 if (functionsHelpBtn) {
   functionsHelpBtn.addEventListener("click", () => {
@@ -13106,6 +13475,13 @@ if (localFunctionsModal) {
     }
   });
 }
+if (presentationGroupsModal) {
+  presentationGroupsModal.addEventListener("pointerdown", (evt) => {
+    if (evt.target === presentationGroupsModal) {
+      closePresentationGroupsEditor();
+    }
+  });
+}
 if (expressionEditorSwitchModal) {
   expressionEditorSwitchModal.addEventListener("pointerdown", (evt) => {
     if (evt.target === expressionEditorSwitchModal) {
@@ -13202,6 +13578,23 @@ if (localFunctionsCancelBtn) {
 }
 if (localFunctionsCloseBtn) {
   localFunctionsCloseBtn.addEventListener("click", closeLocalFunctionsEditor);
+}
+if (presentationGroupCreateBtn) {
+  presentationGroupCreateBtn.addEventListener("click", createPresentationGroupFromSelection);
+}
+if (presentationGroupNameInput) {
+  presentationGroupNameInput.addEventListener("keydown", (evt) => {
+    if (evt.key === "Enter") {
+      evt.preventDefault();
+      createPresentationGroupFromSelection();
+    }
+  });
+}
+if (presentationGroupsCloseBtn) {
+  presentationGroupsCloseBtn.addEventListener("click", closePresentationGroupsEditor);
+}
+if (presentationGroupsDismissBtn) {
+  presentationGroupsDismissBtn.addEventListener("click", closePresentationGroupsEditor);
 }
 
 addPropBtn.addEventListener("click", () => {

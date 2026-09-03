@@ -88,6 +88,7 @@
             <hr class="menu-sep" />
             <button id="toggleGraphItem" class="menu-command" type="button" data-i18n="menu.view.toggleGraph" data-title-i18n="tooltip.menu.view.toggleGraph"></button>
             <button id="toggleWidgetsItem" class="menu-command" type="button" data-i18n="menu.view.toggleWidgets" data-title-i18n="tooltip.menu.view.toggleWidgets"></button>
+            <button id="managePresentationGroupsItem" class="menu-command" type="button" data-i18n="menu.view.presentationGroups"></button>
             <hr class="menu-sep" />
             <label class="menu-check" for="snapToGridInput" data-title-i18n="tooltip.menu.view.snap">
               <input id="snapToGridInput" type="checkbox" checked />
@@ -632,6 +633,25 @@
         <div class="modal-actions">
           <button id="localFunctionsCancelBtn" type="button" data-i18n="action.cancel"></button>
           <button id="localFunctionsApplyBtn" type="button" data-i18n="action.apply"></button>
+        </div>
+      </div>
+    </div>
+    <div id="presentationGroupsModal" class="modal-backdrop modal-modeless hidden">
+      <div class="modal-card presentation-groups-card" role="dialog" aria-modal="false" aria-labelledby="presentationGroupsTitle">
+        <div class="modal-head">
+          <h3 id="presentationGroupsTitle" data-i18n="presentationGroups.title"></h3>
+          <button id="presentationGroupsCloseBtn" class="icon-btn modal-close-btn" type="button" data-i18n-aria-label="aria.close">×</button>
+        </div>
+        <p class="help-intro" data-i18n="presentationGroups.intro"></p>
+        <div class="presentation-groups-create">
+          <label for="presentationGroupNameInput" data-i18n="presentationGroups.name"></label>
+          <input id="presentationGroupNameInput" type="text" maxlength="80" data-i18n-placeholder="presentationGroups.namePlaceholder" />
+          <button id="presentationGroupCreateBtn" class="small-btn" type="button" data-i18n="presentationGroups.createFromSelection"></button>
+        </div>
+        <div id="presentationGroupsStatus" class="expr-status hidden"></div>
+        <div id="presentationGroupsList" class="presentation-groups-list"></div>
+        <div class="modal-actions">
+          <button id="presentationGroupsDismissBtn" type="button" data-i18n="action.close"></button>
         </div>
       </div>
     </div>

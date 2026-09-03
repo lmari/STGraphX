@@ -708,6 +708,7 @@ Il player usa, quando disponibili nel JSON del modello:
 * `view.zoom`
 * `view.scrollLeft`
 * `view.scrollTop`
+* `presentationGroups`, incluse le visibilità dei gruppi di nodi
 
 Se l'attributo `zoom` è specificato nell'HTML, quello ha precedenza sullo zoom salvato nel modello.
 

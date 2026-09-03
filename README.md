@@ -1,6 +1,6 @@
 # STGraphX: Readme
 
-versione 31 agosto 2026
+versione 3 settembre 2026
 
 Copyright (c) 2026 Luca Mari
 
@@ -31,15 +31,15 @@ Ha un'interfaccia utente responsive, che lo rende utilizzabile anche su tablet.
 
 #### Funzionalità generali
 
-* Editor per grafi orientati, con nodi di forme e colori diversi e tooltip, frecce spline, testi, gestione di ridimensionamento, spostamento, cancellazione dei nodi, anche per selezioni multiple, zoom, griglia, clipboard (anche condivisa tra instanze diverse dell'app), undo e redo, ...
+* Editor per grafi orientati, con nodi di forme e colori diversi e tooltip, frecce spline, testi, gruppi di presentazione sovrapponibili con visibilità indipendente, gestione di ridimensionamento, spostamento, cancellazione dei nodi, anche per selezioni multiple, zoom, griglia, clipboard (anche condivisa tra instanze diverse dell'app), undo e redo, ...
 * Player per esecuzione di modelli in pagine HTML
 * API JavaScript per esecuzione headless via script
 * Menu, menu contestuale e pannello di configurazione aggiornato dinamicamente, con tooltip
 * Interfaccia responsive a tab per più modelli, con gestione contestuale della relazione tra modelli e sottomodelli
-* gestione dei testi dell'interfaccia utente in italiano e inglese, con scelta via query string nella shell web (`?lang=it|en`) e via parametro `--lang=it|en` nella shell Electron
-* menu di help
-* una pagina di esempi configurabile via file JSON
-* licenza MPL-2.0
+* Gestione dei testi dell'interfaccia utente in italiano e inglese, con scelta via query string nella shell web (`?lang=it|en`) e via parametro `--lang=it|en` nella shell Electron
+* Menu di help
+* Una pagina di esempi configurabile via file JSON
+* Licenza MPL-2.0
 
 #### Funzionalità strutturali
 
@@ -77,7 +77,8 @@ Ha un'interfaccia utente responsive, che lo rende utilizzabile anche su tablet.
 * Caricamento e salvataggio di modelli in file JSON
 * Editor per espressioni con controllo sintattico interattivo, visualizzazione dei valori attuali, help
 * Una funzione per la generazione dei contenuti noti della 8-upla del modello attivo
-* Uel menu File, gestione dei modelli aperti di recente
+* Gestione dei gruppi di visualizzazione di nodi
+* Nel menu File, gestione dei modelli aperti di recente
 * Una prima gestione di controllo di correttezza del modello
 * Un primo debugger, con gestione di watch e breakpoint
 
@@ -122,4 +123,4 @@ STGraphX è distribuito sotto licenza Mozilla Public License 2.0 (`MPL-2.0`).
 
 Il testo completo della licenza è disponibile nel file `LICENSE`.
 
-Le dipendenze di build e packaging attualmente usate dal progetto risultano, da controllo locale, distribuite principalmente sotto licenze permissive come `MIT`, `ISC`, `BSD` e `Apache-2.0`.
+Le dipendenze di build e packaging attualmente usate dal progetto risultano distribuite principalmente sotto licenze permissive come `MIT`, `ISC`, `BSD` e `Apache-2.0`.
