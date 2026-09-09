@@ -16,6 +16,7 @@ const bundleFiles = [
   "i18n-inline.js",
   "graph-functions.js",
   "semantic.js",
+  "array-axes.js",
   "runtime-shared.js",
   "runtime-core.js",
   "runtime-loader.js",
