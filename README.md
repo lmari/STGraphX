@@ -20,7 +20,7 @@ Per scaricare la versione desktop di STGraphX (versione attuale: 2026.09.09):
 
 - Linux: <a href="https://github.com/lmari/STGraphX/releases/download/v26.09.09/STGraphX.AppImage" target="_blank" rel="noopener noreferrer">AppImage</a>, <a href="https://github.com/lmari/STGraphX/releases/download/v26.09.09/STGraphX.tar.gz" target="_blank" rel="noopener noreferrer">tar.gz</a>
 
-- Windows: ...
+- Windows: <a href="https://github.com/lmari/STGraphX/releases/download/v26.09.09/STGraphX-setup.exe" target="_blank" rel="noopener noreferrer">exe di installazione</a>, <a href="https://github.com/lmari/STGraphX/releases/download/v26.09.09/STGraphX-portable.exe" target="_blank" rel="noopener noreferrer">exe portabile</a>
 
 - macOS: ...
 
