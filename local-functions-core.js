@@ -207,3 +207,18 @@
     createLocalFunctionsCoreHelpers,
   };
 });
+
+// Load the axis-aware array extension synchronously when this file is used
+// as a parser-inserted browser script. Bundled runtimes include the extension
+// explicitly and therefore skip this bootstrap.
+(function loadArrayAxesExtension() {
+  if (typeof document === "undefined" || !document.currentScript) {
+    return;
+  }
+  const currentSrc = String(document.currentScript.src || "");
+  if (!/local-functions-core\.js(?:[?#].*)?$/u.test(currentSrc)) {
+    return;
+  }
+  const extensionSrc = new URL("array-axes.js", currentSrc).href;
+  document.write(`<script src="${extensionSrc}"><\/script>`);
+})();
