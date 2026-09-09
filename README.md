@@ -18,7 +18,11 @@ Il file QUICK-START.md contiene informazioni sull'installazione, l'uso, e lo svi
 
 Per scaricare la versione desktop di STGraphX (versione attuale: 2026.09.09):
 
-- Linux: <a href="https://github.com/lmari/STGraphX/tree/main/dist/STGraphX260909.AppImage">AppImage</a>, tar.gz
+- Linux: <a href="https://github.com/lmari/STGraphX/releases/download/v26.09.09/STGraphX.AppImage" target="_blank" rel="noopener noreferrer">AppImage</a>, <a href="https://github.com/lmari/STGraphX/releases/download/v26.09.09/STGraphX.tar.gz" target="_blank" rel="noopener noreferrer">tar.gz</a>
+
+- Windows: ...
+
+- macOS: ...
 
 ## Stato del progetto
 

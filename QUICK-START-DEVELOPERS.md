@@ -155,7 +155,7 @@ Per una prova interna eseguire `dist/linux-unpacked/stgraphx`. Se si distribuisc
 #### Build da distribuire
 
 ```bash
-npm run dist
+npm run prepare:release
 ```
 
 Oppure, quando supportato dalla macchina o dalla CI:
@@ -166,7 +166,7 @@ npm run dist:win
 npm run dist:mac
 ```
 
-Gli artefatti finali sono in `dist/`. In base al target configurato possono essere:
+Gli artefatti finali sono in `dist/`. `npm run prepare:release` aggiunge gli alias non versionati e `SHA256SUMS.txt`, pronti da allegare a una GitHub Release. In base al target configurato possono essere:
 
 - Linux: `.AppImage` e archivio `.tar.gz`;
 - Windows: installer NSIS e variante portabile;
@@ -241,7 +241,7 @@ Distribuisci il pacchetto o installer nella sottocartella `bundle/` appropriata,
 
 | Shell | Comando di prova | Output di prova | Comando distribuibile | Cosa distribuire |
 | --- | --- | --- | --- | --- |
-| Electron | `npm run pack` | `dist/<piattaforma>-unpacked/` | `npm run dist` | installer, archivio o portabile in `dist/` |
+| Electron | `npm run pack` | `dist/<piattaforma>-unpacked/` | `npm run prepare:release` | artefatti versionati, alias non versionati e checksum in `dist/` |
 | Tauri | `npm run build:tauri -- --debug --no-bundle` | `src-tauri/target/debug/stgraphx-tauri` | `npm run build:tauri` | pacchetto in `src-tauri/target/release/bundle/` |
 
 Le build sono native alla piattaforma sulla quale vengono eseguite. Per produrre tutte le piattaforme in modo affidabile, usa build machine o CI dedicate.
@@ -405,7 +405,7 @@ npm install
 npm run check
 npm run start:desktop
 npm run pack
-npm run dist
+npm run prepare:release
 ```
 
 ### Editor Tauri

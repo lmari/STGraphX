@@ -7,32 +7,8 @@
 
 "use strict";
 
-const fs = require("fs");
-const path = require("path");
 const packageJson = require("./package.json");
-
-function releaseBuildTag() {
-  const metaFile = path.join(__dirname, "i18n-inline.js");
-  const source = fs.readFileSync(metaFile, "utf8");
-  const match = source.match(/releaseDate\s*:\s*["']([^"']+)["']/u);
-  if (!match) {
-    throw new Error("STGraphXAppMeta.releaseDate is missing from i18n-inline.js");
-  }
-  const parts = match[1].trim().match(/^(\d{4})[.-](\d{2})[.-](\d{2})$/u);
-  if (!parts) {
-    throw new Error("STGraphXAppMeta.releaseDate must use YYYY.MM.DD or YYYY-MM-DD");
-  }
-  const [, year, month, day] = parts;
-  const date = new Date(Date.UTC(Number(year), Number(month) - 1, Number(day)));
-  if (
-    date.getUTCFullYear() !== Number(year)
-    || date.getUTCMonth() !== Number(month) - 1
-    || date.getUTCDate() !== Number(day)
-  ) {
-    throw new Error("STGraphXAppMeta.releaseDate is not a valid calendar date");
-  }
-  return `${year.slice(2)}${month}${day}`;
-}
+const { releaseBuildTag } = require("./scripts/release-metadata.js");
 
 const releaseTag = releaseBuildTag();
 const extension = "${ext}";

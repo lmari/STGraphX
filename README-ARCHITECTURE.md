@@ -389,11 +389,13 @@ Provala con un comando come
 ./dist/linux-unpacked/stgraphx
 ```
 
-6. Genera il pacchetto distribuibile per la piattaforma corrente:
+6. Genera il pacchetto distribuibile per la piattaforma corrente, gli alias non versionati e i checksum:
 
 ```bash
-npm run dist
+npm run prepare:release
 ```
+
+Il comando produce prima gli artefatti versionati e poi, nella stessa cartella `dist/`, le copie non versionate (per esempio `STGraphX.AppImage`) e `SHA256SUMS.txt`. Per una build specifica usa prima `npm run dist:linux`, `npm run dist:win` o `npm run dist:mac`, poi `npm run prepare:release:assets`.
 
 7. Se vuoi forzare una piattaforma specifica:
 
