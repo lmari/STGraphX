@@ -14,6 +14,19 @@ Dal menu `Vista > Gruppi di presentazione...` puoi definire insiemi nominati di 
 - la casella `Bordo e nome` mostra o nasconde solo la cornice e l'etichetta del gruppo, lasciandone visibili i nodi;
 - i gruppi, i nomi e la visibilità sono salvati nel JSON del modello e sono rispettati anche dal player.
 
+## Dashboard
+
+Dal menu `Vista > Crea dashboard` puoi creare l'unica dashboard opzionale del modello. La stessa voce la mostra o nasconde in seguito. La dashboard e' un contenitore visivo nel canvas, indipendente dalla visibilita' del grafo: puo' avere piu' pagine a tab, ciascuna con un titolo.
+
+La gestione avviene direttamente nella finestra:
+
+- il pulsante `+` crea una pagina e la rende attiva;
+- il pulsante `x` su un tab elimina la pagina, trasferendo i contenuti a un'altra pagina;
+- il doppio click su un tab, oppure il piccolo pulsante di modifica, ne modifica il nome;
+- trascina un widget o un testo autonomo nell'area della dashboard per assegnarlo alla pagina attiva; trascinalo poi fuori dall'area per renderlo di nuovo autonomo.
+
+La dashboard puo' anche essere spostata trascinando la barra del titolo e ridimensionata dalla maniglia nell'angolo inferiore destro. Gli elementi assegnati usano coordinate locali alla pagina; le pagine non attive non visualizzano i rispettivi contenuti. La dashboard viene salvata nel JSON del modello ed e' resa anche dal player.
+
 ## Vettori e matrici
 
 Il linguaggio delle espressioni di STGraphX supporta valori non scalari:

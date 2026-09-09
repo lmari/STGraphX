@@ -25,6 +25,7 @@ Il player:
 * mostra:
   * grafo del modello;
   * widget;
+  * dashboard con pagine a tab, se definita nel modello;
   * controlli di esecuzione;
 * consente:
   * esecuzione completa;

@@ -1815,6 +1815,12 @@ button:disabled {
   z-index: 1600;
 }
 
+.dashboard-rename-card {
+  width: min(360px, calc(100vw - 40px));
+  display: grid;
+  gap: 12px;
+}
+
 .watch-debugger-card {
   width: min(760px, calc(100vw - 40px));
   max-width: calc(100vw - 20px);
@@ -1893,6 +1899,35 @@ button:disabled {
   color: var(--muted);
   font-size: 0.9rem;
 }
+
+.dashboard-frame {
+  fill: #f9fcfe;
+  stroke: #5d829b;
+  stroke-width: 2;
+  transition: stroke 120ms ease, stroke-width 120ms ease, fill 120ms ease;
+}
+.dashboard-frame.dashboard-drop-enter { fill: #effaf1; stroke: #2f8a4b; stroke-width: 4; }
+.dashboard-frame.dashboard-drop-leave { fill: #fff7ec; stroke: #bf742d; stroke-width: 4; }
+.dashboard-header { fill: #385e75; stroke: none; cursor: grab; }
+.dashboard-header:active { cursor: grabbing; }
+.dashboard-title { fill: #fff; font-size: 15px; font-weight: 700; pointer-events: none; }
+.dashboard-tabs-bar { fill: #d9e7ef; stroke: #7b99aa; stroke-width: 1; pointer-events: none; }
+.dashboard-tab { fill: #edf4f8; stroke: #7b99aa; stroke-width: 1; cursor: pointer; }
+.dashboard-tab.active { fill: #fff; stroke: #385e75; stroke-width: 1.5; }
+.dashboard-tab-label { fill: #29485d; font-size: 13px; pointer-events: none; }
+.dashboard-tab-delete { fill: #dbe7ee; stroke: #8ba5b6; stroke-width: 1; cursor: pointer; }
+.dashboard-tab-delete:hover { fill: #f2d9d6; stroke: #b85a4f; }
+.dashboard-tab-delete-label { fill: #4b6373; font-size: 11px; font-weight: 700; text-anchor: middle; pointer-events: none; }
+.dashboard-tab-rename { fill: #dbe7ee; stroke: #8ba5b6; stroke-width: 1; cursor: pointer; }
+.dashboard-tab-rename:hover { fill: #fff; stroke: #385e75; }
+.dashboard-tab-rename-label { fill: #4b6373; font-size: 11px; font-weight: 700; font-style: italic; text-anchor: middle; pointer-events: none; }
+.dashboard-tab-add { fill: #edf4f8; stroke: #7b99aa; stroke-width: 1; cursor: pointer; }
+.dashboard-tab-add:hover { fill: #fff; stroke: #385e75; }
+.dashboard-tab-add-label { fill: #29485d; font-size: 17px; font-weight: 700; text-anchor: middle; pointer-events: none; }
+.dashboard-window-action { fill: #f4f8fb; stroke: #bfd0dc; stroke-width: 1; cursor: pointer; }
+.dashboard-window-action:hover { fill: #fff; stroke: #fff; }
+.dashboard-window-action-label { fill: #29485d; font-size: 13px; font-weight: 700; text-anchor: middle; pointer-events: none; }
+.dashboard-resize-handle { fill: #5d829b; stroke: #fff; stroke-width: 1; cursor: nwse-resize; }
 
 .presentation-group-frame {
   fill: rgba(14, 122, 196, 0.035);

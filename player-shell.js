@@ -1150,6 +1150,17 @@
             font-weight: 700;
             pointer-events: none;
           }
+          .dashboard-frame {
+            fill: #f9fcfe;
+            stroke: #5d829b;
+            stroke-width: 2;
+          }
+          .dashboard-header { fill: #385e75; stroke: none; }
+          .dashboard-title { fill: #fff; font-size: 15px; font-weight: 700; pointer-events: none; }
+          .dashboard-tabs-bar { fill: #d9e7ef; stroke: #7b99aa; stroke-width: 1; pointer-events: none; }
+          .dashboard-tab { fill: #edf4f8; stroke: #7b99aa; stroke-width: 1; cursor: pointer; }
+          .dashboard-tab.active { fill: #fff; stroke: #385e75; stroke-width: 1.5; }
+          .dashboard-tab-label { fill: #29485d; font-size: 13px; pointer-events: none; }
           .node-value {
             font-size: 10px;
             fill: #567086;
@@ -1977,6 +1988,30 @@
       return { minX, minY, width: maxX - minX, height: maxY - minY };
     }
 
+    dashboard() {
+      const dashboard = this._state.rawModel?.dashboard;
+      return dashboard && Array.isArray(dashboard.pages) && dashboard.pages.length ? dashboard : null;
+    }
+
+    isDashboardItemVisible(item) {
+      const pageId = Number(item?.dashboardPageId);
+      if (!Number.isInteger(pageId) || pageId < 1) return true;
+      const dashboard = this.dashboard();
+      return Boolean(dashboard && dashboard.visible !== false && Number(dashboard.activePageId) === pageId);
+    }
+
+    dashboardItemPosition(item) {
+      const pageId = Number(item?.dashboardPageId);
+      if (!Number.isInteger(pageId) || pageId < 1) {
+        return { x: Number(item?.x) || 0, y: Number(item?.y) || 0 };
+      }
+      const dashboard = this.dashboard();
+      return {
+        x: (Number(dashboard?.x) || 0) + 16 + (Number(item?.x) || 0),
+        y: (Number(dashboard?.y) || 0) + 76 + (Number(item?.y) || 0),
+      };
+    }
+
     graphBounds() {
       const model = this._state.rawModel;
       const visibleNodeIds = this.visibleGraphNodeIds();
@@ -1995,11 +2030,28 @@
         maxY = Math.max(maxY, y + h / 2 + 40);
       });
       (model?.widgets || []).forEach((widget) => {
-        minX = Math.min(minX, widget.x - 20);
-        minY = Math.min(minY, widget.y - 20);
-        maxX = Math.max(maxX, widget.x + widget.width + 20);
-        maxY = Math.max(maxY, widget.y + widget.height + 20);
+        if (!this.isDashboardItemVisible(widget)) return;
+        const position = this.dashboardItemPosition(widget);
+        minX = Math.min(minX, position.x - 20);
+        minY = Math.min(minY, position.y - 20);
+        maxX = Math.max(maxX, position.x + widget.width + 20);
+        maxY = Math.max(maxY, position.y + widget.height + 20);
       });
+      (model?.textItems || []).forEach((item) => {
+        if (!this.isDashboardItemVisible(item)) return;
+        const position = this.dashboardItemPosition(item);
+        minX = Math.min(minX, position.x - 20);
+        minY = Math.min(minY, position.y - 20);
+        maxX = Math.max(maxX, position.x + (Number(item.width) || 220) + 20);
+        maxY = Math.max(maxY, position.y + (Number(item.height) || 120) + 20);
+      });
+      const dashboard = this.dashboard();
+      if (dashboard && dashboard.visible !== false) {
+        minX = Math.min(minX, Number(dashboard.x) || 0);
+        minY = Math.min(minY, Number(dashboard.y) || 0);
+        maxX = Math.max(maxX, (Number(dashboard.x) || 0) + (Number(dashboard.width) || 760));
+        maxY = Math.max(maxY, (Number(dashboard.y) || 0) + (Number(dashboard.height) || 520));
+      }
       return { minX, minY, width: maxX - minX, height: maxY - minY };
     }
 
@@ -2100,6 +2152,7 @@
       marker.appendChild(arrowPath);
       defs.appendChild(marker);
       this.$svg.appendChild(defs);
+      const dashboardLayer = document.createElementNS(SVG_NS, "g");
 
       (model.presentationGroups || []).forEach((group) => {
         if (group?.visible === false || group?.showFrame === false) {
@@ -2124,6 +2177,65 @@
         label.textContent = String(group?.name || "");
         this.$svg.appendChild(label);
       });
+
+      const dashboard = this.dashboard();
+      if (dashboard && dashboard.visible !== false) {
+        const x = Number(dashboard.x) || 0;
+        const y = Number(dashboard.y) || 0;
+        const frame = document.createElementNS(SVG_NS, "rect");
+        frame.setAttribute("class", "dashboard-frame");
+        frame.setAttribute("x", x);
+        frame.setAttribute("y", y);
+        frame.setAttribute("width", String(Number(dashboard.width) || 760));
+        frame.setAttribute("height", String(Number(dashboard.height) || 520));
+        frame.setAttribute("rx", "12");
+        dashboardLayer.appendChild(frame);
+        const header = document.createElementNS(SVG_NS, "rect");
+        header.setAttribute("class", "dashboard-header");
+        header.setAttribute("x", x + 1);
+        header.setAttribute("y", y + 1);
+        header.setAttribute("width", String(Math.max(0, (Number(dashboard.width) || 760) - 2)));
+        header.setAttribute("height", "32");
+        header.setAttribute("rx", "11");
+        dashboardLayer.appendChild(header);
+        const title = document.createElementNS(SVG_NS, "text");
+        title.setAttribute("class", "dashboard-title");
+        title.setAttribute("x", x + 16);
+        title.setAttribute("y", y + 24);
+        title.textContent = this.t("dashboard.canvasTitle");
+        dashboardLayer.appendChild(title);
+        const tabsBar = document.createElementNS(SVG_NS, "rect");
+        tabsBar.setAttribute("class", "dashboard-tabs-bar");
+        tabsBar.setAttribute("x", x + 1);
+        tabsBar.setAttribute("y", y + 33);
+        tabsBar.setAttribute("width", String(Math.max(0, (Number(dashboard.width) || 760) - 2)));
+        tabsBar.setAttribute("height", "33");
+        dashboardLayer.appendChild(tabsBar);
+        let tabX = x + 14;
+        dashboard.pages.forEach((page) => {
+          const label = String(page?.title || this.t("dashboard.defaultPage"));
+          const tabWidth = Math.max(88, Math.min(190, 24 + label.length * 7));
+          const tab = document.createElementNS(SVG_NS, "rect");
+          tab.setAttribute("class", `dashboard-tab${Number(page.id) === Number(dashboard.activePageId) ? " active" : ""}`);
+          tab.setAttribute("x", tabX);
+          tab.setAttribute("y", y + 37);
+          tab.setAttribute("width", tabWidth);
+          tab.setAttribute("height", "25");
+          tab.setAttribute("rx", "6");
+          tab.addEventListener("click", () => {
+            dashboard.activePageId = page.id;
+            this.renderAll();
+          });
+          dashboardLayer.appendChild(tab);
+          const tabText = document.createElementNS(SVG_NS, "text");
+          tabText.setAttribute("class", "dashboard-tab-label");
+          tabText.setAttribute("x", tabX + 10);
+          tabText.setAttribute("y", y + 54);
+          tabText.textContent = label;
+          dashboardLayer.appendChild(tabText);
+          tabX += tabWidth + 6;
+        });
+      }
 
       (model.edges || []).forEach((edge) => {
         const from = (model.nodes || []).find((node) => node.id === edge.from);
@@ -2173,9 +2285,15 @@
         this.$svg.appendChild(g);
       });
 
+      if (dashboardLayer.childNodes.length) {
+        this.$svg.appendChild(dashboardLayer);
+      }
+
       (model.textItems || []).forEach((item) => {
+        if (!this.isDashboardItemVisible(item)) return;
+        const position = this.dashboardItemPosition(item);
         const g = document.createElementNS(SVG_NS, "g");
-        g.setAttribute("transform", `translate(${Number(item.x) || 0}, ${Number(item.y) || 0})`);
+        g.setAttribute("transform", `translate(${position.x}, ${position.y})`);
         const frame = document.createElementNS(SVG_NS, "rect");
         frame.setAttribute("class", "canvas-text-frame");
         frame.setAttribute("x", "0");
@@ -2207,11 +2325,13 @@
       const zoom = this._zoom;
       this.$widgets.innerHTML = "";
       (model.widgets || []).forEach((widget) => {
+        if (!this.isDashboardItemVisible(widget)) return;
+        const position = this.dashboardItemPosition(widget);
         const root = document.createElement("div");
         root.className = "widget";
         root.style.setProperty("--widget-scale", String(zoom));
-        root.style.left = `${(widget.x - bounds.minX) * zoom}px`;
-        root.style.top = `${(widget.y - bounds.minY) * zoom}px`;
+        root.style.left = `${(position.x - bounds.minX) * zoom}px`;
+        root.style.top = `${(position.y - bounds.minY) * zoom}px`;
         root.style.width = `${widget.width * zoom}px`;
         root.style.height = `${widget.height * zoom}px`;
         const header = document.createElement("div");

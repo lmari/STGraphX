@@ -1975,7 +1975,7 @@ function refreshSliderWidgetRuntimeBody(root, widget) {
   const minLabel = root.querySelector(".slider-bound-min");
   const maxLabel = root.querySelector(".slider-bound-max");
   const sourceNode = getNodeByName(widget.source);
-  const lockedForRun = sourceNode?.shape === "diamond" && isEditingUiLocked();
+  const lockedForRun = sourceNode?.shape === "diamond" && isExecutionFrozen();
   if (rangeInput) {
     rangeInput.min = String(widget.min);
     rangeInput.max = String(widget.max);
@@ -2007,7 +2007,7 @@ function refreshButtonWidgetRuntimeBody(root, widget) {
     return;
   }
   const sourceNode = getNodeByName(widget.source);
-  const lockedForRun = sourceNode?.shape === "diamond" && isEditingUiLocked();
+  const lockedForRun = sourceNode?.shape === "diamond" && isExecutionFrozen();
   toggleBtn.disabled = lockedForRun;
   toggleBtn.classList.toggle("is-on", Boolean(widget.value));
   toggleBtn.classList.toggle("is-off", !Boolean(widget.value));
@@ -2023,7 +2023,7 @@ function refreshSelectWidgetRuntimeBody(root, widget) {
     return;
   }
   const sourceNode = getNodeByName(widget.source);
-  const lockedForRun = sourceNode?.shape === "diamond" && isEditingUiLocked();
+  const lockedForRun = sourceNode?.shape === "diamond" && isExecutionFrozen();
   const optionsKey = JSON.stringify(widget.options);
   if (selectInput.dataset.options !== optionsKey) {
     selectInput.innerHTML = "";
@@ -2061,13 +2061,14 @@ function refreshTextWidgetRuntimeBody(root, widget, nodeMap = buildNodeNameMap()
 
 function refreshRuntimeWidgetContents() {
   const roots = [...widgetLayer.querySelectorAll(".value-widget[data-widget-id]")];
-  if (roots.length !== graph.widgets.length) {
+  const visibleWidgets = graph.widgets.filter((widget) => typeof isDashboardItemVisible !== "function" || isDashboardItemVisible(widget));
+  if (roots.length !== visibleWidgets.length) {
     renderWidgets();
     return;
   }
   const rootMap = new Map(roots.map((root) => [Number(root.dataset.widgetId), root]));
   const nodeMap = buildNodeNameMap();
-  for (const widget of graph.widgets) {
+  for (const widget of visibleWidgets) {
     const root = rootMap.get(widget.id);
     if (!root) {
       renderWidgets();
@@ -2122,8 +2123,11 @@ function refreshWidgetFrame(widget) {
   const zoom = Math.max(0.0001, ui.zoom || 1);
   const viewMinX = view?.x ?? 0;
   const viewMinY = view?.y ?? 0;
-  root.style.left = `${(widget.x - viewMinX) * zoom}px`;
-  root.style.top = `${(widget.y - viewMinY) * zoom}px`;
+  const displayedPosition = typeof dashboardItemPosition === "function"
+    ? dashboardItemPosition(widget)
+    : { x: widget.x, y: widget.y };
+  root.style.left = `${(displayedPosition.x - viewMinX) * zoom}px`;
+  root.style.top = `${(displayedPosition.y - viewMinY) * zoom}px`;
   root.style.width = `${widget.width}px`;
   root.style.height = widget.minimized ? "36px" : `${widget.height}px`;
   root.style.transform = `scale(${zoom})`;
@@ -2169,6 +2173,9 @@ function renderWidgets() {
     if (widget.type !== "table" && widget.type !== "xychart" && widget.type !== "slider" && widget.type !== "matrix" && widget.type !== "button" && widget.type !== "led" && widget.type !== "select" && widget.type !== "text") {
       return;
     }
+    if (typeof isDashboardItemVisible === "function" && !isDashboardItemVisible(widget)) {
+      return;
+    }
     if (widget.type === "table") {
       sanitizeWidgetColumns(widget);
       sanitizeTableWidgetOptions(widget);
@@ -2200,8 +2207,11 @@ function renderWidgets() {
       root.classList.add("minimized");
     }
     const z = Math.max(0.0001, ui.zoom || 1);
-    root.style.left = `${(widget.x - viewMinX) * z}px`;
-    root.style.top = `${(widget.y - viewMinY) * z}px`;
+    const displayedPosition = typeof dashboardItemPosition === "function"
+      ? dashboardItemPosition(widget)
+      : { x: widget.x, y: widget.y };
+    root.style.left = `${(displayedPosition.x - viewMinX) * z}px`;
+    root.style.top = `${(displayedPosition.y - viewMinY) * z}px`;
     root.style.width = `${widget.width}px`;
     root.style.height = widget.minimized ? "36px" : `${widget.height}px`;
     root.style.transform = `scale(${z})`;
@@ -2386,7 +2396,7 @@ function renderWidgets() {
       sliderWrap.className = "slider-widget-wrap";
 
       const sourceNode = getNodeByName(widget.source);
-      const lockedForRun = sourceNode?.shape === "diamond" && isEditingUiLocked();
+      const lockedForRun = sourceNode?.shape === "diamond" && isExecutionFrozen();
 
       const slider = document.createElement("input");
       slider.type = "range";
@@ -2500,7 +2510,7 @@ function renderWidgets() {
       selectWrap.className = "select-widget-wrap";
 
       const sourceNode = getNodeByName(widget.source);
-      const lockedForRun = sourceNode?.shape === "diamond" && isEditingUiLocked();
+      const lockedForRun = sourceNode?.shape === "diamond" && isExecutionFrozen();
 
       const selectInput = document.createElement("select");
       selectInput.className = "select-widget-input";
@@ -2554,7 +2564,7 @@ function renderWidgets() {
       buttonWrap.className = "button-widget-wrap";
 
       const sourceNode = getNodeByName(widget.source);
-      const lockedForRun = sourceNode?.shape === "diamond" && isEditingUiLocked();
+      const lockedForRun = sourceNode?.shape === "diamond" && isExecutionFrozen();
 
       const toggleBtn = document.createElement("button");
       toggleBtn.type = "button";

@@ -263,9 +263,15 @@ const localFunctionsAddBtn = document.getElementById("localFunctionsAddBtn");
 const localFunctionsList = document.getElementById("localFunctionsList");
 const localFunctionsStatus = document.getElementById("localFunctionsStatus");
 const managePresentationGroupsItem = document.getElementById("managePresentationGroupsItem");
+const manageDashboardItem = document.getElementById("manageDashboardItem");
 const presentationGroupsModal = document.getElementById("presentationGroupsModal");
 const presentationGroupsCloseBtn = document.getElementById("presentationGroupsCloseBtn");
 const presentationGroupsDismissBtn = document.getElementById("presentationGroupsDismissBtn");
+const dashboardRenameModal = document.getElementById("dashboardRenameModal");
+const dashboardRenameInput = document.getElementById("dashboardRenameInput");
+const dashboardRenameCloseBtn = document.getElementById("dashboardRenameCloseBtn");
+const dashboardRenameCancelBtn = document.getElementById("dashboardRenameCancelBtn");
+const dashboardRenameApplyBtn = document.getElementById("dashboardRenameApplyBtn");
 const presentationGroupNameInput = document.getElementById("presentationGroupNameInput");
 const presentationGroupCreateBtn = document.getElementById("presentationGroupCreateBtn");
 const presentationGroupsStatus = document.getElementById("presentationGroupsStatus");
@@ -812,6 +818,7 @@ const graph = {
   textItems: [],
   widgets: [],
   presentationGroups: [],
+  dashboard: null,
   debug: {
     watches: [],
     breakpointEnabled: false,
@@ -858,6 +865,12 @@ const ui = {
   submodelsPrepared: false,
   widgetDrag: null,
   widgetResize: null,
+  dashboardDrag: null,
+  dashboardResize: null,
+  dashboardTabClickTimer: null,
+  dashboardTabClickPageId: null,
+  dashboardDropState: null,
+  dashboardRenamePageId: null,
   sliderInteraction: null,
   showGraph: true,
   showWidgets: true,
@@ -1097,6 +1110,7 @@ svg.appendChild(defs);
 
 const edgesLayer = document.createElementNS(SVG_NS, "g");
 const presentationGroupsLayer = document.createElementNS(SVG_NS, "g");
+const dashboardLayer = document.createElementNS(SVG_NS, "g");
 const previewLayer = document.createElementNS(SVG_NS, "g");
 const marqueeLayer = document.createElementNS(SVG_NS, "g");
 const nodesLayer = document.createElementNS(SVG_NS, "g");
@@ -1106,6 +1120,7 @@ svg.appendChild(edgesLayer);
 svg.insertBefore(presentationGroupsLayer, edgesLayer);
 svg.appendChild(previewLayer);
 svg.appendChild(nodesLayer);
+svg.appendChild(dashboardLayer);
 svg.appendChild(textLayer);
 svg.appendChild(controlsLayer);
 svg.appendChild(marqueeLayer);
@@ -1243,6 +1258,7 @@ function sanitizeTextItem(item) {
   item.height = clamp(Number(item?.height) || 80, 24, 1200);
   item.fillColor = normalizeColorString(item?.fillColor);
   item.strokeColor = normalizeColorString(item?.strokeColor);
+  item.dashboardPageId = normalizeDashboardPageId(item?.dashboardPageId);
 }
 
 function sanitizeRichTextHtml(rawHtml) {
@@ -3560,6 +3576,158 @@ function createPresentationGroupFromSelection() {
   presentationGroupNameInput.value = "";
   setPresentationGroupsStatus();
   renderPresentationGroupsEditor();
+}
+
+function dashboardSuggestedItemPosition(item, pageId) {
+  const dashboard = graph.dashboard;
+  const contentWidth = Math.max(80, dashboard.width - 32);
+  const items = [...graph.widgets, ...graph.textItems]
+    .filter((candidate) => candidate !== item && normalizeDashboardPageId(candidate.dashboardPageId) === pageId);
+  let x = 16;
+  let y = 16;
+  let rowHeight = 0;
+  items.forEach((candidate) => {
+    const width = Math.min(Number(candidate.width) || 220, contentWidth);
+    const height = Number(candidate.height) || 80;
+    if (x + width > contentWidth && x > 16) {
+      x = 16;
+      y += rowHeight + 16;
+      rowHeight = 0;
+    }
+    x += width + 16;
+    rowHeight = Math.max(rowHeight, height);
+  });
+  const width = Math.min(Number(item.width) || 220, contentWidth);
+  if (x + width > contentWidth && x > 16) {
+    x = 16;
+    y += rowHeight + 16;
+  }
+  return { x, y };
+}
+
+function constrainDashboardItemPosition(item) {
+  if (normalizeDashboardPageId(item?.dashboardPageId) == null || !graph.dashboard) {
+    return;
+  }
+  const maxX = Math.max(16, graph.dashboard.width - 16 - (Number(item.width) || 0));
+  const maxY = Math.max(16, graph.dashboard.height - 92 - (Number(item.height) || 0));
+  item.x = clamp(Number(item.x) || 16, 16, maxX);
+  item.y = clamp(Number(item.y) || 16, 16, maxY);
+}
+
+function addDashboardPage() {
+  commitDashboardChange(() => {
+    const dashboard = graph.dashboard;
+    const id = dashboard.nextPageId++;
+    dashboard.pages.push({ id, title: `${t("dashboard.defaultPage")} ${dashboard.pages.length + 1}` });
+    dashboard.activePageId = id;
+  });
+}
+
+function removeDashboardPage(pageId) {
+  if (!graph.dashboard || graph.dashboard.pages.length < 2) return;
+  commitDashboardChange(() => {
+    const dashboard = graph.dashboard;
+    const replacement = dashboard.pages.find((page) => page.id !== pageId);
+    [...graph.widgets, ...graph.textItems].forEach((item) => {
+      if (normalizeDashboardPageId(item.dashboardPageId) !== pageId) return;
+      item.dashboardPageId = replacement.id;
+      const position = dashboardSuggestedItemPosition(item, replacement.id);
+      item.x = position.x;
+      item.y = position.y;
+    });
+    dashboard.pages = dashboard.pages.filter((page) => page.id !== pageId);
+    if (dashboard.activePageId === pageId) dashboard.activePageId = replacement.id;
+  });
+}
+
+function renameDashboardPage(pageId) {
+  const page = graph.dashboard?.pages.find((candidate) => candidate.id === pageId);
+  if (!page || !dashboardRenameModal || !dashboardRenameInput) return;
+  ui.dashboardRenamePageId = pageId;
+  dashboardRenameInput.value = page.title;
+  dashboardRenameModal.classList.remove("hidden");
+  window.setTimeout(() => {
+    dashboardRenameInput.focus();
+    dashboardRenameInput.select();
+  }, 0);
+}
+
+function closeDashboardPageRenameEditor() {
+  dashboardRenameModal?.classList.add("hidden");
+  ui.dashboardRenamePageId = null;
+}
+
+function applyDashboardPageRename() {
+  const pageId = ui.dashboardRenamePageId;
+  const page = graph.dashboard?.pages.find((candidate) => candidate.id === pageId);
+  if (!page) {
+    closeDashboardPageRenameEditor();
+    return;
+  }
+  const title = String(dashboardRenameInput?.value ?? "").trim() || t("dashboard.defaultPage");
+  if (title !== page.title) {
+    commitDashboardChange(() => {
+      const target = graph.dashboard.pages.find((candidate) => candidate.id === pageId);
+      if (target) target.title = title;
+    });
+  }
+  closeDashboardPageRenameEditor();
+}
+
+function dropItemIntoActiveDashboardPage(item) {
+  const dashboard = graph.dashboard;
+  if (!dashboard || dashboard.visible === false) return false;
+  const position = dashboardItemPosition(item);
+  const centerX = position.x + (Number(item.width) || 0) / 2;
+  const centerY = position.y + (Number(item.height) || 0) / 2;
+  const inside = centerX >= dashboard.x + 8
+    && centerX <= dashboard.x + dashboard.width - 8
+    && centerY >= dashboard.y + 70
+    && centerY <= dashboard.y + dashboard.height - 8;
+  const currentPageId = normalizeDashboardPageId(item.dashboardPageId);
+  if (!inside) {
+    // Keep the visual position when an item is released outside the dashboard.
+    if (currentPageId == null) return false;
+    item.dashboardPageId = null;
+    item.x = position.x;
+    item.y = position.y;
+    return true;
+  }
+  if (currentPageId === dashboard.activePageId) return false;
+  const origin = dashboardContentOrigin(dashboard);
+  item.dashboardPageId = dashboard.activePageId;
+  item.x = position.x - origin.x;
+  item.y = position.y - origin.y;
+  constrainDashboardItemPosition(item);
+  return true;
+}
+
+function dashboardDropStateForItem(item) {
+  const dashboard = graph.dashboard;
+  if (!dashboard || dashboard.visible === false) return null;
+  const position = dashboardItemPosition(item);
+  const centerX = position.x + (Number(item.width) || 0) / 2;
+  const centerY = position.y + (Number(item.height) || 0) / 2;
+  const inside = centerX >= dashboard.x + 8
+    && centerX <= dashboard.x + dashboard.width - 8
+    && centerY >= dashboard.y + 70
+    && centerY <= dashboard.y + dashboard.height - 8;
+  const pageId = normalizeDashboardPageId(item.dashboardPageId);
+  if (pageId == null && inside) return "enter";
+  if (pageId != null && !inside) return "leave";
+  return null;
+}
+
+function updateDashboardDropState(item) {
+  const state = dashboardDropStateForItem(item);
+  if (ui.dashboardDropState === state) return;
+  ui.dashboardDropState = state;
+  const frame = dashboardLayer.querySelector(".dashboard-frame");
+  if (frame) {
+    frame.classList.toggle("dashboard-drop-enter", state === "enter");
+    frame.classList.toggle("dashboard-drop-leave", state === "leave");
+  }
 }
 
 function selectedWatchableNode() {
@@ -6859,6 +7027,107 @@ function presentationGroupBounds(group) {
   return { minX, minY, width: maxX - minX, height: maxY - minY };
 }
 
+function defaultDashboard() {
+  return {
+    visible: true,
+    x: 80,
+    y: 80,
+    width: 760,
+    height: 520,
+    activePageId: 1,
+    nextPageId: 2,
+    pages: [{ id: 1, title: t("dashboard.defaultPage") }],
+  };
+}
+
+function normalizeDashboardPageId(value) {
+  const pageId = Number(value);
+  return Number.isInteger(pageId) && pageId > 0 ? pageId : null;
+}
+
+function sanitizeDashboard(rawDashboard) {
+  if (!rawDashboard || typeof rawDashboard !== "object") {
+    return null;
+  }
+  const usedIds = new Set();
+  const pages = (Array.isArray(rawDashboard.pages) ? rawDashboard.pages : [])
+    .map((rawPage, index) => {
+      let id = Number(rawPage?.id);
+      if (!Number.isInteger(id) || id < 1 || usedIds.has(id)) {
+        id = index + 1;
+        while (usedIds.has(id)) id += 1;
+      }
+      usedIds.add(id);
+      return {
+        id,
+        title: String(rawPage?.title ?? "").trim() || `${t("dashboard.defaultPage")} ${index + 1}`,
+      };
+    });
+  if (!pages.length) {
+    pages.push({ id: 1, title: t("dashboard.defaultPage") });
+  }
+  const activePageId = Number(rawDashboard.activePageId);
+  const pageIds = new Set(pages.map((page) => page.id));
+  const maxPageId = Math.max(...pages.map((page) => page.id));
+  return {
+    visible: rawDashboard.visible !== false,
+    x: Number.isFinite(Number(rawDashboard.x)) ? Number(rawDashboard.x) : 80,
+    y: Number.isFinite(Number(rawDashboard.y)) ? Number(rawDashboard.y) : 80,
+    width: clamp(Number(rawDashboard.width) || 760, 320, 1600),
+    height: clamp(Number(rawDashboard.height) || 520, 220, 1200),
+    activePageId: pageIds.has(activePageId) ? activePageId : pages[0].id,
+    nextPageId: Math.max(Number(rawDashboard.nextPageId) || 0, maxPageId + 1),
+    pages,
+  };
+}
+
+function syncDashboard() {
+  graph.dashboard = sanitizeDashboard(graph.dashboard);
+  if (!graph.dashboard) {
+    graph.widgets.forEach((widget) => { widget.dashboardPageId = null; });
+    graph.textItems.forEach((item) => { item.dashboardPageId = null; });
+    return;
+  }
+  const pageIds = new Set(graph.dashboard.pages.map((page) => page.id));
+  [...graph.widgets, ...graph.textItems].forEach((item) => {
+    const pageId = normalizeDashboardPageId(item?.dashboardPageId);
+    item.dashboardPageId = pageIds.has(pageId) ? pageId : null;
+  });
+}
+
+function dashboardContentOrigin(dashboard = graph.dashboard) {
+  return { x: Number(dashboard?.x || 0) + 16, y: Number(dashboard?.y || 0) + 76 };
+}
+
+function isDashboardItemVisible(item) {
+  const pageId = normalizeDashboardPageId(item?.dashboardPageId);
+  if (pageId == null) return true;
+  return Boolean(graph.dashboard && graph.dashboard.visible !== false && graph.dashboard.activePageId === pageId);
+}
+
+function dashboardItemPosition(item) {
+  if (normalizeDashboardPageId(item?.dashboardPageId) == null) {
+    return { x: item.x, y: item.y };
+  }
+  const origin = dashboardContentOrigin();
+  return { x: origin.x + item.x, y: origin.y + item.y };
+}
+
+function commitDashboardChange(mutator) {
+  const beforeState = exportGraphData();
+  mutator();
+  syncDashboard();
+  const afterState = exportGraphData();
+  if (JSON.stringify(beforeState) !== JSON.stringify(afterState)) {
+    pushUndoState(beforeState);
+    history.redo = [];
+    dirtySinceLastSave = true;
+    updateFileStatusLabel(true);
+    updateHistoryButtons();
+  }
+  render();
+}
+
 function commitPresentationGroupsChange(mutator) {
   const beforeState = exportGraphData();
   mutator();
@@ -6908,20 +7177,31 @@ function graphBounds() {
   });
 
   graph.widgets.forEach((widget) => {
+    if (!isDashboardItemVisible(widget)) return;
+    const position = dashboardItemPosition(widget);
     const width = Number(widget.width) || 0;
     const height = Number(widget.minimized ? 36 : widget.height) || 0;
-    minX = Math.min(minX, widget.x);
-    minY = Math.min(minY, widget.y);
-    maxX = Math.max(maxX, widget.x + width);
-    maxY = Math.max(maxY, widget.y + height);
+    minX = Math.min(minX, position.x);
+    minY = Math.min(minY, position.y);
+    maxX = Math.max(maxX, position.x + width);
+    maxY = Math.max(maxY, position.y + height);
   });
 
   graph.textItems.forEach((item) => {
-    minX = Math.min(minX, item.x);
-    minY = Math.min(minY, item.y);
-    maxX = Math.max(maxX, item.x + item.width);
-    maxY = Math.max(maxY, item.y + item.height);
+    if (!isDashboardItemVisible(item)) return;
+    const position = dashboardItemPosition(item);
+    minX = Math.min(minX, position.x);
+    minY = Math.min(minY, position.y);
+    maxX = Math.max(maxX, position.x + item.width);
+    maxY = Math.max(maxY, position.y + item.height);
   });
+
+  if (graph.dashboard && graph.dashboard.visible !== false) {
+    minX = Math.min(minX, graph.dashboard.x);
+    minY = Math.min(minY, graph.dashboard.y);
+    maxX = Math.max(maxX, graph.dashboard.x + graph.dashboard.width);
+    maxY = Math.max(maxY, graph.dashboard.y + graph.dashboard.height);
+  }
 
   const margin = 180;
   minX -= margin;
@@ -6938,7 +7218,7 @@ function graphBounds() {
 }
 
 function updateCanvasSize(anchorClientX = null, anchorClientY = null, force = false) {
-  if (!force && (ui.drag || ui.resize || ui.controlPointDrag || ui.edgeCreate || ui.marquee || ui.textDrag || ui.textResize)) {
+  if (!force && (ui.drag || ui.resize || ui.controlPointDrag || ui.edgeCreate || ui.marquee || ui.textDrag || ui.textResize || ui.dashboardDrag || ui.dashboardResize)) {
     return;
   }
 
@@ -7008,6 +7288,7 @@ function updateZoomButtons() {
 function applyCanvasVisibility() {
   svg.style.display = "block";
   presentationGroupsLayer.style.display = ui.showGraph ? "" : "none";
+  dashboardLayer.style.display = ui.showWidgets && graph.dashboard && graph.dashboard.visible !== false ? "" : "none";
   edgesLayer.style.display = ui.showGraph ? "" : "none";
   previewLayer.style.display = ui.showGraph ? "" : "none";
   nodesLayer.style.display = ui.showGraph ? "" : "none";
@@ -7028,6 +7309,11 @@ function applyCanvasVisibility() {
   }
   if (toggleWidgetsItem) {
     toggleWidgetsItem.textContent = widgetsLabel;
+  }
+  if (manageDashboardItem) {
+    manageDashboardItem.textContent = !graph.dashboard
+      ? t("dashboard.create")
+      : (graph.dashboard.visible === false ? t("dashboard.show") : t("dashboard.hide"));
   }
   updateCanvasGridAppearance();
 }
@@ -7497,6 +7783,7 @@ function setNodeSelection(ids, additive = false) {
 
 function exportGraphData() {
   syncPresentationGroups();
+  syncDashboard();
   return {
     version: 1,
     modelTitle: String(graph.modelTitle ?? ""),
@@ -7533,6 +7820,16 @@ function exportGraphData() {
       visible: group.visible !== false,
       showFrame: group.showFrame !== false,
     })),
+    dashboard: graph.dashboard ? {
+      visible: graph.dashboard.visible !== false,
+      x: graph.dashboard.x,
+      y: graph.dashboard.y,
+      width: graph.dashboard.width,
+      height: graph.dashboard.height,
+      activePageId: graph.dashboard.activePageId,
+      nextPageId: graph.dashboard.nextPageId,
+      pages: graph.dashboard.pages.map((page) => ({ id: page.id, title: page.title })),
+    } : null,
     execution: {
       t0: graph.execution.t0,
       dt: graph.execution.dt,
@@ -7597,6 +7894,7 @@ function exportGraphData() {
       height: item.height,
       fillColor: String(item.fillColor ?? ""),
       strokeColor: String(item.strokeColor ?? ""),
+      dashboardPageId: normalizeDashboardPageId(item.dashboardPageId),
       html: String(item.html ?? ""),
     })),
     widgets: graph.widgets.map((w) => ({
@@ -7607,6 +7905,7 @@ function exportGraphData() {
       y: w.y,
       width: w.width,
       height: w.height,
+      dashboardPageId: normalizeDashboardPageId(w.dashboardPageId),
       minimized: Boolean(w.minimized),
       outputOnly: Boolean(w.outputOnly),
       showHistory: Boolean(w.showHistory),
@@ -7763,6 +8062,7 @@ function applyGraphData(data) {
     ? data.localFunctions.map((definition) => sanitizeLocalFunctionDefinition(definition))
     : [];
   graph.presentationGroups = sanitizePresentationGroups(data?.presentationGroups, data?.nodes);
+  graph.dashboard = sanitizeDashboard(data?.dashboard);
   graph.debug = {
     watches: Array.isArray(data?.debug?.watches) ? data.debug.watches.map((name) => String(name ?? "")) : [],
     breakpointEnabled: Boolean(data?.debug?.breakpointEnabled),
@@ -7839,6 +8139,7 @@ function applyGraphData(data) {
         height: item.height,
         fillColor: normalizeColorString(item.fillColor),
         strokeColor: normalizeColorString(item.strokeColor),
+        dashboardPageId: item.dashboardPageId,
         html: String(item.html ?? ""),
       };
       sanitizeTextItem(out);
@@ -7856,6 +8157,7 @@ function applyGraphData(data) {
         y: Number.isFinite(Number(w.y)) ? Number(w.y) : 40,
         width: clamp(Number(w.width) || 320, widgetMinDimensions(w).width, 1200),
         height: clamp(Number(w.height) || 160, widgetMinDimensions(w).height, 900),
+        dashboardPageId: normalizeDashboardPageId(w.dashboardPageId),
         minimized: Boolean(w.minimized),
         outputOnly: Boolean(w.outputOnly),
         showHistory: Boolean(w.showHistory),
@@ -7948,6 +8250,7 @@ function applyGraphData(data) {
           })(),
       }))
     : [];
+  syncDashboard();
   clearSimulationOutputHistory();
   sanitizeDebugConfig(graph);
   sanitizeLocalFunctions(graph);
@@ -9153,8 +9456,10 @@ function render(options = {}) {
   updateEditActionButtons();
   updateModelBreadcrumb();
   syncPresentationGroups();
+  syncDashboard();
   const visibleNodeIds = visiblePresentationNodeIds();
   presentationGroupsLayer.innerHTML = "";
+  dashboardLayer.innerHTML = "";
   edgesLayer.innerHTML = "";
   nodesLayer.innerHTML = "";
   textLayer.innerHTML = "";
@@ -9190,6 +9495,221 @@ function render(options = {}) {
     label.textContent = group.name;
     presentationGroupsLayer.appendChild(label);
   });
+
+  if (graph.dashboard && graph.dashboard.visible !== false) {
+    const dashboard = graph.dashboard;
+    const frame = document.createElementNS(SVG_NS, "rect");
+    frame.classList.add("dashboard-frame");
+    if (ui.dashboardDropState === "enter") frame.classList.add("dashboard-drop-enter");
+    if (ui.dashboardDropState === "leave") frame.classList.add("dashboard-drop-leave");
+    frame.setAttribute("x", dashboard.x);
+    frame.setAttribute("y", dashboard.y);
+    frame.setAttribute("width", dashboard.width);
+    frame.setAttribute("height", dashboard.height);
+    frame.setAttribute("rx", "12");
+    dashboardLayer.appendChild(frame);
+
+    const header = document.createElementNS(SVG_NS, "rect");
+    header.classList.add("dashboard-header");
+    header.setAttribute("x", dashboard.x + 1);
+    header.setAttribute("y", dashboard.y + 1);
+    header.setAttribute("width", Math.max(0, dashboard.width - 2));
+    header.setAttribute("height", "32");
+    header.setAttribute("rx", "11");
+    header.addEventListener("pointerdown", (evt) => {
+      if (isEditingUiLocked()) return;
+      evt.preventDefault();
+      evt.stopPropagation();
+      ui.dashboardDrag = {
+        pointerId: evt.pointerId,
+        startClientX: evt.clientX,
+        startClientY: evt.clientY,
+        startX: dashboard.x,
+        startY: dashboard.y,
+      };
+      evt.currentTarget?.setPointerCapture?.(evt.pointerId);
+      beginTransaction();
+    });
+    dashboardLayer.appendChild(header);
+
+    const title = document.createElementNS(SVG_NS, "text");
+    title.classList.add("dashboard-title");
+    title.setAttribute("x", dashboard.x + 16);
+    title.setAttribute("y", dashboard.y + 24);
+    title.setAttribute("pointer-events", "none");
+    title.textContent = t("dashboard.canvasTitle");
+    dashboardLayer.appendChild(title);
+
+    const hide = document.createElementNS(SVG_NS, "rect");
+    hide.classList.add("dashboard-window-action");
+    hide.setAttribute("x", dashboard.x + dashboard.width - 29);
+    hide.setAttribute("y", dashboard.y + 6);
+    hide.setAttribute("width", "23");
+    hide.setAttribute("height", "21");
+    hide.setAttribute("rx", "5");
+    hide.setAttribute("title", t("dashboard.hide"));
+    hide.addEventListener("click", (evt) => {
+      evt.stopPropagation();
+      commitDashboardChange(() => { graph.dashboard.visible = false; });
+    });
+    dashboardLayer.appendChild(hide);
+    const hideLabel = document.createElementNS(SVG_NS, "text");
+    hideLabel.classList.add("dashboard-window-action-label");
+    hideLabel.setAttribute("x", dashboard.x + dashboard.width - 17.5);
+    hideLabel.setAttribute("y", dashboard.y + 21);
+    hideLabel.setAttribute("pointer-events", "none");
+    hideLabel.textContent = "x";
+    dashboardLayer.appendChild(hideLabel);
+
+    const tabsBar = document.createElementNS(SVG_NS, "rect");
+    tabsBar.classList.add("dashboard-tabs-bar");
+    tabsBar.setAttribute("x", dashboard.x + 1);
+    tabsBar.setAttribute("y", dashboard.y + 33);
+    tabsBar.setAttribute("width", Math.max(0, dashboard.width - 2));
+    tabsBar.setAttribute("height", "33");
+    dashboardLayer.appendChild(tabsBar);
+
+    const resize = document.createElementNS(SVG_NS, "rect");
+    resize.classList.add("dashboard-resize-handle");
+    resize.setAttribute("x", dashboard.x + dashboard.width - 15);
+    resize.setAttribute("y", dashboard.y + dashboard.height - 15);
+    resize.setAttribute("width", "12");
+    resize.setAttribute("height", "12");
+    resize.setAttribute("rx", "2");
+    resize.addEventListener("pointerdown", (evt) => {
+      if (isEditingUiLocked()) return;
+      evt.preventDefault();
+      evt.stopPropagation();
+      ui.dashboardResize = {
+        pointerId: evt.pointerId,
+        startClientX: evt.clientX,
+        startClientY: evt.clientY,
+        startWidth: dashboard.width,
+        startHeight: dashboard.height,
+      };
+      evt.currentTarget?.setPointerCapture?.(evt.pointerId);
+      beginTransaction();
+    });
+    dashboardLayer.appendChild(resize);
+
+    let tabX = dashboard.x + 14;
+    dashboard.pages.forEach((page) => {
+      const label = String(page.title || t("dashboard.defaultPage"));
+      const canDelete = dashboard.pages.length > 1;
+      const tabWidth = Math.max(100, Math.min(210, 48 + label.length * 7 + (canDelete ? 18 : 0)));
+      const tab = document.createElementNS(SVG_NS, "rect");
+      tab.classList.add("dashboard-tab");
+      if (page.id === dashboard.activePageId) tab.classList.add("active");
+      tab.setAttribute("x", tabX);
+      tab.setAttribute("y", dashboard.y + 37);
+      tab.setAttribute("width", tabWidth);
+      tab.setAttribute("height", "25");
+      tab.setAttribute("rx", "6");
+      tab.addEventListener("click", (evt) => {
+        evt.stopPropagation();
+        // Delay activation long enough to distinguish a double click used to rename.
+        if (ui.dashboardTabClickTimer != null) {
+          const samePage = ui.dashboardTabClickPageId === page.id;
+          clearTimeout(ui.dashboardTabClickTimer);
+          ui.dashboardTabClickTimer = null;
+          ui.dashboardTabClickPageId = null;
+          if (samePage) {
+            // The subsequent dblclick event performs the rename.
+            return;
+          }
+        }
+        ui.dashboardTabClickPageId = page.id;
+        ui.dashboardTabClickTimer = window.setTimeout(() => {
+          const targetPageId = ui.dashboardTabClickPageId;
+          ui.dashboardTabClickTimer = null;
+          ui.dashboardTabClickPageId = null;
+          if (graph.dashboard?.activePageId !== targetPageId) {
+            commitDashboardChange(() => { graph.dashboard.activePageId = targetPageId; });
+          }
+        }, 280);
+      });
+      tab.addEventListener("dblclick", (evt) => {
+        evt.stopPropagation();
+        if (ui.dashboardTabClickTimer != null) {
+          clearTimeout(ui.dashboardTabClickTimer);
+          ui.dashboardTabClickTimer = null;
+          ui.dashboardTabClickPageId = null;
+        }
+        renameDashboardPage(page.id);
+      });
+      dashboardLayer.appendChild(tab);
+      const tabText = document.createElementNS(SVG_NS, "text");
+      tabText.classList.add("dashboard-tab-label");
+      tabText.setAttribute("x", tabX + 10);
+      tabText.setAttribute("y", dashboard.y + 54);
+      tabText.setAttribute("pointer-events", "none");
+      tabText.textContent = label;
+      dashboardLayer.appendChild(tabText);
+      const renameTab = document.createElementNS(SVG_NS, "rect");
+      renameTab.classList.add("dashboard-tab-rename");
+      renameTab.setAttribute("x", tabX + tabWidth - (canDelete ? 39 : 20));
+      renameTab.setAttribute("y", dashboard.y + 41);
+      renameTab.setAttribute("width", "15");
+      renameTab.setAttribute("height", "16");
+      renameTab.setAttribute("rx", "3");
+      renameTab.setAttribute("title", t("dashboard.renamePage"));
+      renameTab.addEventListener("click", (evt) => {
+        evt.stopPropagation();
+        renameDashboardPage(page.id);
+      });
+      dashboardLayer.appendChild(renameTab);
+      const renameLabel = document.createElementNS(SVG_NS, "text");
+      renameLabel.classList.add("dashboard-tab-rename-label");
+      renameLabel.setAttribute("x", tabX + tabWidth - (canDelete ? 31.5 : 12.5));
+      renameLabel.setAttribute("y", dashboard.y + 53.5);
+      renameLabel.setAttribute("pointer-events", "none");
+      renameLabel.textContent = "e";
+      dashboardLayer.appendChild(renameLabel);
+      if (canDelete) {
+        const deleteTab = document.createElementNS(SVG_NS, "rect");
+        deleteTab.classList.add("dashboard-tab-delete");
+        deleteTab.setAttribute("x", tabX + tabWidth - 20);
+        deleteTab.setAttribute("y", dashboard.y + 41);
+        deleteTab.setAttribute("width", "15");
+        deleteTab.setAttribute("height", "16");
+        deleteTab.setAttribute("rx", "3");
+        deleteTab.setAttribute("title", t("dashboard.deletePage"));
+        deleteTab.addEventListener("click", (evt) => {
+          evt.stopPropagation();
+          removeDashboardPage(page.id);
+        });
+        dashboardLayer.appendChild(deleteTab);
+        const deleteLabel = document.createElementNS(SVG_NS, "text");
+        deleteLabel.classList.add("dashboard-tab-delete-label");
+        deleteLabel.setAttribute("x", tabX + tabWidth - 12.5);
+        deleteLabel.setAttribute("y", dashboard.y + 53.5);
+        deleteLabel.setAttribute("pointer-events", "none");
+        deleteLabel.textContent = "x";
+        dashboardLayer.appendChild(deleteLabel);
+      }
+      tabX += tabWidth + 6;
+    });
+    const addTab = document.createElementNS(SVG_NS, "rect");
+    addTab.classList.add("dashboard-tab-add");
+    addTab.setAttribute("x", tabX);
+    addTab.setAttribute("y", dashboard.y + 37);
+    addTab.setAttribute("width", "26");
+    addTab.setAttribute("height", "25");
+    addTab.setAttribute("rx", "6");
+    addTab.setAttribute("title", t("dashboard.addPage"));
+    addTab.addEventListener("click", (evt) => {
+      evt.stopPropagation();
+      addDashboardPage();
+    });
+    dashboardLayer.appendChild(addTab);
+    const addLabel = document.createElementNS(SVG_NS, "text");
+    addLabel.classList.add("dashboard-tab-add-label");
+    addLabel.setAttribute("x", tabX + 13);
+    addLabel.setAttribute("y", dashboard.y + 55);
+    addLabel.setAttribute("pointer-events", "none");
+    addLabel.textContent = "+";
+    dashboardLayer.appendChild(addLabel);
+  }
 
   graph.edges.forEach((edge) => {
     if (!visibleNodeIds.has(edge.from) || !visibleNodeIds.has(edge.to)) {
@@ -9746,6 +10266,10 @@ function render(options = {}) {
 
   graph.textItems.forEach((item) => {
     sanitizeTextItem(item);
+    if (!isDashboardItemVisible(item)) {
+      return;
+    }
+    const displayedPosition = dashboardItemPosition(item);
     const g = document.createElementNS(SVG_NS, "g");
     g.classList.add("canvas-text-item");
     if (item.fillColor) {
@@ -9763,7 +10287,7 @@ function render(options = {}) {
     if (ui.selected?.type === "text" && ui.selected.id === item.id) {
       g.classList.add("selected");
     }
-    g.setAttribute("transform", `translate(${item.x}, ${item.y})`);
+    g.setAttribute("transform", `translate(${displayedPosition.x}, ${displayedPosition.y})`);
 
     const frame = document.createElementNS(SVG_NS, "rect");
     frame.classList.add("canvas-text-frame");
@@ -9870,6 +10394,7 @@ function render(options = {}) {
   refreshActiveTooltip();
 
   updateCanvasSize();
+  applyCanvasVisibility();
   if (!options.preserveWidgets && ui.sliderInteraction == null) {
     renderWidgets();
   } else {
@@ -9975,6 +10500,7 @@ function importGraphData(data) {
           height: Number(item.height),
           fillColor: normalizeColorString(item.fillColor),
           strokeColor: normalizeColorString(item.strokeColor),
+          dashboardPageId: item.dashboardPageId,
           html: String(item.html ?? ""),
         };
         sanitizeTextItem(out);
@@ -10030,6 +10556,7 @@ function importGraphData(data) {
                     ? "led"
                     : (w.type === "select" ? "select" : (w.type === "text" ? "text" : "table"))))))
         }).height, 900),
+        dashboardPageId: normalizeDashboardPageId(w.dashboardPageId),
         minimized: Boolean(w.minimized),
         outputOnly: Boolean(w.outputOnly),
         showHistory: Boolean(w.showHistory),
@@ -10157,6 +10684,7 @@ function importGraphData(data) {
     textItemCounter: Math.max(Number(data.textItemCounter) || 0, maxTextItemId) + 1,
     presentationGroupCounter: Math.max(Number(data.presentationGroupCounter) || 0, maxPresentationGroupId) + 1,
     presentationGroups,
+    dashboard: sanitizeDashboard(data.dashboard),
     execution: normalizeExecutionConfig(data.execution),
     nodes: nodesWithValidNames,
     edges,
@@ -10746,6 +11274,7 @@ function resetGraphToEmptyModel() {
   graph.textItems = [];
   graph.widgets = [];
   graph.presentationGroups = [];
+  graph.dashboard = null;
   graph.debug = {
     watches: [],
     breakpointEnabled: false,
@@ -11544,6 +12073,30 @@ window.addEventListener("pointermove", (evt) => {
     }
     return;
   }
+  if (ui.dashboardDrag && evt.pointerId === ui.dashboardDrag.pointerId) {
+    const dashboard = graph.dashboard;
+    if (dashboard) {
+      const z = Math.max(0.0001, ui.zoom || 1);
+      const dx = (evt.clientX - ui.dashboardDrag.startClientX) / z;
+      const dy = (evt.clientY - ui.dashboardDrag.startClientY) / z;
+      dashboard.x = ui.snapToGrid ? snap(ui.dashboardDrag.startX + dx) : ui.dashboardDrag.startX + dx;
+      dashboard.y = ui.snapToGrid ? snap(ui.dashboardDrag.startY + dy) : ui.dashboardDrag.startY + dy;
+      render();
+    }
+    return;
+  }
+  if (ui.dashboardResize && evt.pointerId === ui.dashboardResize.pointerId) {
+    const dashboard = graph.dashboard;
+    if (dashboard) {
+      const z = Math.max(0.0001, ui.zoom || 1);
+      const dx = (evt.clientX - ui.dashboardResize.startClientX) / z;
+      const dy = (evt.clientY - ui.dashboardResize.startClientY) / z;
+      dashboard.width = clamp(ui.dashboardResize.startWidth + dx, 320, 1600);
+      dashboard.height = clamp(ui.dashboardResize.startHeight + dy, 220, 1200);
+      render();
+    }
+    return;
+  }
   if (ui.widgetDrag && evt.pointerId === ui.widgetDrag.pointerId) {
     const widget = graph.widgets.find((w) => w.id === ui.widgetDrag.widgetId);
     if (widget) {
@@ -11553,6 +12106,7 @@ window.addEventListener("pointermove", (evt) => {
       const dragSnap = ui.snapToGrid && !ui.widgetDrag.snapOnRelease;
       widget.x = dragSnap ? snap(ui.widgetDrag.startX + dx) : ui.widgetDrag.startX + dx;
       widget.y = dragSnap ? snap(ui.widgetDrag.startY + dy) : ui.widgetDrag.startY + dy;
+      updateDashboardDropState(widget);
       if (!refreshWidgetFrame(widget)) {
         renderWidgets();
       }
@@ -11585,6 +12139,7 @@ window.addEventListener("pointermove", (evt) => {
       );
       item.x = ui.snapToGrid ? snap(ui.textDrag.startX + delta.x) : ui.textDrag.startX + delta.x;
       item.y = ui.snapToGrid ? snap(ui.textDrag.startY + delta.y) : ui.textDrag.startY + delta.y;
+      updateDashboardDropState(item);
       render();
     }
     return;
@@ -11750,16 +12305,36 @@ window.addEventListener("pointerup", (evt) => {
     ui.modalResize = null;
   }
 
+  if (ui.dashboardDrag && evt.pointerId === ui.dashboardDrag.pointerId) {
+    const dashboard = graph.dashboard;
+    const moved = dashboard && (dashboard.x !== ui.dashboardDrag.startX || dashboard.y !== ui.dashboardDrag.startY);
+    ui.dashboardDrag = null;
+    commitTransaction();
+    needsRender = Boolean(moved);
+  }
+
+  if (ui.dashboardResize && evt.pointerId === ui.dashboardResize.pointerId) {
+    const dashboard = graph.dashboard;
+    const resized = dashboard && (
+      dashboard.width !== ui.dashboardResize.startWidth || dashboard.height !== ui.dashboardResize.startHeight
+    );
+    ui.dashboardResize = null;
+    commitTransaction();
+    needsRender = needsRender || Boolean(resized);
+  }
+
   if (ui.widgetDrag && evt.pointerId === ui.widgetDrag.pointerId) {
     const widget = graph.widgets.find((w) => w.id === ui.widgetDrag.widgetId);
     if (widget && ui.widgetDrag.snapOnRelease && ui.snapToGrid) {
       widget.x = snap(widget.x);
       widget.y = snap(widget.y);
     }
+    const droppedInDashboard = widget && dropItemIntoActiveDashboardPage(widget);
+    ui.dashboardDropState = null;
     const moved = widget && (widget.x !== ui.widgetDrag.startX || widget.y !== ui.widgetDrag.startY);
     ui.widgetDrag = null;
     commitTransaction();
-    if (moved) {
+    if (moved || droppedInDashboard) {
       setStatusKey("status.widgetMoved");
     }
     needsRender = true;
@@ -11780,13 +12355,15 @@ window.addEventListener("pointerup", (evt) => {
 
   if (ui.textDrag && evt.pointerId === ui.textDrag.pointerId) {
     const item = getTextItemById(ui.textDrag.id);
+    const droppedInDashboard = item && dropItemIntoActiveDashboardPage(item);
+    ui.dashboardDropState = null;
     const moved =
       item &&
       (item.x !== ui.textDrag.startX || item.y !== ui.textDrag.startY);
     const releasedTextId = ui.textDrag.id;
     ui.textDrag = null;
     commitTransaction();
-    if (moved) {
+    if (moved || droppedInDashboard) {
       setStatusKey("status.textMoved");
       ui.lastTextActivate = null;
     } else if (releasedTextId != null) {
@@ -11882,6 +12459,10 @@ window.addEventListener("pointercancel", (evt) => {
     clearTouchHold();
   }
   handleCompactTouchViewportPointerEnd(evt);
+  if ((ui.widgetDrag && evt.pointerId === ui.widgetDrag.pointerId) || (ui.textDrag && evt.pointerId === ui.textDrag.pointerId)) {
+    ui.dashboardDropState = null;
+    render();
+  }
   if (ui.tabletSidebarDrag && evt.pointerId === ui.tabletSidebarDrag.pointerId) {
     ui.tabletSidebarDrag = null;
   }
@@ -13482,6 +14063,13 @@ if (presentationGroupsModal) {
     }
   });
 }
+if (dashboardRenameModal) {
+  dashboardRenameModal.addEventListener("pointerdown", (evt) => {
+    if (evt.target === dashboardRenameModal) {
+      closeDashboardPageRenameEditor();
+    }
+  });
+}
 if (expressionEditorSwitchModal) {
   expressionEditorSwitchModal.addEventListener("pointerdown", (evt) => {
     if (evt.target === expressionEditorSwitchModal) {
@@ -13596,6 +14184,27 @@ if (presentationGroupsCloseBtn) {
 if (presentationGroupsDismissBtn) {
   presentationGroupsDismissBtn.addEventListener("click", closePresentationGroupsEditor);
 }
+if (dashboardRenameCloseBtn) {
+  dashboardRenameCloseBtn.addEventListener("click", closeDashboardPageRenameEditor);
+}
+if (dashboardRenameCancelBtn) {
+  dashboardRenameCancelBtn.addEventListener("click", closeDashboardPageRenameEditor);
+}
+if (dashboardRenameApplyBtn) {
+  dashboardRenameApplyBtn.addEventListener("click", applyDashboardPageRename);
+}
+if (manageDashboardItem) {
+  manageDashboardItem.addEventListener("click", () => {
+    closeTopMenus();
+    commitDashboardChange(() => {
+      if (!graph.dashboard) {
+        graph.dashboard = defaultDashboard();
+      } else {
+        graph.dashboard.visible = !graph.dashboard.visible;
+      }
+    });
+  });
+}
 
 addPropBtn.addEventListener("click", () => {
   if (ui.selectedNodes.size !== 1) {
@@ -13632,6 +14241,17 @@ window.addEventListener("keydown", (evt) => {
 }, true);
 
 document.addEventListener("keydown", (evt) => {
+  if (!dashboardRenameModal?.classList.contains("hidden")) {
+    if (evt.key === "Escape") {
+      evt.preventDefault();
+      closeDashboardPageRenameEditor();
+    } else if (evt.key === "Enter") {
+      evt.preventDefault();
+      applyDashboardPageRename();
+    }
+    return;
+  }
+
   if (!expressionEditorSwitchModal?.classList.contains("hidden")) {
     if (evt.key === "Escape") {
       evt.preventDefault();

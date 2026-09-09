@@ -88,6 +88,7 @@
             <hr class="menu-sep" />
             <button id="toggleGraphItem" class="menu-command" type="button" data-i18n="menu.view.toggleGraph" data-title-i18n="tooltip.menu.view.toggleGraph"></button>
             <button id="toggleWidgetsItem" class="menu-command" type="button" data-i18n="menu.view.toggleWidgets" data-title-i18n="tooltip.menu.view.toggleWidgets"></button>
+            <button id="manageDashboardItem" class="menu-command" type="button" data-i18n="menu.view.dashboard"></button>
             <button id="managePresentationGroupsItem" class="menu-command" type="button" data-i18n="menu.view.presentationGroups"></button>
             <hr class="menu-sep" />
             <label class="menu-check" for="snapToGridInput" data-title-i18n="tooltip.menu.view.snap">
@@ -652,6 +653,20 @@
         <div id="presentationGroupsList" class="presentation-groups-list"></div>
         <div class="modal-actions">
           <button id="presentationGroupsDismissBtn" type="button" data-i18n="action.close"></button>
+        </div>
+      </div>
+    </div>
+    <div id="dashboardRenameModal" class="modal-backdrop hidden">
+      <div class="modal-card dashboard-rename-card" role="dialog" aria-modal="true" aria-labelledby="dashboardRenameTitle">
+        <div class="modal-head">
+          <h3 id="dashboardRenameTitle" data-i18n="dashboard.renameTitle"></h3>
+          <button id="dashboardRenameCloseBtn" class="icon-btn modal-close-btn" type="button" data-i18n-aria-label="aria.close">×</button>
+        </div>
+        <label for="dashboardRenameInput" data-i18n="dashboard.renamePrompt"></label>
+        <input id="dashboardRenameInput" type="text" maxlength="80" />
+        <div class="modal-actions">
+          <button id="dashboardRenameCancelBtn" type="button" data-i18n="action.cancel"></button>
+          <button id="dashboardRenameApplyBtn" type="button" data-i18n="action.apply"></button>
         </div>
       </div>
     </div>
