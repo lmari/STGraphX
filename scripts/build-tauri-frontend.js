@@ -19,6 +19,7 @@ const files = [
   "graph-functions.js",
   "i18n-inline.js",
   "local-functions-core.js",
+  "array-axes.js",
   "help-content.js",
   "model-analysis-core.js",
   "model-analysis-ui.js",
