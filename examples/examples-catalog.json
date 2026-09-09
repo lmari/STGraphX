@@ -126,6 +126,22 @@
             "it": "Automa cellulare classico, utile per matrice, widget matrice e aggiornamenti per passi.",
             "en": "Classic cellular automaton, useful for matrix data, matrix widgets, and stepwise updates."
           }
+        },
+        {
+          "file": "daisyworld_abm.json",
+          "label": { "it": "DaisyWorld ABM", "en": "DaisyWorld ABM" },
+          "summary": {
+            "it": "Popolazione dinamica di margherite su griglia: prova creazione, eliminazione, proprieta nominate e indice spaziale.",
+            "en": "Dynamic daisy population on a grid: tests creation, removal, named fields, and the spatial index."
+          }
+        },
+        {
+          "file": "abm_spatial_swarm.json",
+          "label": { "it": "Sciame spaziale ABM", "en": "Spatial swarm ABM" },
+          "summary": {
+            "it": "Agenti mobili con identificatori, occupazione dello spazio e interrogazioni di vicinato.",
+            "en": "Mobile agents with identifiers, spatial occupancy, and neighborhood queries."
+          }
         }
       ]
     },

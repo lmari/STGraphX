@@ -1,0 +1,642 @@
+{
+  "version": 1,
+  "modelTitle": "Sciame spaziale ABM",
+  "modelProperties": [],
+  "nodeCounter": 11,
+  "edgeCounter": 13,
+  "widgetCounter": 7,
+  "textItemCounter": 2,
+  "presentationGroupCounter": 1,
+  "presentationGroups": [],
+  "dashboard": null,
+  "execution": {
+    "t0": 0,
+    "dt": 1,
+    "t1": 120,
+    "delayMs": 80,
+    "decimals": 3,
+    "integrator": "euler",
+    "strictDefinitions": false
+  },
+  "view": {
+    "zoom": 0.9,
+    "showGrid": true,
+    "highlightNodeEdges": false,
+    "gridSize": 20,
+    "scrollLeft": 0,
+    "scrollTop": 0
+  },
+  "nodes": [
+    {
+      "id": 1,
+      "name": "worldSize",
+      "output": false,
+      "global": false,
+      "type": "parameter",
+      "x": 50,
+      "y": 80,
+      "width": 145,
+      "height": 74,
+      "fillColor": "",
+      "strokeColor": "",
+      "properties": [
+        {
+          "key": "note formula",
+          "value": ""
+        },
+        {
+          "key": "descrizione",
+          "value": "Lato dello spazio toroidale."
+        }
+      ],
+      "input": true,
+      "valueExpression": "20"
+    },
+    {
+      "id": 2,
+      "name": "agentCount",
+      "output": false,
+      "global": false,
+      "type": "parameter",
+      "x": 50,
+      "y": 190,
+      "width": 145,
+      "height": 74,
+      "fillColor": "",
+      "strokeColor": "",
+      "properties": [
+        {
+          "key": "note formula",
+          "value": ""
+        },
+        {
+          "key": "descrizione",
+          "value": "Numero di agenti nello sciame."
+        }
+      ],
+      "input": true,
+      "valueExpression": "48"
+    },
+    {
+      "id": 3,
+      "name": "focusIndex",
+      "output": false,
+      "global": false,
+      "type": "parameter",
+      "x": 50,
+      "y": 300,
+      "width": 145,
+      "height": 74,
+      "fillColor": "",
+      "strokeColor": "",
+      "properties": [
+        {
+          "key": "note formula",
+          "value": ""
+        },
+        {
+          "key": "descrizione",
+          "value": "Indice dell'agente di cui ispezionare i vicini."
+        }
+      ],
+      "input": true,
+      "valueExpression": "0"
+    },
+    {
+      "id": 4,
+      "name": "swarm",
+      "output": true,
+      "global": false,
+      "type": "state",
+      "x": 300,
+      "y": 210,
+      "width": 145,
+      "height": 74,
+      "fillColor": "",
+      "strokeColor": "",
+      "properties": [
+        {
+          "key": "note formula",
+          "value": ""
+        },
+        {
+          "key": "descrizione",
+          "value": "Agenti mobili con identificatore stabile e velocita discreta."
+        }
+      ],
+      "initialState": "agents([\"ID\",\"X\",\"Y\",\"VX\",\"VY\"],array([agentCount,5],if($1==0,$0+1,if($1<3,randInt(0,worldSize-1),randInt(-1,1)))))",
+      "stateTransition": "setCol(setCol(this,X,(col(this,X)+col(this,VX))%worldSize),Y,(col(this,Y)+col(this,VY))%worldSize)"
+    },
+    {
+      "id": 5,
+      "name": "space",
+      "output": false,
+      "global": false,
+      "type": "algebraic",
+      "x": 550,
+      "y": 100,
+      "width": 145,
+      "height": 74,
+      "fillColor": "",
+      "strokeColor": "",
+      "properties": [
+        {
+          "key": "note formula",
+          "value": ""
+        },
+        {
+          "key": "descrizione",
+          "value": "Spazio toroidale, vicinato di Moore."
+        }
+      ],
+      "input": false,
+      "valueExpression": "agentSpace(swarm,X,Y,ID,[worldSize,worldSize],\"moore\",true)"
+    },
+    {
+      "id": 6,
+      "name": "occupancy",
+      "output": true,
+      "global": false,
+      "type": "algebraic",
+      "x": 760,
+      "y": 100,
+      "width": 145,
+      "height": 74,
+      "fillColor": "",
+      "strokeColor": "",
+      "properties": [
+        {
+          "key": "note formula",
+          "value": ""
+        },
+        {
+          "key": "descrizione",
+          "value": "Numero di agenti in ciascuna cella."
+        }
+      ],
+      "input": false,
+      "valueExpression": "spaceMatrix(space)"
+    },
+    {
+      "id": 7,
+      "name": "neighborCounts",
+      "output": true,
+      "global": false,
+      "type": "algebraic",
+      "x": 550,
+      "y": 260,
+      "width": 145,
+      "height": 74,
+      "fillColor": "",
+      "strokeColor": "",
+      "properties": [
+        {
+          "key": "note formula",
+          "value": ""
+        },
+        {
+          "key": "descrizione",
+          "value": "Numero di vicini di ogni agente."
+        }
+      ],
+      "input": false,
+      "valueExpression": "allNeighborCounts(swarm,space)"
+    },
+    {
+      "id": 8,
+      "name": "focusNeighbors",
+      "output": true,
+      "global": false,
+      "type": "algebraic",
+      "x": 760,
+      "y": 260,
+      "width": 145,
+      "height": 74,
+      "fillColor": "",
+      "strokeColor": "",
+      "properties": [
+        {
+          "key": "note formula",
+          "value": ""
+        },
+        {
+          "key": "descrizione",
+          "value": "Indici dei vicini dell'agente scelto."
+        }
+      ],
+      "input": false,
+      "valueExpression": "if(size(swarm,0)==0,[],neighborsOf(swarm,space,focusIndex%size(swarm,0)))"
+    },
+    {
+      "id": 9,
+      "name": "isolated",
+      "output": true,
+      "global": false,
+      "type": "algebraic",
+      "x": 550,
+      "y": 400,
+      "width": 145,
+      "height": 74,
+      "fillColor": "",
+      "strokeColor": "",
+      "properties": [
+        {
+          "key": "note formula",
+          "value": ""
+        },
+        {
+          "key": "descrizione",
+          "value": "Agenti senza vicini."
+        }
+      ],
+      "input": false,
+      "valueExpression": "count($value == 0,neighborCounts)"
+    },
+    {
+      "id": 10,
+      "name": "crowded",
+      "output": true,
+      "global": false,
+      "type": "algebraic",
+      "x": 760,
+      "y": 400,
+      "width": 145,
+      "height": 74,
+      "fillColor": "",
+      "strokeColor": "",
+      "properties": [
+        {
+          "key": "note formula",
+          "value": ""
+        },
+        {
+          "key": "descrizione",
+          "value": "Agenti con almeno quattro vicini."
+        }
+      ],
+      "input": false,
+      "valueExpression": "count($value >= 4,neighborCounts)"
+    }
+  ],
+  "edges": [
+    {
+      "id": 1,
+      "from": 1,
+      "to": 4,
+      "controlPoints": []
+    },
+    {
+      "id": 2,
+      "from": 2,
+      "to": 4,
+      "controlPoints": []
+    },
+    {
+      "id": 3,
+      "from": 1,
+      "to": 5,
+      "controlPoints": []
+    },
+    {
+      "id": 4,
+      "from": 4,
+      "to": 5,
+      "controlPoints": []
+    },
+    {
+      "id": 5,
+      "from": 5,
+      "to": 6,
+      "controlPoints": []
+    },
+    {
+      "id": 6,
+      "from": 4,
+      "to": 7,
+      "controlPoints": []
+    },
+    {
+      "id": 7,
+      "from": 5,
+      "to": 7,
+      "controlPoints": []
+    },
+    {
+      "id": 8,
+      "from": 3,
+      "to": 8,
+      "controlPoints": []
+    },
+    {
+      "id": 9,
+      "from": 4,
+      "to": 8,
+      "controlPoints": []
+    },
+    {
+      "id": 10,
+      "from": 5,
+      "to": 8,
+      "controlPoints": []
+    },
+    {
+      "id": 11,
+      "from": 7,
+      "to": 9,
+      "controlPoints": []
+    },
+    {
+      "id": 12,
+      "from": 7,
+      "to": 10,
+      "controlPoints": []
+    }
+  ],
+  "textItems": [
+    {
+      "id": 1,
+      "x": 280,
+      "y": 30,
+      "width": 650,
+      "height": 65,
+      "fillColor": "",
+      "strokeColor": "",
+      "dashboardPageId": null,
+      "html": "<h1>Sciame spaziale</h1><p>Agenti mobili su spazio toroidale: usa <code>agentSpace</code>, <code>spaceMatrix</code>, <code>allNeighborCounts</code> e <code>neighborsOf</code>.</p>"
+    }
+  ],
+  "widgets": [
+    {
+      "id": 1,
+      "type": "matrix",
+      "customTitle": "Occupazione dello spazio",
+      "x": 1020,
+      "y": 20,
+      "width": 450,
+      "height": 450,
+      "dashboardPageId": null,
+      "minimized": false,
+      "outputOnly": true,
+      "showHistory": false,
+      "expandNonScalarValues": false,
+      "tableFontSize": 13,
+      "tableTextAlign": "left",
+      "tableDecimalDigits": 0,
+      "xMin": "auto",
+      "xMax": "auto",
+      "yMin": "auto",
+      "yMax": "auto",
+      "showGrid": true,
+      "legendPosition": "top-right",
+      "source": "occupancy",
+      "showNumericValues": false,
+      "showIndices": false,
+      "autoFitCells": true,
+      "cellSize": 22,
+      "valueMin": "auto",
+      "valueMax": "auto",
+      "displayRows": null,
+      "displayCols": null,
+      "colorScheme": "blue",
+      "min": 0,
+      "max": 100,
+      "step": 1,
+      "value": 0,
+      "falseLabel": "",
+      "trueLabel": "",
+      "options": [],
+      "mappings": [],
+      "columns": [],
+      "xyPairs": []
+    },
+    {
+      "id": 2,
+      "type": "table",
+      "customTitle": "Vicini dell'agente selezionato",
+      "x": 1020,
+      "y": 500,
+      "width": 450,
+      "height": 170,
+      "dashboardPageId": null,
+      "minimized": false,
+      "outputOnly": true,
+      "showHistory": false,
+      "expandNonScalarValues": true,
+      "tableFontSize": 13,
+      "tableTextAlign": "center",
+      "tableDecimalDigits": 0,
+      "xMin": "auto",
+      "xMax": "auto",
+      "yMin": "auto",
+      "yMax": "auto",
+      "showGrid": true,
+      "legendPosition": "top-right",
+      "source": "focusNeighbors",
+      "showNumericValues": true,
+      "showIndices": false,
+      "autoFitCells": true,
+      "cellSize": 22,
+      "valueMin": "auto",
+      "valueMax": "auto",
+      "displayRows": null,
+      "displayCols": null,
+      "colorScheme": "heat",
+      "min": 0,
+      "max": 100,
+      "step": 1,
+      "value": 0,
+      "falseLabel": "",
+      "trueLabel": "",
+      "options": [],
+      "mappings": [],
+      "columns": [],
+      "xyPairs": []
+    },
+    {
+      "id": 3,
+      "type": "xychart",
+      "customTitle": "Distribuzione istantanea dei vicini",
+      "x": 1500,
+      "y": 20,
+      "width": 430,
+      "height": 360,
+      "dashboardPageId": null,
+      "minimized": false,
+      "outputOnly": false,
+      "showHistory": false,
+      "expandNonScalarValues": false,
+      "tableFontSize": 13,
+      "tableTextAlign": "left",
+      "tableDecimalDigits": 0,
+      "xMin": "auto",
+      "xMax": "auto",
+      "yMin": "auto",
+      "yMax": "auto",
+      "showGrid": true,
+      "legendPosition": "top-right",
+      "source": "",
+      "showNumericValues": true,
+      "showIndices": false,
+      "autoFitCells": true,
+      "cellSize": 22,
+      "valueMin": "auto",
+      "valueMax": "auto",
+      "displayRows": null,
+      "displayCols": null,
+      "colorScheme": "heat",
+      "min": 0,
+      "max": 100,
+      "step": 1,
+      "value": 0,
+      "falseLabel": "",
+      "trueLabel": "",
+      "options": [],
+      "mappings": [],
+      "columns": [],
+      "xyPairs": [
+        {
+          "xSource": "range(size(neighborCounts))",
+          "ySource": "neighborCounts",
+          "showTimeSeries": false,
+          "showInstantProfile": true,
+          "color": "#0e7ac4",
+          "pointColor": "#0e7ac4",
+          "showLine": false,
+          "lineWidth": 2.2,
+          "lineStyle": "solid",
+          "pointMode": "all",
+          "pointSize": 4
+        }
+      ]
+    },
+    {
+      "id": 4,
+      "type": "slider",
+      "customTitle": "Lato dello spazio",
+      "x": 1500,
+      "y": 420,
+      "width": 230,
+      "height": 74,
+      "dashboardPageId": null,
+      "minimized": false,
+      "outputOnly": false,
+      "showHistory": false,
+      "expandNonScalarValues": false,
+      "tableFontSize": 13,
+      "tableTextAlign": "left",
+      "tableDecimalDigits": 0,
+      "xMin": "auto",
+      "xMax": "auto",
+      "yMin": "auto",
+      "yMax": "auto",
+      "showGrid": true,
+      "legendPosition": "top-right",
+      "source": "worldSize",
+      "showNumericValues": true,
+      "showIndices": false,
+      "autoFitCells": true,
+      "cellSize": 28,
+      "valueMin": "auto",
+      "valueMax": "auto",
+      "displayRows": null,
+      "displayCols": null,
+      "colorScheme": "blue",
+      "min": 6,
+      "max": 40,
+      "step": 1,
+      "value": 20,
+      "falseLabel": "",
+      "trueLabel": "",
+      "options": [],
+      "mappings": [],
+      "columns": [],
+      "xyPairs": []
+    },
+    {
+      "id": 5,
+      "type": "slider",
+      "customTitle": "Numero di agenti",
+      "x": 1500,
+      "y": 510,
+      "width": 230,
+      "height": 74,
+      "dashboardPageId": null,
+      "minimized": false,
+      "outputOnly": false,
+      "showHistory": false,
+      "expandNonScalarValues": false,
+      "tableFontSize": 13,
+      "tableTextAlign": "left",
+      "tableDecimalDigits": 0,
+      "xMin": "auto",
+      "xMax": "auto",
+      "yMin": "auto",
+      "yMax": "auto",
+      "showGrid": true,
+      "legendPosition": "top-right",
+      "source": "agentCount",
+      "showNumericValues": true,
+      "showIndices": false,
+      "autoFitCells": true,
+      "cellSize": 28,
+      "valueMin": "auto",
+      "valueMax": "auto",
+      "displayRows": null,
+      "displayCols": null,
+      "colorScheme": "blue",
+      "min": 1,
+      "max": 160,
+      "step": 1,
+      "value": 48,
+      "falseLabel": "",
+      "trueLabel": "",
+      "options": [],
+      "mappings": [],
+      "columns": [],
+      "xyPairs": []
+    },
+    {
+      "id": 6,
+      "type": "slider",
+      "customTitle": "Agente osservato",
+      "x": 1500,
+      "y": 600,
+      "width": 230,
+      "height": 74,
+      "dashboardPageId": null,
+      "minimized": false,
+      "outputOnly": false,
+      "showHistory": false,
+      "expandNonScalarValues": false,
+      "tableFontSize": 13,
+      "tableTextAlign": "left",
+      "tableDecimalDigits": 0,
+      "xMin": "auto",
+      "xMax": "auto",
+      "yMin": "auto",
+      "yMax": "auto",
+      "showGrid": true,
+      "legendPosition": "top-right",
+      "source": "focusIndex",
+      "showNumericValues": true,
+      "showIndices": false,
+      "autoFitCells": true,
+      "cellSize": 28,
+      "valueMin": "auto",
+      "valueMax": "auto",
+      "displayRows": null,
+      "displayCols": null,
+      "colorScheme": "blue",
+      "min": 0,
+      "max": 47,
+      "step": 1,
+      "value": 0,
+      "falseLabel": "",
+      "trueLabel": "",
+      "options": [],
+      "mappings": [],
+      "columns": [],
+      "xyPairs": []
+    }
+  ]
+}

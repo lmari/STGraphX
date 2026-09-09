@@ -1,6 +1,6 @@
 # STGraphX: Readme
 
-versione 3 settembre 2026
+versione 9 settembre 2026
 
 Copyright (c) 2026 Luca Mari
 
@@ -13,6 +13,12 @@ STGraphX è un editor ed esecutore di modelli dinamici a grafo orientato.
 Si può provare <a href="https://lmari.github.io/STGraphX" target="_blank" rel="noopener noreferrer">direttamente da questo repo GitHub</a>.
 
 Il file QUICK-START.md contiene informazioni sull'installazione, l'uso, e lo sviluppo di STGraphX.
+
+## Download dell'applicazione
+
+Per scaricare la versione desktop di STGraphX (versione attuale: 2026.09.09):
+
+- Linux: <a href="https://github.com/lmari/STGraphX/tree/main/dist/STGraphX260909.AppImage">AppImage</a>, tar.gz
 
 ## Stato del progetto
 

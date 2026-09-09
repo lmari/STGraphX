@@ -1,0 +1,845 @@
+{
+  "version": 1,
+  "modelTitle": "DaisyWorld ABM",
+  "localFunctions": [],
+  "view": {
+    "zoom": 0.65,
+    "showGrid": true,
+    "highlightNodeEdges": false,
+    "gridSize": 20,
+    "tooltipDelayMs": 300,
+    "scrollLeft": 0,
+    "scrollTop": 0
+  },
+  "debug": {
+    "watches": [],
+    "breakpointEnabled": false,
+    "breakpointExpression": ""
+  },
+  "modelProperties": [],
+  "nodeCounter": 15,
+  "edgeCounter": 16,
+  "widgetCounter": 10,
+  "textItemCounter": 3,
+  "presentationGroupCounter": 2,
+  "presentationGroups": [],
+  "dashboard": null,
+  "execution": {
+    "t0": 0,
+    "dt": 1,
+    "t1": 100,
+    "delayMs": 100,
+    "decimals": 3,
+    "integrator": "euler",
+    "strictDefinitions": false
+  },
+  "nodes": [
+    {
+      "id": 1,
+      "name": "worldSize",
+      "output": false,
+      "global": false,
+      "type": "parameter",
+      "x": 50,
+      "y": 70,
+      "width": 145,
+      "height": 74,
+      "fillColor": "",
+      "strokeColor": "",
+      "properties": [
+        {
+          "key": "note formula",
+          "value": ""
+        },
+        {
+          "key": "descrizione",
+          "value": "Lato della griglia toroidale."
+        }
+      ],
+      "valueExpression": "18"
+    },
+    {
+      "id": 2,
+      "name": "initialDaisies",
+      "output": false,
+      "global": false,
+      "type": "parameter",
+      "x": 50,
+      "y": 180,
+      "width": 145,
+      "height": 74,
+      "fillColor": "",
+      "strokeColor": "",
+      "properties": [
+        {
+          "key": "note formula",
+          "value": ""
+        },
+        {
+          "key": "descrizione",
+          "value": "Numero iniziale di margherite."
+        }
+      ],
+      "valueExpression": "55"
+    },
+    {
+      "id": 3,
+      "name": "maxAge",
+      "output": false,
+      "global": false,
+      "type": "parameter",
+      "x": 50,
+      "y": 290,
+      "width": 145,
+      "height": 74,
+      "fillColor": "",
+      "strokeColor": "",
+      "properties": [
+        {
+          "key": "note formula",
+          "value": ""
+        },
+        {
+          "key": "descrizione",
+          "value": "Eta massima di una margherita."
+        }
+      ],
+      "valueExpression": "18"
+    },
+    {
+      "id": 4,
+      "name": "deathProbability",
+      "output": false,
+      "global": false,
+      "type": "parameter",
+      "x": 50,
+      "y": 400,
+      "width": 145,
+      "height": 74,
+      "fillColor": "",
+      "strokeColor": "",
+      "properties": [
+        {
+          "key": "note formula",
+          "value": ""
+        },
+        {
+          "key": "descrizione",
+          "value": "Probabilita di morte casuale per passo."
+        }
+      ],
+      "valueExpression": "0.06"
+    },
+    {
+      "id": 5,
+      "name": "birthProbability",
+      "output": false,
+      "global": false,
+      "type": "parameter",
+      "x": 50,
+      "y": 510,
+      "width": 145,
+      "height": 74,
+      "fillColor": "",
+      "strokeColor": "",
+      "properties": [
+        {
+          "key": "note formula",
+          "value": ""
+        },
+        {
+          "key": "descrizione",
+          "value": "Probabilita di aggiungere una nuova margherita per passo."
+        }
+      ],
+      "valueExpression": "0.72"
+    },
+    {
+      "id": 6,
+      "name": "daisies",
+      "output": true,
+      "global": false,
+      "type": "state",
+      "x": 310,
+      "y": 255,
+      "width": 145,
+      "height": 74,
+      "fillColor": "",
+      "strokeColor": "",
+      "properties": [
+        {
+          "key": "note formula",
+          "value": ""
+        },
+        {
+          "key": "descrizione",
+          "value": "Popolazione dinamica: TYPE=-1 nera, TYPE=1 bianca; ogni passo rimuove individui e puo aggiungerne uno."
+        }
+      ],
+      "stateTransition": "if(rand() < birthProbability, append(mapAgents([$value[0],$value[1],$value[2],$value[3],$value[4]+1], filterAgents($value[4] < maxAge and rand() > deathProbability, this)), [time+100000,randInt(0,worldSize-1),randInt(0,worldSize-1),if(rand()<0.5,-1,1),0]), mapAgents([$value[0],$value[1],$value[2],$value[3],$value[4]+1], filterAgents($value[4] < maxAge and rand() > deathProbability, this)))",
+      "initialState": "agents([\"ID\",\"X\",\"Y\",\"TYPE\",\"AGE\"],array([initialDaisies,5],if($1==0,$0+1,if($1==1,randInt(0,worldSize-1),if($1==2,randInt(0,worldSize-1),if($1==3,if(rand()<0.5,-1,1),0))))))"
+    },
+    {
+      "id": 7,
+      "name": "space",
+      "output": false,
+      "global": false,
+      "type": "algebraic",
+      "x": 550,
+      "y": 100,
+      "width": 145,
+      "height": 74,
+      "fillColor": "",
+      "strokeColor": "",
+      "properties": [
+        {
+          "key": "note formula",
+          "value": ""
+        },
+        {
+          "key": "descrizione",
+          "value": "Indice spaziale toroidale della popolazione."
+        }
+      ],
+      "input": false,
+      "valueExpression": "agentSpace(daisies,1,2,0,[worldSize,worldSize],\"moore\",true)"
+    },
+    {
+      "id": 8,
+      "name": "occupancy",
+      "output": true,
+      "global": false,
+      "type": "algebraic",
+      "x": 760,
+      "y": 100,
+      "width": 145,
+      "height": 74,
+      "fillColor": "",
+      "strokeColor": "",
+      "properties": [
+        {
+          "key": "note formula",
+          "value": ""
+        },
+        {
+          "key": "descrizione",
+          "value": "Numero di margherite in ogni cella della griglia."
+        }
+      ],
+      "input": false,
+      "valueExpression": "spaceMatrix(space)"
+    },
+    {
+      "id": 9,
+      "name": "population",
+      "output": true,
+      "global": false,
+      "type": "algebraic",
+      "x": 550,
+      "y": 260,
+      "width": 145,
+      "height": 74,
+      "fillColor": "",
+      "strokeColor": "",
+      "properties": [
+        {
+          "key": "note formula",
+          "value": ""
+        },
+        {
+          "key": "descrizione",
+          "value": "Numero corrente di agenti."
+        }
+      ],
+      "input": false,
+      "valueExpression": "size(daisies,0)"
+    },
+    {
+      "id": 10,
+      "name": "black",
+      "output": true,
+      "global": false,
+      "type": "algebraic",
+      "x": 760,
+      "y": 180,
+      "width": 145,
+      "height": 74,
+      "fillColor": "",
+      "strokeColor": "",
+      "properties": [
+        {
+          "key": "note formula",
+          "value": ""
+        },
+        {
+          "key": "descrizione",
+          "value": "Numero di margherite nere."
+        }
+      ],
+      "input": false,
+      "valueExpression": "count($value == -1,col(daisies,3))"
+    },
+    {
+      "id": 11,
+      "name": "white",
+      "output": true,
+      "global": false,
+      "type": "algebraic",
+      "x": 760,
+      "y": 360,
+      "width": 145,
+      "height": 74,
+      "fillColor": "",
+      "strokeColor": "",
+      "properties": [
+        {
+          "key": "note formula",
+          "value": ""
+        },
+        {
+          "key": "descrizione",
+          "value": "Numero di margherite bianche."
+        }
+      ],
+      "input": false,
+      "valueExpression": "count($value == 1,col(daisies,3))"
+    },
+    {
+      "id": 12,
+      "name": "crowded",
+      "output": true,
+      "global": false,
+      "type": "algebraic",
+      "x": 550,
+      "y": 390,
+      "width": 145,
+      "height": 74,
+      "fillColor": "",
+      "strokeColor": "",
+      "properties": [
+        {
+          "key": "note formula",
+          "value": ""
+        },
+        {
+          "key": "descrizione",
+          "value": "Numero di celle con piu di una margherita."
+        }
+      ],
+      "input": false,
+      "valueExpression": "count($value > 1,flatten(occupancy))"
+    },
+    {
+      "id": 13,
+      "name": "neighborCounts",
+      "output": true,
+      "global": false,
+      "type": "algebraic",
+      "x": 550,
+      "y": 510,
+      "width": 145,
+      "height": 74,
+      "fillColor": "",
+      "strokeColor": "",
+      "properties": [
+        {
+          "key": "note formula",
+          "value": ""
+        },
+        {
+          "key": "descrizione",
+          "value": "Numero di vicini per ogni margherita."
+        }
+      ],
+      "input": false,
+      "valueExpression": "allNeighborCounts(daisies,space)"
+    }
+  ],
+  "edges": [
+    {
+      "id": 1,
+      "from": 1,
+      "to": 6,
+      "controlPoints": []
+    },
+    {
+      "id": 2,
+      "from": 2,
+      "to": 6,
+      "controlPoints": []
+    },
+    {
+      "id": 3,
+      "from": 3,
+      "to": 6,
+      "controlPoints": []
+    },
+    {
+      "id": 4,
+      "from": 4,
+      "to": 6,
+      "controlPoints": []
+    },
+    {
+      "id": 5,
+      "from": 5,
+      "to": 6,
+      "controlPoints": []
+    },
+    {
+      "id": 6,
+      "from": 1,
+      "to": 7,
+      "controlPoints": []
+    },
+    {
+      "id": 7,
+      "from": 6,
+      "to": 7,
+      "controlPoints": []
+    },
+    {
+      "id": 8,
+      "from": 7,
+      "to": 8,
+      "controlPoints": []
+    },
+    {
+      "id": 9,
+      "from": 6,
+      "to": 9,
+      "controlPoints": []
+    },
+    {
+      "id": 10,
+      "from": 6,
+      "to": 10,
+      "controlPoints": []
+    },
+    {
+      "id": 11,
+      "from": 6,
+      "to": 11,
+      "controlPoints": []
+    },
+    {
+      "id": 12,
+      "from": 8,
+      "to": 12,
+      "controlPoints": []
+    },
+    {
+      "id": 13,
+      "from": 6,
+      "to": 13,
+      "controlPoints": []
+    },
+    {
+      "id": 14,
+      "from": 7,
+      "to": 13,
+      "controlPoints": []
+    }
+  ],
+  "textItems": [
+    {
+      "id": 1,
+      "x": 60,
+      "y": -80,
+      "width": 720,
+      "height": 100,
+      "fillColor": "",
+      "strokeColor": "",
+      "dashboardPageId": null,
+      "html": "<h1>DaisyWorld ABM</h1><p>Margherite nere e bianche con vita finita. Il modello e' progettato per collaudare popolazioni dinamiche e indice spaziale, non per riprodurre il modello climatico completo.</p>"
+    }
+  ],
+  "widgets": [
+    {
+      "id": 1,
+      "type": "matrix",
+      "customTitle": "Occupazione della griglia",
+      "x": 1030,
+      "y": 20,
+      "width": 440,
+      "height": 440,
+      "dashboardPageId": null,
+      "minimized": false,
+      "outputOnly": true,
+      "showHistory": false,
+      "expandNonScalarValues": false,
+      "tableFontSize": 13,
+      "tableTextAlign": "left",
+      "tableDecimalDigits": 0,
+      "xMin": "auto",
+      "xMax": "auto",
+      "yMin": "auto",
+      "yMax": "auto",
+      "showGrid": true,
+      "legendPosition": "top-right",
+      "source": "occupancy",
+      "showNumericValues": false,
+      "showIndices": false,
+      "autoFitCells": true,
+      "cellSize": 22,
+      "valueMin": "auto",
+      "valueMax": "auto",
+      "displayRows": null,
+      "displayCols": null,
+      "colorScheme": "heat",
+      "min": 0,
+      "max": 100,
+      "step": 1,
+      "value": 0,
+      "falseLabel": "",
+      "trueLabel": "",
+      "options": [],
+      "mappings": [],
+      "columns": [],
+      "xyPairs": []
+    },
+    {
+      "id": 2,
+      "type": "table",
+      "customTitle": "Popolazione corrente",
+      "x": 1030,
+      "y": 490,
+      "width": 440,
+      "height": 220,
+      "dashboardPageId": null,
+      "minimized": false,
+      "outputOnly": true,
+      "showHistory": false,
+      "expandNonScalarValues": true,
+      "tableFontSize": 12,
+      "tableTextAlign": "center",
+      "tableDecimalDigits": 0,
+      "xMin": "auto",
+      "xMax": "auto",
+      "yMin": "auto",
+      "yMax": "auto",
+      "showGrid": true,
+      "legendPosition": "top-right",
+      "source": "daisies",
+      "showNumericValues": true,
+      "showIndices": false,
+      "autoFitCells": true,
+      "cellSize": 22,
+      "valueMin": "auto",
+      "valueMax": "auto",
+      "displayRows": null,
+      "displayCols": null,
+      "colorScheme": "heat",
+      "min": 0,
+      "max": 100,
+      "step": 1,
+      "value": 0,
+      "falseLabel": "",
+      "trueLabel": "",
+      "options": [],
+      "mappings": [],
+      "columns": [
+        "population"
+      ],
+      "xyPairs": []
+    },
+    {
+      "id": 3,
+      "type": "xychart",
+      "customTitle": "Margherite nel tempo",
+      "x": 1500,
+      "y": 20,
+      "width": 430,
+      "height": 360,
+      "dashboardPageId": null,
+      "minimized": false,
+      "outputOnly": false,
+      "showHistory": false,
+      "expandNonScalarValues": false,
+      "tableFontSize": 13,
+      "tableTextAlign": "left",
+      "tableDecimalDigits": 0,
+      "xMin": "auto",
+      "xMax": "auto",
+      "yMin": "auto",
+      "yMax": "auto",
+      "showGrid": true,
+      "legendPosition": "top-right",
+      "source": "",
+      "showNumericValues": true,
+      "showIndices": false,
+      "autoFitCells": true,
+      "cellSize": 22,
+      "valueMin": "auto",
+      "valueMax": "auto",
+      "displayRows": null,
+      "displayCols": null,
+      "colorScheme": "heat",
+      "min": 0,
+      "max": 100,
+      "step": 1,
+      "value": 0,
+      "falseLabel": "",
+      "trueLabel": "",
+      "options": [],
+      "mappings": [],
+      "columns": [],
+      "xyPairs": [
+        {
+          "xSource": "time",
+          "ySource": "black",
+          "showTimeSeries": true,
+          "showInstantProfile": false,
+          "color": "#263238",
+          "pointColor": "#263238",
+          "showLine": true,
+          "lineWidth": 2.2,
+          "lineStyle": "solid",
+          "pointMode": "none",
+          "pointSize": 3
+        },
+        {
+          "xSource": "time",
+          "ySource": "white",
+          "showTimeSeries": true,
+          "showInstantProfile": false,
+          "color": "#d4a72c",
+          "pointColor": "#d4a72c",
+          "showLine": true,
+          "lineWidth": 2.2,
+          "lineStyle": "solid",
+          "pointMode": "none",
+          "pointSize": 3
+        },
+        {
+          "xSource": "time",
+          "ySource": "population",
+          "showTimeSeries": true,
+          "showInstantProfile": false,
+          "color": "#2e8b57",
+          "pointColor": "#2e8b57",
+          "showLine": true,
+          "lineWidth": 2.2,
+          "lineStyle": "dashed",
+          "pointMode": "none",
+          "pointSize": 3
+        }
+      ]
+    },
+    {
+      "id": 4,
+      "type": "slider",
+      "customTitle": "Lato del mondo",
+      "x": 1500,
+      "y": 420,
+      "width": 230,
+      "height": 82,
+      "dashboardPageId": null,
+      "minimized": false,
+      "outputOnly": false,
+      "showHistory": false,
+      "expandNonScalarValues": false,
+      "tableFontSize": 13,
+      "tableTextAlign": "left",
+      "tableDecimalDigits": 0,
+      "xMin": "auto",
+      "xMax": "auto",
+      "yMin": "auto",
+      "yMax": "auto",
+      "showGrid": true,
+      "legendPosition": "top-right",
+      "source": "worldSize",
+      "showNumericValues": true,
+      "showIndices": false,
+      "autoFitCells": true,
+      "cellSize": 28,
+      "valueMin": "auto",
+      "valueMax": "auto",
+      "displayRows": null,
+      "displayCols": null,
+      "colorScheme": "blue",
+      "min": 6,
+      "max": 40,
+      "step": 1,
+      "value": 18,
+      "falseLabel": "",
+      "trueLabel": "",
+      "options": [],
+      "mappings": [],
+      "columns": [],
+      "xyPairs": []
+    },
+    {
+      "id": 5,
+      "type": "slider",
+      "customTitle": "Margherite iniziali",
+      "x": 1500,
+      "y": 510,
+      "width": 230,
+      "height": 82,
+      "dashboardPageId": null,
+      "minimized": false,
+      "outputOnly": false,
+      "showHistory": false,
+      "expandNonScalarValues": false,
+      "tableFontSize": 13,
+      "tableTextAlign": "left",
+      "tableDecimalDigits": 0,
+      "xMin": "auto",
+      "xMax": "auto",
+      "yMin": "auto",
+      "yMax": "auto",
+      "showGrid": true,
+      "legendPosition": "top-right",
+      "source": "initialDaisies",
+      "showNumericValues": true,
+      "showIndices": false,
+      "autoFitCells": true,
+      "cellSize": 28,
+      "valueMin": "auto",
+      "valueMax": "auto",
+      "displayRows": null,
+      "displayCols": null,
+      "colorScheme": "blue",
+      "min": 1,
+      "max": 200,
+      "step": 1,
+      "value": 55,
+      "falseLabel": "",
+      "trueLabel": "",
+      "options": [],
+      "mappings": [],
+      "columns": [],
+      "xyPairs": []
+    },
+    {
+      "id": 6,
+      "type": "slider",
+      "customTitle": "Eta massima",
+      "x": 1500,
+      "y": 600,
+      "width": 230,
+      "height": 82,
+      "dashboardPageId": null,
+      "minimized": false,
+      "outputOnly": false,
+      "showHistory": false,
+      "expandNonScalarValues": false,
+      "tableFontSize": 13,
+      "tableTextAlign": "left",
+      "tableDecimalDigits": 0,
+      "xMin": "auto",
+      "xMax": "auto",
+      "yMin": "auto",
+      "yMax": "auto",
+      "showGrid": true,
+      "legendPosition": "top-right",
+      "source": "maxAge",
+      "showNumericValues": true,
+      "showIndices": false,
+      "autoFitCells": true,
+      "cellSize": 28,
+      "valueMin": "auto",
+      "valueMax": "auto",
+      "displayRows": null,
+      "displayCols": null,
+      "colorScheme": "blue",
+      "min": 1,
+      "max": 60,
+      "step": 1,
+      "value": 18,
+      "falseLabel": "",
+      "trueLabel": "",
+      "options": [],
+      "mappings": [],
+      "columns": [],
+      "xyPairs": []
+    },
+    {
+      "id": 7,
+      "type": "slider",
+      "customTitle": "Mortalita casuale",
+      "x": 1760,
+      "y": 420,
+      "width": 230,
+      "height": 82,
+      "dashboardPageId": null,
+      "minimized": false,
+      "outputOnly": false,
+      "showHistory": false,
+      "expandNonScalarValues": false,
+      "tableFontSize": 13,
+      "tableTextAlign": "left",
+      "tableDecimalDigits": 0,
+      "xMin": "auto",
+      "xMax": "auto",
+      "yMin": "auto",
+      "yMax": "auto",
+      "showGrid": true,
+      "legendPosition": "top-right",
+      "source": "deathProbability",
+      "showNumericValues": true,
+      "showIndices": false,
+      "autoFitCells": true,
+      "cellSize": 28,
+      "valueMin": "auto",
+      "valueMax": "auto",
+      "displayRows": null,
+      "displayCols": null,
+      "colorScheme": "blue",
+      "min": 0,
+      "max": 0.4,
+      "step": 0.01,
+      "value": 0.06,
+      "falseLabel": "",
+      "trueLabel": "",
+      "options": [],
+      "mappings": [],
+      "columns": [],
+      "xyPairs": []
+    },
+    {
+      "id": 8,
+      "type": "slider",
+      "customTitle": "Probabilita di nascita",
+      "x": 1760,
+      "y": 510,
+      "width": 230,
+      "height": 82,
+      "dashboardPageId": null,
+      "minimized": false,
+      "outputOnly": false,
+      "showHistory": false,
+      "expandNonScalarValues": false,
+      "tableFontSize": 13,
+      "tableTextAlign": "left",
+      "tableDecimalDigits": 0,
+      "xMin": "auto",
+      "xMax": "auto",
+      "yMin": "auto",
+      "yMax": "auto",
+      "showGrid": true,
+      "legendPosition": "top-right",
+      "source": "birthProbability",
+      "showNumericValues": true,
+      "showIndices": false,
+      "autoFitCells": true,
+      "cellSize": 28,
+      "valueMin": "auto",
+      "valueMax": "auto",
+      "displayRows": null,
+      "displayCols": null,
+      "colorScheme": "blue",
+      "min": 0,
+      "max": 1,
+      "step": 0.01,
+      "value": 0.72,
+      "falseLabel": "",
+      "trueLabel": "",
+      "options": [],
+      "mappings": [],
+      "columns": [],
+      "xyPairs": []
+    }
+  ]
+}

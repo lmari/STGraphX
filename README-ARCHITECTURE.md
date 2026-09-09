@@ -405,11 +405,11 @@ npm run dist:mac
 
 ### Cosa aspettarsi nella cartella `dist/`
 
-A seconda del sistema operativo, `electron-builder` produrrà file diversi:
+A seconda del sistema operativo, `electron-builder` produrrà file diversi. Il prefisso del nome e' derivato da `window.STGraphXAppMeta.releaseDate` in `i18n-inline.js`, convertendo `YYYY.MM.DD` in `YYMMDD`: con `2026.09.09`, per esempio, l'AppImage e' `STGraphX260909.AppImage`.
 
-- Windows: installer `nsis` e pacchetto `portable`
-- Linux: `AppImage` e archivio `tar.gz`
-- macOS: `dmg` e `zip`
+- Windows: `STGraphX260909-setup.exe` e `STGraphX260909-portable.exe`
+- Linux: `STGraphX260909.AppImage` e `STGraphX260909.tar.gz`
+- macOS: `STGraphX260909.dmg` e `STGraphX260909.zip`
 
 ### Risorse opzionali ma consigliate
 
