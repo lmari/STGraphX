@@ -287,3 +287,21 @@
     createRuntimeShared,
   };
 })(globalThis);
+
+// The standalone Node/headless loader evaluates runtime-shared.js immediately
+// after semantic.js. Load the same array extension used by the browser runtimes
+// when it has not already been installed by the editor or player loader.
+(function ensureArrayAxesRuntimeExtension() {
+  if (globalThis.GraphSemantics?.__arrayAxesInstalled) {
+    return;
+  }
+  if (typeof require !== "function" || typeof __dirname !== "string") {
+    return;
+  }
+  try {
+    const path = require("path");
+    require(path.join(__dirname, "array-axes.js"));
+  } catch (_error) {
+    // Keep the core runtime usable even when the optional extension is absent.
+  }
+})();
