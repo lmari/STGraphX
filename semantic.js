@@ -373,7 +373,7 @@
             k += 1;
           }
           const isFunctionCall = src[k] === "(";
-          if (prev !== "." && !isFunctionCall && !skipped.has(token) && !/^\$[0-9]+$/u.test(token)) {
+          if (prev !== "." && !isFunctionCall && !skipped.has(token) && !/^\$(?:i)?[0-9]+$/u.test(token)) {
             refs.add(token);
           }
           i = j;
@@ -739,6 +739,16 @@
       case "call":
         if (!knownNames.has(node.name)) {
           throw new ReferenceError(`${node.name} is not defined`);
+        }
+        if (node.name === "array" && node.args.length >= 2) {
+          node.args.slice(0, -1).forEach((arg) => validateAstReferences(arg, knownNames));
+          const localKnownNames = new Set(knownNames);
+          node.args.slice(0, -1).forEach((_, index) => {
+            localKnownNames.add(`$${index}`);
+            localKnownNames.add(`$i${index}`);
+          });
+          validateAstReferences(node.args[node.args.length - 1], localKnownNames);
+          return;
         }
         (node.args || []).forEach((arg) => validateAstReferences(arg, knownNames));
         return;
@@ -1635,37 +1645,45 @@
           return vectorizedConditionalOperation(condition, whenTrue, whenFalse);
         }
         if (node.name === "array") {
-          if (node.args.length !== 2) {
-            throw new Error("array expects exactly 2 arguments");
+          if (node.args.length < 2) {
+            throw new Error("array expects at least one axis and an expression");
           }
-          const dimsValue = evaluateAstNode(node.args[0], scope, hooks);
-          const dims = Array.isArray(dimsValue) ? dimsValue.slice() : [dimsValue];
-          if (!dims.length) {
-            throw new Error("array requires at least one dimension");
-          }
-          const normalizedDims = dims.map((dim, idx) => {
-            const value = Number(dim);
-            if (!Number.isInteger(value) || value < 0) {
-              throw new Error(`array dimension ${idx} must be a non-negative integer`);
+          const axes = node.args.slice(0, -1).map((axisNode, idx) => {
+            const axisValue = evaluateAstNode(axisNode, scope, hooks);
+            if (Array.isArray(axisValue)) {
+              if (axisValue.some((value) => Array.isArray(value))) {
+                throw new Error(`array axis ${idx} must be a non-negative integer or a vector`);
+              }
+              return axisValue.slice();
             }
-            return value;
+            const size = Number(axisValue);
+            if (!Number.isInteger(size) || size < 0) {
+              throw new Error(`array axis ${idx} must be a non-negative integer or a vector`);
+            }
+            return Array.from({ length: size }, (_, index) => index);
           });
-          const totalSize = normalizedDims.reduce((acc, value) => acc * Math.max(1, value), 1);
+          const totalSize = axes.reduce((acc, axis) => acc * Math.max(1, axis.length), 1);
           if (totalSize > 100000) {
             throw new Error("array is too large");
           }
-          const buildArray = (level, localIndices) => {
-            if (level >= normalizedDims.length) {
+          const buildArray = (level, localValues, localIndices) => {
+            if (level >= axes.length) {
               const localScope = { ...scope };
-              localIndices.forEach((value, idx) => {
+              localValues.forEach((value, idx) => {
                 localScope[`$${idx}`] = value;
               });
-              return evaluateAstNode(node.args[1], localScope, hooks);
+              localIndices.forEach((index, idx) => {
+                localScope[`$i${idx}`] = index;
+              });
+              return evaluateAstNode(node.args[node.args.length - 1], localScope, hooks);
             }
-            const size = normalizedDims[level];
-            return Array.from({ length: size }, (_, idx) => buildArray(level + 1, [...localIndices, idx]));
+            return axes[level].map((value, index) => buildArray(
+              level + 1,
+              [...localValues, value],
+              [...localIndices, index],
+            ));
           };
-          return buildArray(0, []);
+          return buildArray(0, [], []);
         }
         if (node.name === "map") {
           if (node.args.length !== 2) {

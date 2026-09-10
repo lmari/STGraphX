@@ -68,7 +68,7 @@
         }
       ],
       "stateTransition": "(neig==3) or (this and (neig==2))",
-      "initialState": "array([n,n],rand()<0.2)"
+      "initialState": "array(n,n,rand()<0.2)"
     },
     {
       "id": 6,
@@ -92,7 +92,7 @@
         }
       ],
       "input": false,
-      "valueExpression": "array(size(x),sum(neighbors(x,$0,$1,1,1)))"
+      "valueExpression": "array(size(x,0),size(x,1),sum(neighbors(x,$0,$1,1,1)))"
     }
   ],
   "edges": [

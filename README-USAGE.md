@@ -63,14 +63,16 @@ Esempi:
     - `range(1,5)` -> `[1,2,3,4]`
     - `range(0,10,2)` -> `[0,2,4,6,8]`
 
-- `array(dim, expr)`
-- `array([d0,d1,...], expr)`
-  - costruisce un vettore o una matrice valutando `expr` per ogni elemento
-  - dentro `expr`, `$0`, `$1`, ... sono gli indici locali
+- `array(axis0[, axis1, ...], expr)`
+  - costruisce un vettore, una matrice o un array multidimensionale valutando `expr` per ogni combinazione degli assi
+  - ogni asse puo essere un intero `n`, equivalente ai valori `0,...,n-1`, oppure un vettore che contiene direttamente i valori dell'asse
+  - dentro `expr`, `$0`, `$1`, ... sono i valori correnti degli assi e `$i0`, `$i1`, ... i rispettivi indici da zero
   - esempi:
     - `array(3, 0)` -> `[0,0,0]`
     - `array(3, $0*2)` -> `[0,2,4]`
-    - `array([2,3], $0+$1)` -> `[[0,1,2],[1,2,3]]`
+    - `array(range(-2,3), $0)` -> `[-2,-1,0,1,2]`
+    - `array(2, 3, $0+$1)` -> `[[0,1,2],[1,2,3]]`
+    - `array(range(-2,3), $i0)` -> `[0,1,2,3,4]`
 
 ### Accesso e slicing
 

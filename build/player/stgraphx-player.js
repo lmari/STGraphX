@@ -1,6 +1,6 @@
 /*!
  * STGraphX Embedded Player Bundle
- * Generated: 2026-09-04T18:27:43.977Z
+ * Generated: 2026-09-10T14:23:54.531Z
  */
 
 /* --- i18n-inline.js --- */
@@ -13,7 +13,7 @@
 
 window.STGraphXAppMeta = {
   author: "Luca Mari",
-  releaseDate: "2026.08.21",
+  releaseDate: "2026.09.09",
   license: "MPL-2.0",
   copyright: "Copyright (c) 2026 Luca Mari",
 };
@@ -95,6 +95,8 @@ window.STGraphXI18nBundles = {
     "context.node.newLinked": "Nuovo nodo collegato",
     "context.node.rename": "Rinomina nodo",
     "context.widget.copy": "Copia contenuto",
+    "context.widget.hideTitleBar": "Nascondi barra del titolo",
+    "context.widget.showTitleBar": "Mostra barra del titolo",
     "context.widget.delete": "Elimina",
     "context.widget.minimize": "Minimizza",
     "context.widget.restore": "Ripristina",
@@ -169,7 +171,9 @@ window.STGraphXI18nBundles = {
     "expr.filter.placeholder": "Filtra simboli...",
     "expr.help.abs": "Valore assoluto.",
     "expr.help.acos": "Arcocoseno.",
-    "expr.help.array": "array(dim oppure [d0,d1,...], expr): costruisce un array valutando expr per ogni elemento; $0, $1, ... sono gli indici locali.",
+    "expr.help.array": "array(asse0[, asse1, ...], expr): costruisce un array valutando expr per ogni combinazione degli assi. Un asse puo essere un intero n (valori 0,...,n-1) oppure un vettore di valori. $0, $1, ... sono i valori degli assi; $i0, $i1, ... i rispettivi indici.",
+    "expr.help.arrayAxisValue": "In array(...), valore corrente del primo asse ($0), del secondo ($1), e cosi via.",
+    "expr.help.arrayAxisIndex": "In array(...), indice da zero del primo asse ($i0), del secondo ($i1), e cosi via.",
     "expr.help.append": "append(vettore, valore|vettore), append(valore, vettore) oppure append(matrice, vettore-riga): aggiunge o antepone un elemento a un vettore, concatena due vettori, oppure aggiunge una riga a una matrice. Esempi: append([1,2], 3) ; append(1, [2,3]) ; append([1,2], [3,4]) ; append([[1,2],[3,4]], [5,6]).",
     "expr.help.average": "average(array[, asse]): media aritmetica di un vettore o di una matrice. Per una matrice senza asse restituisce la media complessiva; con asse=0 restituisce le medie per colonna, con asse=1 le medie per riga. Esempi: average([1,2,3]) -> 2 ; average([[1,2],[3,4]]) -> 2.5 ; average([[1,2],[3,4]], 0) -> [2,3].",
     "expr.help.asin": "Arcoseno.",
@@ -359,6 +363,8 @@ window.STGraphXI18nBundles = {
     "expr.error.arrayTooLarge": "L'array è troppo grande",
     "expr.error.arrayNeedsDimension": "array richiede almeno una dimensione",
     "expr.error.arrayDimensionNonNegative": "La dimensione {index} di array deve essere un intero non negativo",
+    "expr.error.arrayNeedsAxisExpression": "array richiede almeno un asse e un'espressione",
+    "expr.error.arrayAxisIntegerOrVector": "L'asse {index} di array deve essere un intero non negativo o un vettore",
     "expr.error.specialForm": "Questa è una forma speciale dell'espressione",
     "expr.error.getPropertyOnlyNode": "getProperty è disponibile solo nelle espressioni dei nodi",
     "expr.error.setPropertyOnlyNode": "setProperty è disponibile solo nelle espressioni dei nodi",
@@ -606,7 +612,7 @@ window.STGraphXI18nBundles = {
     "panel.widgetSelect": "Selettore",
     "panel.widgetSlider": "Slider",
     "panel.widgetTable": "Tabella",
-    "panel.widgetText": "Testo",
+    "panel.widgetText": "Testo output",
     "placeholder.submodelBinding": "Binding opzionale",
     "prompt.saveAs": "Nome file JSON",
     "prompt.saveCsv": "Nome file CSV",
@@ -833,7 +839,7 @@ window.STGraphXI18nBundles = {
     "widget.selectOption.2": "Opzione 2",
     "widget.selectOption.n": "Opzione {index}",
     "widget.textSourceLabel": "Nodo",
-    "widget.textTitle": "Testo {id}",
+    "widget.textTitle": "Testo output {id}",
     "widget.textMappings": "Mappature testo",
     "widget.ledInvalid": "Valore non booleano",
     "widget.ledSourceLabel": "Nodo",
@@ -861,7 +867,7 @@ window.STGraphXI18nBundles = {
     "widget.matrixColorScheme.grayscale": "Scala di grigi",
     "widget.matrixColorScheme.diverging": "Divergente",
     "widget.matrixColorScheme.none": "Nessuno",
-    "widget.matrixSourceLabel": "Nodo matrice",
+    "widget.matrixSourceLabel": "Nodo",
     "widget.matrixTitle": "Matrice {id}",
     "widget.minimize": "Minimizza",
     "widget.moveDown": "Sposta giu",
@@ -903,6 +909,9 @@ window.STGraphXI18nBundles = {
     "widget.showHistory": "Serie storica",
     "widget.expandNonScalarValues": "Espandi valori non scalari",
     "widget.tableFontSize": "Font valori",
+    "widget.tableNodes": "Nodi",
+    "widget.fontSize": "Font",
+    "widget.showTitleBar": "Visualizza",
     "widget.tableAlign": "Allineamento",
     "widget.tableAlign.left": "Sinistra",
     "widget.tableAlign.center": "Centro",
@@ -1081,6 +1090,8 @@ window.STGraphXI18nBundles = {
     "context.node.newLinked": "New linked node",
     "context.node.rename": "Rename node",
     "context.widget.copy": "Copy content",
+    "context.widget.hideTitleBar": "Hide title bar",
+    "context.widget.showTitleBar": "Show title bar",
     "context.widget.delete": "Delete",
     "context.widget.minimize": "Minimize",
     "context.widget.restore": "Restore",
@@ -1155,7 +1166,9 @@ window.STGraphXI18nBundles = {
     "expr.filter.placeholder": "Filter symbols...",
     "expr.help.abs": "Absolute value.",
     "expr.help.acos": "Arc cosine.",
-    "expr.help.array": "array(dim or [d0,d1,...], expr): builds an array by evaluating expr for each element; $0, $1, ... are local indices.",
+    "expr.help.array": "array(axis0[, axis1, ...], expr): builds an array by evaluating expr for every combination of axes. An axis can be an integer n (values 0,...,n-1) or a vector of values. $0, $1, ... are axis values; $i0, $i1, ... are their indices.",
+    "expr.help.arrayAxisValue": "In array(...), current value of the first axis ($0), second axis ($1), and so on.",
+    "expr.help.arrayAxisIndex": "In array(...), zero-based index of the first axis ($i0), second axis ($i1), and so on.",
     "expr.help.append": "append(vector, value|vector), append(value, vector), or append(matrix, rowVector): appends or prepends an element to a vector, concatenates two vectors, or appends a row to a matrix. Examples: append([1,2], 3) ; append(1, [2,3]) ; append([1,2], [3,4]) ; append([[1,2],[3,4]], [5,6]).",
     "expr.help.average": "average(array[, axis]): arithmetic mean of a vector or matrix. For a matrix without axis it returns the overall mean; with axis=0 it returns column means, with axis=1 row means. Examples: average([1,2,3]) -> 2 ; average([[1,2],[3,4]]) -> 2.5 ; average([[1,2],[3,4]], 0) -> [2,3].",
     "expr.help.asin": "Arc sine.",
@@ -1345,6 +1358,8 @@ window.STGraphXI18nBundles = {
     "expr.error.arrayTooLarge": "Array is too large",
     "expr.error.arrayNeedsDimension": "array requires at least one dimension",
     "expr.error.arrayDimensionNonNegative": "Array dimension {index} must be a non-negative integer",
+    "expr.error.arrayNeedsAxisExpression": "array requires at least one axis and an expression",
+    "expr.error.arrayAxisIntegerOrVector": "Array axis {index} must be a non-negative integer or a vector",
     "expr.error.specialForm": "This is a special expression form",
     "expr.error.getPropertyOnlyNode": "getProperty is only available in node expressions",
     "expr.error.setPropertyOnlyNode": "setProperty is only available in node expressions",
@@ -1592,7 +1607,7 @@ window.STGraphXI18nBundles = {
     "panel.widgetSelect": "Selector",
     "panel.widgetSlider": "Slider",
     "panel.widgetTable": "Table",
-    "panel.widgetText": "Text",
+    "panel.widgetText": "Output text",
     "placeholder.submodelBinding": "Optional binding",
     "prompt.saveAs": "JSON filename",
     "prompt.saveCsv": "CSV filename",
@@ -1819,7 +1834,7 @@ window.STGraphXI18nBundles = {
     "widget.selectOption.2": "Option 2",
     "widget.selectOption.n": "Option {index}",
     "widget.textSourceLabel": "Node",
-    "widget.textTitle": "Text {id}",
+    "widget.textTitle": "Output text {id}",
     "widget.textMappings": "Text mappings",
     "widget.ledInvalid": "Non-boolean value",
     "widget.ledSourceLabel": "Node",
@@ -1847,7 +1862,7 @@ window.STGraphXI18nBundles = {
     "widget.matrixColorScheme.grayscale": "Grayscale",
     "widget.matrixColorScheme.diverging": "Diverging",
     "widget.matrixColorScheme.none": "None",
-    "widget.matrixSourceLabel": "Matrix node",
+    "widget.matrixSourceLabel": "Node",
     "widget.matrixTitle": "Matrix {id}",
     "widget.minimize": "Minimize",
     "widget.moveDown": "Move down",
@@ -1889,6 +1904,9 @@ window.STGraphXI18nBundles = {
     "widget.showHistory": "History series",
     "widget.expandNonScalarValues": "Expand non-scalar values",
     "widget.tableFontSize": "Value font",
+    "widget.tableNodes": "Nodes",
+    "widget.fontSize": "Font",
+    "widget.showTitleBar": "Show",
     "widget.tableAlign": "Alignment",
     "widget.tableAlign.left": "Left",
     "widget.tableAlign.center": "Center",
@@ -3544,6 +3562,8 @@ window.STGraphXI18nBundles = {
       self: { kind: "variable", signature: "self", descriptionKey: "expr.help.self", helpSection: "agent" },
       $i: { kind: "variable", signature: "$i", descriptionKey: "expr.help.agentIndex", helpSection: "agent" },
       $j: { kind: "variable", signature: "$j", descriptionKey: "expr.help.agentColumnIndex", helpSection: "agent" },
+      $0: { kind: "variable", signature: "$0, $1, ...", descriptionKey: "expr.help.arrayAxisValue" },
+      $i0: { kind: "variable", signature: "$i0, $i1, ...", descriptionKey: "expr.help.arrayAxisIndex" },
       time: { kind: "variable", signature: "time", descriptionKey: "expr.help.time" },
       t0: { kind: "variable", signature: "t0", descriptionKey: "expr.help.t0" },
       t1: { kind: "variable", signature: "t1", descriptionKey: "expr.help.t1" },
@@ -3577,7 +3597,7 @@ window.STGraphXI18nBundles = {
       agentIndicesWhere: { kind: "agent", signature: "agentIndicesWhere(cond, agents)", descriptionKey: "expr.help.agentIndicesWhere", insertText: "agentIndicesWhere()", cursorOffset: 18, helpSection: "agent" },
       filterAgents: { kind: "agent", signature: "filterAgents(cond, agents)", descriptionKey: "expr.help.filterAgents", insertText: "filterAgents()", cursorOffset: 13, helpSection: "agent" },
       mapAgents: { kind: "agent", signature: "mapAgents(expr, agents)", descriptionKey: "expr.help.mapAgents", insertText: "mapAgents()", cursorOffset: 10, helpSection: "agent" },
-      array: { kind: "array", signature: "array(dim | [d0,d1,...], expr)", descriptionKey: "expr.help.array", insertText: "array()", cursorOffset: 6 },
+      array: { kind: "array", signature: "array(axis0[, axis1, ...], expr)", descriptionKey: "expr.help.array", insertText: "array()", cursorOffset: 6 },
       map: { kind: "function", signature: "map(expr, array)", descriptionKey: "expr.help.map", insertText: "map()", cursorOffset: 4 },
       filter: { kind: "array", signature: "filter(cond, array[, mode])", descriptionKey: "expr.help.filter", insertText: "filter()", cursorOffset: 7 },
       reduce: { kind: "function", signature: "reduce(op|fn, vector[, init]) | reduce(op|fn, matrix, axis[, init])", descriptionKey: "expr.help.reduce", insertText: "reduce()", cursorOffset: 7 },
@@ -4031,7 +4051,7 @@ window.STGraphXI18nBundles = {
             k += 1;
           }
           const isFunctionCall = src[k] === "(";
-          if (prev !== "." && !isFunctionCall && !skipped.has(token) && !/^\$[0-9]+$/u.test(token)) {
+          if (prev !== "." && !isFunctionCall && !skipped.has(token) && !/^\$(?:i)?[0-9]+$/u.test(token)) {
             refs.add(token);
           }
           i = j;
@@ -4397,6 +4417,16 @@ window.STGraphXI18nBundles = {
       case "call":
         if (!knownNames.has(node.name)) {
           throw new ReferenceError(`${node.name} is not defined`);
+        }
+        if (node.name === "array" && node.args.length >= 2) {
+          node.args.slice(0, -1).forEach((arg) => validateAstReferences(arg, knownNames));
+          const localKnownNames = new Set(knownNames);
+          node.args.slice(0, -1).forEach((_, index) => {
+            localKnownNames.add(`$${index}`);
+            localKnownNames.add(`$i${index}`);
+          });
+          validateAstReferences(node.args[node.args.length - 1], localKnownNames);
+          return;
         }
         (node.args || []).forEach((arg) => validateAstReferences(arg, knownNames));
         return;
@@ -5293,37 +5323,45 @@ window.STGraphXI18nBundles = {
           return vectorizedConditionalOperation(condition, whenTrue, whenFalse);
         }
         if (node.name === "array") {
-          if (node.args.length !== 2) {
-            throw new Error("array expects exactly 2 arguments");
+          if (node.args.length < 2) {
+            throw new Error("array expects at least one axis and an expression");
           }
-          const dimsValue = evaluateAstNode(node.args[0], scope, hooks);
-          const dims = Array.isArray(dimsValue) ? dimsValue.slice() : [dimsValue];
-          if (!dims.length) {
-            throw new Error("array requires at least one dimension");
-          }
-          const normalizedDims = dims.map((dim, idx) => {
-            const value = Number(dim);
-            if (!Number.isInteger(value) || value < 0) {
-              throw new Error(`array dimension ${idx} must be a non-negative integer`);
+          const axes = node.args.slice(0, -1).map((axisNode, idx) => {
+            const axisValue = evaluateAstNode(axisNode, scope, hooks);
+            if (Array.isArray(axisValue)) {
+              if (axisValue.some((value) => Array.isArray(value))) {
+                throw new Error(`array axis ${idx} must be a non-negative integer or a vector`);
+              }
+              return axisValue.slice();
             }
-            return value;
+            const size = Number(axisValue);
+            if (!Number.isInteger(size) || size < 0) {
+              throw new Error(`array axis ${idx} must be a non-negative integer or a vector`);
+            }
+            return Array.from({ length: size }, (_, index) => index);
           });
-          const totalSize = normalizedDims.reduce((acc, value) => acc * Math.max(1, value), 1);
+          const totalSize = axes.reduce((acc, axis) => acc * Math.max(1, axis.length), 1);
           if (totalSize > 100000) {
             throw new Error("array is too large");
           }
-          const buildArray = (level, localIndices) => {
-            if (level >= normalizedDims.length) {
+          const buildArray = (level, localValues, localIndices) => {
+            if (level >= axes.length) {
               const localScope = { ...scope };
-              localIndices.forEach((value, idx) => {
+              localValues.forEach((value, idx) => {
                 localScope[`$${idx}`] = value;
               });
-              return evaluateAstNode(node.args[1], localScope, hooks);
+              localIndices.forEach((index, idx) => {
+                localScope[`$i${idx}`] = index;
+              });
+              return evaluateAstNode(node.args[node.args.length - 1], localScope, hooks);
             }
-            const size = normalizedDims[level];
-            return Array.from({ length: size }, (_, idx) => buildArray(level + 1, [...localIndices, idx]));
+            return axes[level].map((value, index) => buildArray(
+              level + 1,
+              [...localValues, value],
+              [...localIndices, index],
+            ));
           };
-          return buildArray(0, []);
+          return buildArray(0, [], []);
         }
         if (node.name === "map") {
           if (node.args.length !== 2) {
@@ -9530,10 +9568,13 @@ window.STGraphXI18nBundles = {
       width: clamp(Number(widget?.width) || 280, 120, 1200),
       height: clamp(Number(widget?.height) || 120, 72, 900),
       minimized: Boolean(widget?.minimized),
+      showTitleBar: widget?.showTitleBar !== false,
+      fontSize: Number.isFinite(Number(widget?.fontSize))
+        ? clamp(Math.round(Number(widget.fontSize)), 8, 32)
+        : (Number.isFinite(Number(widget?.tableFontSize)) ? clamp(Math.round(Number(widget.tableFontSize)), 8, 32) : 13),
       outputOnly: Boolean(widget?.outputOnly),
       showHistory: Boolean(widget?.showHistory),
       expandNonScalarValues: Boolean(widget?.expandNonScalarValues) && !Boolean(widget?.showHistory),
-      tableFontSize: Number.isFinite(Number(widget?.tableFontSize)) ? clamp(Math.round(Number(widget.tableFontSize)), 8, 32) : 13,
       tableTextAlign: ["left", "center", "right"].includes(String(widget?.tableTextAlign ?? "")) ? String(widget.tableTextAlign) : "left",
       tableDecimalDigits: Number.isInteger(Number(widget?.tableDecimalDigits)) && Number(widget.tableDecimalDigits) >= 0 && Number(widget.tableDecimalDigits) <= 12
         ? Number(widget.tableDecimalDigits)
@@ -9717,7 +9758,7 @@ window.STGraphXI18nBundles = {
     }
   }
 
-  function drawSimpleXYChart(canvas, pairs, execution) {
+  function drawSimpleXYChart(canvas, pairs, execution, fontSize = 11) {
     const ctx = canvas.getContext("2d");
     if (!ctx) {
       return;
@@ -9739,7 +9780,7 @@ window.STGraphXI18nBundles = {
       .filter((pair) => pair.points.length > 0);
     if (!series.length) {
       ctx.fillStyle = "#6b7a89";
-      ctx.font = "12px sans-serif";
+      ctx.font = `${Math.max(8, fontSize)}px sans-serif`;
       ctx.fillText("—", width / 2 - 4, height / 2 + 4);
       return;
     }
@@ -9810,7 +9851,7 @@ window.STGraphXI18nBundles = {
     });
 
     ctx.fillStyle = "#506070";
-    ctx.font = "11px sans-serif";
+    ctx.font = `${Math.max(8, fontSize)}px sans-serif`;
     ctx.fillText(formatNumberValue(execution, minX), pad, height - 4);
     ctx.fillText(formatNumberValue(execution, maxX), width - pad - 24, height - 4);
     ctx.fillText(formatNumberValue(execution, maxY), 4, pad + 4);
@@ -9857,7 +9898,7 @@ window.STGraphXI18nBundles = {
           ctx.fill();
         }
         ctx.fillStyle = "#334b60";
-        ctx.font = "11px sans-serif";
+        ctx.font = `${Math.max(8, fontSize)}px sans-serif`;
         ctx.fillText(item.label.slice(0, 22), left + 32, y + 4);
       });
     }
@@ -9949,7 +9990,7 @@ window.STGraphXI18nBundles = {
     ctx.fillRect(0, 0, width, height);
     ctx.textAlign = "center";
     ctx.textBaseline = "middle";
-    ctx.font = `${Math.max(8, Math.floor(cellSize * 0.45))}px Georgia, serif`;
+    ctx.font = `${Math.min(widget.fontSize, Math.max(8, Math.floor(cellSize * 0.45)))}px Georgia, serif`;
 
     for (let rowIdx = 0; rowIdx < displayRows; rowIdx += 1) {
       for (let colIdx = 0; colIdx < displayCols; colIdx += 1) {
@@ -10200,9 +10241,12 @@ window.STGraphXI18nBundles = {
             flex: 1 1 auto;
             min-height: 0;
             padding: calc(10px * var(--widget-scale));
-            font-size: calc(0.9rem * var(--widget-scale));
+            font-size: calc(var(--widget-font-size, 13px) * var(--widget-scale));
             overflow: auto;
             box-sizing: border-box;
+          }
+          .widget-body input, .widget-body select, .widget-body button {
+            font-size: inherit;
           }
           .widget-value {
             white-space: pre-wrap;
@@ -10225,10 +10269,13 @@ window.STGraphXI18nBundles = {
             font-variant-numeric: tabular-nums;
             font-size: inherit;
           }
-          .widget-table tbody td {
+          .widget-table th, .widget-table tbody td {
             font-size: calc(var(--table-value-font-size, 0.9rem) * var(--widget-scale));
+          }
+          .widget-table tbody td {
             text-align: var(--table-value-align, left);
           }
+          .widget.title-bar-hidden .widget-header { display: none; }
           .widget-table th, .matrix-table th {
             position: sticky;
             top: 0;
@@ -10318,7 +10365,7 @@ window.STGraphXI18nBundles = {
             justify-content: center;
             padding: 5px;
             text-align: center;
-            font-size: 0.72rem;
+            font-size: 0.9em;
             font-weight: 700;
             line-height: 1.05;
             color: #17334d;
@@ -10328,7 +10375,7 @@ window.STGraphXI18nBundles = {
           .led-message {
             max-width: 100%;
             text-align: center;
-            font-size: 0.78rem;
+            font-size: inherit;
             line-height: 1.2;
             color: #3f566a;
             word-break: break-word;
@@ -10376,7 +10423,7 @@ window.STGraphXI18nBundles = {
             align-items: center;
           }
           .slider-bound {
-            font-size: 11px;
+            font-size: 0.85em;
             color: #4e6072;
             white-space: nowrap;
           }
@@ -11607,7 +11654,9 @@ window.STGraphXI18nBundles = {
         const position = this.dashboardItemPosition(widget);
         const root = document.createElement("div");
         root.className = "widget";
+        root.classList.toggle("title-bar-hidden", widget.showTitleBar === false);
         root.style.setProperty("--widget-scale", String(zoom));
+        root.style.setProperty("--widget-font-size", `${widget.fontSize}px`);
         root.style.left = `${(position.x - bounds.minX) * zoom}px`;
         root.style.top = `${(position.y - bounds.minY) * zoom}px`;
         root.style.width = `${widget.width * zoom}px`;
@@ -11619,7 +11668,9 @@ window.STGraphXI18nBundles = {
         const body = document.createElement("div");
         body.className = "widget-body";
         this.renderWidgetBody(body, widget);
-        root.appendChild(header);
+        if (widget.showTitleBar !== false) {
+          root.appendChild(header);
+        }
         root.appendChild(body);
         this.$widgets.appendChild(root);
       });
@@ -11728,7 +11779,7 @@ window.STGraphXI18nBundles = {
         const rows = Array.isArray(widgetState?.rows) ? widgetState.rows : [];
         const table = document.createElement("table");
         table.className = "widget-table";
-        table.style.setProperty("--table-value-font-size", `${widget.tableFontSize}px`);
+        table.style.setProperty("--table-value-font-size", `${widget.fontSize}px`);
         table.style.setProperty("--table-value-align", widget.tableTextAlign);
         const displayedColumns = widget.outputOnly
           ? widget.columns.filter((name) => name === "time" || nodeMap.get(name)?.output)
@@ -11838,7 +11889,7 @@ window.STGraphXI18nBundles = {
         canvas.style.display = "block";
         canvas.width = Math.max(160, Math.floor(widget.width * this._zoom - 24));
         canvas.height = Math.max(120, Math.floor(widget.height * this._zoom - 54));
-        drawSimpleXYChart(canvas, widgetState?.pairs || widget.xyPairs || [], execution);
+        drawSimpleXYChart(canvas, widgetState?.pairs || widget.xyPairs || [], execution, widget.fontSize);
         body.appendChild(canvas);
         return;
       }

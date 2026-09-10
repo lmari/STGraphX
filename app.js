@@ -1936,9 +1936,16 @@ function localizeExpressionErrorMessage(message) {
   if (lower === "array requires at least one dimension") {
     return t("expr.error.arrayNeedsDimension");
   }
+  if (lower === "array expects at least one axis and an expression") {
+    return t("expr.error.arrayNeedsAxisExpression");
+  }
   const arrayDimMatch = raw.match(/^array dimension (\d+) must be a non-negative integer$/i);
   if (arrayDimMatch) {
     return t("expr.error.arrayDimensionNonNegative", { index: arrayDimMatch[1] });
+  }
+  const arrayAxisMatch = raw.match(/^array axis (\d+) must be a non-negative integer or a vector$/i);
+  if (arrayAxisMatch) {
+    return t("expr.error.arrayAxisIntegerOrVector", { index: arrayAxisMatch[1] });
   }
   if (lower === "array is a special expression form" || lower === "map is a special expression form" || lower === "filter is a special expression form" || lower === "reduce is a special expression form" || lower === "append is a special expression form") {
     return t("expr.error.specialForm");
@@ -4089,7 +4096,7 @@ function expressionTokenClass(name, entryMap) {
   if (name === "true" || name === "false" || name === "null") {
     return "expression-token-keyword";
   }
-  if (/^\$[0-9]+$/u.test(name) || name === "$value") {
+  if (/^\$(?:i)?[0-9]+$/u.test(name) || name === "$value") {
     return "expression-token-variable";
   }
   const entry = entryMap.get(name);
@@ -7907,10 +7914,13 @@ function exportGraphData() {
       height: w.height,
       dashboardPageId: normalizeDashboardPageId(w.dashboardPageId),
       minimized: Boolean(w.minimized),
+      showTitleBar: w.showTitleBar !== false,
+      fontSize: Number.isFinite(Number(w.fontSize))
+        ? clamp(Math.round(Number(w.fontSize)), 8, 32)
+        : (Number.isFinite(Number(w.tableFontSize)) ? clamp(Math.round(Number(w.tableFontSize)), 8, 32) : 13),
       outputOnly: Boolean(w.outputOnly),
       showHistory: Boolean(w.showHistory),
       expandNonScalarValues: Boolean(w.expandNonScalarValues),
-      tableFontSize: Number.isFinite(Number(w.tableFontSize)) ? clamp(Math.round(Number(w.tableFontSize)), 8, 32) : 13,
       tableTextAlign: ["left", "center", "right"].includes(String(w.tableTextAlign ?? "")) ? String(w.tableTextAlign) : "left",
       tableDecimalDigits: Number.isInteger(Number(w.tableDecimalDigits)) && Number(w.tableDecimalDigits) >= 0 && Number(w.tableDecimalDigits) <= 12
         ? Number(w.tableDecimalDigits)
@@ -8159,10 +8169,13 @@ function applyGraphData(data) {
         height: clamp(Number(w.height) || 160, widgetMinDimensions(w).height, 900),
         dashboardPageId: normalizeDashboardPageId(w.dashboardPageId),
         minimized: Boolean(w.minimized),
+        showTitleBar: w.showTitleBar !== false,
+        fontSize: Number.isFinite(Number(w.fontSize))
+          ? clamp(Math.round(Number(w.fontSize)), 8, 32)
+          : (Number.isFinite(Number(w.tableFontSize)) ? clamp(Math.round(Number(w.tableFontSize)), 8, 32) : 13),
         outputOnly: Boolean(w.outputOnly),
         showHistory: Boolean(w.showHistory),
         expandNonScalarValues: Boolean(w.expandNonScalarValues) && !Boolean(w.showHistory),
-        tableFontSize: Number.isFinite(Number(w.tableFontSize)) ? clamp(Math.round(Number(w.tableFontSize)), 8, 32) : 13,
         tableTextAlign: ["left", "center", "right"].includes(String(w.tableTextAlign ?? "")) ? String(w.tableTextAlign) : "left",
         tableDecimalDigits: Number.isInteger(Number(w.tableDecimalDigits)) && Number(w.tableDecimalDigits) >= 0 && Number(w.tableDecimalDigits) <= 12
           ? Number(w.tableDecimalDigits)
@@ -8846,10 +8859,138 @@ function buildEdgeGeometry(edge) {
   return { path, points };
 }
 
+function rectangleOverlapArea(left, right, gap = 0) {
+  const leftEdge = Math.max(left.x - gap, right.x);
+  const topEdge = Math.max(left.y - gap, right.y);
+  const rightEdge = Math.min(left.x + left.width + gap, right.x + right.width);
+  const bottomEdge = Math.min(left.y + left.height + gap, right.y + right.height);
+  return Math.max(0, rightEdge - leftEdge) * Math.max(0, bottomEdge - topEdge);
+}
+
+function visibleCanvasBounds() {
+  const rect = graphViewport.getBoundingClientRect();
+  const inset = Math.min(32, Math.max(8, Math.min(rect.width, rect.height) / 12));
+  const topLeft = svgPointFromClient(rect.left + inset, rect.top + inset);
+  const bottomRight = svgPointFromClient(rect.right - inset, rect.bottom - inset);
+  return {
+    x: Math.min(topLeft.x, bottomRight.x),
+    y: Math.min(topLeft.y, bottomRight.y),
+    width: Math.abs(bottomRight.x - topLeft.x),
+    height: Math.abs(bottomRight.y - topLeft.y),
+  };
+}
+
+function visibleCanvasObstacles() {
+  const obstacles = [];
+  const visibleNodeIds = visiblePresentationNodeIds();
+  graph.nodes.filter((node) => visibleNodeIds.has(node.id)).forEach((node) => {
+    obstacles.push({
+      x: node.x - node.width / 2,
+      y: node.y - node.height / 2,
+      width: node.width,
+      height: node.height,
+    });
+  });
+  if (!ui.showWidgets) {
+    return obstacles;
+  }
+  graph.widgets.filter((widget) => widget && isDashboardItemVisible(widget)).forEach((widget) => {
+    const position = dashboardItemPosition(widget);
+    if (!position || !Number.isFinite(Number(position.x)) || !Number.isFinite(Number(position.y))) {
+      return;
+    }
+    obstacles.push({
+      x: position.x,
+      y: position.y,
+      width: Number(widget.width) || 0,
+      height: Number(widget.minimized ? 36 : widget.height) || 0,
+    });
+  });
+  graph.textItems.filter((item) => item && isDashboardItemVisible(item)).forEach((item) => {
+    const position = dashboardItemPosition(item);
+    if (!position || !Number.isFinite(Number(position.x)) || !Number.isFinite(Number(position.y))) {
+      return;
+    }
+    obstacles.push({ x: position.x, y: position.y, width: item.width, height: item.height });
+  });
+  if (graph.dashboard && graph.dashboard.visible !== false) {
+    obstacles.push({
+      x: graph.dashboard.x,
+      y: graph.dashboard.y,
+      width: graph.dashboard.width,
+      height: graph.dashboard.height,
+    });
+  }
+  return obstacles;
+}
+
+// Returns a top-left graph coordinate that is visible and does not cover existing content.
+function getSmartCanvasInsertionPoint({ width, height, anchor = null } = {}) {
+  const itemWidth = Math.max(1, Number(width) || 1);
+  const itemHeight = Math.max(1, Number(height) || 1);
+  const visible = visibleCanvasBounds();
+  const minX = visible.x;
+  const minY = visible.y;
+  const maxX = Math.max(minX, visible.x + visible.width - itemWidth);
+  const maxY = Math.max(minY, visible.y + visible.height - itemHeight);
+  const centerX = Number.isFinite(Number(anchor?.x)) ? Number(anchor.x) : visible.x + visible.width / 2;
+  const centerY = Number.isFinite(Number(anchor?.y)) ? Number(anchor.y) : visible.y + visible.height / 2;
+  const initial = {
+    x: clamp(centerX - itemWidth / 2, minX, maxX),
+    y: clamp(centerY - itemHeight / 2, minY, maxY),
+  };
+  const obstacles = visibleCanvasObstacles();
+  const step = Math.max(24, ui.gridSize || 20);
+  const offsets = [{ x: 0, y: 0 }];
+  // Cover the whole visible canvas, not just a fixed area around its centre.
+  const maxRing = Math.min(100, Math.ceil(Math.max(visible.width, visible.height) / step) + 1);
+  for (let ring = 1; ring <= maxRing; ring += 1) {
+    for (let dx = -ring; dx <= ring; dx += 1) {
+      offsets.push({ x: dx, y: -ring }, { x: dx, y: ring });
+    }
+    for (let dy = -ring + 1; dy < ring; dy += 1) {
+      offsets.push({ x: -ring, y: dy }, { x: ring, y: dy });
+    }
+  }
+  const seen = new Set();
+  let leastObstructed = null;
+  for (const offset of offsets) {
+    const candidate = {
+      x: clamp(snap(clamp(initial.x + offset.x * step, minX, maxX)), minX, maxX),
+      y: clamp(snap(clamp(initial.y + offset.y * step, minY, maxY)), minY, maxY),
+      width: itemWidth,
+      height: itemHeight,
+    };
+    const key = `${candidate.x}:${candidate.y}`;
+    if (seen.has(key)) continue;
+    seen.add(key);
+    const overlapArea = obstacles.reduce(
+      (total, obstacle) => total + rectangleOverlapArea(candidate, obstacle, 16),
+      0,
+    );
+    if (overlapArea === 0) {
+      return { x: candidate.x, y: candidate.y };
+    }
+    if (!leastObstructed || overlapArea < leastObstructed.overlapArea) {
+      leastObstructed = { x: candidate.x, y: candidate.y, overlapArea };
+    }
+  }
+  if (leastObstructed) {
+    return { x: leastObstructed.x, y: leastObstructed.y };
+  }
+  return {
+    x: clamp(snap(initial.x), minX, maxX),
+    y: clamp(snap(initial.y), minY, maxY),
+  };
+}
+
 function addNode(shape, atPoint = null) {
   const id = nodeCounter++;
-  const px = snap(atPoint ? atPoint.x : 180 + (id % 5) * 120);
-  const py = snap(atPoint ? atPoint.y : 140 + Math.floor(id / 5) * 90);
+  const width = 120;
+  const height = 70;
+  const position = getSmartCanvasInsertionPoint({ width, height, anchor: atPoint });
+  const px = position.x + width / 2;
+  const py = position.y + height / 2;
   const defaultName = semantics.makeUniqueName(graph.nodes, t("node.defaultName", { id }), null, "n");
   const node = {
     id,
@@ -8860,8 +9001,8 @@ function addNode(shape, atPoint = null) {
     shape,
     x: px,
     y: py,
-    width: 120,
-    height: 70,
+    width,
+    height,
     fillColor: "",
     strokeColor: "",
     valueExpression: "",
@@ -10558,10 +10699,13 @@ function importGraphData(data) {
         }).height, 900),
         dashboardPageId: normalizeDashboardPageId(w.dashboardPageId),
         minimized: Boolean(w.minimized),
+        showTitleBar: w.showTitleBar !== false,
+        fontSize: Number.isFinite(Number(w.fontSize))
+          ? clamp(Math.round(Number(w.fontSize)), 8, 32)
+          : (Number.isFinite(Number(w.tableFontSize)) ? clamp(Math.round(Number(w.tableFontSize)), 8, 32) : 13),
         outputOnly: Boolean(w.outputOnly),
         showHistory: Boolean(w.showHistory),
         expandNonScalarValues: Boolean(w.expandNonScalarValues) && !Boolean(w.showHistory),
-        tableFontSize: Number.isFinite(Number(w.tableFontSize)) ? clamp(Math.round(Number(w.tableFontSize)), 8, 32) : 13,
         tableTextAlign: ["left", "center", "right"].includes(String(w.tableTextAlign ?? "")) ? String(w.tableTextAlign) : "left",
         tableDecimalDigits: Number.isInteger(Number(w.tableDecimalDigits)) && Number(w.tableDecimalDigits) >= 0 && Number(w.tableDecimalDigits) <= 12
           ? Number(w.tableDecimalDigits)
@@ -11102,7 +11246,25 @@ async function refreshAllSubmodelInterfaces() {
 }
 
 async function preloadSubmodelsAfterLoad() {
-  return submodelOrchestrationHelpers.preloadSubmodelsAfterLoad();
+  await submodelOrchestrationHelpers.preloadSubmodelsAfterLoad();
+  refreshInitialValuesAfterSubmodelPreload();
+}
+
+// The first import happens before submodel templates are available. Rebuild the
+// preview once they are loaded, while keeping the model ready to start at t0.
+function refreshInitialValuesAfterSubmodelPreload() {
+  if (!ui.submodelsPrepared || graph.execution.currentTime != null) {
+    return;
+  }
+  const timeValue = Number(graph.execution.t0);
+  if (!Number.isFinite(timeValue)) {
+    return;
+  }
+  clearRuntimeSubmodelState();
+  initializeStateNodes(timeValue);
+  evaluateAtTime(timeValue);
+  graph.execution.currentTime = null;
+  refreshRuntimeView();
 }
 
 async function openSubmodelNode(node) {
@@ -14601,17 +14763,11 @@ async function boot() {
   recentModelsStore.loadFromStorage();
   renderRecentModelsMenu();
 
-  runAction(() => {
-    addNode("rect");
-    addNode("ellipse");
-    clearAllSelection();
-  });
   history.undo = [];
   history.redo = [];
   updateZoomButtons();
   applyCanvasVisibility();
   applyResponsiveUiState();
-  markSavedSnapshot();
   workspace.tabs = [];
   workspace.activeTabId = null;
   workspace.nextTabId = 1;
@@ -14619,6 +14775,9 @@ async function boot() {
   updateModelRunButtons();
   setStatusKey("status.ready");
   render();
+  window.requestAnimationFrame(() => {
+    markSavedSnapshot();
+  });
 }
 
 boot().catch((err) => {

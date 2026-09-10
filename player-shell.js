@@ -252,10 +252,13 @@
       width: clamp(Number(widget?.width) || 280, 120, 1200),
       height: clamp(Number(widget?.height) || 120, 72, 900),
       minimized: Boolean(widget?.minimized),
+      showTitleBar: widget?.showTitleBar !== false,
+      fontSize: Number.isFinite(Number(widget?.fontSize))
+        ? clamp(Math.round(Number(widget.fontSize)), 8, 32)
+        : (Number.isFinite(Number(widget?.tableFontSize)) ? clamp(Math.round(Number(widget.tableFontSize)), 8, 32) : 13),
       outputOnly: Boolean(widget?.outputOnly),
       showHistory: Boolean(widget?.showHistory),
       expandNonScalarValues: Boolean(widget?.expandNonScalarValues) && !Boolean(widget?.showHistory),
-      tableFontSize: Number.isFinite(Number(widget?.tableFontSize)) ? clamp(Math.round(Number(widget.tableFontSize)), 8, 32) : 13,
       tableTextAlign: ["left", "center", "right"].includes(String(widget?.tableTextAlign ?? "")) ? String(widget.tableTextAlign) : "left",
       tableDecimalDigits: Number.isInteger(Number(widget?.tableDecimalDigits)) && Number(widget.tableDecimalDigits) >= 0 && Number(widget.tableDecimalDigits) <= 12
         ? Number(widget.tableDecimalDigits)
@@ -439,7 +442,7 @@
     }
   }
 
-  function drawSimpleXYChart(canvas, pairs, execution) {
+  function drawSimpleXYChart(canvas, pairs, execution, fontSize = 11) {
     const ctx = canvas.getContext("2d");
     if (!ctx) {
       return;
@@ -461,7 +464,7 @@
       .filter((pair) => pair.points.length > 0);
     if (!series.length) {
       ctx.fillStyle = "#6b7a89";
-      ctx.font = "12px sans-serif";
+      ctx.font = `${Math.max(8, fontSize)}px sans-serif`;
       ctx.fillText("—", width / 2 - 4, height / 2 + 4);
       return;
     }
@@ -532,7 +535,7 @@
     });
 
     ctx.fillStyle = "#506070";
-    ctx.font = "11px sans-serif";
+    ctx.font = `${Math.max(8, fontSize)}px sans-serif`;
     ctx.fillText(formatNumberValue(execution, minX), pad, height - 4);
     ctx.fillText(formatNumberValue(execution, maxX), width - pad - 24, height - 4);
     ctx.fillText(formatNumberValue(execution, maxY), 4, pad + 4);
@@ -579,7 +582,7 @@
           ctx.fill();
         }
         ctx.fillStyle = "#334b60";
-        ctx.font = "11px sans-serif";
+        ctx.font = `${Math.max(8, fontSize)}px sans-serif`;
         ctx.fillText(item.label.slice(0, 22), left + 32, y + 4);
       });
     }
@@ -671,7 +674,7 @@
     ctx.fillRect(0, 0, width, height);
     ctx.textAlign = "center";
     ctx.textBaseline = "middle";
-    ctx.font = `${Math.max(8, Math.floor(cellSize * 0.45))}px Georgia, serif`;
+    ctx.font = `${Math.min(widget.fontSize, Math.max(8, Math.floor(cellSize * 0.45)))}px Georgia, serif`;
 
     for (let rowIdx = 0; rowIdx < displayRows; rowIdx += 1) {
       for (let colIdx = 0; colIdx < displayCols; colIdx += 1) {
@@ -922,9 +925,12 @@
             flex: 1 1 auto;
             min-height: 0;
             padding: calc(10px * var(--widget-scale));
-            font-size: calc(0.9rem * var(--widget-scale));
+            font-size: calc(var(--widget-font-size, 13px) * var(--widget-scale));
             overflow: auto;
             box-sizing: border-box;
+          }
+          .widget-body input, .widget-body select, .widget-body button {
+            font-size: inherit;
           }
           .widget-value {
             white-space: pre-wrap;
@@ -947,10 +953,13 @@
             font-variant-numeric: tabular-nums;
             font-size: inherit;
           }
-          .widget-table tbody td {
+          .widget-table th, .widget-table tbody td {
             font-size: calc(var(--table-value-font-size, 0.9rem) * var(--widget-scale));
+          }
+          .widget-table tbody td {
             text-align: var(--table-value-align, left);
           }
+          .widget.title-bar-hidden .widget-header { display: none; }
           .widget-table th, .matrix-table th {
             position: sticky;
             top: 0;
@@ -1040,7 +1049,7 @@
             justify-content: center;
             padding: 5px;
             text-align: center;
-            font-size: 0.72rem;
+            font-size: 0.9em;
             font-weight: 700;
             line-height: 1.05;
             color: #17334d;
@@ -1050,7 +1059,7 @@
           .led-message {
             max-width: 100%;
             text-align: center;
-            font-size: 0.78rem;
+            font-size: inherit;
             line-height: 1.2;
             color: #3f566a;
             word-break: break-word;
@@ -1098,7 +1107,7 @@
             align-items: center;
           }
           .slider-bound {
-            font-size: 11px;
+            font-size: 0.85em;
             color: #4e6072;
             white-space: nowrap;
           }
@@ -2329,7 +2338,9 @@
         const position = this.dashboardItemPosition(widget);
         const root = document.createElement("div");
         root.className = "widget";
+        root.classList.toggle("title-bar-hidden", widget.showTitleBar === false);
         root.style.setProperty("--widget-scale", String(zoom));
+        root.style.setProperty("--widget-font-size", `${widget.fontSize}px`);
         root.style.left = `${(position.x - bounds.minX) * zoom}px`;
         root.style.top = `${(position.y - bounds.minY) * zoom}px`;
         root.style.width = `${widget.width * zoom}px`;
@@ -2341,7 +2352,9 @@
         const body = document.createElement("div");
         body.className = "widget-body";
         this.renderWidgetBody(body, widget);
-        root.appendChild(header);
+        if (widget.showTitleBar !== false) {
+          root.appendChild(header);
+        }
         root.appendChild(body);
         this.$widgets.appendChild(root);
       });
@@ -2450,7 +2463,7 @@
         const rows = Array.isArray(widgetState?.rows) ? widgetState.rows : [];
         const table = document.createElement("table");
         table.className = "widget-table";
-        table.style.setProperty("--table-value-font-size", `${widget.tableFontSize}px`);
+        table.style.setProperty("--table-value-font-size", `${widget.fontSize}px`);
         table.style.setProperty("--table-value-align", widget.tableTextAlign);
         const displayedColumns = widget.outputOnly
           ? widget.columns.filter((name) => name === "time" || nodeMap.get(name)?.output)
@@ -2560,7 +2573,7 @@
         canvas.style.display = "block";
         canvas.width = Math.max(160, Math.floor(widget.width * this._zoom - 24));
         canvas.height = Math.max(120, Math.floor(widget.height * this._zoom - 54));
-        drawSimpleXYChart(canvas, widgetState?.pairs || widget.xyPairs || [], execution);
+        drawSimpleXYChart(canvas, widgetState?.pairs || widget.xyPairs || [], execution, widget.fontSize);
         body.appendChild(canvas);
         return;
       }

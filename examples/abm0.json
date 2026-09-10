@@ -101,7 +101,7 @@
         }
       ],
       "stateTransition": "setCol(setCol(this,X,nuovoX),Y,nuovoY)",
-      "initialState": "agents([\"X\",\"Y\",\"VX\",\"VY\"],array([num_agenti,4],if($1<2,randInt(0,dim_spazio-1),randInt(-1,1))))"
+      "initialState": "agents([\"X\",\"Y\",\"VX\",\"VY\"],array(num_agenti,4,if($1<2,randInt(0,dim_spazio-1),randInt(-1,1))))"
     },
     {
       "id": 21,

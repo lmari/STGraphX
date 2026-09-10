@@ -110,7 +110,7 @@
         }
       ],
       "stateTransition": "space5",
-      "initialState": "array([n,n], if(rand() < vacancy, 0, if(rand() < 0.5, 1, 2)))"
+      "initialState": "array(n,n, if(rand() < vacancy, 0, if(rand() < 0.5, 1, 2)))"
     },
     {
       "id": 6,
@@ -130,7 +130,7 @@
         }
       ],
       "input": false,
-      "valueExpression": "array(size(space), count($value != 0, neighbors(space, $0, $1, true, true)))"
+      "valueExpression": "array(size(space,0),size(space,1), count($value != 0, neighbors(space, $0, $1, true, true)))"
     },
     {
       "id": 7,
@@ -150,7 +150,7 @@
         }
       ],
       "input": false,
-      "valueExpression": "array(size(space), if(space[$0,$1] == 0, 0, count($value == space[$0,$1], neighbors(space, $0, $1, true, true))))"
+      "valueExpression": "array(size(space,0),size(space,1), if(space[$0,$1] == 0, 0, count($value == space[$0,$1], neighbors(space, $0, $1, true, true))))"
     },
     {
       "id": 8,
@@ -170,7 +170,7 @@
         }
       ],
       "input": false,
-      "valueExpression": "array(size(space), if(space[$0,$1] == 0 or occupiedN[$0,$1] == 0, 1, sameN[$0,$1] / occupiedN[$0,$1]))"
+      "valueExpression": "array(size(space,0),size(space,1), if(space[$0,$1] == 0 or occupiedN[$0,$1] == 0, 1, sameN[$0,$1] / occupiedN[$0,$1]))"
     },
     {
       "id": 9,

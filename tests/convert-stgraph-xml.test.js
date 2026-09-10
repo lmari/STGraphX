@@ -27,7 +27,7 @@ assert.equal(model.nodes[0].global, true);
 assert.equal(model.nodes[0].fillColor, "#ff000a");
 assert.equal(model.nodes[1].type, "state");
 assert.equal(model.nodes[2].type, "algebraic");
-assert.equal(model.nodes[2].valueExpression, "reduce(+, x, 0) + reduce(*, range(1, (p) + 1), 1) + range(1, 6) + range(1, 6, 2) + size(x) + array([n,n],$0+$1) + (append(append(u, v), w))");
+assert.equal(model.nodes[2].valueExpression, "reduce(+, x, 0) + reduce(*, range(1, (p) + 1), 1) + range(1, 6) + range(1, 6, 2) + size(x) + array(n,n,$i0+$i1) + (append(append(u, v), w))");
 assert.deepEqual(model.nodes[2].properties, [{ key: "Unit", value: "kg" }]);
 assert.match(model.nodes[3].properties[0].value, /Espressione legacy/);
 assert.deepEqual(model.edges[0].controlPoints, [{ x: 45, y: 20 }]);
@@ -39,7 +39,7 @@ assert.ok(report.warnings.some((warning) => warning.includes("output separata"))
 assert.ok(report.warnings.some((warning) => warning.includes("riduzione legacy")));
 assert.ok(report.warnings.some((warning) => warning.includes("vettore legacy")));
 assert.ok(report.warnings.some((warning) => warning.includes("operatore legacy @")));
-assert.ok(report.warnings.some((warning) => warning.includes("indici locali legacy")));
+assert.ok(report.warnings.some((warning) => warning.includes("sintassi legacy array")));
 assert.ok(report.warnings.some((warning) => warning.includes("append")));
 
 assert.throws(() => convertStGraphXml("<stgraph><nodes></stgraph>"), /XML non valido/);

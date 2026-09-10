@@ -107,7 +107,7 @@
         }
       ],
       "input": false,
-      "valueExpression": "coords(array([n,n],1))"
+      "valueExpression": "coords(array(n,n,1))"
     },
     {
       "id": 5,

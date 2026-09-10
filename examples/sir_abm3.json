@@ -61,7 +61,7 @@
         }
       ],
       "stateTransition": "if(self == 0 and rand() < beta * neig[$i,$j] / 8,\n  1,\n  if(self == 1 and rand() < gamma,\n    2,\n    self\n  )\n)",
-      "initialState": "setAt(array([n,n],0),[randInt(n-1),randInt(n-1)],1)"
+      "initialState": "setAt(array(n,n,0),[randInt(n-1),randInt(n-1)],1)"
     },
     {
       "id": 6,
@@ -85,7 +85,7 @@
         }
       ],
       "input": false,
-      "valueExpression": "array(size(x),\n  count($value==1,\n    neighbors(x, $0, $1, true, true)\n  )\n)"
+      "valueExpression": "array(size(x,0),size(x,1),\n  count($value==1,\n    neighbors(x, $0, $1, true, true)\n  )\n)"
     },
     {
       "id": 13,

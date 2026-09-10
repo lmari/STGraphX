@@ -144,7 +144,7 @@
       "properties": [
         {
           "key": "note formula",
-          "value": "array([size(hyp1),size(hyp2)],\n  (1/hyp2[$1])*exp(-(hyp1[$0]-data)^2/(2*hyp2[$1]^2))\n)"
+          "value": "array(size(hyp1),size(hyp2),\n  (1/hyp2[$1])*exp(-(hyp1[$0]-data)^2/(2*hyp2[$1]^2))\n)"
         },
         {
           "key": "descrizione",
@@ -152,7 +152,7 @@
         }
       ],
       "input": false,
-      "valueExpression": "array([size(hyp1),size(hyp2)],\n  (1/hyp2[$1])*exp(-(hyp1[$0]-data)^2/(2*hyp2[$1]^2))\n)"
+      "valueExpression": "array(size(hyp1),size(hyp2),\n  (1/hyp2[$1])*exp(-(hyp1[$0]-data)^2/(2*hyp2[$1]^2))\n)"
     },
     {
       "id": 5,
@@ -275,7 +275,7 @@
         }
       ],
       "input": false,
-      "valueExpression": "array([size(hyp1),size(hyp2)],1/(size(hyp1)*size(hyp2)))"
+      "valueExpression": "array(size(hyp1),size(hyp2),1/(size(hyp1)*size(hyp2)))"
     },
     {
       "id": 10,

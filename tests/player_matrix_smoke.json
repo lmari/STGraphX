@@ -77,7 +77,7 @@
         }
       ],
       "input": false,
-      "valueExpression": "array([n,n],($0+$1+time)%4)"
+      "valueExpression": "array(n,n,($0+$1+time)%4)"
     },
     {
       "id": 3,

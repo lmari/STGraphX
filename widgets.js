@@ -11,9 +11,7 @@ const graphFunctionHelpers = globalThis.GraphFunctions?.helpers || {};
 
 function addTableWidget(at = null) {
   const id = widgetCounter++;
-  const z = Math.max(0.0001, ui.zoom || 1);
-  const x = at?.x ?? (graphViewport.scrollLeft + 40) / z;
-  const y = at?.y ?? (graphViewport.scrollTop + 40) / z;
+  const { x, y } = getSmartCanvasInsertionPoint({ width: 320, height: 160, anchor: at });
   graph.widgets.push({
     id,
     type: "table",
@@ -23,10 +21,11 @@ function addTableWidget(at = null) {
     width: 320,
     height: 160,
     minimized: false,
+    showTitleBar: true,
+    fontSize: 13,
     outputOnly: false,
     showHistory: false,
     expandNonScalarValues: false,
-    tableFontSize: 13,
     tableTextAlign: "left",
     tableDecimalDigits: null,
     rows: [],
@@ -36,9 +35,7 @@ function addTableWidget(at = null) {
 
 function addCanvasText(at = null) {
   const id = textItemCounter++;
-  const z = Math.max(0.0001, ui.zoom || 1);
-  const x = at?.x ?? (graphViewport.scrollLeft + 60) / z;
-  const y = at?.y ?? (graphViewport.scrollTop + 60) / z;
+  const { x, y } = getSmartCanvasInsertionPoint({ width: 240, height: 90, anchor: at });
   graph.textItems.push({
     id,
     x,
@@ -54,9 +51,7 @@ function addCanvasText(at = null) {
 
 function addMatrixWidget(at = null) {
   const id = widgetCounter++;
-  const z = Math.max(0.0001, ui.zoom || 1);
-  const x = at?.x ?? (graphViewport.scrollLeft + 60) / z;
-  const y = at?.y ?? (graphViewport.scrollTop + 60) / z;
+  const { x, y } = getSmartCanvasInsertionPoint({ width: 260, height: 190, anchor: at });
   graph.widgets.push({
     id,
     type: "matrix",
@@ -66,6 +61,8 @@ function addMatrixWidget(at = null) {
     width: 260,
     height: 190,
     minimized: false,
+    showTitleBar: true,
+    fontSize: 13,
     outputOnly: true,
     source: "",
     showNumericValues: true,
@@ -85,9 +82,7 @@ function addMatrixWidget(at = null) {
 
 function addLedWidget(at = null) {
   const id = widgetCounter++;
-  const z = Math.max(0.0001, ui.zoom || 1);
-  const x = at?.x ?? (graphViewport.scrollLeft + 60) / z;
-  const y = at?.y ?? (graphViewport.scrollTop + 60) / z;
+  const { x, y } = getSmartCanvasInsertionPoint({ width: 170, height: 96, anchor: at });
   const outputNames = graph.nodes.filter((n) => n.output).map((n) => n.name);
   graph.widgets.push({
     id,
@@ -98,6 +93,8 @@ function addLedWidget(at = null) {
     width: 170,
     height: 96,
     minimized: false,
+    showTitleBar: true,
+    fontSize: 13,
     outputOnly: true,
     source: outputNames[0] || "",
     falseLabel: "",
@@ -110,9 +107,7 @@ function addLedWidget(at = null) {
 
 function addSliderWidget(at = null) {
   const id = widgetCounter++;
-  const z = Math.max(0.0001, ui.zoom || 1);
-  const x = at?.x ?? (graphViewport.scrollLeft + 80) / z;
-  const y = at?.y ?? (graphViewport.scrollTop + 80) / z;
+  const { x, y } = getSmartCanvasInsertionPoint({ width: 260, height: 96, anchor: at });
   const bindableNames = sliderBindableNodeNames(null, "");
   graph.widgets.push({
     id,
@@ -123,6 +118,8 @@ function addSliderWidget(at = null) {
     width: 260,
     height: 96,
     minimized: false,
+    showTitleBar: true,
+    fontSize: 13,
     outputOnly: false,
     source: bindableNames[0] || "",
     min: 0,
@@ -137,9 +134,7 @@ function addSliderWidget(at = null) {
 
 function addButtonWidget(at = null) {
   const id = widgetCounter++;
-  const z = Math.max(0.0001, ui.zoom || 1);
-  const x = at?.x ?? (graphViewport.scrollLeft + 80) / z;
-  const y = at?.y ?? (graphViewport.scrollTop + 80) / z;
+  const { x, y } = getSmartCanvasInsertionPoint({ width: 190, height: 88, anchor: at });
   const bindableNames = buttonBindableNodeNames(null, "");
   graph.widgets.push({
     id,
@@ -150,6 +145,8 @@ function addButtonWidget(at = null) {
     width: 190,
     height: 88,
     minimized: false,
+    showTitleBar: true,
+    fontSize: 13,
     outputOnly: false,
     source: bindableNames[0] || "",
     value: false,
@@ -164,9 +161,7 @@ function addButtonWidget(at = null) {
 
 function addSelectWidget(at = null) {
   const id = widgetCounter++;
-  const z = Math.max(0.0001, ui.zoom || 1);
-  const x = at?.x ?? (graphViewport.scrollLeft + 80) / z;
-  const y = at?.y ?? (graphViewport.scrollTop + 80) / z;
+  const { x, y } = getSmartCanvasInsertionPoint({ width: 240, height: 92, anchor: at });
   const bindableNames = selectBindableNodeNames(null, "");
   graph.widgets.push({
     id,
@@ -177,6 +172,8 @@ function addSelectWidget(at = null) {
     width: 240,
     height: 92,
     minimized: false,
+    showTitleBar: true,
+    fontSize: 13,
     outputOnly: false,
     source: bindableNames[0] || "",
     value: 0,
@@ -192,9 +189,7 @@ function addSelectWidget(at = null) {
 
 function addTextWidget(at = null) {
   const id = widgetCounter++;
-  const z = Math.max(0.0001, ui.zoom || 1);
-  const x = at?.x ?? (graphViewport.scrollLeft + 60) / z;
-  const y = at?.y ?? (graphViewport.scrollTop + 60) / z;
+  const { x, y } = getSmartCanvasInsertionPoint({ width: 220, height: 92, anchor: at });
   const outputNames = graph.nodes.filter((n) => n.output).map((n) => n.name);
   graph.widgets.push({
     id,
@@ -205,6 +200,8 @@ function addTextWidget(at = null) {
     width: 220,
     height: 92,
     minimized: false,
+    showTitleBar: true,
+    fontSize: 13,
     outputOnly: true,
     source: outputNames[0] || "",
     mappings: [],
@@ -216,9 +213,7 @@ function addTextWidget(at = null) {
 
 function addXYChartWidget(at = null) {
   const id = widgetCounter++;
-  const z = Math.max(0.0001, ui.zoom || 1);
-  const x = at?.x ?? (graphViewport.scrollLeft + 80) / z;
-  const y = at?.y ?? (graphViewport.scrollTop + 80) / z;
+  const { x, y } = getSmartCanvasInsertionPoint({ width: 320, height: 210, anchor: at });
   const nodeNames = graph.nodes.filter((n) => n.output).map((n) => n.name);
   graph.widgets.push({
     id,
@@ -229,6 +224,8 @@ function addXYChartWidget(at = null) {
     width: 320,
     height: 210,
     minimized: false,
+    showTitleBar: true,
+    fontSize: 13,
     outputOnly: false,
     xMin: null,
     xMax: null,
@@ -336,11 +333,9 @@ function sanitizeWidgetColumns(widget) {
 }
 
 function sanitizeTableWidgetOptions(widget) {
+  sanitizeWidgetPresentationOptions(widget);
   widget.showHistory = Boolean(widget.showHistory);
   widget.expandNonScalarValues = Boolean(widget.expandNonScalarValues) && !widget.showHistory;
-  widget.tableFontSize = Number.isFinite(Number(widget.tableFontSize))
-    ? clamp(Math.round(Number(widget.tableFontSize)), 8, 32)
-    : 13;
   widget.tableTextAlign = ["left", "center", "right"].includes(String(widget.tableTextAlign ?? ""))
     ? String(widget.tableTextAlign)
     : "left";
@@ -352,6 +347,14 @@ function sanitizeTableWidgetOptions(widget) {
   if (!Array.isArray(widget.rows)) {
     widget.rows = [];
   }
+}
+
+function sanitizeWidgetPresentationOptions(widget) {
+  const legacyFontSize = Number(widget.tableFontSize);
+  widget.fontSize = Number.isFinite(Number(widget.fontSize))
+    ? clamp(Math.round(Number(widget.fontSize)), 8, 32)
+    : (Number.isFinite(legacyFontSize) ? clamp(Math.round(legacyFontSize), 8, 32) : 13);
+  widget.showTitleBar = widget.showTitleBar !== false;
 }
 
 function sanitizeMatrixWidgetOptions(widget) {
@@ -810,6 +813,10 @@ function drawXYChart(canvas, seriesList = [], options = null) {
       ? String(options.legendPosition)
       : "top-right",
   };
+  const fontSize = Number.isFinite(Number(options?.fontSize))
+    ? clamp(Math.round(Number(options.fontSize)), 8, 24)
+    : 11;
+  const chartFont = `${fontSize}px "Noto Sans", "DejaVu Sans", "Liberation Sans", Arial, sans-serif`;
 
   let minX = activeSeries[0].points[0].x;
   let maxX = activeSeries[0].points[0].x;
@@ -878,7 +885,7 @@ function drawXYChart(canvas, seriesList = [], options = null) {
     return ticks.filter((value, index, arr) => index === 0 || Math.abs(value - arr[index - 1]) > step * 0.25);
   };
 
-  ctx.font = "11px \"Noto Sans\", \"DejaVu Sans\", \"Liberation Sans\", Arial, sans-serif";
+  ctx.font = chartFont;
   const provisionalXTicks = buildTicks(minX, maxX, Math.max(4, Math.floor((width - 48) / 90)));
   const provisionalYTicks = buildTicks(minY, maxY, Math.max(4, Math.floor((height - 48) / 60)));
   const maxYLabelWidth = provisionalYTicks.reduce((max, tick) => {
@@ -888,7 +895,7 @@ function drawXYChart(canvas, seriesList = [], options = null) {
   const leftPad = Math.max(30, Math.ceil(maxYLabelWidth) + 14);
   const rightPad = 24;
   const topPad = 24;
-  const bottomPad = 30;
+  const bottomPad = Math.max(30, fontSize + 19);
   const plotW = Math.max(10, width - leftPad - rightPad);
   const plotH = Math.max(10, height - topPad - bottomPad);
 
@@ -1044,10 +1051,10 @@ function drawXYChart(canvas, seriesList = [], options = null) {
   });
   const visibleLegend = legendSeries.slice(0, 10);
   if (cfg.legendPosition !== "none" && visibleLegend.length > 0) {
-  ctx.font = "11px \"Noto Sans\", \"DejaVu Sans\", \"Liberation Sans\", Arial, sans-serif";
+  ctx.font = chartFont;
     const sampleWidth = 18;
     const sampleGap = 8;
-    const rowHeight = 18;
+    const rowHeight = Math.max(18, fontSize + 7);
     const legendPaddingX = 10;
     const legendPaddingY = 8;
     const maxLabelWidth = visibleLegend.reduce((max, series, idx) => {
@@ -1267,7 +1274,7 @@ function renderMatrixGrid(body, widget, matrix) {
     ? clamp(fitSize || widget.cellSize, 2, 96)
     : clamp(Number(widget.cellSize) || 28, 2, 96);
   grid.style.setProperty("--matrix-cell-size", `${cellSize}px`);
-  grid.style.setProperty("--matrix-font-size", `${Math.max(0, Math.floor(cellSize * 0.45))}px`);
+  grid.style.setProperty("--matrix-font-size", `${Math.min(widget.fontSize, Math.max(0, Math.floor(cellSize * 0.45)))}px`);
   grid.style.gridTemplateColumns = `repeat(${Math.max(1, displayCols + headerOffset)}, ${cellSize}px)`;
   grid.style.width = `${Math.max(1, displayCols + headerOffset) * cellSize}px`;
   if (showIndices) {
@@ -1419,7 +1426,7 @@ function formatTableValue(value, widget) {
 
 function applyTableDisplayStyle(table, widget) {
   table.classList.add("table-widget-table");
-  table.style.setProperty("--table-value-font-size", `${widget.tableFontSize}px`);
+  table.style.setProperty("--table-value-font-size", `${widget.fontSize}px`);
   table.style.setProperty("--table-value-align", widget.tableTextAlign);
 }
 
@@ -2176,6 +2183,7 @@ function renderWidgets() {
     if (typeof isDashboardItemVisible === "function" && !isDashboardItemVisible(widget)) {
       return;
     }
+    sanitizeWidgetPresentationOptions(widget);
     if (widget.type === "table") {
       sanitizeWidgetColumns(widget);
       sanitizeTableWidgetOptions(widget);
@@ -2216,6 +2224,8 @@ function renderWidgets() {
     root.style.height = widget.minimized ? "36px" : `${widget.height}px`;
     root.style.transform = `scale(${z})`;
     root.style.transformOrigin = "top left";
+    root.style.setProperty("--widget-font-size", `${widget.fontSize}px`);
+    root.classList.toggle("title-bar-hidden", widget.showTitleBar === false && !widget.minimized);
     root.dataset.widgetId = String(widget.id);
     root.addEventListener("pointerdown", (evt) => {
       if (typeof isTabletCanvasPanMode === "function" && isTabletCanvasPanMode()) {
@@ -2225,6 +2235,18 @@ function renderWidgets() {
       if (!(ui.selected?.type === "widget" && ui.selected.id === widget.id)) {
         selectWidget(widget.id);
         render();
+      }
+      if (
+        widget.showTitleBar === false
+        && !widget.minimized
+        && evt.pointerType !== "touch"
+        && !isEditingUiLocked()
+        && !evt.target.closest("input, select, button, textarea")
+      ) {
+        if (startWidgetDrag(widget, evt)) {
+          render();
+        }
+        return;
       }
       const touchDragAllowed =
         evt.pointerType === "touch"
@@ -3040,8 +3062,9 @@ function openWidgetContextMenu(evt, widget) {
     return;
   }
   const wasMinimized = Boolean(widget.minimized);
-  showContextMenu(evt.clientX, evt.clientY, [
-    {
+  const items = [];
+  if (widget.type === "table" || widget.type === "matrix") {
+    items.push({
       label: t("context.widget.copy"),
       action: async () => {
         const content = widgetRenderedText(widget);
@@ -3049,6 +3072,19 @@ function openWidgetContextMenu(evt, widget) {
         setStatusKey(ok ? "status.widgetCopied" : "status.clipboardEmpty");
       },
       disabled: !widgetRenderedText(widget),
+    });
+  }
+  items.push(
+    {
+      label: widget.showTitleBar === false ? t("context.widget.showTitleBar") : t("context.widget.hideTitleBar"),
+      action: () => {
+        runAction(() => {
+          const target = graph.widgets.find((w) => w.id === widget.id);
+          if (target) {
+            target.showTitleBar = target.showTitleBar === false;
+          }
+        });
+      },
     },
     {
       label: wasMinimized ? t("context.widget.restore") : t("context.widget.minimize"),
@@ -3072,7 +3108,8 @@ function openWidgetContextMenu(evt, widget) {
         setStatusKey("status.widgetDeleted");
       },
     },
-  ]);
+  );
+  showContextMenu(evt.clientX, evt.clientY, items);
 }
 
 function openTextContextMenu(evt, item) {
@@ -3407,6 +3444,7 @@ function renderPropertiesEditor(container, items, ownerKey, deleteHandler, optio
 function refreshWidgetConfigPanel(widget) {
   widgetConfig.innerHTML = "";
   widgetConfig.className = "widget-config-grid";
+  sanitizeWidgetPresentationOptions(widget);
 
   const createWidgetSection = (advanced = false) => {
     const section = document.createElement("div");
@@ -3438,7 +3476,9 @@ function refreshWidgetConfigPanel(widget) {
 
   const mainSection = createWidgetSection(true);
 
-  const titleLabel = document.createElement("label");
+  const titleRow = document.createElement("div");
+  titleRow.className = "widget-title-row";
+  const titleLabel = document.createElement("span");
   titleLabel.textContent = t("widget.customTitleLabel");
   const titleInput = document.createElement("input");
   titleInput.type = "text";
@@ -3449,8 +3489,46 @@ function refreshWidgetConfigPanel(widget) {
       widget.customTitle = titleInput.value;
     });
   });
-  mainSection.appendChild(titleLabel);
+  const fontSizeInput = document.createElement("input");
+  fontSizeInput.type = "number";
+  fontSizeInput.min = "8";
+  fontSizeInput.max = "32";
+  fontSizeInput.step = "1";
+  fontSizeInput.value = String(widget.fontSize);
+  fontSizeInput.addEventListener("change", () => {
+    runAction(() => {
+      widget.fontSize = Number(fontSizeInput.value);
+      sanitizeWidgetPresentationOptions(widget);
+    });
+    fontSizeInput.value = String(widget.fontSize);
+  });
+  const titleBarLabel = document.createElement("label");
+  titleBarLabel.className = "menu-check compact-bool";
+  const titleBarInput = document.createElement("input");
+  titleBarInput.type = "checkbox";
+  titleBarInput.checked = widget.showTitleBar !== false;
+  titleBarInput.addEventListener("change", () => {
+    runAction(() => {
+      widget.showTitleBar = titleBarInput.checked;
+    });
+  });
+  const titleBarText = document.createElement("span");
+  titleBarText.textContent = t("widget.showTitleBar");
+  titleBarLabel.appendChild(titleBarInput);
+  titleBarLabel.appendChild(titleBarText);
+  titleRow.appendChild(titleLabel);
+  titleRow.appendChild(titleBarLabel);
+  mainSection.appendChild(titleRow);
   mainSection.appendChild(titleInput);
+  if (widget.type !== "matrix") {
+    const fontRow = document.createElement("div");
+    fontRow.className = "widget-font-row";
+    const fontLabel = document.createElement("span");
+    fontLabel.textContent = t("widget.fontSize");
+    fontRow.appendChild(fontLabel);
+    fontRow.appendChild(fontSizeInput);
+    mainSection.appendChild(fontRow);
+  }
 
   const outputNodeNames = graph.nodes.filter((n) => n.output).map((n) => n.name);
   const nodeNames = outputNodeNames;
@@ -4004,6 +4082,7 @@ function refreshWidgetConfigPanel(widget) {
     sanitizeWidgetColumns(widget);
     sanitizeTableWidgetOptions(widget);
     const tableSection = createWidgetSection();
+    appendWidgetSectionTitle(tableSection, "widget.tableNodes");
     const list = document.createElement("div");
     list.className = "props-list";
     const tableChoices = ["time", ...nodeNames];
@@ -4127,20 +4206,7 @@ function refreshWidgetConfigPanel(widget) {
     tableModeSection.appendChild(expandLabel);
 
     const displayRow = document.createElement("div");
-    displayRow.className = "row3-exec table-display-options";
-    const fontSizeInput = document.createElement("input");
-    fontSizeInput.type = "number";
-    fontSizeInput.min = "8";
-    fontSizeInput.max = "32";
-    fontSizeInput.step = "1";
-    fontSizeInput.value = String(widget.tableFontSize);
-    fontSizeInput.addEventListener("change", () => {
-      runAction(() => {
-        widget.tableFontSize = Number(fontSizeInput.value);
-        sanitizeTableWidgetOptions(widget);
-      });
-      fontSizeInput.value = String(widget.tableFontSize);
-    });
+    displayRow.className = "row2-exec table-display-options";
     const alignInput = document.createElement("select");
     ["left", "center", "right"].forEach((value) => {
       const option = document.createElement("option");
@@ -4173,7 +4239,6 @@ function refreshWidgetConfigPanel(widget) {
         sanitizeTableWidgetOptions(widget);
       });
     });
-    displayRow.appendChild(createCompactField("widget.tableFontSize", fontSizeInput));
     displayRow.appendChild(createCompactField("widget.tableAlign", alignInput));
     displayRow.appendChild(createCompactField("widget.tableDecimals", decimalsInput));
     tableModeSection.appendChild(displayRow);
@@ -4466,8 +4531,11 @@ function refreshWidgetConfigPanel(widget) {
     primaryStyleRow.className = "chart-pair-style-main";
     primaryStyleRow.appendChild(createCompactField("widget.lineStyle", lineStyleSelect));
     primaryStyleRow.appendChild(createCompactField("widget.lineWidthShort", lineWidthInput));
-    primaryStyleRow.appendChild(createCompactField("widget.seriesPoints", pointsSelect));
-    primaryStyleRow.appendChild(createCompactField("widget.pointSizeShort", pointSizeInput));
+    const pointControls = document.createElement("div");
+    pointControls.className = "chart-pair-point-controls";
+    pointControls.appendChild(createCompactField("widget.seriesPoints", pointsSelect));
+    pointControls.appendChild(createCompactField("widget.pointSizeShort", pointSizeInput));
+    primaryStyleRow.appendChild(pointControls);
 
     const secondaryStyleRow = document.createElement("div");
     secondaryStyleRow.className = "chart-pair-style-secondary";

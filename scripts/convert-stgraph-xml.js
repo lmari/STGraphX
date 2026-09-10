@@ -256,37 +256,6 @@ function adaptLegacyRanges(expression, location, warnings) {
   return output;
 }
 
-function replaceLegacyArrayIndices(source) {
-  let output = "";
-  let quote = "";
-  for (let index = 0; index < source.length; index += 1) {
-    const char = source[index];
-    if (quote) {
-      output += char;
-      if (char === "\\") {
-        output += source[index + 1] || "";
-        index += 1;
-      } else if (char === quote) {
-        quote = "";
-      }
-      continue;
-    }
-    if (char === '"' || char === "'") {
-      quote = char;
-      output += char;
-      continue;
-    }
-    const match = /^\$i(\d+)\b/.exec(source.slice(index));
-    if (match) {
-      output += `$${match[1]}`;
-      index += match[0].length - 1;
-      continue;
-    }
-    output += char;
-  }
-  return output;
-}
-
 function adaptLegacyArrayIndices(expression, location, warnings) {
   const source = String(expression || "");
   let output = "";
@@ -316,9 +285,16 @@ function adaptLegacyArrayIndices(expression, location, warnings) {
         const content = source.slice(open + 1, end - 1);
         const parts = splitTopLevel(content, ",");
         if (parts.length >= 2) {
-          const dimensions = parts.shift();
-          const body = replaceLegacyArrayIndices(adaptLegacyArrayIndices(parts.join(","), location, warnings));
-          const converted = `array(${dimensions},${body})`;
+          const dimensions = String(parts.shift() || "").trim();
+          const body = adaptLegacyArrayIndices(parts.join(","), location, warnings);
+          const dimensionsEnd = dimensions.startsWith("[")
+            ? findBalancedEnd(dimensions, 0, "[", "]")
+            : -1;
+          // STGraph groups dimensions in one vector; STGraphX takes one axis per argument.
+          const axes = dimensionsEnd === dimensions.length
+            ? splitTopLevel(dimensions.slice(1, -1), ",")
+            : [dimensions];
+          const converted = `array(${axes.join(",")},${body})`;
           output += converted;
           changed ||= converted !== source.slice(index, end);
           index = end - 1;
@@ -328,7 +304,7 @@ function adaptLegacyArrayIndices(expression, location, warnings) {
     }
     output += char;
   }
-  if (changed) warnings.push(`${location}: convertiti indici locali legacy $iN nel corpo di array(...).`);
+  if (changed) warnings.push(`${location}: convertita la sintassi legacy array([d0,d1,...], expr) in assi separati.`);
   return output;
 }
 
@@ -480,7 +456,6 @@ function adaptLegacyExpression(expression, location, warnings) {
 function expressionWarnings(expression, location, warnings) {
   const value = String(expression || "");
   const checks = [
-    [/\$i\d+\b/, "indici legacy $iN"],
     [/#/, "operatore legacy # non convertito"],
     [/\b(?:readFromXLS|readFromXLSX)\s*\(/i, "lettura legacy da foglio elettronico"],
     [/&&|\|\|/, "operatori JavaScript &&/|| da verificare"],

@@ -587,6 +587,21 @@ body {
   overflow: auto;
   padding: 6px;
   user-select: text;
+  font-size: var(--widget-font-size, 13px);
+}
+
+.value-widget.title-bar-hidden:not(.minimized) .value-widget-header {
+  display: none;
+}
+
+.value-widget.title-bar-hidden:not(.minimized) .value-widget-body {
+  height: 100%;
+}
+
+.value-widget-body input,
+.value-widget-body select,
+.value-widget-body button {
+  font-size: inherit;
 }
 
 .value-widget table {
@@ -595,8 +610,12 @@ body {
   table-layout: fixed;
 }
 
+.table-widget-table th,
 .table-widget-table tbody td {
   font-size: var(--table-value-font-size, inherit);
+}
+
+.table-widget-table tbody td {
   text-align: var(--table-value-align, left);
 }
 
@@ -712,19 +731,19 @@ body {
 }
 
 .slider-widget-source {
-  font-size: 12px;
+  font-size: inherit;
   color: #4e6072;
 }
 
 .select-widget-source,
 .button-widget-source {
-  font-size: 12px;
+  font-size: inherit;
   color: #4e6072;
 }
 
 .text-widget-source,
 .led-widget-source {
-  font-size: 12px;
+  font-size: inherit;
   color: #4e6072;
 }
 
@@ -791,7 +810,7 @@ body {
   justify-content: center;
   padding: 5px;
   text-align: center;
-  font-size: 0.72rem;
+  font-size: 0.9em;
   font-weight: 700;
   line-height: 1.05;
   color: #17334d;
@@ -802,7 +821,7 @@ body {
 .led-widget-message {
   max-width: 100%;
   text-align: center;
-  font-size: 0.78rem;
+  font-size: inherit;
   line-height: 1.2;
   color: #3f566a;
   word-break: break-word;
@@ -818,7 +837,7 @@ body {
   border-radius: 10px;
   min-height: 30px;
   padding: 6px 8px;
-  font-size: 0.84rem;
+  font-size: inherit;
   font-weight: 600;
   line-height: 1.1;
   color: #23415a;
@@ -893,14 +912,14 @@ body {
 }
 
 .slider-bound {
-  font-size: 11px;
+  font-size: 0.85em;
   color: #4e6072;
   white-space: nowrap;
 }
 
 .slider-widget-value {
   text-align: center;
-  font-size: 13px;
+  font-size: inherit;
   font-weight: 600;
   color: #1f3e58;
 }
@@ -1284,24 +1303,30 @@ button:disabled {
 }
 
 #nodePanel h3,
+#textPanel h3,
 #widgetPanel h3 {
   margin: 0;
   font-size: 0.95rem;
+}
+
+.node-formula-section {
+  padding-top: 3px;
 }
 
 #nodePanel h4,
 #textPanel h4,
 #widgetPanel h4 {
   margin: 0;
-  font-size: 0.84rem;
+  font-size: 0.78rem;
+  font-weight: 400;
+  color: #4e6072;
 }
 
 .widget-section-title {
   margin: 0 0 2px;
   font-size: 0.78rem;
-  font-weight: 700;
-  color: #345066;
-  letter-spacing: 0.01em;
+  font-weight: 400;
+  color: #4e6072;
 }
 
 #nodePanel label,
@@ -1309,6 +1334,7 @@ button:disabled {
 #widgetPanel label {
   margin: 0 0 2px;
   font-size: 0.78rem;
+  color: #4e6072;
 }
 
 #nodePanel input,
@@ -1566,6 +1592,31 @@ button:disabled {
   white-space: normal;
 }
 
+#widgetPanel .widget-title-row,
+#widgetPanel .widget-font-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  min-width: 0;
+  color: #4e6072;
+  font-size: 0.78rem;
+}
+
+#widgetPanel .widget-title-row .menu-check.compact-bool {
+  font-size: 0.7rem;
+  white-space: nowrap;
+}
+
+#widgetPanel .widget-title-row .menu-check.compact-bool span {
+  white-space: nowrap;
+}
+
+#widgetPanel .widget-font-row input[type="number"] {
+  width: 50px;
+  min-width: 50px;
+}
+
 .chart-pair-row {
   display: grid;
   gap: 4px;
@@ -1625,6 +1676,23 @@ button:disabled {
   gap: 4px;
   align-items: center;
   min-width: 0;
+}
+
+.chart-pair-point-controls {
+  display: grid;
+  grid-template-columns: minmax(72px, 1fr) 50px;
+  gap: 4px;
+  min-width: min(100%, 126px);
+  flex: 0 1 142px;
+}
+
+.chart-pair-point-controls .compact-field {
+  min-width: 0;
+}
+
+.chart-pair-point-controls input[type="number"] {
+  width: 50px;
+  min-width: 50px;
 }
 
 .chart-pair-style-main input[type="color"] {

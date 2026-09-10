@@ -7,8 +7,9 @@
     "showGrid": true,
     "highlightNodeEdges": false,
     "gridSize": 20,
-    "scrollLeft": 83,
-    "scrollTop": 106
+    "tooltipDelayMs": 300,
+    "scrollLeft": 110,
+    "scrollTop": 100
   },
   "debug": {
     "watches": [],
@@ -16,10 +17,27 @@
     "breakpointExpression": ""
   },
   "modelProperties": [],
-  "nodeCounter": 16,
-  "edgeCounter": 18,
-  "widgetCounter": 12,
-  "textItemCounter": 7,
+  "nodeCounter": 27,
+  "edgeCounter": 20,
+  "widgetCounter": 14,
+  "textItemCounter": 9,
+  "presentationGroupCounter": 2,
+  "presentationGroups": [],
+  "dashboard": {
+    "visible": true,
+    "x": -100,
+    "y": 200,
+    "width": 1171.764705882353,
+    "height": 562.3529411764706,
+    "activePageId": 1,
+    "nextPageId": 2,
+    "pages": [
+      {
+        "id": 1,
+        "title": "Pagina"
+      }
+    ]
+  },
   "execution": {
     "t0": 0,
     "dt": 0.03125,
@@ -44,11 +62,11 @@
       "strokeColor": "",
       "properties": [
         {
-          "key": "formula notes",
+          "key": "note formula",
           "value": ""
         },
         {
-          "key": "description",
+          "key": "descrizione",
           "value": "Prima variabile di stato del sistema di Lorenz"
         }
       ],
@@ -69,11 +87,11 @@
       "strokeColor": "",
       "properties": [
         {
-          "key": "formula notes",
+          "key": "note formula",
           "value": ""
         },
         {
-          "key": "description",
+          "key": "descrizione",
           "value": "Terza variabile di stato del sistema di Lorenz"
         }
       ],
@@ -94,11 +112,11 @@
       "strokeColor": "",
       "properties": [
         {
-          "key": "formula notes",
+          "key": "note formula",
           "value": ""
         },
         {
-          "key": "description",
+          "key": "descrizione",
           "value": "Seconda variabile di stato del sistema di Lorenz"
         }
       ],
@@ -119,11 +137,11 @@
       "strokeColor": "",
       "properties": [
         {
-          "key": "formula notes",
+          "key": "note formula",
           "value": ""
         },
         {
-          "key": "description",
+          "key": "descrizione",
           "value": "Parametro sigma del sistema di Lorenz"
         }
       ],
@@ -143,11 +161,11 @@
       "strokeColor": "",
       "properties": [
         {
-          "key": "formula notes",
+          "key": "note formula",
           "value": ""
         },
         {
-          "key": "description",
+          "key": "descrizione",
           "value": "Parametro beta del sistema di Lorenz"
         }
       ],
@@ -167,15 +185,40 @@
       "strokeColor": "",
       "properties": [
         {
-          "key": "formula notes",
+          "key": "note formula",
           "value": ""
         },
         {
-          "key": "description",
+          "key": "descrizione",
           "value": "Parametro rho del sistema di Lorenz"
         }
       ],
       "valueExpression": "15"
+    },
+    {
+      "id": 25,
+      "name": "n25",
+      "output": false,
+      "global": false,
+      "type": "algebraic",
+      "x": 660,
+      "y": 415,
+      "width": 120,
+      "height": 70,
+      "fillColor": "",
+      "strokeColor": "",
+      "properties": [
+        {
+          "key": "note formula",
+          "value": ""
+        },
+        {
+          "key": "descrizione",
+          "value": ""
+        }
+      ],
+      "input": false,
+      "valueExpression": ""
     }
   ],
   "edges": [
@@ -237,6 +280,7 @@
       "height": 80,
       "fillColor": "",
       "strokeColor": "",
+      "dashboardPageId": null,
       "html": "<h1>Lorenz system</h1>\nA simple dynamics that generates a complex, fractal behaviour... "
     }
   ],
@@ -245,13 +289,19 @@
       "id": 1,
       "type": "xychart",
       "customTitle": "xy projection",
-      "x": 40,
-      "y": 220,
+      "x": 0,
+      "y": 0,
       "width": 560,
       "height": 460,
+      "dashboardPageId": 1,
       "minimized": false,
+      "showTitleBar": true,
+      "fontSize": 12,
       "outputOnly": false,
       "showHistory": false,
+      "expandNonScalarValues": false,
+      "tableTextAlign": "left",
+      "tableDecimalDigits": 0,
       "xMin": "auto",
       "xMax": "auto",
       "yMin": "auto",
@@ -272,6 +322,8 @@
       "max": 100,
       "step": 1,
       "value": 0,
+      "falseLabel": "",
+      "trueLabel": "",
       "options": [],
       "mappings": [],
       "columns": [],
@@ -282,6 +334,7 @@
           "showTimeSeries": true,
           "showInstantProfile": false,
           "color": "#0e7ac4",
+          "pointColor": "#0e7ac4",
           "showLine": true,
           "lineWidth": 2.2,
           "lineStyle": "solid",
@@ -294,13 +347,19 @@
       "id": 11,
       "type": "xychart",
       "customTitle": "xz projection",
-      "x": 600,
-      "y": 220,
+      "x": 560,
+      "y": 0,
       "width": 580,
       "height": 460,
+      "dashboardPageId": 1,
       "minimized": false,
+      "showTitleBar": true,
+      "fontSize": 12,
       "outputOnly": false,
       "showHistory": false,
+      "expandNonScalarValues": false,
+      "tableTextAlign": "left",
+      "tableDecimalDigits": 0,
       "xMin": "auto",
       "xMax": "auto",
       "yMin": "auto",
@@ -321,6 +380,8 @@
       "max": 100,
       "step": 1,
       "value": 0,
+      "falseLabel": "",
+      "trueLabel": "",
       "options": [],
       "mappings": [],
       "columns": [],
@@ -331,6 +392,7 @@
           "showTimeSeries": true,
           "showInstantProfile": false,
           "color": "#c40e20",
+          "pointColor": "#c40e20",
           "showLine": true,
           "lineWidth": 2.2,
           "lineStyle": "solid",
