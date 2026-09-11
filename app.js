@@ -10,7 +10,6 @@ const graphViewport = document.getElementById("graphViewport");
 const sidebar = document.getElementById("sidebar");
 const statusText = document.getElementById("statusText");
 const fileStatusText = document.getElementById("fileStatusText");
-const modelBreadcrumbText = document.getElementById("modelBreadcrumbText");
 const menuTimeText = document.getElementById("menuTimeText");
 const topMenuBar = document.getElementById("topMenuBar");
 const workspaceTabBar = document.getElementById("workspaceTabBar");
@@ -85,6 +84,7 @@ const loadJsonInput = document.getElementById("loadJsonInput");
 const snapToGridInput = document.getElementById("snapToGridInput");
 const showGridInput = document.getElementById("showGridInput");
 const highlightNodeEdgesInput = document.getElementById("highlightNodeEdgesInput");
+const showNodeValuesInput = document.getElementById("showNodeValuesInput");
 const gridSizeInput = document.getElementById("gridSizeInput");
 const tooltipDelayInput = document.getElementById("tooltipDelayInput");
 
@@ -99,6 +99,7 @@ const timeStartInput = document.getElementById("timeStartInput");
 const timeStepInput = document.getElementById("timeStepInput");
 const timeEndInput = document.getElementById("timeEndInput");
 const timeDelayInput = document.getElementById("timeDelayInput");
+const renderEveryStepsInput = document.getElementById("renderEveryStepsInput");
 const decimalDigitsInput = document.getElementById("decimalDigitsInput");
 const integratorInput = document.getElementById("integratorInput");
 const strictDefinitionsInput = document.getElementById("strictDefinitionsInput");
@@ -201,6 +202,7 @@ const expressionFormulaNotesBox = document.getElementById("expressionFormulaNote
 const expressionFormulaNotesInput = document.getElementById("expressionFormulaNotesInput");
 const expressionLibrary = document.getElementById("expressionLibrary");
 const expressionEditorHint = document.getElementById("expressionEditorHint");
+const expressionWidgetBindingInfo = document.getElementById("expressionWidgetBindingInfo");
 const expressionEditorStatus = document.getElementById("expressionEditorStatus");
 const expressionStatusCopyBtn = document.getElementById("expressionStatusCopyBtn");
 const expressionEditorCloseBtn = document.getElementById("expressionEditorCloseBtn");
@@ -211,7 +213,6 @@ const functionsHelpBtn = document.getElementById("functionsHelpBtn");
 const eightTupleBtn = document.getElementById("eightTupleBtn");
 const examplesHelpBtn = document.getElementById("examplesHelpBtn");
 const aboutAppBtn = document.getElementById("aboutAppBtn");
-const exitSubmodelBtn = document.getElementById("exitSubmodelBtn");
 const functionsHelpModal = document.getElementById("functionsHelpModal");
 const functionsHelpCloseBtn = document.getElementById("functionsHelpCloseBtn");
 const functionsHelpDismissBtn = document.getElementById("functionsHelpDismissBtn");
@@ -483,7 +484,6 @@ const modelLoadingHelpers = globalThis.STGraphXModelLoading?.createModelLoadingH
     closeDocumentTransientUi();
     const previousActiveTabId = workspace.activeTabId;
     workspace.activeTabId = null;
-    modelContextStack.length = 0;
     return { previousActiveTabId };
   },
   afterOpenInNewTab() {
@@ -764,7 +764,6 @@ let lastSavedSnapshot = "";
 let currentFileHandle = null;
 let currentFileName = "";
 let currentModelDirectoryHandle = null;
-const modelContextStack = [];
 const workspace = {
   tabs: [],
   activeTabId: null,
@@ -832,6 +831,7 @@ const graph = {
     dt: 1,
     t1: 10,
     delayMs: 1000,
+    renderEverySteps: 1,
     decimals: 3,
     integrator: "euler",
     strictDefinitions: false,
@@ -854,6 +854,7 @@ const ui = {
   snapToGrid: true,
   showGrid: true,
   highlightNodeEdges: false,
+  showNodeValues: false,
   gridSize: 20,
   tooltipDelayMs: 300,
   zoom: 1,
@@ -862,6 +863,7 @@ const ui = {
   timedStepRunning: false,
   timedRunStartedAt: 0,
   timedStepLastActivityAt: 0,
+  timedRenderStepCount: 0,
   submodelsPrepared: false,
   widgetDrag: null,
   widgetResize: null,
@@ -928,16 +930,11 @@ const submodelOrchestrationHelpers = globalThis.STGraphXSubmodelOrchestration?.c
   deriveDirectoryHandleFromFileHandle,
   loadGraphFromJsonText,
   preloadSubmodelsAfterLoadRef: () => preloadSubmodelsAfterLoad(),
-  captureCurrentModelContext,
-  pushModelContext: (context) => {
-    modelContextStack.push(context);
-  },
   beforeOpenSubmodelInNewTab() {
     const previousActiveTabId = workspace.activeTabId;
     saveActiveWorkspaceTabState();
     closeDocumentTransientUi();
     workspace.activeTabId = null;
-    modelContextStack.length = 0;
     return { previousActiveTabId };
   },
   afterOpenSubmodelInNewTab(node, checkpoint) {
@@ -1205,6 +1202,9 @@ function updateCanvasGridAppearance() {
   }
   if (highlightNodeEdgesInput) {
     highlightNodeEdgesInput.checked = ui.highlightNodeEdges === true;
+  }
+  if (showNodeValuesInput) {
+    showNodeValuesInput.checked = ui.showNodeValues === true;
   }
   if (gridSizeInput && document.activeElement !== gridSizeInput) {
     gridSizeInput.value = String(ui.gridSize);
@@ -1980,6 +1980,9 @@ function localizeExpressionErrorMessage(message) {
   if (lower === "operator arguments must have matching shapes" || lower === "function arguments must have matching shapes" || lower === "if arguments must have matching shapes" || lower === "tensor shape mismatch") {
     return t("expr.error.matchingShapes");
   }
+  if (lower === "if expects an odd number of arguments: condition, value pairs, and a default value") {
+    return t("expr.error.ifOddArgs");
+  }
   if (lower === "slice bounds must be integers") {
     return t("expr.error.sliceBoundsIntegers");
   }
@@ -2003,6 +2006,9 @@ function localizeExpressionErrorMessage(message) {
   }
   if (lower === "array index must be an integer or a [row, col] pair") {
     return t("expr.error.arrayIndexIntegerOrPair");
+  }
+  if (lower === "array index must be an integer or a vector of integers") {
+    return t("expr.error.arrayIndexIntegerOrVector");
   }
   if (lower === "array index must be an integer") {
     return t("expr.error.arrayIndexInteger");
@@ -2887,11 +2893,23 @@ function syncExpressionEditorFormulaNotes() {
   const node = ui.expressionEditor?.nodeId ? getNodeById(ui.expressionEditor.nodeId) : null;
   const visible = Boolean(node && ui.expressionEditor?.fieldKey !== "__custom__");
   const stateVisible = Boolean(visible && node && isStateNode(node));
+  const widgetControlled = Boolean(visible && isWidgetControlledExpressionNode(node));
   if (!stateVisible && ui.expressionEditor) {
     ui.expressionEditor.activeEditor = "main";
   }
   expressionStateInitialBlock?.classList.toggle("hidden", !stateVisible);
   expressionStateTransitionHead?.classList.toggle("hidden", !visible);
+  if (expressionWidgetBindingInfo) {
+    expressionWidgetBindingInfo.classList.toggle("hidden", !widgetControlled);
+    expressionWidgetBindingInfo.classList.remove("ok", "error");
+    expressionWidgetBindingInfo.textContent = widgetControlled ? t("node.widgetControlled") : "";
+  }
+  if (expressionEditorTextarea) {
+    setExplicitControlDisabled(
+      expressionEditorTextarea,
+      isEditingUiLocked() || (visible && widgetControlled),
+    );
+  }
   syncExpressionEditorHeadLabel(node);
   if (expressionStateInitialInput) {
     expressionStateInitialInput.value = stateVisible ? String(node.initialStateExpression ?? "") : "";
@@ -2992,15 +3010,32 @@ function renderFunctionsHelp() {
       const name = document.createElement("div");
       name.className = "help-item-name";
       name.textContent = entry.name;
-      const signature = document.createElement("div");
+      const signature = document.createElement("code");
       signature.className = "help-item-signature";
       signature.textContent = entry.signature || entry.name;
       const desc = document.createElement("div");
       desc.className = "help-item-desc";
-      desc.textContent = entry.description || "";
+      const description = normalizedExpressionHelpDescription(entry);
+      const exampleMatch = description.match(/\s+(?:Esempio|Esempi|Example|Examples):\s*([\s\S]+)$/i);
+      const bodyText = exampleMatch ? description.slice(0, exampleMatch.index).trim() : description;
+      const examplesText = exampleMatch ? exampleMatch[1].trim() : "";
+      appendExpressionHelpInlineText(desc, bodyText);
       item.appendChild(name);
       item.appendChild(signature);
       item.appendChild(desc);
+      if (examplesText) {
+        const examples = document.createElement("div");
+        examples.className = "help-item-examples";
+        const label = document.createElement("span");
+        label.textContent = t("expr.help.examples");
+        examples.appendChild(label);
+        examplesText.split(/\s*;\s*/).filter(Boolean).forEach((example) => {
+          const code = document.createElement("code");
+          code.textContent = example;
+          examples.appendChild(code);
+        });
+        item.appendChild(examples);
+      }
       group.appendChild(item);
     });
     functionsHelpContent.appendChild(group);
@@ -4291,6 +4326,34 @@ function renderExpressionHighlight() {
   renderExpressionHighlightFor(activeExpressionEditorInput(), activeExpressionEditorHighlight());
 }
 
+function appendExpressionHelpInlineText(container, text) {
+  const formulaPattern = /(\$[A-Za-z0-9_]+|\b(?:axis|mode)\s*=\s*[-A-Za-z0-9_.]+|\b[A-Za-z_][A-Za-z0-9_]*\([^()\n]*\)|\[[^\]\n]*\])/g;
+  const source = String(text ?? "");
+  let lastIndex = 0;
+  source.replace(formulaPattern, (match, _unused, offset) => {
+    if (offset > lastIndex) {
+      container.append(document.createTextNode(source.slice(lastIndex, offset)));
+    }
+    const code = document.createElement("code");
+    code.textContent = match;
+    container.append(code);
+    lastIndex = offset + match.length;
+    return match;
+  });
+  if (lastIndex < source.length) {
+    container.append(document.createTextNode(source.slice(lastIndex)));
+  }
+}
+
+function normalizedExpressionHelpDescription(entry) {
+  const name = String(entry?.name ?? "");
+  const escapedName = name.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+  return String(entry?.description ?? "")
+    .replace(new RegExp(`^\\s*${escapedName}\\s*\\([^\\n]*?\\)\\s*:\\s*`, "i"), "")
+    .replace(/\basse\s*=/g, "axis=")
+    .trim();
+}
+
 function setExpressionHelp(entry = null) {
   if (!expressionHelp) {
     return;
@@ -4302,12 +4365,42 @@ function setExpressionHelp(entry = null) {
   }
   const kindKey = `expr.help.kind.${entry.kind || "function"}`;
   const kindLabel = t(kindKey);
-  const lines = [
-    `${entry.name}  (${kindLabel})`,
-    entry.signature || entry.name,
-    entry.description || "",
-  ].filter(Boolean);
-  expressionHelp.textContent = lines.join("\n");
+  const description = normalizedExpressionHelpDescription(entry);
+  const exampleMatch = description.match(/\s+(?:Esempio|Esempi|Example|Examples):\s*([\s\S]+)$/i);
+  const bodyText = exampleMatch ? description.slice(0, exampleMatch.index).trim() : description;
+  const examplesText = exampleMatch ? exampleMatch[1].trim() : "";
+  expressionHelp.replaceChildren();
+
+  const title = document.createElement("div");
+  title.className = "expression-help-entry-title";
+  title.textContent = `${entry.name} (${kindLabel})`;
+  expressionHelp.append(title);
+
+  if (entry.signature) {
+    const signature = document.createElement("code");
+    signature.className = "expression-help-signature";
+    signature.textContent = entry.signature;
+    expressionHelp.append(signature);
+  }
+  if (bodyText) {
+    const body = document.createElement("p");
+    body.className = "expression-help-description";
+    appendExpressionHelpInlineText(body, bodyText);
+    expressionHelp.append(body);
+  }
+  if (examplesText) {
+    const examples = document.createElement("div");
+    examples.className = "expression-help-examples";
+    const label = document.createElement("span");
+    label.textContent = t("expr.help.examples");
+    examples.append(label);
+    examplesText.split(/\s*;\s*/).filter(Boolean).forEach((example) => {
+      const code = document.createElement("code");
+      code.textContent = example;
+      examples.append(code);
+    });
+    expressionHelp.append(examples);
+  }
   expressionHelpCopyBtn?.classList.remove("hidden");
 }
 
@@ -5099,7 +5192,7 @@ function openNodePrimaryEditor(node) {
     return;
   }
   if (isSubmodelNode(node)) {
-    void openSubmodelNode(node);
+    void openSubmodelNodeInNewTab(node);
     return;
   }
   if (ui.expressionEditor && !expressionEditorModal?.classList.contains("hidden")) {
@@ -5942,7 +6035,6 @@ function captureWorkspaceTabState() {
   return {
     context: captureCurrentModelContext(),
     runtimeState: captureRuntimeStateSnapshot(),
-    modelContextStack: deepClone(modelContextStack),
   };
 }
 
@@ -5950,13 +6042,8 @@ function restoreWorkspaceTabState(state) {
   if (!state?.context) {
     return;
   }
-  modelContextStack.length = 0;
-  if (Array.isArray(state.modelContextStack)) {
-    modelContextStack.push(...deepClone(state.modelContextStack));
-  }
   restoreModelContext(state.context);
   applyRuntimeStateSnapshot(state.runtimeState);
-  updateModelBreadcrumb();
   render();
 }
 
@@ -6126,6 +6213,9 @@ async function closeWorkspaceTab(tabId) {
   const nextTab = getWorkspaceTabById(nextTabId) || workspace.tabs[0];
   workspace.activeTabId = nextTab.id;
   restoreWorkspaceTabState(nextTab.state);
+  // Restoring a parent tab also restores a snapshot without live submodels.
+  // Rebuild its t0 preview so nodes fed by a submodel are immediately valid.
+  await preloadSubmodelsAfterLoad();
   refreshWorkspaceTabBar();
   setStatusKey("status.tabClosed");
   return true;
@@ -6184,22 +6274,6 @@ function updateFileStatusLabel(dirty = dirtySinceLastSave) {
     activeTab.state.context.data = exportGraphData();
   }
   refreshWorkspaceTabBar();
-}
-
-function updateModelBreadcrumb() {
-  if (!modelBreadcrumbText || !exitSubmodelBtn) {
-    return;
-  }
-  if (modelContextStack.length === 0) {
-    modelBreadcrumbText.textContent = "";
-    modelBreadcrumbText.classList.add("hidden");
-    exitSubmodelBtn.classList.add("hidden");
-    return;
-  }
-  const segments = [t("text.mainModel"), ...modelContextStack.map((entry) => entry.nodeName)];
-  modelBreadcrumbText.textContent = segments.join(" / ");
-  modelBreadcrumbText.classList.remove("hidden");
-  exitSubmodelBtn.classList.remove("hidden");
 }
 
 function scheduleFileStatusRefresh() {
@@ -6309,6 +6383,31 @@ function summarizeTooltipValue(value) {
     }
   }
   return formatComputedValue(value);
+}
+
+function summarizeNodeRuntimeValue(node) {
+  if (node?.computedError) {
+    return { text: t("text.nodeValueError"), error: true };
+  }
+  const value = node?.computedValue;
+  if (isAgentSpaceValue(value)) {
+    return { text: formatAgentSpaceSummary(value), error: false };
+  }
+  if (Array.isArray(value)) {
+    const isMatrix = value.length > 0
+      && value.every((row) => Array.isArray(row))
+      && value.every((row) => row.length === value[0].length);
+    if (isMatrix) {
+      return { text: `[${value.length},${value[0]?.length ?? 0}]`, error: false };
+    }
+    return { text: `[${value.length}]`, error: false };
+  }
+  if (value && typeof value === "object") {
+    const keys = Object.keys(value);
+    const visibleKeys = keys.slice(0, 3).join(", ");
+    return { text: keys.length > 3 ? `{${visibleKeys}, ...}` : `{${visibleKeys}}`, error: false };
+  }
+  return { text: formatComputedValue(value), error: false };
 }
 
 function summarizeExpressionPreviewValue(value) {
@@ -6901,6 +7000,10 @@ function hasInputWidgetBinding(node) {
   return hasSliderBinding(node) || hasButtonBinding(node) || hasSelectBinding(node);
 }
 
+function isWidgetControlledExpressionNode(node) {
+  return Boolean(node && !isStateNode(node) && !isSubmodelNode(node) && hasInputWidgetBinding(node));
+}
+
 function normalizeInputNodeFlags() {
   graph.nodes.forEach((node) => {
     if (!canMarkNodeAsInput(node)) {
@@ -6937,7 +7040,8 @@ function bindableInputNodeNames(predicate, excludeWidgetId = null, preserveName 
   }
   return graph.nodes
     .filter((node) => predicate(node) && !blocked.has(String(node.name ?? "")))
-    .map((node) => node.name);
+    .map((node) => node.name)
+    .sort((left, right) => String(left).localeCompare(String(right), undefined, { numeric: true, sensitivity: "base" }));
 }
 
 function buttonBindableNodeNames(excludeWidgetId = null, preserveName = "") {
@@ -7804,6 +7908,7 @@ function exportGraphData() {
       zoom: clampZoom(Number(ui.zoom) || 1),
       showGrid: ui.showGrid !== false,
       highlightNodeEdges: ui.highlightNodeEdges === true,
+      showNodeValues: ui.showNodeValues === true,
       gridSize: clamp(Number(ui.gridSize) || 20, 5, 100),
       tooltipDelayMs: normalizeTooltipDelayMs(ui.tooltipDelayMs),
       scrollLeft: Math.max(0, Number(graphViewport?.scrollLeft) || 0),
@@ -7842,6 +7947,7 @@ function exportGraphData() {
       dt: graph.execution.dt,
       t1: graph.execution.t1,
       delayMs: graph.execution.delayMs,
+      renderEverySteps: graph.execution.renderEverySteps,
       decimals: clampDisplayDecimals(graph.execution.decimals),
       integrator: String(graph.execution.integrator ?? "euler"),
       strictDefinitions: Boolean(graph.execution.strictDefinitions),
@@ -7945,6 +8051,11 @@ function exportGraphData() {
       colorScheme: ["blue", "heat", "grayscale", "diverging", "none"].includes(String(w.colorScheme ?? ""))
         ? String(w.colorScheme)
         : "blue",
+      viewMode: ["grid", "surface"].includes(String(w.viewMode ?? "")) ? String(w.viewMode) : "grid",
+      surfaceStyle: ["solid", "wireframe"].includes(String(w.surfaceStyle ?? "")) ? String(w.surfaceStyle) : "solid",
+      surfaceAzimuth: Number.isFinite(Number(w.surfaceAzimuth)) ? clamp(Number(w.surfaceAzimuth), -180, 180) : 45,
+      surfaceElevation: Number.isFinite(Number(w.surfaceElevation)) ? clamp(Number(w.surfaceElevation), 5, 85) : 32,
+      surfaceHeightScale: Number.isFinite(Number(w.surfaceHeightScale)) ? clamp(Number(w.surfaceHeightScale), 0.1, 10) : 1,
       min: Number.isFinite(Number(w.min)) ? Number(w.min) : 0,
       max: Number.isFinite(Number(w.max)) ? Number(w.max) : 100,
       step: Number.isFinite(Number(w.step)) ? Number(w.step) : 1,
@@ -8007,6 +8118,7 @@ function captureCurrentModelContext(nodeName = "") {
       zoom: ui.zoom,
       showGrid: ui.showGrid,
       highlightNodeEdges: ui.highlightNodeEdges,
+      showNodeValues: ui.showNodeValues,
       gridSize: ui.gridSize,
       tooltipDelayMs: normalizeTooltipDelayMs(ui.tooltipDelayMs),
       scrollLeft: graphViewport.scrollLeft,
@@ -8034,12 +8146,12 @@ function restoreModelContext(context) {
   ui.zoom = clampZoom(Number(context.view?.zoom) || 1);
   ui.showGrid = context.view?.showGrid !== false;
   ui.highlightNodeEdges = context.view?.highlightNodeEdges === true;
+  ui.showNodeValues = context.view?.showNodeValues === true;
   ui.gridSize = clamp(Number(context.view?.gridSize) || ui.gridSize || 20, 5, 100);
   ui.tooltipDelayMs = normalizeTooltipDelayMs(context.view?.tooltipDelayMs);
   setStatus(String(context.statusMessage || t("status.ready")));
   updateHistoryButtons();
   updateFileStatusLabel(dirtySinceLastSave);
-  updateModelBreadcrumb();
   render();
   window.requestAnimationFrame(() => {
     graphViewport.scrollLeft = Number(context.view?.scrollLeft) || 0;
@@ -8083,6 +8195,7 @@ function applyGraphData(data) {
     dt: execCfg.dt,
     t1: execCfg.t1,
     delayMs: execCfg.delayMs,
+    renderEverySteps: execCfg.renderEverySteps,
     decimals: execCfg.decimals,
     integrator: execCfg.integrator,
     strictDefinitions: execCfg.strictDefinitions,
@@ -8200,6 +8313,11 @@ function applyGraphData(data) {
         colorScheme: ["blue", "heat", "grayscale", "diverging", "none"].includes(String(w.colorScheme ?? ""))
           ? String(w.colorScheme)
           : "blue",
+        viewMode: ["grid", "surface"].includes(String(w.viewMode ?? "")) ? String(w.viewMode) : "grid",
+        surfaceStyle: ["solid", "wireframe"].includes(String(w.surfaceStyle ?? "")) ? String(w.surfaceStyle) : "solid",
+        surfaceAzimuth: Number.isFinite(Number(w.surfaceAzimuth)) ? clamp(Number(w.surfaceAzimuth), -180, 180) : 45,
+        surfaceElevation: Number.isFinite(Number(w.surfaceElevation)) ? clamp(Number(w.surfaceElevation), 5, 85) : 32,
+        surfaceHeightScale: Number.isFinite(Number(w.surfaceHeightScale)) ? clamp(Number(w.surfaceHeightScale), 0.1, 10) : 1,
         min: Number.isFinite(Number(w.min)) ? Number(w.min) : 0,
         max: Number.isFinite(Number(w.max)) ? Number(w.max) : 100,
         step: Number.isFinite(Number(w.step)) ? Number(w.step) : 1,
@@ -8281,6 +8399,7 @@ function applyGraphData(data) {
   ui.zoom = clampZoom(Number(savedView?.zoom) || 1);
   ui.showGrid = savedView?.showGrid !== false;
   ui.highlightNodeEdges = savedView?.highlightNodeEdges === true;
+  ui.showNodeValues = savedView?.showNodeValues === true;
   ui.gridSize = clamp(Number(savedView?.gridSize) || ui.gridSize || 20, 5, 100);
   ui.tooltipDelayMs = normalizeTooltipDelayMs(savedView?.tooltipDelayMs);
   normalizeInputNodeFlags();
@@ -8549,9 +8668,9 @@ function updateEditingLockUi() {
     timeStepInput,
     timeEndInput,
     timeDelayInput,
+    renderEveryStepsInput,
     decimalDigitsInput,
     nodeNameInput,
-    nodeValueExprInput,
     nodeInitialStateInput,
     nodeModelPathInput,
     textWidthInput,
@@ -8562,8 +8681,18 @@ function updateEditingLockUi() {
     setExplicitControlDisabled(control, frozen);
   });
 
+  setExplicitControlDisabled(
+    nodeValueExprInput,
+    frozen || isWidgetControlledExpressionNode(selectedNodeForSidebar()),
+  );
+  setExplicitControlDisabled(
+    editNodeValueExprBtn,
+    frozen || isWidgetControlledExpressionNode(selectedNodeForSidebar()),
+  );
+
   if (expressionEditorTextarea) {
-    setExplicitControlDisabled(expressionEditorTextarea, frozen);
+    const editorNode = ui.expressionEditor?.nodeId ? getNodeById(ui.expressionEditor.nodeId) : null;
+    setExplicitControlDisabled(expressionEditorTextarea, frozen || isWidgetControlledExpressionNode(editorNode));
   }
   if (expressionStateInitialInput) {
     setExplicitControlDisabled(
@@ -9287,9 +9416,18 @@ function refreshSidebar() {
     nodeValueExprStatus.classList.toggle("hidden", submodelNode);
     if (!submodelNode) {
       updateExpressionFieldState(nodeValueExprInput, nodeValueExprStatus, node.valueExpression || "", false, "value");
+      setExplicitControlDisabled(
+        nodeValueExprInput,
+        isEditingUiLocked() || isWidgetControlledExpressionNode(node),
+      );
+      setExplicitControlDisabled(
+        editNodeValueExprBtn,
+        isEditingUiLocked() || isWidgetControlledExpressionNode(node),
+      );
     } else {
       nodeValueExprInput.classList.remove("invalid");
       hideExpressionStatus(nodeValueExprStatus);
+      setExplicitControlDisabled(editNodeValueExprBtn, true);
     }
     if (nodeWidgetBindingInfo) {
       const controlledByWidget = !submodelNode && hasInputWidgetBinding(node);
@@ -9558,6 +9696,9 @@ function refreshSidebar() {
     if (document.activeElement !== timeDelayInput) {
       timeDelayInput.value = String(graph.execution.delayMs);
     }
+    if (renderEveryStepsInput && document.activeElement !== renderEveryStepsInput) {
+      renderEveryStepsInput.value = String(graph.execution.renderEverySteps);
+    }
     if (decimalDigitsInput && document.activeElement !== decimalDigitsInput) {
       decimalDigitsInput.value = String(clampDisplayDecimals(graph.execution.decimals));
     }
@@ -9595,7 +9736,6 @@ function render(options = {}) {
   updateMenuTimeLabel();
   updateDeleteActionLabel();
   updateEditActionButtons();
-  updateModelBreadcrumb();
   syncPresentationGroups();
   syncDashboard();
   const visibleNodeIds = visiblePresentationNodeIds();
@@ -10256,8 +10396,27 @@ function render(options = {}) {
     const label = document.createElementNS(SVG_NS, "text");
     label.classList.add("node-label");
     label.setAttribute("x", node.x);
-    label.setAttribute("y", node.y);
+    const showRuntimeValue = ui.showNodeValues === true && graph.execution.currentTime != null;
+    label.setAttribute("y", showRuntimeValue ? node.y - 8 : node.y);
     label.textContent = node.name;
+
+    let runtimeValueLabel = null;
+    if (showRuntimeValue) {
+      const runtimeValue = summarizeNodeRuntimeValue(node);
+      runtimeValueLabel = document.createElementNS(SVG_NS, "text");
+      runtimeValueLabel.classList.add("node-runtime-value");
+      if (runtimeValue.error) {
+        runtimeValueLabel.classList.add("node-runtime-value-error");
+      }
+      runtimeValueLabel.setAttribute("x", node.x);
+      runtimeValueLabel.setAttribute("y", node.y + 11);
+      runtimeValueLabel.textContent = runtimeValue.text;
+      const title = document.createElementNS(SVG_NS, "title");
+      title.textContent = runtimeValue.error
+        ? String(node.computedError)
+        : summarizeTooltipValue(node.computedValue);
+      runtimeValueLabel.appendChild(title);
+    }
 
     let inputBadge = null;
     let inputBadgeLabel = null;
@@ -10387,6 +10546,9 @@ function render(options = {}) {
       g.appendChild(submodelInnerShape);
     }
     g.appendChild(label);
+    if (runtimeValueLabel) {
+      g.appendChild(runtimeValueLabel);
+    }
     if (inputBadge && inputBadgeLabel) {
       g.appendChild(inputBadge);
       g.appendChild(inputBadgeLabel);
@@ -10730,6 +10892,11 @@ function importGraphData(data) {
         colorScheme: ["blue", "heat", "grayscale", "diverging", "none"].includes(String(w.colorScheme ?? ""))
           ? String(w.colorScheme)
           : "blue",
+        viewMode: ["grid", "surface"].includes(String(w.viewMode ?? "")) ? String(w.viewMode) : "grid",
+        surfaceStyle: ["solid", "wireframe"].includes(String(w.surfaceStyle ?? "")) ? String(w.surfaceStyle) : "solid",
+        surfaceAzimuth: Number.isFinite(Number(w.surfaceAzimuth)) ? clamp(Number(w.surfaceAzimuth), -180, 180) : 45,
+        surfaceElevation: Number.isFinite(Number(w.surfaceElevation)) ? clamp(Number(w.surfaceElevation), 5, 85) : 32,
+        surfaceHeightScale: Number.isFinite(Number(w.surfaceHeightScale)) ? clamp(Number(w.surfaceHeightScale), 0.1, 10) : 1,
         min: Number.isFinite(Number(w.min)) ? Number(w.min) : 0,
         max: Number.isFinite(Number(w.max)) ? Number(w.max) : 100,
         step: Number.isFinite(Number(w.step)) ? Number(w.step) : 1,
@@ -10808,6 +10975,7 @@ function importGraphData(data) {
         zoom: clampZoom(Number(data.view.zoom) || 1),
         showGrid: data.view.showGrid !== false,
         highlightNodeEdges: data.view.highlightNodeEdges === true,
+        showNodeValues: data.view.showNodeValues === true,
         gridSize: clamp(Number(data.view.gridSize) || 20, 5, 100),
         tooltipDelayMs: normalizeTooltipDelayMs(data.view.tooltipDelayMs),
         scrollLeft: Math.max(0, Number(data.view.scrollLeft) || 0),
@@ -10971,7 +11139,6 @@ function loadGraphFromJsonText(jsonText, sourceName = "", fileHandle = null, dir
     history.redo = [];
     updateHistoryButtons();
     ui.submodelsPrepared = false;
-    updateModelBreadcrumb();
     if (effectiveDirectoryHandle) {
       const label = derivedDirectoryHandleDisplayName(effectiveDirectoryHandle);
       if (label) {
@@ -11267,30 +11434,8 @@ function refreshInitialValuesAfterSubmodelPreload() {
   refreshRuntimeView();
 }
 
-async function openSubmodelNode(node) {
-  return submodelOrchestrationHelpers.openSubmodelNode(node);
-}
-
 async function openSubmodelNodeInNewTab(node) {
   return submodelOrchestrationHelpers.openSubmodelNodeInNewTab(node);
-}
-
-async function exitCurrentSubmodel() {
-  if (modelContextStack.length === 0) {
-    return;
-  }
-  if (hasUnsavedChanges()) {
-    const shouldSave = window.confirm(t("confirm.exitSubmodel.save"));
-    if (shouldSave) {
-      const saved = await saveGraphJson(false);
-      if (!saved) {
-        return;
-      }
-    }
-  }
-  const parentContext = modelContextStack.pop();
-  restoreModelContext(parentContext);
-  setStatusKey("status.submodelClosed");
 }
 
 async function writeJsonToFileHandle(fileHandle, json) {
@@ -11426,8 +11571,6 @@ async function openGraphJson() {
 }
 
 function resetGraphToEmptyModel() {
-  modelContextStack.length = 0;
-
   graph.modelTitle = "";
   graph.properties = [];
   graph.localFunctions = [];
@@ -11452,6 +11595,7 @@ function resetGraphToEmptyModel() {
     dt: 1,
     t1: 10,
     delayMs: 1000,
+    renderEverySteps: 1,
     decimals: 3,
     integrator: "euler",
     strictDefinitions: false,
@@ -13090,11 +13234,6 @@ if (workspaceTabBar) {
   });
 }
 
-if (exitSubmodelBtn) {
-  exitSubmodelBtn.addEventListener("click", () => {
-    void exitCurrentSubmodel();
-  });
-}
 
 snapToGridInput.addEventListener("change", () => {
   ui.snapToGrid = snapToGridInput.checked;
@@ -13116,6 +13255,15 @@ if (highlightNodeEdgesInput) {
     render();
     scheduleFileStatusRefresh();
     setStatusKey(ui.highlightNodeEdges ? "status.highlightNodeEdgesOn" : "status.highlightNodeEdgesOff");
+  });
+}
+
+if (showNodeValuesInput) {
+  showNodeValuesInput.addEventListener("change", () => {
+    ui.showNodeValues = showNodeValuesInput.checked;
+    render();
+    scheduleFileStatusRefresh();
+    setStatusKey(ui.showNodeValues ? "status.nodeValuesOn" : "status.nodeValuesOff");
   });
 }
 
@@ -13168,6 +13316,21 @@ timeDelayInput.addEventListener("change", () => {
   scheduleFileStatusRefresh();
   setStatusKey("status.timeDelayUpdated", { delay: graph.execution.delayMs });
 });
+
+if (renderEveryStepsInput) {
+  renderEveryStepsInput.addEventListener("change", () => {
+    const parsed = Number(renderEveryStepsInput.value);
+    if (!Number.isFinite(parsed) || parsed < 1) {
+      renderEveryStepsInput.value = String(graph.execution.renderEverySteps);
+      setStatusKey("error.renderEveryStepsInvalid");
+      return;
+    }
+    graph.execution.renderEverySteps = Math.round(parsed);
+    renderEveryStepsInput.value = String(graph.execution.renderEverySteps);
+    scheduleFileStatusRefresh();
+    setStatusKey("status.renderEveryStepsUpdated", { steps: graph.execution.renderEverySteps });
+  });
+}
 
 if (decimalDigitsInput) {
   decimalDigitsInput.addEventListener("change", () => {
@@ -13774,6 +13937,9 @@ if (expressionFormulaNotesInput) {
 
 if (editNodeValueExprBtn) {
   editNodeValueExprBtn.addEventListener("click", () => {
+    if (isWidgetControlledExpressionNode(selectedNodeForSidebar())) {
+      return;
+    }
     openExpressionEditor("value");
   });
 }

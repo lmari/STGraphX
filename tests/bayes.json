@@ -6,10 +6,11 @@
     "zoom": 1,
     "showGrid": true,
     "highlightNodeEdges": false,
+    "showNodeValues": false,
     "gridSize": 20,
     "tooltipDelayMs": 300,
-    "scrollLeft": 166,
-    "scrollTop": 134
+    "scrollLeft": 152,
+    "scrollTop": 176
   },
   "debug": {
     "watches": [],
@@ -17,11 +18,11 @@
     "breakpointExpression": ""
   },
   "modelProperties": [],
-  "nodeCounter": 19,
-  "edgeCounter": 20,
-  "widgetCounter": 13,
-  "textItemCounter": 10,
-  "presentationGroupCounter": 10,
+  "nodeCounter": 25,
+  "edgeCounter": 28,
+  "widgetCounter": 17,
+  "textItemCounter": 13,
+  "presentationGroupCounter": 13,
   "presentationGroups": [
     {
       "id": 5,
@@ -46,10 +47,11 @@
       "showFrame": true
     }
   ],
+  "dashboard": null,
   "execution": {
     "t0": 0,
     "dt": 1,
-    "t1": 50,
+    "t1": 100,
     "delayMs": 1,
     "decimals": 5,
     "integrator": "euler",
@@ -87,8 +89,8 @@
       "output": true,
       "global": false,
       "type": "parameter",
-      "x": 120,
-      "y": 80,
+      "x": 200,
+      "y": 0,
       "width": 75,
       "height": 45,
       "fillColor": "#ffffff",
@@ -103,7 +105,7 @@
           "value": "Categories for hypothesis testing on expected value."
         }
       ],
-      "valueExpression": "range(-2.0, 2.5, 0.1)"
+      "valueExpression": "range(-2.5, 2.5, 0.05)"
     },
     {
       "id": 3,
@@ -111,8 +113,8 @@
       "output": true,
       "global": false,
       "type": "parameter",
-      "x": 150,
-      "y": 20,
+      "x": 140,
+      "y": 40,
       "width": 75,
       "height": 45,
       "fillColor": "#ffffff",
@@ -127,7 +129,7 @@
           "value": "Categories for hypothesis testing on standard deviation."
         }
       ],
-      "valueExpression": "range(0.1, 3, 0.1)"
+      "valueExpression": "range(0.1, 3, 0.05)"
     },
     {
       "id": 4,
@@ -156,12 +158,12 @@
     },
     {
       "id": 5,
-      "name": "marg1",
+      "name": "marg2",
       "output": true,
       "global": false,
       "type": "algebraic",
       "x": 460,
-      "y": 100,
+      "y": 180,
       "width": 75,
       "height": 45,
       "fillColor": "#ffffff",
@@ -177,16 +179,16 @@
         }
       ],
       "input": false,
-      "valueExpression": "reduce(+, prob, 1, 0)"
+      "valueExpression": "reduce(+, prob, 0, 0)"
     },
     {
       "id": 6,
-      "name": "marg2",
+      "name": "marg1",
       "output": true,
       "global": false,
       "type": "algebraic",
       "x": 460,
-      "y": 200,
+      "y": 120,
       "width": 75,
       "height": 45,
       "fillColor": "#ffffff",
@@ -202,7 +204,7 @@
         }
       ],
       "input": false,
-      "valueExpression": "reduce(+, prob, 0, 0)"
+      "valueExpression": "reduce(+, prob, 1, 0)"
     },
     {
       "id": 7,
@@ -258,8 +260,8 @@
       "output": false,
       "global": false,
       "type": "algebraic",
-      "x": 240,
-      "y": 80,
+      "x": 260,
+      "y": 100,
       "width": 75,
       "height": 45,
       "fillColor": "#ffffff",
@@ -301,6 +303,56 @@
       ],
       "stateTransition": "(this*likelihood)/(reduce(+, reduce(+, (this*likelihood), 0), 0))",
       "initialState": "prior"
+    },
+    {
+      "id": 23,
+      "name": "est1",
+      "output": true,
+      "global": false,
+      "type": "algebraic",
+      "x": 580,
+      "y": 120,
+      "width": 75,
+      "height": 45,
+      "fillColor": "#ffffff",
+      "strokeColor": "#000000",
+      "properties": [
+        {
+          "key": "note formula",
+          "value": ""
+        },
+        {
+          "key": "descrizione",
+          "value": ""
+        }
+      ],
+      "input": false,
+      "valueExpression": "hyp1[argmax(marg1)]"
+    },
+    {
+      "id": 24,
+      "name": "est2",
+      "output": true,
+      "global": false,
+      "type": "algebraic",
+      "x": 580,
+      "y": 180,
+      "width": 75,
+      "height": 45,
+      "fillColor": "#ffffff",
+      "strokeColor": "#000000",
+      "properties": [
+        {
+          "key": "note formula",
+          "value": ""
+        },
+        {
+          "key": "descrizione",
+          "value": ""
+        }
+      ],
+      "input": false,
+      "valueExpression": "hyp2[argmax(marg2)]"
     }
   ],
   "edges": [
@@ -369,18 +421,43 @@
       "from": 10,
       "to": 5,
       "controlPoints": []
+    },
+    {
+      "id": 24,
+      "from": 6,
+      "to": 23,
+      "controlPoints": []
+    },
+    {
+      "id": 25,
+      "from": 2,
+      "to": 23,
+      "controlPoints": []
+    },
+    {
+      "id": 26,
+      "from": 5,
+      "to": 24,
+      "controlPoints": []
+    },
+    {
+      "id": 27,
+      "from": 3,
+      "to": 24,
+      "controlPoints": []
     }
   ],
   "textItems": [
     {
       "id": 1,
       "x": -40,
-      "y": -60,
-      "width": 1081,
-      "height": 41,
+      "y": -120,
+      "width": 780,
+      "height": 60,
       "fillColor": "",
       "strokeColor": "",
-      "html": "<html>\n  <head>\n    \n  </head>\n  <body>\n    <p style=\"margin-top: 0\">\n      Parameter estimation by Bayesian inference Gaussian likelihood: \n      multivariate estimation of expected value and standard deviation\n    </p>\n  </body>\n</html>\n"
+      "dashboardPageId": null,
+      "html": "<h3>Stima di parametri bayesiana</h3>\n<p>Stima contemporanea del valore atteso e della deviazione standard di una distribuzione gaussiana</p>"
     }
   ],
   "widgets": [
@@ -392,10 +469,15 @@
       "y": 320,
       "width": 320,
       "height": 210,
+      "dashboardPageId": null,
       "minimized": false,
+      "showTitleBar": true,
+      "fontSize": 13,
       "outputOnly": false,
       "showHistory": false,
       "expandNonScalarValues": false,
+      "tableTextAlign": "left",
+      "tableDecimalDigits": 0,
       "xMin": "auto",
       "xMax": "auto",
       "yMin": "auto",
@@ -412,6 +494,11 @@
       "displayRows": null,
       "displayCols": null,
       "colorScheme": "blue",
+      "viewMode": "grid",
+      "surfaceStyle": "solid",
+      "surfaceAzimuth": 45,
+      "surfaceElevation": 32,
+      "surfaceHeightScale": 1,
       "min": 0,
       "max": 100,
       "step": 1,
@@ -432,7 +519,7 @@
           "showLine": true,
           "lineWidth": 2.2,
           "lineStyle": "solid",
-          "pointMode": "all",
+          "pointMode": "none",
           "pointSize": 2.4
         }
       ]
@@ -445,10 +532,15 @@
       "y": 320,
       "width": 320,
       "height": 210,
+      "dashboardPageId": null,
       "minimized": false,
+      "showTitleBar": true,
+      "fontSize": 13,
       "outputOnly": false,
       "showHistory": false,
       "expandNonScalarValues": false,
+      "tableTextAlign": "left",
+      "tableDecimalDigits": 0,
       "xMin": "auto",
       "xMax": "auto",
       "yMin": "auto",
@@ -465,6 +557,11 @@
       "displayRows": null,
       "displayCols": null,
       "colorScheme": "blue",
+      "viewMode": "grid",
+      "surfaceStyle": "solid",
+      "surfaceAzimuth": 45,
+      "surfaceElevation": 32,
+      "surfaceHeightScale": 1,
       "min": 0,
       "max": 100,
       "step": 1,
@@ -485,7 +582,7 @@
           "showLine": true,
           "lineWidth": 2.2,
           "lineStyle": "solid",
-          "pointMode": "all",
+          "pointMode": "none",
           "pointSize": 2.4
         }
       ]
@@ -494,14 +591,19 @@
       "id": 7,
       "type": "matrix",
       "customTitle": "",
-      "x": 560,
+      "x": 680,
       "y": -20,
-      "width": 380,
-      "height": 600,
+      "width": 360,
+      "height": 560,
+      "dashboardPageId": null,
       "minimized": false,
+      "showTitleBar": true,
+      "fontSize": 13,
       "outputOnly": true,
       "showHistory": false,
       "expandNonScalarValues": false,
+      "tableTextAlign": "left",
+      "tableDecimalDigits": 0,
       "xMin": "auto",
       "xMax": "auto",
       "yMin": "auto",
@@ -518,6 +620,11 @@
       "displayRows": null,
       "displayCols": null,
       "colorScheme": "blue",
+      "viewMode": "surface",
+      "surfaceStyle": "solid",
+      "surfaceAzimuth": 50,
+      "surfaceElevation": 20,
+      "surfaceHeightScale": 1,
       "min": 0,
       "max": 100,
       "step": 1,
@@ -527,6 +634,58 @@
       "options": [],
       "mappings": [],
       "columns": [],
+      "xyPairs": []
+    },
+    {
+      "id": 16,
+      "type": "table",
+      "customTitle": "",
+      "x": 400,
+      "y": 220,
+      "width": 240,
+      "height": 96,
+      "dashboardPageId": null,
+      "minimized": false,
+      "showTitleBar": true,
+      "fontSize": 16,
+      "outputOnly": false,
+      "showHistory": false,
+      "expandNonScalarValues": false,
+      "tableTextAlign": "center",
+      "tableDecimalDigits": 2,
+      "xMin": "auto",
+      "xMax": "auto",
+      "yMin": "auto",
+      "yMax": "auto",
+      "showGrid": true,
+      "legendPosition": "top-right",
+      "source": "",
+      "showNumericValues": true,
+      "showIndices": true,
+      "autoFitCells": true,
+      "cellSize": 28,
+      "valueMin": "auto",
+      "valueMax": "auto",
+      "displayRows": null,
+      "displayCols": null,
+      "colorScheme": "blue",
+      "viewMode": "grid",
+      "surfaceStyle": "solid",
+      "surfaceAzimuth": 45,
+      "surfaceElevation": 32,
+      "surfaceHeightScale": 1,
+      "min": 0,
+      "max": 100,
+      "step": 1,
+      "value": 0,
+      "falseLabel": "",
+      "trueLabel": "",
+      "options": [],
+      "mappings": [],
+      "columns": [
+        "est1",
+        "est2"
+      ],
       "xyPairs": []
     }
   ]

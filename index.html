@@ -103,6 +103,10 @@
               <input id="highlightNodeEdgesInput" type="checkbox" />
               <span data-i18n="menu.view.highlightNodeEdges"></span>
             </label>
+            <label class="menu-check" for="showNodeValuesInput" data-title-i18n="tooltip.menu.view.showNodeValues">
+              <input id="showNodeValuesInput" type="checkbox" />
+              <span data-i18n="menu.view.showNodeValues"></span>
+            </label>
             <label class="menu-field" for="gridSizeInput" data-i18n="menu.view.gridStep" data-title-i18n="tooltip.menu.view.gridStep"></label>
             <input id="gridSizeInput" type="number" min="5" max="100" step="1" value="20" data-title-i18n="tooltip.menu.view.gridStep" />
             <label class="menu-field" for="tooltipDelayInput" data-i18n="menu.view.tooltipDelay" data-title-i18n="tooltip.menu.view.tooltipDelay"></label>
@@ -152,8 +156,6 @@
           <button id="topRunResetBtn" class="icon-btn menu-run-btn" type="button">↺</button>
         </div>
 
-        <button id="exitSubmodelBtn" class="menu-nav-btn hidden" type="button" data-i18n="action.exitSubmodel"></button>
-        <div class="menu-breadcrumb hidden" id="modelBreadcrumbText"></div>
         <div class="menu-time" id="menuTimeText"></div>
         <div class="menu-file-status" id="fileStatusText"></div>
         <div class="menu-status" id="statusText" data-i18n="status.ready"></div>
@@ -208,10 +210,14 @@
                 </div>
               </div>
 
-              <div class="row3-exec model-compact-row tablet-advanced-details">
+              <div class="row3-exec model-compact-row model-execution-settings tablet-advanced-details">
                 <div>
                   <label for="timeDelayInput" data-i18n="label.timeDelayMs" data-title-i18n="tooltip.model.delay"></label>
                   <input id="timeDelayInput" type="number" min="1" step="1" data-title-i18n="tooltip.model.delay" />
+                </div>
+                <div>
+                  <label for="renderEveryStepsInput" data-i18n="label.renderEverySteps" data-title-i18n="tooltip.model.renderEverySteps"></label>
+                  <input id="renderEveryStepsInput" type="number" min="1" step="1" data-title-i18n="tooltip.model.renderEverySteps" />
                 </div>
                 <div>
                   <label for="integratorInput" data-i18n="label.integrator" data-title-i18n="tooltip.model.integrator"></label>
@@ -225,7 +231,7 @@
               <div class="model-meta-row tablet-advanced-details">
                 <div class="model-current-inline">
                   <label for="timeCurrentOutput" data-i18n="label.timeCurrent" data-title-i18n="tooltip.model.currentTime"></label>
-                  <pre id="timeCurrentOutput" class="value-output">-</pre>
+                  <pre id="timeCurrentOutput" class="value-output" data-title-i18n="tooltip.model.currentTime">-</pre>
                 </div>
               </div>
             </div>
@@ -238,18 +244,18 @@
                 <button id="resetExecBtn" class="icon-btn" type="button">↺</button>
               </div>
               <div class="row2-exec">
-                <button id="toggleGraphBtn" class="small-btn" type="button" data-i18n="view.btn.showGraph"></button>
-                <button id="toggleWidgetsBtn" class="small-btn" type="button" data-i18n="view.btn.showWidgets"></button>
+                <button id="toggleGraphBtn" class="small-btn" type="button" data-i18n="view.btn.showGraph" data-title-i18n="tooltip.menu.view.toggleGraph"></button>
+                <button id="toggleWidgetsBtn" class="small-btn" type="button" data-i18n="view.btn.showWidgets" data-title-i18n="tooltip.menu.view.toggleWidgets"></button>
               </div>
             </div>
 
             <div class="model-section model-properties-section tablet-advanced-details">
               <div class="row2-exec">
-                <button id="editLocalFunctionsBtn" class="small-btn" type="button" data-i18n="action.editLocalFunctions"></button>
+                <button id="editLocalFunctionsBtn" class="small-btn" type="button" data-i18n="action.editLocalFunctions" data-title-i18n="tooltip.model.localFunctions"></button>
               </div>
               <h4 data-i18n="panel.propertiesList"></h4>
               <div id="modelPropsList" class="props-list"></div>
-              <button id="addModelPropBtn" class="small-btn" data-i18n="action.addProperty"></button>
+              <button id="addModelPropBtn" class="small-btn" data-i18n="action.addProperty" data-title-i18n="tooltip.model.addProperty"></button>
             </div>
 
           </div>
@@ -420,6 +426,7 @@
             </button>
           </div>
           <div id="expressionEditorHint" class="expression-editor-hint" data-i18n="expr.hint"></div>
+          <div id="expressionWidgetBindingInfo" class="expr-status hidden"></div>
         </div>
         <div class="expression-editor-layout">
           <div id="expressionEditorMain" class="expression-editor-main">

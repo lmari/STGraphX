@@ -183,26 +183,6 @@ body {
   text-overflow: ellipsis;
 }
 
-.menu-nav-btn {
-  margin-left: 10px;
-  border: 1px solid var(--line);
-  background: #f7fafc;
-  color: #274357;
-  border-radius: 6px;
-  padding: 6px 10px;
-  font-size: 0.85rem;
-}
-
-.menu-breadcrumb {
-  margin-left: 10px;
-  color: #5a6e80;
-  font-size: 0.86rem;
-  white-space: nowrap;
-  max-width: 24vw;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
 .menu-time {
   margin-left: 12px;
   color: #3d556b;
@@ -624,6 +604,13 @@ body {
   --matrix-cell-size: 28px;
   --matrix-font-size: 12px;
   width: max-content;
+}
+
+.matrix-surface-canvas {
+  display: block;
+  max-width: 100%;
+  margin: 0 auto;
+  background: #fff;
 }
 
 .matrix-widget-cell {
@@ -1106,6 +1093,10 @@ h4 {
 .model-compact-row {
   grid-template-columns: 1fr 1fr;
   align-items: end;
+}
+
+.model-compact-row.model-execution-settings {
+  grid-template-columns: 1fr 1fr 1fr;
 }
 
 .model-meta-row {
@@ -2630,7 +2621,9 @@ button:disabled {
 }
 
 .help-item + .help-item {
-  margin-top: 10px;
+  margin-top: 12px;
+  padding-top: 10px;
+  border-top: 1px solid #e0e8ef;
 }
 
 .help-item-name {
@@ -2640,17 +2633,52 @@ button:disabled {
 }
 
 .help-item-signature {
-  margin-top: 2px;
+  display: block;
+  margin-top: 3px;
   font-family: var(--font-mono);
   font-size: 0.82rem;
   color: #47627a;
 }
 
 .help-item-desc {
-  margin-top: 3px;
+  margin-top: 6px;
   font-size: 0.84rem;
-  line-height: 1.35;
+  line-height: 1.42;
   color: var(--text);
+}
+
+.help-item-desc code {
+  padding: 0 2px;
+  border-radius: 3px;
+  background: #edf3f8;
+  color: #274d68;
+  font-family: var(--font-mono);
+  font-size: 0.92em;
+}
+
+.help-item-examples {
+  display: grid;
+  gap: 3px;
+  margin-top: 8px;
+  padding-top: 7px;
+  border-top: 1px solid #d9e3ec;
+  font-size: 0.84rem;
+}
+
+.help-item-examples > span {
+  color: #48667d;
+  font-weight: 650;
+}
+
+.help-item-examples code {
+  display: block;
+  padding: 2px 4px;
+  border-radius: 3px;
+  background: #edf3f8;
+  color: #274d68;
+  font-family: var(--font-mono);
+  font-size: 0.92em;
+  white-space: pre-wrap;
 }
 
 .expression-editor-surface {
@@ -2797,12 +2825,62 @@ button:disabled {
   color: var(--muted);
   font-size: 0.84rem;
   line-height: 1.35;
-  white-space: pre-wrap;
+  white-space: normal;
   min-height: 0;
   height: 124px;
   max-height: none;
   overflow: auto;
   user-select: text;
+}
+
+.expression-help-entry-title {
+  color: #29485f;
+  font-weight: 700;
+}
+
+.expression-help-signature,
+.expression-help code {
+  font-family: "IBM Plex Mono", "DejaVu Sans Mono", monospace;
+  font-size: 0.92em;
+}
+
+.expression-help-signature {
+  display: block;
+  margin: 3px 0 7px;
+  color: #315a76;
+}
+
+.expression-help-description {
+  margin: 0;
+}
+
+.expression-help-description code {
+  padding: 0 2px;
+  border-radius: 3px;
+  background: #edf3f8;
+  color: #274d68;
+}
+
+.expression-help-examples {
+  display: grid;
+  gap: 3px;
+  margin-top: 8px;
+  padding-top: 7px;
+  border-top: 1px solid #d9e3ec;
+}
+
+.expression-help-examples > span {
+  color: #48667d;
+  font-weight: 650;
+}
+
+.expression-help-examples code {
+  display: block;
+  padding: 2px 4px;
+  border-radius: 3px;
+  background: #edf3f8;
+  color: #274d68;
+  white-space: pre-wrap;
 }
 
 .expression-help-value {
@@ -3425,6 +3503,20 @@ body.tablet-sidebar-layout .expression-editor-resize-handle {
   user-select: none;
 }
 
+.node-runtime-value {
+  font-size: 11px;
+  fill: #3f5b72;
+  text-anchor: middle;
+  dominant-baseline: middle;
+  pointer-events: none;
+  user-select: none;
+}
+
+.node-runtime-value-error {
+  fill: #b64916;
+  font-weight: 600;
+}
+
 .canvas-text-item {
   cursor: grab;
 }
@@ -3769,7 +3861,6 @@ body.tablet-sidebar-layout .menu-status {
 }
 
 body.tablet-sidebar-layout .menu-file-status,
-body.tablet-sidebar-layout .menu-breadcrumb,
 body.tablet-sidebar-layout .menu-time {
   margin-left: 0;
   max-width: none;
@@ -3783,7 +3874,6 @@ body.tablet-sidebar-layout .menu-title,
 body.tablet-sidebar-layout .menu-command,
 body.tablet-sidebar-layout .menu-submenu-toggle,
 body.tablet-sidebar-layout .menu-check,
-body.tablet-sidebar-layout .menu-nav-btn,
 body.tablet-sidebar-layout .menu-run-btn,
 body.tablet-sidebar-layout .icon-btn,
 body.tablet-sidebar-layout .small-btn,
@@ -3859,7 +3949,6 @@ body.tablet-sidebar-layout .menu-run-btn {
   }
 
   .menu-file-status,
-  .menu-breadcrumb,
   .menu-time {
     margin-left: 0;
     max-width: none;
@@ -3873,7 +3962,6 @@ body.tablet-sidebar-layout .menu-run-btn {
   .menu-command,
   .menu-submenu-toggle,
   .menu-check,
-  .menu-nav-btn,
   .menu-run-btn,
   .icon-btn,
   .small-btn,

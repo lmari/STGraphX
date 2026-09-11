@@ -925,31 +925,94 @@
     return scalarFn(value);
   }
 
-  function vectorizedConditionalOperation(condition, whenTrue, whenFalse) {
-    if (Array.isArray(condition) || Array.isArray(whenTrue) || Array.isArray(whenFalse)) {
-      if (Array.isArray(condition)) {
-        const ref = condition;
-        if ((Array.isArray(whenTrue) && !sameArrayShape(ref, whenTrue)) || (Array.isArray(whenFalse) && !sameArrayShape(ref, whenFalse))) {
-          throw new Error("if arguments must have matching shapes");
-        }
-        return condition.map((item, idx) => vectorizedConditionalOperation(
-          item,
-          Array.isArray(whenTrue) ? whenTrue[idx] : whenTrue,
-          Array.isArray(whenFalse) ? whenFalse[idx] : whenFalse,
-        ));
-      }
-      const ref = Array.isArray(whenTrue) ? whenTrue : whenFalse;
-      const other = Array.isArray(whenTrue) ? whenFalse : whenTrue;
-      if (Array.isArray(other) && !sameArrayShape(ref, other)) {
+  function conditionalPathValue(value, path) {
+    return path.reduce((current, index) => {
+      if (!Array.isArray(current) || index < 0 || index >= current.length) {
         throw new Error("if arguments must have matching shapes");
       }
-      return ref.map((item, idx) => vectorizedConditionalOperation(
-        condition,
-        Array.isArray(whenTrue) ? whenTrue[idx] : whenTrue,
-        Array.isArray(whenFalse) ? whenFalse[idx] : whenFalse,
-      ));
+      return current[index];
+    }, value);
+  }
+
+  function conditionalScopeAtPath(scope, shape, path) {
+    const localScope = { ...scope };
+    Object.entries(localScope).forEach(([name, value]) => {
+      if (Array.isArray(value) && sameArrayShape(value, shape)) {
+        localScope[name] = conditionalPathValue(value, path);
+      }
+    });
+    return localScope;
+  }
+
+  function conditionalLiteralAtPath(node, path) {
+    let selected = node;
+    for (const index of path) {
+      if (selected?.type !== "array") {
+        return selected;
+      }
+      if (index < 0 || index >= selected.elements.length) {
+        throw new Error("if arguments must have matching shapes");
+      }
+      selected = selected.elements[index];
     }
-    return condition ? whenTrue : whenFalse;
+    return selected;
+  }
+
+  function evaluateConditionalBranchAtPath(branchNode, scope, hooks, shape, path) {
+    const value = evaluateAstNode(
+      conditionalLiteralAtPath(branchNode, path),
+      conditionalScopeAtPath(scope, shape, path),
+      hooks,
+    );
+    if (!Array.isArray(value)) {
+      return value;
+    }
+    if (!sameArrayShape(value, shape)) {
+      throw new Error("if arguments must have matching shapes");
+    }
+    return conditionalPathValue(value, path);
+  }
+
+  function evaluateConditionalIf(node, scope, hooks) {
+    if (node.args.length < 3 || node.args.length % 2 === 0) {
+      throw new Error("if expects an odd number of arguments: condition, value pairs, and a default value");
+    }
+
+    // Scalar conditions short-circuit before a vector or matrix condition.
+    let firstArrayCondition = null;
+    for (let index = 0; index < node.args.length - 1; index += 2) {
+      const condition = evaluateAstNode(node.args[index], scope, hooks);
+      if (Array.isArray(condition)) {
+        firstArrayCondition = { index, value: condition };
+        break;
+      }
+      if (condition) {
+        return evaluateAstNode(node.args[index + 1], scope, hooks);
+      }
+    }
+    if (!firstArrayCondition) {
+      return evaluateAstNode(node.args[node.args.length - 1], scope, hooks);
+    }
+
+    const shape = firstArrayCondition.value;
+    const evaluateAtPath = (path) => {
+      for (let index = firstArrayCondition.index; index < node.args.length - 1; index += 2) {
+        const condition = index === firstArrayCondition.index
+          ? firstArrayCondition.value
+          : evaluateConditionalBranchAtPath(node.args[index], scope, hooks, shape, path);
+        const conditionValue = Array.isArray(condition)
+          ? conditionalPathValue(condition, path)
+          : condition;
+        if (conditionValue) {
+          return evaluateConditionalBranchAtPath(node.args[index + 1], scope, hooks, shape, path);
+        }
+      }
+      return evaluateConditionalBranchAtPath(node.args[node.args.length - 1], scope, hooks, shape, path);
+    };
+    const buildResult = (value, path = []) => value.map((item, index) => (
+      Array.isArray(item) ? buildResult(item, [...path, index]) : evaluateAtPath([...path, index])
+    ));
+    return buildResult(shape);
   }
 
   function normalizeSliceIndex(value, size, fallback) {
@@ -1520,6 +1583,50 @@
     };
 
     const applyIndexAccessor = (target, accessor) => {
+      const isMatrixTarget = (value) => Array.isArray(value) && value.every((row) => Array.isArray(row));
+      const normalizeArrayIndex = (value, length) => {
+        let index = Number(value);
+        if (!Number.isInteger(index)) {
+          throw new Error("array index must be an integer");
+        }
+        if (index < 0) {
+          index += length;
+        }
+        if (index < 0 || index >= length) {
+          throw new Error("array index out of range");
+        }
+        return index;
+      };
+      const selectVectorIndices = (values, indices) => {
+        if (!indices.every((index) => !Array.isArray(index))) {
+          throw new Error("array index must be an integer or a vector of integers");
+        }
+        return indices.map((index) => values[normalizeArrayIndex(index, values.length)]);
+      };
+      const matrixCellAt = (matrix, rowValue, colValue) => {
+        let rowIdx = Number(rowValue);
+        let colIdx = Number(colValue);
+        if (!Number.isInteger(rowIdx) || !Number.isInteger(colIdx)) {
+          throw new Error("matrix index must be a pair of integers");
+        }
+        if (rowIdx < 0) {
+          rowIdx += matrix.length;
+        }
+        if (rowIdx < 0 || rowIdx >= matrix.length) {
+          throw new Error("matrix row index out of range");
+        }
+        const row = matrix[rowIdx];
+        if (!Array.isArray(row)) {
+          throw new Error("matrix index requires a matrix target");
+        }
+        if (colIdx < 0) {
+          colIdx += row.length;
+        }
+        if (colIdx < 0 || colIdx >= row.length) {
+          throw new Error("matrix column index out of range");
+        }
+        return row[colIdx];
+      };
       if (!Array.isArray(target)) {
         if (accessor?.index?.type === "identifier" && accessor.index.name === "$i") {
           return target;
@@ -1528,46 +1635,24 @@
       }
       const rawIndex = evaluateAstNode(accessor.index, scope, hooks);
       if (Array.isArray(rawIndex)) {
-        if (
-          rawIndex.length === 2 &&
-          target.every((row) => Array.isArray(row))
-        ) {
-          let rowIdx = Number(rawIndex[0]);
-          let colIdx = Number(rawIndex[1]);
-          if (!Number.isInteger(rowIdx) || !Number.isInteger(colIdx)) {
-            throw new Error("matrix index must be a pair of integers");
+        if (isMatrixTarget(target)) {
+          if (rawIndex.every((pair) => Array.isArray(pair))) {
+            return rawIndex.map((pair) => {
+              if (pair.length !== 2) {
+                throw new Error("matrix index must be a pair of integers");
+              }
+              return matrixCellAt(target, pair[0], pair[1]);
+            });
           }
-          if (rowIdx < 0) {
-            rowIdx += target.length;
+          // Preserve m[[row,col]] for a single cell. Other vectors select rows.
+          if (rawIndex.length === 2) {
+            return matrixCellAt(target, rawIndex[0], rawIndex[1]);
           }
-          if (rowIdx < 0 || rowIdx >= target.length) {
-            throw new Error("matrix row index out of range");
-          }
-          const row = target[rowIdx];
-          if (!Array.isArray(row)) {
-            throw new Error("matrix index requires a matrix target");
-          }
-          if (colIdx < 0) {
-            colIdx += row.length;
-          }
-          if (colIdx < 0 || colIdx >= row.length) {
-            throw new Error("matrix column index out of range");
-          }
-          return row[colIdx];
+          return selectVectorIndices(target, rawIndex);
         }
-        throw new Error("array index must be an integer or a [row, col] pair");
+        return selectVectorIndices(target, rawIndex);
       }
-      let idx = Number(rawIndex);
-      if (!Number.isInteger(idx)) {
-        throw new Error("array index must be an integer");
-      }
-      if (idx < 0) {
-        idx += target.length;
-      }
-      if (idx < 0 || idx >= target.length) {
-        throw new Error("array index out of range");
-      }
-      return target[idx];
+      return target[normalizeArrayIndex(rawIndex, target.length)];
     };
 
     const applyAccessors = (target, accessors) => {
@@ -1575,6 +1660,30 @@
         return target;
       }
       const [first, ...rest] = accessors;
+      if (
+        first.kind === "index"
+        && rest.length > 0
+        && Array.isArray(target)
+        && target.every((row) => Array.isArray(row))
+      ) {
+        const rawIndex = evaluateAstNode(first.index, scope, hooks);
+        if (Array.isArray(rawIndex) && rawIndex.every((index) => !Array.isArray(index))) {
+          const selectedRows = rawIndex.map((index) => {
+            let rowIndex = Number(index);
+            if (!Number.isInteger(rowIndex)) {
+              throw new Error("array index must be an integer or a vector of integers");
+            }
+            if (rowIndex < 0) {
+              rowIndex += target.length;
+            }
+            if (rowIndex < 0 || rowIndex >= target.length) {
+              throw new Error("matrix row index out of range");
+            }
+            return target[rowIndex];
+          });
+          return selectedRows.map((row) => applyAccessors(row, rest));
+        }
+      }
       if (first.kind === "index") {
         return applyAccessors(applyIndexAccessor(target, first), rest);
       }
@@ -1631,18 +1740,7 @@
           return hooks.onIntegralCall(node, scope);
         }
         if (node.name === "__if") {
-          if (node.args.length !== 3) {
-            throw new Error("if expects exactly 3 arguments");
-          }
-          const condition = evaluateAstNode(node.args[0], scope, hooks);
-          if (!Array.isArray(condition)) {
-            return condition
-              ? evaluateAstNode(node.args[1], scope, hooks)
-              : evaluateAstNode(node.args[2], scope, hooks);
-          }
-          const whenTrue = evaluateAstNode(node.args[1], scope, hooks);
-          const whenFalse = evaluateAstNode(node.args[2], scope, hooks);
-          return vectorizedConditionalOperation(condition, whenTrue, whenFalse);
+          return evaluateConditionalIf(node, scope, hooks);
         }
         if (node.name === "array") {
           if (node.args.length < 2) {

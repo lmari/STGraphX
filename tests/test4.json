@@ -1,0 +1,300 @@
+{
+  "version": 1,
+  "modelTitle": "",
+  "localFunctions": [],
+  "view": {
+    "zoom": 1,
+    "showGrid": true,
+    "highlightNodeEdges": false,
+    "showNodeValues": false,
+    "gridSize": 20,
+    "tooltipDelayMs": 300,
+    "scrollLeft": 170,
+    "scrollTop": 72
+  },
+  "debug": {
+    "watches": [],
+    "breakpointEnabled": false,
+    "breakpointExpression": ""
+  },
+  "modelProperties": [],
+  "nodeCounter": 7,
+  "edgeCounter": 9,
+  "widgetCounter": 3,
+  "textItemCounter": 2,
+  "presentationGroupCounter": 2,
+  "presentationGroups": [],
+  "dashboard": null,
+  "execution": {
+    "t0": 0,
+    "dt": 1,
+    "t1": 0,
+    "delayMs": 100,
+    "decimals": 3,
+    "integrator": "euler",
+    "strictDefinitions": false
+  },
+  "nodes": [
+    {
+      "id": 1,
+      "name": "cx",
+      "output": true,
+      "global": false,
+      "type": "algebraic",
+      "x": 200,
+      "y": 200,
+      "width": 120,
+      "height": 70,
+      "fillColor": "",
+      "strokeColor": "",
+      "properties": [
+        {
+          "key": "note formula",
+          "value": ""
+        },
+        {
+          "key": "descrizione",
+          "value": ""
+        }
+      ],
+      "input": false,
+      "valueExpression": "range(0,11)"
+    },
+    {
+      "id": 2,
+      "name": "cy",
+      "output": true,
+      "global": false,
+      "type": "algebraic",
+      "x": 200,
+      "y": 300,
+      "width": 120,
+      "height": 70,
+      "fillColor": "",
+      "strokeColor": "",
+      "properties": [
+        {
+          "key": "note formula",
+          "value": ""
+        },
+        {
+          "key": "descrizione",
+          "value": ""
+        }
+      ],
+      "input": false,
+      "valueExpression": "array(size(cx),rand())\n"
+    },
+    {
+      "id": 3,
+      "name": "y2",
+      "output": true,
+      "global": false,
+      "type": "algebraic",
+      "x": 360,
+      "y": 260,
+      "width": 120,
+      "height": 70,
+      "fillColor": "",
+      "strokeColor": "",
+      "properties": [
+        {
+          "key": "note formula",
+          "value": ""
+        },
+        {
+          "key": "descrizione",
+          "value": ""
+        }
+      ],
+      "input": false,
+      "valueExpression": "spline(cx,cy,x)"
+    },
+    {
+      "id": 5,
+      "name": "x",
+      "output": true,
+      "global": false,
+      "type": "algebraic",
+      "x": 200,
+      "y": 100,
+      "width": 120,
+      "height": 70,
+      "fillColor": "",
+      "strokeColor": "",
+      "properties": [
+        {
+          "key": "note formula",
+          "value": ""
+        },
+        {
+          "key": "descrizione",
+          "value": ""
+        }
+      ],
+      "input": false,
+      "valueExpression": "range(0,10,0.1)\n"
+    },
+    {
+      "id": 6,
+      "name": "y1",
+      "output": true,
+      "global": false,
+      "type": "algebraic",
+      "x": 40,
+      "y": 260,
+      "width": 120,
+      "height": 70,
+      "fillColor": "",
+      "strokeColor": "",
+      "properties": [
+        {
+          "key": "note formula",
+          "value": ""
+        },
+        {
+          "key": "descrizione",
+          "value": ""
+        }
+      ],
+      "input": false,
+      "valueExpression": "piecewise(cx,cy,x)"
+    }
+  ],
+  "edges": [
+    {
+      "id": 1,
+      "from": 1,
+      "to": 2,
+      "controlPoints": []
+    },
+    {
+      "id": 2,
+      "from": 1,
+      "to": 3,
+      "controlPoints": []
+    },
+    {
+      "id": 3,
+      "from": 2,
+      "to": 3,
+      "controlPoints": []
+    },
+    {
+      "id": 5,
+      "from": 5,
+      "to": 3,
+      "controlPoints": []
+    },
+    {
+      "id": 6,
+      "from": 5,
+      "to": 6,
+      "controlPoints": []
+    },
+    {
+      "id": 7,
+      "from": 1,
+      "to": 6,
+      "controlPoints": []
+    },
+    {
+      "id": 8,
+      "from": 2,
+      "to": 6,
+      "controlPoints": []
+    }
+  ],
+  "textItems": [],
+  "widgets": [
+    {
+      "id": 1,
+      "type": "xychart",
+      "customTitle": "",
+      "x": 460,
+      "y": 20,
+      "width": 660,
+      "height": 360,
+      "dashboardPageId": null,
+      "minimized": false,
+      "showTitleBar": true,
+      "fontSize": 13,
+      "outputOnly": false,
+      "showHistory": false,
+      "expandNonScalarValues": false,
+      "tableTextAlign": "left",
+      "tableDecimalDigits": 0,
+      "xMin": "auto",
+      "xMax": "auto",
+      "yMin": "auto",
+      "yMax": "auto",
+      "showGrid": true,
+      "legendPosition": "top-right",
+      "source": "",
+      "showNumericValues": true,
+      "showIndices": true,
+      "autoFitCells": true,
+      "cellSize": 28,
+      "valueMin": "auto",
+      "valueMax": "auto",
+      "displayRows": null,
+      "displayCols": null,
+      "colorScheme": "blue",
+      "viewMode": "grid",
+      "surfaceStyle": "solid",
+      "surfaceAzimuth": 45,
+      "surfaceElevation": 32,
+      "surfaceHeightScale": 1,
+      "min": 0,
+      "max": 100,
+      "step": 1,
+      "value": 0,
+      "falseLabel": "",
+      "trueLabel": "",
+      "options": [],
+      "mappings": [],
+      "columns": [],
+      "xyPairs": [
+        {
+          "xSource": "x",
+          "ySource": "y2",
+          "showTimeSeries": false,
+          "showInstantProfile": true,
+          "color": "#0e7ac4",
+          "pointColor": "#0e7ac4",
+          "showLine": true,
+          "lineWidth": 2.2,
+          "lineStyle": "solid",
+          "pointMode": "none",
+          "pointSize": 2.4
+        },
+        {
+          "xSource": "x",
+          "ySource": "y1",
+          "showTimeSeries": false,
+          "showInstantProfile": true,
+          "color": "#e67e22",
+          "pointColor": "#e67e22",
+          "showLine": true,
+          "lineWidth": 2.2,
+          "lineStyle": "solid",
+          "pointMode": "none",
+          "pointSize": 2.4
+        },
+        {
+          "xSource": "cx",
+          "ySource": "cy",
+          "showTimeSeries": false,
+          "showInstantProfile": true,
+          "color": "#27ae60",
+          "pointColor": "#27ae60",
+          "showLine": false,
+          "lineWidth": 2.2,
+          "lineStyle": "solid",
+          "pointMode": "all",
+          "pointSize": 6
+        }
+      ]
+    }
+  ]
+}

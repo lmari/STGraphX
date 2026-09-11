@@ -93,11 +93,20 @@ Esempi:
 - `range(5)[1:4]` -> `[1,2,3]`
 - `range(5)[::2]` -> `[0,2,4]`
 - `range(5)[-1]` -> `4`
+- `[1,2,3,4][[0,2]]` -> `[1,3]`
+- `[1,2,3,4][[-1,0,-1]]` -> `[4,1,4]`
 
 Per le matrici sono supportate entrambe le forme:
 
 - `m[i]` restituisce la riga `i`
 - `m[i][j]` restituisce l'elemento in posizione `i,j`
+
+Sono inoltre disponibili selezioni non contigue:
+
+- `m[[r,c]]` mantiene il significato di singola cella in posizione `r,c`
+- `m[[r1,r2], :]` seleziona le righe indicate
+- `m[:, [c1,c2]]` seleziona le colonne indicate
+- `m[[[r1,c1],[r2,c2]]]` seleziona celle arbitrarie e restituisce un vettore
 - `m[i, j]` restituisce lo stesso elemento con una sintassi piu compatta
 - `m[righe, colonne]` consente slicing di righe e colonne nello stesso accesso, in stile NumPy
 
@@ -682,7 +691,11 @@ Caratteristiche:
 - opzione per mostrare o nascondere gli indici di righe e colonne
 - opzione per scegliere la dimensione delle celle oppure adattarle automaticamente alla finestra del widget
 - palette colore selezionabili in funzione dei valori numerici nelle celle
+- due modalita di visualizzazione: `Griglia` e `Superficie`
+- nella vista superficie: tessitura continua o wireframe, palette, scala verticale, azimut ed elevazione
 - aggiornamento automatico durante l'esecuzione
+
+La vista `Superficie` usa una proiezione prospettica leggera su Canvas ed e disponibile per matrici numeriche con almeno due righe e due colonne. Per mantenere reattiva l'interfaccia, matrici molto grandi vengono sottocampionate solo nella rappresentazione grafica; il dato del modello non viene modificato.
 
 Se il nodo selezionato:
 

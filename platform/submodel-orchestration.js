@@ -63,10 +63,6 @@
     const preloadSubmodelsAfterLoadRef = typeof options.preloadSubmodelsAfterLoadRef === "function"
       ? options.preloadSubmodelsAfterLoadRef
       : async () => {};
-    const captureCurrentModelContext = typeof options.captureCurrentModelContext === "function"
-      ? options.captureCurrentModelContext
-      : () => null;
-    const pushModelContext = typeof options.pushModelContext === "function" ? options.pushModelContext : () => {};
     const beforeOpenSubmodelInNewTab = typeof options.beforeOpenSubmodelInNewTab === "function"
       ? options.beforeOpenSubmodelInNewTab
       : () => ({ previousActiveTabId: null });
@@ -198,35 +194,6 @@
       }
     }
 
-    async function openSubmodelNode(node) {
-      if (!node || !isSubmodelNode(node)) {
-        return false;
-      }
-      const modelPath = normalizeSubmodelPath(node.modelPath);
-      if (!modelPath) {
-        setStatusKey("error.submodelMissingPath");
-        return false;
-      }
-      try {
-        const { text, fileHandle, file, directoryHandle } = await resolveSubmodelFileByPath(modelPath);
-        pushModelContext(captureCurrentModelContext(node.name));
-        const effectiveDirectoryHandle = directoryHandle || await deriveDirectoryHandleFromFileHandle(fileHandle) || null;
-        loadGraphFromJsonText(
-          text,
-          (fileHandle && fileHandle.name) || (file && file.name) || modelPath,
-          fileHandle,
-          effectiveDirectoryHandle,
-          true,
-        );
-        await preloadSubmodelsAfterLoadRef();
-        setStatusKey("status.submodelOpened", { name: node.name });
-        return true;
-      } catch (err) {
-        setStatusKey("error.submodelOpenFailed", { message: String(err?.message || t("error.load")) });
-        return false;
-      }
-    }
-
     async function openSubmodelNodeInNewTab(node) {
       if (!node || !isSubmodelNode(node)) {
         return false;
@@ -260,7 +227,6 @@
 
     return {
       ensureSubmodelTemplatesReady,
-      openSubmodelNode,
       openSubmodelNodeInNewTab,
       preloadSubmodelsAfterLoad,
       refreshAllSubmodelInterfaces,

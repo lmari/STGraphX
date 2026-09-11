@@ -392,10 +392,267 @@
     return mapDistributionValue(valueArg, (item) => exponentialPdf(item, rate));
   }
 
+  function probabilityParameter(value, name) {
+    const probabilityValue = toFiniteNumber(value, name);
+    if (probabilityValue < 0 || probabilityValue > 1) {
+      throw new Error(`${name} must be in [0, 1]`);
+    }
+    return probabilityValue;
+  }
+
+  function nonNegativeInteger(value, name) {
+    const integer = toFiniteNumber(value, name);
+    if (!Number.isInteger(integer) || integer < 0) {
+      throw new Error(`${name} must be a non-negative integer`);
+    }
+    return integer;
+  }
+
+  function logGamma(value) {
+    const coefficients = [
+      0.99999999999980993,
+      676.5203681218851,
+      -1259.1392167224028,
+      771.32342877765313,
+      -176.61502916214059,
+      12.507343278686905,
+      -0.13857109526572012,
+      9.9843695780195716e-6,
+      1.5056327351493116e-7,
+    ];
+    if (value < 0.5) {
+      return Math.log(Math.PI) - Math.log(Math.sin(Math.PI * value)) - logGamma(1 - value);
+    }
+    const z = value - 1;
+    let series = coefficients[0];
+    for (let index = 1; index < coefficients.length; index += 1) {
+      series += coefficients[index] / (z + index);
+    }
+    const base = z + coefficients.length - 1.5;
+    return 0.5 * Math.log(2 * Math.PI) + (z + 0.5) * Math.log(base) - base + Math.log(series);
+  }
+
+  function binomialPmf(x, trials, probabilityValue) {
+    const n = nonNegativeInteger(trials, "trials");
+    const p = probabilityParameter(probabilityValue, "probability");
+    const k = toFiniteNumber(x, "x");
+    if (!Number.isInteger(k) || k < 0 || k > n) {
+      return 0;
+    }
+    if (p === 0) return k === 0 ? 1 : 0;
+    if (p === 1) return k === n ? 1 : 0;
+    return Math.exp(logGamma(n + 1) - logGamma(k + 1) - logGamma(n - k + 1) + k * Math.log(p) + (n - k) * Math.log1p(-p));
+  }
+
+  function binomialCdf(x, trials, probabilityValue) {
+    const n = nonNegativeInteger(trials, "trials");
+    const limit = Math.floor(toFiniteNumber(x, "x"));
+    if (limit < 0) return 0;
+    if (limit >= n) return 1;
+    let total = 0;
+    for (let k = 0; k <= limit; k += 1) {
+      total += binomialPmf(k, n, probabilityValue);
+    }
+    return Math.min(1, total);
+  }
+
+  function binomialIcdf(probabilityValue, trials, successProbability) {
+    const q = probabilityParameter(probabilityValue, "probability");
+    const n = nonNegativeInteger(trials, "trials");
+    let cumulative = 0;
+    for (let k = 0; k <= n; k += 1) {
+      cumulative += binomialPmf(k, n, successProbability);
+      if (cumulative >= q || k === n) return k;
+    }
+    return n;
+  }
+
+  function binomialSample(trials = 1, probabilityValue = 0.5) {
+    const n = nonNegativeInteger(trials, "trials");
+    const p = probabilityParameter(probabilityValue, "probability");
+    let successes = 0;
+    for (let trial = 0; trial < n; trial += 1) {
+      if (Math.random() < p) successes += 1;
+    }
+    return successes;
+  }
+
+  function binomial() {
+    const { params, valueArg, mode } = parseDistributionCallArgs(arguments, [1, 0.5]);
+    const [trials, probabilityValue] = params;
+    if (valueArg === undefined) return binomialSample(trials, probabilityValue);
+    if (mode === 1) return mapDistributionValue(valueArg, (item) => binomialCdf(item, trials, probabilityValue));
+    if (mode === 2) return mapDistributionValue(valueArg, (item) => binomialIcdf(item, trials, probabilityValue));
+    return mapDistributionValue(valueArg, (item) => binomialPmf(item, trials, probabilityValue));
+  }
+
+  function bernoulli() {
+    const { params, valueArg, mode } = parseDistributionCallArgs(arguments, [0.5]);
+    const [probabilityValue] = params;
+    if (valueArg === undefined) return Math.random() < probabilityParameter(probabilityValue, "probability") ? 1 : 0;
+    if (mode === 1) return mapDistributionValue(valueArg, (item) => binomialCdf(item, 1, probabilityValue));
+    if (mode === 2) return mapDistributionValue(valueArg, (item) => binomialIcdf(item, 1, probabilityValue));
+    return mapDistributionValue(valueArg, (item) => binomialPmf(item, 1, probabilityValue));
+  }
+
+  function poissonPmf(x, rate) {
+    const lambda = toFiniteNumber(rate, "rate");
+    if (lambda < 0) throw new Error("rate must be >= 0");
+    const k = toFiniteNumber(x, "x");
+    if (!Number.isInteger(k) || k < 0) return 0;
+    if (lambda === 0) return k === 0 ? 1 : 0;
+    return Math.exp(k * Math.log(lambda) - lambda - logGamma(k + 1));
+  }
+
+  function poissonCdf(x, rate) {
+    const limit = Math.floor(toFiniteNumber(x, "x"));
+    if (limit < 0) return 0;
+    let total = 0;
+    for (let k = 0; k <= limit; k += 1) {
+      total += poissonPmf(k, rate);
+    }
+    return Math.min(1, total);
+  }
+
+  function poissonIcdf(probabilityValue, rate) {
+    const q = probabilityParameter(probabilityValue, "probability");
+    const lambda = toFiniteNumber(rate, "rate");
+    if (lambda < 0) throw new Error("rate must be >= 0");
+    let cumulative = 0;
+    const limit = Math.max(100, Math.ceil(lambda + 12 * Math.sqrt(lambda + 1)));
+    for (let k = 0; k <= limit; k += 1) {
+      cumulative += poissonPmf(k, lambda);
+      if (cumulative >= q || k === limit) return k;
+    }
+    return limit;
+  }
+
+  function poissonSample(rate = 1) {
+    const lambda = toFiniteNumber(rate, "rate");
+    if (lambda < 0) throw new Error("rate must be >= 0");
+    if (lambda === 0) return 0;
+    // Splitting preserves the Poisson law and keeps Knuth's loop numerically stable.
+    if (lambda > 30) return poissonSample(lambda / 2) + poissonSample(lambda / 2);
+    let count = 0;
+    let product = 1;
+    const threshold = Math.exp(-lambda);
+    do {
+      count += 1;
+      product *= Math.random();
+    } while (product > threshold);
+    return count - 1;
+  }
+
+  function poisson() {
+    const { params, valueArg, mode } = parseDistributionCallArgs(arguments, [1]);
+    const [rate] = params;
+    if (valueArg === undefined) return poissonSample(rate);
+    if (mode === 1) return mapDistributionValue(valueArg, (item) => poissonCdf(item, rate));
+    if (mode === 2) return mapDistributionValue(valueArg, (item) => poissonIcdf(item, rate));
+    return mapDistributionValue(valueArg, (item) => poissonPmf(item, rate));
+  }
+
+  function signalControlPoints(cxValue, cyValue, name) {
+    if (!Array.isArray(cxValue) || !Array.isArray(cyValue) || cxValue.length < 2 || cxValue.length !== cyValue.length) {
+      throw new Error(`${name} expects two numeric vectors of the same length, with at least two points`);
+    }
+    const cx = cxValue.map((value) => toFiniteNumber(value, "cx"));
+    const cy = cyValue.map((value) => toFiniteNumber(value, "cy"));
+    for (let index = 1; index < cx.length; index += 1) {
+      if (cx[index] <= cx[index - 1]) {
+        throw new Error(`${name} expects strictly increasing cx values`);
+      }
+    }
+    return { cx, cy };
+  }
+
+  function signalSegmentIndex(cx, x) {
+    let low = 0;
+    let high = cx.length - 2;
+    while (low <= high) {
+      const middle = Math.floor((low + high) / 2);
+      if (x < cx[middle]) {
+        high = middle - 1;
+      } else if (x > cx[middle + 1]) {
+        low = middle + 1;
+      } else {
+        return middle;
+      }
+    }
+    return Math.max(0, Math.min(cx.length - 2, low));
+  }
+
+  function piecewise() {
+    if (arguments.length !== 3) {
+      throw new Error("piecewise expects cx, cy, and x");
+    }
+    const { cx, cy } = signalControlPoints(arguments[0], arguments[1], "piecewise");
+    return mapDistributionValue(arguments[2], (value) => {
+      const x = toFiniteNumber(value, "x");
+      if (x <= cx[0]) return cy[0];
+      if (x >= cx[cx.length - 1]) return cy[cy.length - 1];
+      const index = signalSegmentIndex(cx, x);
+      const fraction = (x - cx[index]) / (cx[index + 1] - cx[index]);
+      return cy[index] + fraction * (cy[index + 1] - cy[index]);
+    });
+  }
+
+  function naturalSplineSecondDerivatives(cx, cy) {
+    const size = cx.length;
+    const lower = Array(size).fill(0);
+    const diagonal = Array(size).fill(0);
+    const upper = Array(size).fill(0);
+    const right = Array(size).fill(0);
+    diagonal[0] = 1;
+    diagonal[size - 1] = 1;
+    for (let index = 1; index < size - 1; index += 1) {
+      const leftWidth = cx[index] - cx[index - 1];
+      const rightWidth = cx[index + 1] - cx[index];
+      lower[index] = leftWidth;
+      diagonal[index] = 2 * (leftWidth + rightWidth);
+      upper[index] = rightWidth;
+      right[index] = 6 * ((cy[index + 1] - cy[index]) / rightWidth - (cy[index] - cy[index - 1]) / leftWidth);
+    }
+    for (let index = 1; index < size; index += 1) {
+      const factor = lower[index] / diagonal[index - 1];
+      diagonal[index] -= factor * upper[index - 1];
+      right[index] -= factor * right[index - 1];
+    }
+    const second = Array(size).fill(0);
+    second[size - 1] = right[size - 1] / diagonal[size - 1];
+    for (let index = size - 2; index >= 0; index -= 1) {
+      second[index] = (right[index] - upper[index] * second[index + 1]) / diagonal[index];
+    }
+    return second;
+  }
+
+  function spline() {
+    if (arguments.length !== 3) {
+      throw new Error("spline expects cx, cy, and x");
+    }
+    const { cx, cy } = signalControlPoints(arguments[0], arguments[1], "spline");
+    const second = naturalSplineSecondDerivatives(cx, cy);
+    return mapDistributionValue(arguments[2], (value) => {
+      const x = toFiniteNumber(value, "x");
+      if (x <= cx[0]) return cy[0];
+      if (x >= cx[cx.length - 1]) return cy[cy.length - 1];
+      const index = signalSegmentIndex(cx, x);
+      const width = cx[index + 1] - cx[index];
+      const left = (cx[index + 1] - x) / width;
+      const right = (x - cx[index]) / width;
+      return left * cy[index]
+        + right * cy[index + 1]
+        + ((left ** 3 - left) * second[index] + (right ** 3 - right) * second[index + 1]) * width * width / 6;
+    });
+  }
+
   const probability = Object.freeze({
     gaussian,
     uniform,
     exponential,
+    bernoulli,
+    binomial,
+    poisson,
   });
 
   function normalizeCollectionValueKey(value) {
@@ -1402,6 +1659,20 @@
     return (...args) => mapFunctionArgs(args, (...scalarArgs) => fn(...scalarArgs));
   }
 
+  function conditionalFunction(...args) {
+    if (args.length < 3 || args.length % 2 === 0) {
+      throw new Error("if expects an odd number of arguments: condition, value pairs, and a default value");
+    }
+    return mapFunctionArgs(args, (...scalarArgs) => {
+      for (let index = 0; index < scalarArgs.length - 1; index += 2) {
+        if (scalarArgs[index]) {
+          return scalarArgs[index + 1];
+        }
+      }
+      return scalarArgs[scalarArgs.length - 1];
+    });
+  }
+
   function buildNumericRange(startValue, endValue, stepValue = null) {
     const start = Number(startValue);
     const end = Number(endValue);
@@ -1442,9 +1713,48 @@
     };
   }
 
+  function extremumIndex(value, preferGreater, name) {
+    if (!Array.isArray(value) || value.length === 0) {
+      throw new Error(`${name} expects a non-empty numeric vector or matrix`);
+    }
+    const isMatrix = value.every((row) => Array.isArray(row));
+    if (!isMatrix) {
+      if (!value.every((item) => Number.isFinite(item))) {
+        throw new Error(`${name} expects a non-empty numeric vector or matrix`);
+      }
+      let bestIndex = 0;
+      let bestValue = value[0];
+      for (let index = 1; index < value.length; index += 1) {
+        if (preferGreater ? value[index] > bestValue : value[index] < bestValue) {
+          bestIndex = index;
+          bestValue = value[index];
+        }
+      }
+      return bestIndex;
+    }
+    const columnCount = value[0]?.length ?? 0;
+    if (!columnCount || !value.every((row) => row.length === columnCount && row.every((item) => Number.isFinite(item)))) {
+      throw new Error(`${name} expects a non-empty numeric vector or matrix`);
+    }
+    let bestRow = 0;
+    let bestColumn = 0;
+    let bestValue = value[0][0];
+    for (let row = 0; row < value.length; row += 1) {
+      for (let column = 0; column < columnCount; column += 1) {
+        const item = value[row][column];
+        if (preferGreater ? item > bestValue : item < bestValue) {
+          bestRow = row;
+          bestColumn = column;
+          bestValue = item;
+        }
+      }
+    }
+    return [bestRow, bestColumn];
+  }
+
   function createMathScope(options = {}) {
     const scope = {
-      __if: vectorizeFunction((condition, whenTrue, whenFalse) => (condition ? whenTrue : whenFalse)),
+      __if: conditionalFunction,
       sin: vectorizeFunction(Math.sin),
       cos: vectorizeFunction(Math.cos),
       tan: vectorizeFunction(Math.tan),
@@ -1463,6 +1773,8 @@
       pow: vectorizeFunction(Math.pow),
       abs: vectorizeFunction(Math.abs),
       pos: vectorizeFunction((value) => Math.max(0, Number(value))),
+      argmin: (value) => extremumIndex(value, false, "argmin"),
+      argmax: (value) => extremumIndex(value, true, "argmax"),
       min: vectorizeFunction(Math.min),
       max: vectorizeFunction(Math.max),
       round: vectorizeFunction(Math.round),
@@ -1528,6 +1840,11 @@
       gaussian,
       uniform,
       exponential,
+      bernoulli,
+      binomial,
+      poisson,
+      piecewise,
+      spline,
       getProperty: options.getProperty || unavailable("getProperty", "getProperty is only available in node expressions"),
       setProperty: options.setProperty || unavailable("setProperty", "setProperty is only available in node expressions"),
       getModelProperty: options.getModelProperty || unavailable("getModelProperty", "getModelProperty is unavailable"),
@@ -1555,7 +1872,7 @@
       dt: { kind: "variable", signature: "dt", descriptionKey: "expr.help.dt" },
     },
     functions: {
-      if: { kind: "function", signature: "if(condition, whenTrue, whenFalse)", descriptionKey: "expr.help.if", insertText: "if()", cursorOffset: 3 },
+      if: { kind: "function", signature: "if(condition, value[, condition, value, ...], defaultValue)", descriptionKey: "expr.help.if", insertText: "if()", cursorOffset: 3 },
       not: { kind: "function", signature: "not x", descriptionKey: "expr.help.not", insertText: "not ", cursorOffset: 4 },
       and: { kind: "function", signature: "a and b", descriptionKey: "expr.help.and", insertText: " and ", cursorOffset: 5 },
       or: { kind: "function", signature: "a or b", descriptionKey: "expr.help.or", insertText: " or ", cursorOffset: 4 },
@@ -1605,10 +1922,17 @@
       size: { kind: "array", signature: "size(array[, axis])", descriptionKey: "expr.help.size", insertText: "size()", cursorOffset: 5 },
       average: { kind: "probability", signature: "average(array[, axis])", descriptionKey: "expr.help.average", insertText: "average()", cursorOffset: 8 },
       stdev: { kind: "probability", signature: "stdev(array[, axis])", descriptionKey: "expr.help.stdev", insertText: "stdev()", cursorOffset: 6 },
+      argmin: { kind: "array", signature: "argmin(vector|matrix)", descriptionKey: "expr.help.argmin", insertText: "argmin()", cursorOffset: 7 },
+      argmax: { kind: "array", signature: "argmax(vector|matrix)", descriptionKey: "expr.help.argmax", insertText: "argmax()", cursorOffset: 7 },
       range: { kind: "function", signature: "range(stop) | range(start, stop[, step])", descriptionKey: "expr.help.range", insertText: "range()", cursorOffset: 6 },
-      gaussian: { kind: "probability", signature: "gaussian([params], x, mode)", descriptionKey: "expr.help.gaussian", insertText: "gaussian()", cursorOffset: 9 },
-      uniform: { kind: "probability", signature: "uniform([params], x, mode)", descriptionKey: "expr.help.uniform", insertText: "uniform()", cursorOffset: 8 },
+      gaussian: { kind: "probability", signature: "gaussian([mu, sigma], x, mode)", descriptionKey: "expr.help.gaussian", insertText: "gaussian()", cursorOffset: 9 },
+      uniform: { kind: "probability", signature: "uniform([min, max], x, mode)", descriptionKey: "expr.help.uniform", insertText: "uniform()", cursorOffset: 8 },
       exponential: { kind: "probability", signature: "exponential([params], x, mode)", descriptionKey: "expr.help.exponential", insertText: "exponential()", cursorOffset: 12 },
+      bernoulli: { kind: "probability", signature: "bernoulli([p], x, mode)", descriptionKey: "expr.help.bernoulli", insertText: "bernoulli()", cursorOffset: 10 },
+      binomial: { kind: "probability", signature: "binomial([n, p], x, mode)", descriptionKey: "expr.help.binomial", insertText: "binomial()", cursorOffset: 9 },
+      poisson: { kind: "probability", signature: "poisson([rate], x, mode)", descriptionKey: "expr.help.poisson", insertText: "poisson()", cursorOffset: 8 },
+      piecewise: { kind: "function", signature: "piecewise(cx, cy, x)", descriptionKey: "expr.help.piecewise", insertText: "piecewise()", cursorOffset: 10 },
+      spline: { kind: "function", signature: "spline(cx, cy, x)", descriptionKey: "expr.help.spline", insertText: "spline()", cursorOffset: 7 },
       rand: { kind: "probability", signature: "rand([max]) | rand(min, max)", descriptionKey: "expr.help.rand", insertText: "rand()", cursorOffset: 5 },
       randInt: { kind: "probability", signature: "randInt(max) | randInt(min, max)", descriptionKey: "expr.help.randInt", insertText: "randInt()", cursorOffset: 8 },
       sin: { kind: "math", signature: "sin(x)", descriptionKey: "expr.help.sin", insertText: "sin()", cursorOffset: 4 },

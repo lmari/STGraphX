@@ -1,6 +1,6 @@
 /*!
  * STGraphX Embedded Player Bundle
- * Generated: 2026-09-10T14:23:54.531Z
+ * Generated: 2026-09-11T20:44:47.471Z
  */
 
 /* --- i18n-inline.js --- */
@@ -13,14 +13,14 @@
 
 window.STGraphXAppMeta = {
   author: "Luca Mari",
-  releaseDate: "2026.09.09",
+  releaseDate: "2026.09.11",
   license: "MPL-2.0",
   copyright: "Copyright (c) 2026 Luca Mari",
 };
 
 window.STGraphXI18nBundles = {
   "it": {
-    "action.addProperty": "Aggiungi proprieta",
+    "action.addProperty": "Aggiungi proprietà",
     "action.remove": "Rimuovi",
     "action.apply": "Applica",
     "action.cancel": "Annulla",
@@ -34,8 +34,7 @@ window.STGraphXI18nBundles = {
     "action.editLocalFunctions": "Funzioni locali...",
     "action.newTab": "+",
     "action.closeTab": "Chiudi scheda",
-    "action.exitSubmodel": "Torna su",
-    "action.loadSubmodel": "Apri",
+    "action.loadSubmodel": "Carica",
     "action.resetNodeColors": "Colori automatici",
     "color.default": "Automatico",
     "color.blue": "Blu",
@@ -52,8 +51,8 @@ window.STGraphXI18nBundles = {
     "action.showSubmodel": "Mostra",
     "action.timedStart": "Avvia temporizzata",
     "action.timedStop": "Ferma temporizzata",
-    "action.tabletCanvasEdit": "Modalita modifica canvas",
-    "action.tabletCanvasPan": "Modalita pan canvas",
+    "action.tabletCanvasEdit": "Modalità modifica canvas",
+    "action.tabletCanvasPan": "Modalità pan canvas",
     "aria.close": "Chiudi",
     "aria.graphCanvas": "Canvas del grafo",
     "app.title": "STGraphX",
@@ -65,7 +64,6 @@ window.STGraphXI18nBundles = {
     "about.licenseLabel": "Licenza",
     "about.copyrightLabel": "Copyright",
     "about.body": "Versione sperimentale con shell web ed Electron.",
-    "confirm.exitSubmodel.save": "Ci sono modifiche non salvate nel sottomodello corrente. Vuoi salvarle prima di tornare al livello superiore?",
     "confirm.closeApp.save": "Ci sono modifiche non salvate. Vuoi salvarle prima di chiudere l'app?",
     "confirm.closeApp.detail": "Modello corrente: {name}",
     "confirm.closeTab.save": "Ci sono modifiche non salvate in questa scheda. Vuoi salvarle prima di chiuderla?",
@@ -90,7 +88,7 @@ window.STGraphXI18nBundles = {
     "context.edge.addCp": "Aggiungi punto controllo qui",
     "context.edge.clearCp": "Rimuovi tutti i punti controllo",
     "context.edge.delete": "Elimina freccia",
-    "context.node.addProp": "Aggiungi proprieta",
+    "context.node.addProp": "Aggiungi proprietà",
     "context.node.delete": "Elimina nodo",
     "context.node.newLinked": "Nuovo nodo collegato",
     "context.node.rename": "Rinomina nodo",
@@ -102,9 +100,9 @@ window.STGraphXI18nBundles = {
     "context.widget.restore": "Ripristina",
     "context.text.edit": "Modifica testo...",
     "context.text.delete": "Elimina testo",
-    "error.duplicateNodeName": "Nome nodo gia in uso.",
+    "error.duplicateNodeName": "Nome nodo già in uso.",
     "error.edgeDifferentNodes": "Una freccia deve connettere due nodi diversi.",
-    "error.edgeExists": "Freccia gia esistente tra i due nodi.",
+    "error.edgeExists": "Freccia già esistente tra i due nodi.",
     "error.evalFailed": "Errore valutazione su {count} nodi (primo: {node}).",
     "error.evalFailedDetailed": "Errore valutazione su {count} nodi (primo: {node}, motivo: {reason}).",
     "error.evalFailedDetailedTime": "Errore valutazione su {count} nodi (primo: {node}, motivo: {reason}, tempo: {time}).",
@@ -130,7 +128,7 @@ window.STGraphXI18nBundles = {
     "error.nodeDefinition.missingSubmodelPath": "file del sottomodello mancante",
     "error.nodeDefinition.missingTransition": "stato prossimo mancante",
     "error.nodeDefinition.missingValue": "valore mancante",
-    "error.parameterIncomingEdge": "Un parametro non puo avere frecce entranti.",
+    "error.parameterIncomingEdge": "Un parametro non può avere frecce entranti.",
     "error.reservedNodeName": "Nome nodo non valido: parola riservata.",
     "error.saveFailed": "Salvataggio non riuscito.",
     "error.csvNoData": "Nessun dato di simulazione disponibile da esportare.",
@@ -147,6 +145,7 @@ window.STGraphXI18nBundles = {
     "error.submodelRecursiveReference": "Riferimento ricorsivo tra sottomodelli non supportato.",
     "error.submodelRk4Unsupported": "RK4 non è ancora supportato in presenza di sottomodelli.",
     "error.timeDelayInvalid": "Ritardo temporizzato non valido.",
+    "error.renderEveryStepsInvalid": "L'intervallo di aggiornamento visivo deve essere almeno 1.",
     "error.timeDirection": "Con i parametri inseriti il tempo non raggiunge t1.",
     "error.timeInvalid": "Parametri temporali non validi.",
     "error.timeStepZero": "Il passo temporale (delta t) non puo essere zero.",
@@ -158,10 +157,10 @@ window.STGraphXI18nBundles = {
     "expr.error.missingCloseBrace": "Parentesi graffa chiusa mancante.",
     "expr.error.missingCloseBracket": "Parentesi quadra chiusa mancante.",
     "expr.error.missingCloseParen": "Parentesi chiusa mancante.",
-    "expr.error.objectColon": "Manca ':' dopo il nome della proprieta.",
+    "expr.error.objectColon": "Manca ':' dopo il nome della proprietà.",
     "expr.error.emptyIndex": "Indice vuoto.",
     "expr.error.emptyIndexAfterComma": "Indice vuoto dopo ','.",
-    "expr.error.expectedPropertyAfterDot": "Manca il nome della proprieta dopo '.'.",
+    "expr.error.expectedPropertyAfterDot": "Manca il nome della proprietà dopo '.'.",
     "expr.error.expectedToken": "Atteso '{token}'.",
     "expr.error.thisOnlyState": "'this' è disponibile solo nelle transizioni di stato.",
     "expr.error.unexpectedEnd": "Fine dell'espressione inattesa.",
@@ -169,49 +168,7 @@ window.STGraphXI18nBundles = {
     "expr.error.unterminatedString": "Stringa non terminata.",
     "expr.editor.title": "Espressione",
     "expr.filter.placeholder": "Filtra simboli...",
-    "expr.help.abs": "Valore assoluto.",
-    "expr.help.acos": "Arcocoseno.",
-    "expr.help.array": "array(asse0[, asse1, ...], expr): costruisce un array valutando expr per ogni combinazione degli assi. Un asse puo essere un intero n (valori 0,...,n-1) oppure un vettore di valori. $0, $1, ... sono i valori degli assi; $i0, $i1, ... i rispettivi indici.",
-    "expr.help.arrayAxisValue": "In array(...), valore corrente del primo asse ($0), del secondo ($1), e cosi via.",
-    "expr.help.arrayAxisIndex": "In array(...), indice da zero del primo asse ($i0), del secondo ($i1), e cosi via.",
-    "expr.help.append": "append(vettore, valore|vettore), append(valore, vettore) oppure append(matrice, vettore-riga): aggiunge o antepone un elemento a un vettore, concatena due vettori, oppure aggiunge una riga a una matrice. Esempi: append([1,2], 3) ; append(1, [2,3]) ; append([1,2], [3,4]) ; append([[1,2],[3,4]], [5,6]).",
-    "expr.help.average": "average(array[, asse]): media aritmetica di un vettore o di una matrice. Per una matrice senza asse restituisce la media complessiva; con asse=0 restituisce le medie per colonna, con asse=1 le medie per riga. Esempi: average([1,2,3]) -> 2 ; average([[1,2],[3,4]]) -> 2.5 ; average([[1,2],[3,4]], 0) -> [2,3].",
-    "expr.help.asin": "Arcoseno.",
-    "expr.help.atan": "Arcotangente.",
-    "expr.help.atan2": "Arcotangente con due argomenti (y, x).",
-    "expr.help.ceil": "Arrotondamento per eccesso.",
-    "expr.help.choice": "choice(vettore|matrice): estrae casualmente un elemento da un vettore non vuoto oppure una riga da una matrice non vuota. Esempi: choice([10,20,30]) ; choice([[1,2],[3,4]]).",
-    "expr.help.cos": "Coseno trigonometrico.",
-    "expr.help.cosh": "Coseno iperbolico.",
-    "expr.help.dt": "Passo temporale dell'esecuzione.",
-    "expr.help.empty": "Seleziona o scrivi un simbolo per vedere l'help contestuale.",
-    "expr.help.title": "Help contestuale",
-    "expr.view.editor": "Formula",
-    "expr.view.notes": "Note",
-    "expr.view.help": "Help",
-    "expr.help.exp": "Esponenziale naturale e^x.",
-    "expr.help.exponential": "exponential([rate], x, modo): distribuzione esponenziale. Se x manca estrae un campione. Con modo=0 calcola la pdf, con modo=1 la cdf, con modo=2 la icdf. Esempi: exponential([2]) ; exponential([2], 1.5, 0) ; exponential([2], 0.9, 2).",
-    "expr.help.filter": "filter(condizione, array[, modo]): filtra un vettore o una matrice. Con modo omesso o 'elements' mantiene gli elementi per cui la condizione è vera. Con modo='rows' filtra le righe di una matrice, dove $value è la riga corrente e $0 il suo indice. Con modo='cols' filtra le colonne, dove $value è la colonna corrente e $0 il suo indice. Esempi: filter($value>0, [-2,0,3]) ; filter($0===$1, [[1,2],[3,4]]) ; filter(griglia[$value]==1, coordinate, 'rows').",
-    "expr.help.flatten": "flatten(matrice): trasforma una matrice in un vettore concatenando le righe. Esempio: flatten([[1,2],[3,4]]) -> [1,2,3,4].",
-    "expr.help.sum": "sum(array[, asse]): somma gli elementi di un vettore o di una matrice. Per una matrice senza asse restituisce la somma complessiva; con asse=0 restituisce le somme per colonna, con asse=1 le somme per riga. Esempi: sum([1,2,3]) -> 6 ; sum([[1,2],[3,4]]) -> 10 ; sum([[1,2],[3,4]], 0) -> [4,6].",
-    "expr.help.count": "count(array[, asse]) oppure count(condizione, array[, asse]): conta gli elementi truthy oppure quelli che soddisfano la condizione, usando $value e gli indici locali $0, $1, ... come in filter(). Esempi: count([1,0,1]) -> 2 ; count($value>0, [-2,0,3]) -> 1 ; count($value==1, [[1,0],[1,1]], 1) -> [1,2].",
-    "expr.help.indicesWhere": "indicesWhere(array) oppure indicesWhere(condizione, array): restituisce gli indici degli elementi truthy oppure di quelli che soddisfano la condizione. Per un vettore restituisce un vettore di indici; per una matrice restituisce un vettore di coppie [riga,colonna]. Esempi: indicesWhere([0,1,0,1]) -> [1,3] ; indicesWhere($value>0, [-2,0,3]) -> [2] ; indicesWhere($0===$1, [[1,2],[3,4]]) -> [[0,0],[1,1]].",
-    "expr.help.setAt": "setAt(vettore, indice, valore) oppure setAt(matrice, [riga,colonna], valore) oppure setAt(matrice, riga, vettoreRiga): restituisce una copia con l'elemento o la riga sostituiti. Esempi: setAt([1,2,3], 1, 9) -> [1,9,3] ; setAt([[1,2],[3,4]], [1,0], 8) -> [[1,2],[8,4]].",
-    "expr.help.removeAt": "removeAt(vettore, indice) oppure removeAt(matrice, indice[, asse]): restituisce una copia senza l'elemento indicato del vettore oppure senza la riga o la colonna indicate della matrice. Per le matrici asse=0 rimuove una riga, asse=1 una colonna. Esempi: removeAt([1,2,3], 1) -> [1,3] ; removeAt([[1,2],[3,4]], 0) -> [[3,4]] ; removeAt([[1,2],[3,4]], 1, 1) -> [[1],[3]].",
-    "expr.help.grid": "grid(righe, colonne[, [nRighe, nColonne][, collisioni[, valore]]]): costruisce una matrice spaziale a partire da coordinate intere non negative. righe indica le righe, colonne indica le colonne. Se specifichi [nRighe, nColonne], la matrice risultante ha dimensione fissa e genera errore se qualche coordinata esce dai limiti. collisioni puo valere 'error', 'first' oppure 'sum': la prima genera errore sulle coordinate coincidenti, la seconda tiene il valore della prima occorrenza, la terza somma i valori coincidenti. Se valore manca usa 1; se è scalare usa quel valore in tutte le celle occupate; se è un vettore usa valore[i] nella cella di riga righe[i] e colonna colonne[i]. Esempi: grid([1,1], [0,2]) -> [[0,0,0],[1,0,1]] ; grid([1,1], [0,2], [4,5]) ; grid([1,1], [0,0], 'sum') -> [[0],[2]] ; grid([1,1], [0,2], [4,5], 'error', [1,2]).",
-    "expr.help.coords": "coords(matrice[, valore]): restituisce le coordinate [riga, colonna] delle celle non nulle della matrice, oppure solo di quelle uguali a valore se specificato. Esempi: coords([[0,1,0],[2,0,3]]) -> [[0,1],[1,0],[1,2]] ; coords([[0,1,0],[2,0,3]], 2) -> [[1,0]].",
-    "expr.help.neighbors": "neighbors(matrice, riga, colonna[, diagonali[, toroidale]]): restituisce i valori delle celle vicine a quella indicata. Con diagonali=true usa il vicinato di Moore, con diagonali=false solo sopra, sotto, sinistra e destra. Con toroidale=true lo spazio si richiude sui bordi. Esempi: neighbors([[1,2,3],[4,5,6],[7,8,9]], 1, 1) -> [1,2,3,4,6,7,8,9] ; neighbors([[1,2,3],[4,5,6],[7,8,9]], 1, 1, false) -> [2,4,6,8] ; neighbors([[1,2,3],[4,5,6],[7,8,9]], 0, 0, false, true) -> [2,4,3,7].",
-    "expr.help.floor": "Arrotondamento per difetto.",
-    "expr.help.gaussian": "gaussian([mu, sigma], x, modo): distribuzione normale. Se x manca estrae un campione. Con modo=0 calcola la pdf, con modo=1 la cdf, con modo=2 la icdf. Esempi: gaussian([0,1]) ; gaussian([0,1], 0, 0) ; gaussian([0,1], 0.95, 2).",
-    "expr.help.getModelProperty": "getModelProperty(nome, fallback): legge una proprieta custom del modello.",
-    "expr.help.getProperty": "getProperty(nome, fallback): legge una proprieta custom del nodo.",
-    "expr.help.if": "if(condizione, vero, falso): restituisce il secondo o il terzo argomento.",
-    "expr.help.not": "Operatore booleano equivalente a !. Esempio: not x.",
-    "expr.help.and": "Operatore booleano equivalente a &&. Esempio: a and b.",
-    "expr.help.or": "Operatore booleano equivalente a ||. Esempio: a or b.",
-    "expr.help.int": "Elimina la parte decimale.",
-    "expr.help.integral": "integral(x): integra x nel tempo. Con integratore Euler equivale a this + x * dt; con RK4 usa automaticamente il metodo di Runge-Kutta del quarto ordine sulle chiamate integral(...) presenti nelle transizioni di stato.",
-    "expr.help.intersection": "intersection(vettoreA, vettoreB): restituisce gli elementi presenti in entrambi i vettori, senza duplicati e mantenendo l'ordine del primo vettore. Esempio: intersection([1,2,2,3], [2,3,4]) -> [2,3].",
+
     "expr.help.kind.array": "Funzioni per array",
     "expr.help.kind.agent": "Funzioni per agenti",
     "expr.help.kind.agentField": "Campi agente",
@@ -221,31 +178,101 @@ window.STGraphXI18nBundles = {
     "expr.help.kind.node": "Nodi disponibili",
     "expr.help.kind.probability": "Funzioni statistiche e probabilistiche",
     "expr.help.kind.variable": "Variabili disponibili",
-    "expr.help.log": "Logaritmo naturale.",
-    "expr.help.log10": "Logaritmo in base 10.",
-    "expr.help.log2": "Logaritmo in base 2.",
-    "expr.help.map": "map(expr, array): trasforma un vettore o una matrice elemento per elemento. Dentro expr, $value è il valore corrente e $0, $1, ... sono gli indici locali. Esempi: map($value*2, [1,2,3]) ; map($0+$value, [10,20,30]) ; map($0+$1, [[1,2],[3,4]]).",
-    "expr.help.max": "Massimo tra i valori passati.",
-    "expr.help.min": "Minimo tra i valori passati.",
+
+    "expr.help.empty": "Seleziona o scrivi un simbolo per vedere l'help contestuale.",
+    "expr.help.examples": "Esempi",
+    "expr.help.title": "Help contestuale",
+    "expr.view.editor": "Formula",
+    "expr.view.notes": "Note",
+    "expr.view.help": "Help",
     "examples.title": "Modelli di esempio",
     "examples.intro": "Apri uno dei modelli inclusi nella cartella examples per esplorare casi d'uso e funzioni dell'applicazione.",
     "examples.open": "Apri",
     "examples.openError": "Impossibile aprire il modello di esempio.",
+
+    "expr.help.t0": "Istante iniziale dell'esecuzione.",
+    "expr.help.t1": "Istante finale dell'esecuzione.",
+    "expr.help.dt": "Passo temporale dell'esecuzione.",
+    "expr.help.time": "Istante corrente dell'esecuzione.",
+    "expr.help.this": "Valore corrente del nodo di stato.",
+    "expr.help.self": "Valore locale corrente del nodo. In esecuzione scalare coincide con il valore del nodo; in esecuzione vettoriale indica la componente dell'agente corrente; nei contesti matriciali agent-based coincide con il valore della cella corrente.",
+
+    "expr.help.bernoulli": "Distribuzione di probabilità di Bernoulli  (parametro di default: p=0.5). Se x manca, estrae un campione. Con mode=0 calcola la pmf, con mode=1 la cmf, con mode=2 la quantile discreta. Esempi: bernoulli() ; bernoulli([0.3], 1, 0).",
+    "expr.help.binomial": "Distribuzione di probabilità binomiale (parametri di default: n=1, p=0.5). Se x manca, estrae un campione. Con mode=0 calcola la pmf, con mode=1 la cmf, con mode=2 la quantile discreta. Esempi: binomial() ; binomial([10,0.2], 3, 0).",
+    "expr.help.exponential": "Distribuzione di probabilità esponenziale (parametro di default: rate=1). Se x manca, estrae un campione. Con mode=0 calcola la pdf, con mode=1 la cdf, con mode=2 la icdf. Esempi: exponential() ; exponential([2]) ; exponential([2], 1.5, 0) ; exponential([2], 0.9, 2).",
+    "expr.help.gaussian": "Distribuzione di probabilità gaussiana (parametri di default: mu=0, sigma=1). Se x manca, estrae un campione. Con mode=0 calcola la pdf, con mode=1 la cdf, con mode=2 la icdf. Esempi: gaussian() ; gaussian([0,1]) ; gaussian([0,1], 0, 0) ; gaussian([0,1], 0.95, 2).",
+    "expr.help.poisson": "Distribuzione di probabilità di Poisson (parametro di default: rate=1). Se x manca, estrae un campione. Con mode=0 calcola la pmf, con mode=1 la cmf, con mode=2 la quantile discreta. Esempi: poisson() ; poisson([4], 2, 0).",
+    "expr.help.uniform": "Distribuzione di probabilità uniforme (parametri di default: min=0, max=1). Se x manca, estrae un campione. Con mode=0 calcola la pdf, con mode=1 la cdf, con mode=2 la icdf. Esempi: uniform() ; uniform([0,10], 3, 1) ; uniform([0,10], 0.25, 2).",
+
+    "expr.help.and": "Operatore booleano equivalente a &&. Esempio: a and b.",
+    "expr.help.not": "Operatore booleano equivalente a !. Esempio: not x.",
+    "expr.help.or": "Operatore booleano equivalente a ||. Esempio: a or b.",
+
+    "expr.help.abs": "Valore assoluto di x.",
+    "expr.help.acos": "Arcocoseno di x.",
+    "expr.help.asin": "Arcoseno di x.",
+    "expr.help.atan": "Arcotangente di x.",
+    "expr.help.atan2": "Arcotangente con due argomenti (y, x).",
+    "expr.help.ceil": "Arrotondamento per eccesso di x.",
+    "expr.help.cos": "Coseno trigonometrico di x.",
+    "expr.help.cosh": "Coseno iperbolico di x.",
+    "expr.help.exp": "Esponenziale naturale e^x.",
+    "expr.help.floor": "Arrotondamento per difetto di x.",
+    "expr.help.int": "Elimina la parte decimale di x.",
+    "expr.help.log": "Logaritmo naturale di x.",
+    "expr.help.log10": "Logaritmo in base 10 di x.",
+    "expr.help.log2": "Logaritmo in base 2 di x.",
     "expr.help.pow": "Potenza: base elevata a esponente.",
-    "expr.help.pos": "pos(x): restituisce x se x e positivo, altrimenti 0. Opera anche elemento per elemento su vettori e matrici.",
+    "expr.help.pos": "Restituisce x se x e positivo, altrimenti 0. Opera anche elemento per elemento su vettori e matrici.",
+    "expr.help.round": "Arrotondamento all'intero più vicino di x.",
+    "expr.help.sign": "Segno di x: -1, 0 o 1.",
+    "expr.help.sin": "Seno trigonometrico di x.",
+    "expr.help.sinh": "Seno iperbolico di x.",
+    "expr.help.sqrt": "Radice quadrata di x.",
+    "expr.help.tan": "Tangente trigonometrica di x.",
+    "expr.help.tanh": "Tangente iperbolica di x.",
+    "expr.help.trunc": "Elimina la parte decimale di x.",
+
+    "expr.help.array": "Costruisce un array valutando expr per ogni combinazione degli axis. Un axis puo essere un intero n (valori 0,...,n-1) oppure un vettore di valori. $0, $1, ... sono i valori degli axis; $i0, $i1, ... i rispettivi indici. Esempio: array(range(-2,3), $0^2).",
+    "expr.help.arrayAxisValue": "In array(...), valore corrente del primo asse ($0), del secondo ($1), e cosi via.",
+    "expr.help.arrayAxisIndex": "In array(...), indice da zero del primo asse ($i0), del secondo ($i1), e cosi via.",
+    "expr.help.append": "append(vettore, valore|vettore), append(valore, vettore) oppure append(matrice, vettore-riga): aggiunge o antepone un elemento a un vettore, concatena due vettori, oppure aggiunge una riga a una matrice. Esempi: append([1,2], 3) ; append(1, [2,3]) ; append([1,2], [3,4]) ; append([[1,2],[3,4]], [5,6]).",
+    "expr.help.average": "Restituisce la media aritmetica di un vettore o di una matrice. Per una matrice, senza axis restituisce la media complessiva; con axis=0 restituisce le medie per colonna, con axis=1 le medie per riga. Esempi: average([1,2,3]) -> 2 ; average([[1,2],[3,4]]) -> 2.5 ; average([[1,2],[3,4]], 0) -> [2,3].",
+    "expr.help.choice": "choice(vettore|matrice): estrae casualmente un elemento da un vettore non vuoto oppure una riga da una matrice non vuota. Esempi: choice([10,20,30]) ; choice([[1,2],[3,4]]).",
+    "expr.help.filter": "filter(condizione, array[, modo]): filtra un vettore o una matrice. Con modo omesso o 'elements' mantiene gli elementi per cui la condizione è vera. Con modo='rows' filtra le righe di una matrice, dove $value è la riga corrente e $0 il suo indice. Con modo='cols' filtra le colonne, dove $value è la colonna corrente e $0 il suo indice. Esempi: filter($value>0, [-2,0,3]) ; filter($0===$1, [[1,2],[3,4]]) ; filter(griglia[$value]==1, coordinate, 'rows').",
+    "expr.help.flatten": "flatten(matrice): trasforma una matrice in un vettore concatenando le righe. Esempio: flatten([[1,2],[3,4]]) -> [1,2,3,4].",
+    "expr.help.sum": "Somma gli elementi di un vettore o di una matrice. Per una matrice, senza axis restituisce la somma complessiva; con axis=0 restituisce le somme per colonna, con axis=1 le somme per riga. Esempi: sum([1,2,3]) -> 6 ; sum([[1,2],[3,4]]) -> 10 ; sum([[1,2],[3,4]], 0) -> [4,6].",
+    "expr.help.count": "Conta gli elementi truthy oppure quelli che soddisfano la condizione, usando $value e gli indici locali $0, $1, ... come in filter(). Esempi: count([1,0,1]) -> 2 ; count($value>0, [-2,0,3]) -> 1 ; count($value==1, [[1,0],[1,1]], 1) -> [1,2].",
+    "expr.help.indicesWhere": "indicesWhere(array) oppure indicesWhere(condizione, array): restituisce gli indici degli elementi truthy oppure di quelli che soddisfano la condizione. Per un vettore restituisce un vettore di indici; per una matrice restituisce un vettore di coppie [riga,colonna]. Esempi: indicesWhere([0,1,0,1]) -> [1,3] ; indicesWhere($value>0, [-2,0,3]) -> [2] ; indicesWhere($0===$1, [[1,2],[3,4]]) -> [[0,0],[1,1]].",
+    "expr.help.setAt": "setAt(vettore, indice, valore) oppure setAt(matrice, [riga,colonna], valore) oppure setAt(matrice, riga, vettoreRiga): restituisce una copia con l'elemento o la riga sostituiti. Esempi: setAt([1,2,3], 1, 9) -> [1,9,3] ; setAt([[1,2],[3,4]], [1,0], 8) -> [[1,2],[8,4]].",
+    "expr.help.removeAt": "Restituisce una copia senza l'elemento indicato del vettore oppure senza la riga o la colonna indicate della matrice. Per le matrici axis=0 rimuove una riga, axis=1 una colonna. Esempi: removeAt([1,2,3], 1) -> [1,3] ; removeAt([[1,2],[3,4]], 0) -> [[3,4]] ; removeAt([[1,2],[3,4]], 1, 1) -> [[1],[3]].",
+    "expr.help.grid": "grid(righe, colonne[, [nRighe, nColonne][, collisioni[, valore]]]): costruisce una matrice spaziale a partire da coordinate intere non negative. righe indica le righe, colonne indica le colonne. Se specifichi [nRighe, nColonne], la matrice risultante ha dimensione fissa e genera errore se qualche coordinata esce dai limiti. collisioni puo valere 'error', 'first' oppure 'sum': la prima genera errore sulle coordinate coincidenti, la seconda tiene il valore della prima occorrenza, la terza somma i valori coincidenti. Se valore manca usa 1; se è scalare usa quel valore in tutte le celle occupate; se è un vettore usa valore[i] nella cella di riga righe[i] e colonna colonne[i]. Esempi: grid([1,1], [0,2]) -> [[0,0,0],[1,0,1]] ; grid([1,1], [0,2], [4,5]) ; grid([1,1], [0,0], 'sum') -> [[0],[2]] ; grid([1,1], [0,2], [4,5], 'error', [1,2]).",
+    "expr.help.coords": "coords(matrice[, valore]): restituisce le coordinate [riga, colonna] delle celle non nulle della matrice, oppure solo di quelle uguali a valore se specificato. Esempi: coords([[0,1,0],[2,0,3]]) -> [[0,1],[1,0],[1,2]] ; coords([[0,1,0],[2,0,3]], 2) -> [[1,0]].",
+    "expr.help.neighbors": "neighbors(matrice, riga, colonna[, diagonali[, toroidale]]): restituisce i valori delle celle vicine a quella indicata. Con diagonali=true usa il vicinato di Moore, con diagonali=false solo sopra, sotto, sinistra e destra. Con toroidale=true lo spazio si richiude sui bordi. Esempi: neighbors([[1,2,3],[4,5,6],[7,8,9]], 1, 1) -> [1,2,3,4,6,7,8,9] ; neighbors([[1,2,3],[4,5,6],[7,8,9]], 1, 1, false) -> [2,4,6,8] ; neighbors([[1,2,3],[4,5,6],[7,8,9]], 0, 0, false, true) -> [2,4,3,7].",
+    "expr.help.getModelProperty": "getModelProperty(nome, fallback): legge una proprietà custom del modello.",
+    "expr.help.getProperty": "getProperty(nome, fallback): legge una proprietà custom del nodo.",
+    "expr.help.if": "Valuta in ordine le condizioni e restituisce il valore associato alla prima condizione vera, oppure defaultValue. La valutazione e' pigra e opera elemento per elemento con condizioni vettoriali o matriciali. Esempi: if(x > 0, x, 0); if(x < 0, -1, x == 0, 0, 1)",
+    "expr.help.argmax": "Restituisce l'indice del primo valore massimo. Per un vettore restituisce un indice; per una matrice restituisce [riga, colonna]. In caso di parita sceglie il primo elemento in ordine di righe e colonne. Esempi: argmax([2,7,4]) -> 1 ; argmax([[1,5],[5,2]]) -> [0,1].",
+    "expr.help.argmin": "Restituisce l'indice del primo valore minimo. Per un vettore restituisce un indice; per una matrice restituisce [riga, colonna]. In caso di parita sceglie il primo elemento in ordine di righe e colonne. Esempi: argmin([2,-1,4]) -> 1 ; argmin([[3,2],[1,1]]) -> [1,0].",
+    "expr.help.integral": "Calcola un'approssimazione discreta dell'integrale di x nel tempo. Con integratore Euler equivale a this + x * dt; con RK4 usa automaticamente il metodo di Runge-Kutta del quarto ordine sulle chiamate integral(...) presenti nelle transizioni di stato.",
+    "expr.help.intersection": "intersection(vettoreA, vettoreB): restituisce gli elementi presenti in entrambi i vettori, senza duplicati e mantenendo l'ordine del primo vettore. Esempio: intersection([1,2,2,3], [2,3,4]) -> [2,3].",
+    "expr.help.map": "map(expr, array): trasforma un vettore o una matrice elemento per elemento. Dentro expr, $value è il valore corrente e $0, $1, ... sono gli indici locali. Esempi: map($value*2, [1,2,3]) ; map($0+$value, [10,20,30]) ; map($0+$1, [[1,2],[3,4]]).",
+    "expr.help.max": "Massimo tra i valori passati.",
+    "expr.help.min": "Minimo tra i valori passati.",
+    "expr.help.piecewise": "piecewise(cx, cy, x): segnale definito da punti di controllo con interpolazione lineare. cx e cy sono vettori numerici della stessa lunghezza, con almeno due elementi; cx deve essere strettamente crescente. x puo essere scalare, vettore o matrice. Fuori dall'intervallo di cx restituisce il valore dell'estremo piu vicino. Esempio: piecewise([0,2,5], [0,10,4], time).",
     "expr.help.agentIndex": "Indice di riga dell'agente o cella corrente. In esecuzione scalare vale 0; in esecuzione vettoriale identifica la componente locale; con matrici agent-based indica la riga corrente.",
     "expr.help.agentColumnIndex": "Indice di colonna dell'agente o cella corrente nei contesti matriciali agent-based. Nelle strutture non matriciali non è disponibile.",
     "expr.help.agentFieldAlias": "Alias del campo agente {name}. Vale l'indice di colonna {index}.",
-    "expr.help.agents": "agents(campi[, righeONumero]): crea una matrice di agenti con schema di proprieta. campi e un vettore di nomi di campo; il secondo argomento puo essere una matrice opzionale di agenti iniziali oppure un numero di agenti da inizializzare a zero. Esempi: agents([\"ID\",\"STATE\",\"X\",\"Y\"]) ; agents([\"ID\",\"STATE\"], [[1,0],[2,1]]) ; agents([\"X\",\"Y\",\"VX\",\"VY\"], 10).",
-    "expr.help.row": "row(matrice, i): restituisce la riga i-esima della matrice. Se la matrice rappresenta agenti, restituisce il vettore proprieta dell'agente i. Esempio: row(agents, 0).",
+    "expr.help.agents": "agents(campi[, righeONumero]): crea una matrice di agenti con schema di proprietà. campi e un vettore di nomi di campo; il secondo argomento puo essere una matrice opzionale di agenti iniziali oppure un numero di agenti da inizializzare a zero. Esempi: agents([\"ID\",\"STATE\",\"X\",\"Y\"]) ; agents([\"ID\",\"STATE\"], [[1,0],[2,1]]) ; agents([\"X\",\"Y\",\"VX\",\"VY\"], 10).",
+    "expr.help.row": "row(matrice, i): restituisce la riga i-esima della matrice. Se la matrice rappresenta agenti, restituisce il vettore proprietà dell'agente i. Esempio: row(agents, 0).",
     "expr.help.col": "col(matrice, j): restituisce la colonna j-esima della matrice come vettore. Esempio: col(agents, ENERGY).",
     "expr.help.nrows": "nrows(matrice): restituisce il numero di righe della matrice. Per una popolazione di agenti coincide con il numero di agenti.",
-    "expr.help.ncols": "ncols(matrice): restituisce il numero di colonne della matrice. Per una popolazione di agenti coincide con il numero di proprieta.",
+    "expr.help.ncols": "ncols(matrice): restituisce il numero di colonne della matrice. Per una popolazione di agenti coincide con il numero di proprietà.",
     "expr.help.setRow": "setRow(matrice, i, riga): restituisce una copia della matrice con la riga i sostituita da riga. Esempio: setRow(agents, 3, [10,1,4,7]).",
     "expr.help.appendRow": "appendRow(matrice, riga): restituisce una copia della matrice con una nuova riga aggiunta in fondo. Per matrici agents aggiunge un nuovo agente.",
     "expr.help.removeRow": "removeRow(matrice, i): restituisce una copia della matrice senza la riga i. Per matrici agents elimina l'agente i.",
     "expr.help.setCol": "setCol(matrice, j, vettore): restituisce una copia della matrice con la colonna j sostituita dai valori del vettore. Il vettore deve avere una voce per ogni riga. Esempio: setCol(agents, ENERGY, newEnergy).",
-    "expr.help.agentSpace": "agentSpace(agents, xCol, yCol[, idCol][, [nRighe, nColonne][, neighborhood[, toroidal[, radius]]]]): costruisce un indice spaziale per una popolazione di agenti con coordinate intere non negative nelle colonne xCol e yCol. Se specifichi idCol, nelle celle dello spazio vengono memorizzati i valori di quella proprieta invece degli indici di riga. neighborhood puo valere 'moore' o 'vonNeumann'.",
+    "expr.help.agentSpace": "agentSpace(agents, xCol, yCol[, idCol][, [nRighe, nColonne][, neighborhood[, toroidal[, radius]]]]): costruisce un indice spaziale per una popolazione di agenti con coordinate intere non negative nelle colonne xCol e yCol. Se specifichi idCol, nelle celle dello spazio vengono memorizzati i valori di quella proprietà invece degli indici di riga. neighborhood puo valere 'moore' o 'vonNeumann'.",
     "expr.help.spaceMatrix": "spaceMatrix(space): restituisce la matrice dei conteggi di agenti per cella a partire da un valore agentSpace(...). Utile quando vuoi trattare lo spazio come matrice generica.",
     "expr.help.neighborsOf": "neighborsOf(agents, space, i): restituisce i riferimenti degli agenti vicini all'agente di riga i, usando lo spazio costruito con agentSpace(...). Se agentSpace usa idCol, i riferimenti restituiti sono quei valori identificativi; altrimenti sono indici di riga. Esclude l'agente stesso.",
     "expr.help.neighborCountOf": "neighborCountOf(agents, space, i): restituisce quanti vicini ha l'agente i nello spazio dato.",
@@ -256,13 +283,18 @@ window.STGraphXI18nBundles = {
     "expr.help.rand": "rand() oppure rand(max) oppure rand(min, max): numero casuale uniforme. Senza argomenti restituisce un valore tra 0 e 1; con un argomento tra 0 e max; con due argomenti tra min e max. Esempi: rand() ; rand(10) ; rand(-1, 1).",
     "expr.help.randInt": "randInt(max) oppure randInt(min, max): intero casuale uniforme, con estremo massimo incluso. Con un argomento restituisce un intero tra 0 e max; con due argomenti tra min e max. Esempi: randInt(5) ; randInt(2, 7).",
     "expr.help.range": "range(stop) oppure range(start, stop[, step]): genera una successione numerica con estremo finale escluso.",
-    "expr.help.reduce": "reduce(op o funzione, vettore[, init]) oppure reduce(op o funzione, matrice, asse[, init]): riduce progressivamente un vettore o una matrice. Per le matrici asse=0 riduce per colonne, asse=1 per righe. Esempi: reduce(+, [1,2,3]) ; reduce(max, [3,7,2]) ; reduce(+, [[1,2],[3,4]], 0).",
-    "expr.help.round": "Arrotondamento all'intero più vicino.",
+    "expr.help.reduce": "Riduce progressivamente un vettore o una matrice applicando un operatore o una funzione. Per le matrici axis=0 riduce per colonne, axis=1 per righe. Esempi: reduce(+, [1,2,3]) ; reduce(max, [3,7,2]) ; reduce(+, [[1,2],[3,4]], 0).",
     "expr.help.shuffle": "shuffle(vettore|matrice): restituisce una copia del vettore con gli elementi mescolati casualmente oppure una copia della matrice con le righe mescolate casualmente. Esempi: shuffle([1,2,3,4]) ; shuffle([[1,2],[3,4],[5,6]]).",
-    "expr.help.size": "size(array[, asse]): restituisce la dimensione di un vettore o di una matrice. Per un vettore restituisce la lunghezza; per una matrice restituisce [righe, colonne]. Con asse=0 o asse=1 restituisce una singola dimensione. Esempi: size([1,2,3]) -> 3 ; size([[1,2],[3,4]]) -> [2,2] ; size([[1,2],[3,4]], 1) -> 2.",
+    "expr.help.size": "Restituisce la dimensione di un vettore o di una matrice. Per un vettore restituisce la lunghezza; per una matrice restituisce [righe, colonne]. Con axis=0 o axis=1 restituisce una singola dimensione. Esempi: size([1,2,3]) -> 3 ; size([[1,2],[3,4]]) -> [2,2] ; size([[1,2],[3,4]], 1) -> 2.",
     "expr.help.set": "set(vettore): elimina i duplicati da un vettore mantenendo il primo ordine di apparizione. Esempio: set([3,1,3,2,1]) -> [3,1,2].",
-    "expr.help.setModelProperty": "setModelProperty(nome, valore): scrive una proprieta custom del modello e restituisce il valore.",
+    "expr.help.setModelProperty": "setModelProperty(nome, valore): scrive una proprietà custom del modello e restituisce il valore.",
     "expr.help.readData": "readData(path): legge un file CSV relativo alla cartella del modello e restituisce una matrice di valori numerici e/o testuali. Disponibile solo nei parametri.",
+    "expr.help.sort": "sort(vettore): restituisce una copia del vettore ordinata in senso crescente. Esempio: sort([3,1,2]) -> [1,2,3].",
+    "expr.help.spline": "spline(cx, cy, x): segnale definito da punti di controllo con spline cubica naturale. cx e cy sono vettori numerici della stessa lunghezza, con almeno due elementi; cx deve essere strettamente crescente. x puo essere scalare, vettore o matrice. Fuori dall'intervallo di cx restituisce il valore dell'estremo piu vicino. Esempio: spline([0,2,5], [0,10,4], time).",
+    "expr.help.stdev": "Restituisce la deviazione standard di un vettore o di una matrice. Per una matrice, senza axis restituisce la deviazione standard complessiva; con axis=0 la restituisce per colonna, con axis=1 per riga. Esempi: stdev([1,2,3]) ; stdev([[1,2],[3,4]], 0).",
+    "expr.help.union": "union(vettoreA, vettoreB): unisce due vettori eliminando i duplicati e mantenendo l'ordine di prima apparizione. Esempio: union([1,2], [2,3]) -> [1,2,3].",
+    "expr.help.setProperty": "setProperty(nome, valore): scrive una proprietà custom del nodo e restituisce il valore.",
+
     "localFunctions.title": "Funzioni locali",
     "localFunctions.intro": "Definisci funzioni riusabili a livello di modello. In questa prima versione ogni funzione usa solo i propri argomenti e le altre funzioni locali, senza ricorsione.",
     "localFunctions.add": "Aggiungi funzione",
@@ -285,9 +317,6 @@ window.STGraphXI18nBundles = {
     "localFunctions.error.invalidExpression": "La funzione '{fn}' non è valida: {reason}",
     "localFunctions.error.cycle": "Le funzioni locali hanno una dipendenza ricorsiva: {chain}",
     "localFunctions.error.runtimeRecursion": "La funzione locale '{name}' non può richiamare sé stessa in modo ricorsivo.",
-    "expr.help.setProperty": "setProperty(nome, valore): scrive una proprieta custom del nodo e restituisce il valore.",
-    "expr.help.sign": "Segno del numero: -1, 0 o 1.",
-    "expr.help.self": "Valore locale corrente del nodo. In esecuzione scalare coincide con il valore del nodo; in esecuzione vettoriale indica la componente dell'agente corrente; nei contesti matriciali agent-based coincide con il valore della cella corrente.",
     "expr.preview.title": "Valore attuale della funzione",
     "expr.preview.empty": "Nessuna anteprima.",
     "expr.preview.pending": "Calcolo...",
@@ -312,7 +341,7 @@ window.STGraphXI18nBundles = {
     "expr.error.agentsFieldInvalid": "Il nome di campo agente '{name}' non e valido",
     "expr.error.agentsFieldReserved": "Il nome di campo agente '{name}' e riservato",
     "expr.error.agentsFieldDuplicated": "Il nome di campo agente '{name}' e duplicato",
-    "expr.error.agentFieldUnknown": "{fn}: il nome di proprieta '{name}' non esiste nello schema degli agenti",
+    "expr.error.agentFieldUnknown": "{fn}: il nome di proprietà '{name}' non esiste nello schema degli agenti",
     "expr.error.setRowLength": "setRow richiede un vettore riga con lunghezza coerente",
     "expr.error.setColLength": "setCol richiede un vettore con un valore per ogni riga della matrice",
     "expr.error.agentSpaceSizePair": "agentSpace richiede una dimensione esplicita del tipo [righe, colonne]",
@@ -388,6 +417,7 @@ window.STGraphXI18nBundles = {
     "expr.error.integralValueUnavailable": "Il valore di integral non è disponibile",
     "expr.error.integralStateDerivativeMismatch": "integral richiede stato e derivata numerici compatibili",
     "expr.error.matchingShapes": "Gli argomenti devono avere shape compatibili",
+    "expr.error.ifOddArgs": "if richiede coppie condizione-valore e un valore finale di default",
     "expr.error.sliceBoundsIntegers": "Gli estremi dello slice devono essere interi",
     "expr.error.sliceStepNonZeroInteger": "Il passo dello slice deve essere un intero non nullo",
     "expr.error.indexingArrayOrMatrix": "L'indicizzazione richiede un array o una matrice",
@@ -396,6 +426,7 @@ window.STGraphXI18nBundles = {
     "expr.error.matrixRowOutOfRange": "Indice di riga della matrice fuori intervallo",
     "expr.error.matrixColOutOfRange": "Indice di colonna della matrice fuori intervallo",
     "expr.error.arrayIndexIntegerOrPair": "L'indice dell'array deve essere un intero o una coppia [riga, colonna]",
+    "expr.error.arrayIndexIntegerOrVector": "L'indice dell'array deve essere un intero o un vettore di interi",
     "expr.error.arrayIndexInteger": "L'indice dell'array deve essere un intero",
     "expr.error.arrayIndexOutOfRange": "Indice dell'array fuori intervallo",
     "expr.error.memberAccessObjectOrArray": "L'accesso con '.' richiede un oggetto o un array",
@@ -417,15 +448,15 @@ window.STGraphXI18nBundles = {
     "expr.error.indexOutOfRange": "Indice fuori intervallo per {name}",
     "expr.error.averageNonEmptyMatrix": "average richiede una matrice non vuota",
     "expr.error.averageNonEmptyRows": "average richiede righe di matrice non vuote",
-    "expr.error.gridCollisionMode": "La modalita collision di grid deve essere 'error', 'first' o 'sum'",
+    "expr.error.gridCollisionMode": "La modalità collision di grid deve essere 'error', 'first' o 'sum'",
     "expr.error.gridRowColSameLength": "grid richiede vettori di righe e colonne della stessa lunghezza",
     "expr.error.gridTypeSameLength": "grid richiede un vettore tipo della stessa lunghezza di righe e colonne",
     "expr.error.gridNonNegativeCoords": "grid richiede coordinate intere non negative",
     "expr.error.gridCollisionAt": "Collisione di grid in [{row}, {col}]",
-    "expr.error.gridSumNumeric": "In modalita sum, grid richiede valori numerici sulle coordinate coincidenti",
-    "expr.error.filterMode": "La modalita di filter deve essere 'elements', 'rows' o 'cols'",
-    "expr.error.filterRowsColsMatrix": "La modalita 'rows' o 'cols' di filter richiede una matrice",
-    "expr.error.filterRowsColsRectMatrix": "La modalita 'rows' o 'cols' di filter richiede una matrice rettangolare",
+    "expr.error.gridSumNumeric": "In modalità sum, grid richiede valori numerici sulle coordinate coincidenti",
+    "expr.error.filterMode": "La modalità di filter deve essere 'elements', 'rows' o 'cols'",
+    "expr.error.filterRowsColsMatrix": "La modalità 'rows' o 'cols' di filter richiede una matrice",
+    "expr.error.filterRowsColsRectMatrix": "La modalità 'rows' o 'cols' di filter richiede una matrice rettangolare",
     "expr.error.unsupportedReducerOperator": "Operatore di reduce non supportato: {op}",
     "expr.error.unsupportedOperator": "Operatore non supportato: {op}",
     "expr.error.unsupportedAstNode": "Nodo AST non supportato: {kind}",
@@ -437,20 +468,6 @@ window.STGraphXI18nBundles = {
     "expr.switch.body": "L'espressione corrente ha modifiche non applicate. Vuoi applicarle prima di cambiare selezione?",
     "expr.switch.discard": "Scarta e cambia",
     "expr.switch.applyAndChange": "Applica e cambia",
-    "expr.help.sin": "Seno trigonometrico.",
-    "expr.help.sinh": "Seno iperbolico.",
-    "expr.help.sqrt": "Radice quadrata.",
-    "expr.help.sort": "sort(vettore): restituisce una copia del vettore ordinata in senso crescente. Esempio: sort([3,1,2]) -> [1,2,3].",
-    "expr.help.stdev": "stdev(array[, asse]): deviazione standard di un vettore o di una matrice. Per una matrice senza asse restituisce la deviazione standard complessiva; con asse=0 restituisce la deviazione standard per colonna, con asse=1 per riga.",
-    "expr.help.t0": "Istante iniziale dell'esecuzione.",
-    "expr.help.t1": "Istante finale dell'esecuzione.",
-    "expr.help.tan": "Tangente trigonometrica.",
-    "expr.help.tanh": "Tangente iperbolica.",
-    "expr.help.this": "'this' indica il valore completo corrente del nodo di stato. In scalare è un singolo valore; in vettoriale è l'intero vettore.",
-    "expr.help.time": "Tempo corrente dell'esecuzione.",
-    "expr.help.trunc": "Elimina la parte decimale.",
-    "expr.help.uniform": "uniform([min, max], x, modo): distribuzione uniforme. Se x manca estrae un campione. Con modo=0 calcola la pdf, con modo=1 la cdf, con modo=2 la icdf. Esempi: uniform([0,1]) ; uniform([0,10], 3, 1) ; uniform([0,10], 0.25, 2).",
-    "expr.help.union": "union(vettoreA, vettoreB): unisce due vettori eliminando i duplicati e mantenendo l'ordine di prima apparizione. Esempio: union([1,2], [2,3]) -> [1,2,3].",
     "expr.hint": "Nell'editor: Tab inserisce un tab, Invio un ritorno a capo, Ctrl+Enter applica. Shift+Invio inserisce il simbolo selezionato, Shift+Freccia su/giu cambia selezione nel pannello.",
     "expr.syntaxError": "Errore di sintassi: {message}",
     "expr.syntaxOk": "Sintassi valida.",
@@ -501,6 +518,7 @@ window.STGraphXI18nBundles = {
     "label.submodelPath": "File sottomodello",
     "label.timeCurrent": "Tempo corrente",
     "label.timeDelayMs": "Ritardo (ms)",
+    "label.renderEverySteps": "Aggiorna ogni (passi)",
     "label.timeEnd": "t1",
     "label.timeStart": "t0",
     "label.timeStep": "delta t",
@@ -568,6 +586,7 @@ window.STGraphXI18nBundles = {
     "menu.view.tooltipDelayMode.slower": "Molto lungo",
     "menu.view.showGrid": "Mostra griglia",
     "menu.view.highlightNodeEdges": "Evidenzia frecce nodo",
+    "menu.view.showNodeValues": "Mostra valori correnti nei nodi",
     "menu.view.snap": "Snap griglia",
     "menu.view.toggleGraph": "Mostra grafo",
     "menu.view.toggleWidgets": "Mostra widget",
@@ -602,7 +621,7 @@ window.STGraphXI18nBundles = {
     "panel.edge": "Freccia",
     "panel.model": "Modello",
     "panel.node": "Nodo",
-    "panel.propertiesList": "Proprieta",
+    "panel.propertiesList": "Proprietà",
     "panel.text": "Testo",
     "panel.widget": "Widget",
     "panel.widgetChart": "Grafico x-y",
@@ -622,7 +641,7 @@ window.STGraphXI18nBundles = {
     "shape.ellipse": "algebrico",
     "shape.rect": "stato",
     "shape.submodel": "sottomodello",
-    "sidebar.properties": "Proprieta",
+    "sidebar.properties": "Proprietà",
     "status.alreadySaved": "Nessuna modifica da salvare.",
     "status.cancelOp": "Operazione in corso annullata.",
     "status.clipboardCopied": "Copiati {count} nodi nella clipboard.",
@@ -649,6 +668,8 @@ window.STGraphXI18nBundles = {
     "status.gridOn": "Griglia visibile.",
     "status.highlightNodeEdgesOff": "Evidenziazione frecce del nodo disattivata.",
     "status.highlightNodeEdgesOn": "Evidenziazione frecce del nodo attivata.",
+    "status.nodeValuesOff": "Visualizzazione dei valori nei nodi disattivata.",
+    "status.nodeValuesOn": "Visualizzazione dei valori nei nodi attivata.",
     "status.integratorUpdated": "Integratore impostato a {name}.",
     "status.linkedNodeCreated": "Nuovo nodo collegato creato.",
     "status.loaded": "Grafo caricato da JSON.",
@@ -662,7 +683,7 @@ window.STGraphXI18nBundles = {
     "status.nodeResized": "Dimensioni nodo aggiornate.",
     "status.nodesDeleted": "Nodi selezionati eliminati.",
     "status.nodesMoved": "Spostati {count} nodi.",
-    "status.propertyAdded": "Proprieta aggiunta.",
+    "status.propertyAdded": "Proprietà aggiunta.",
     "status.readError": "Errore nella lettura del file.",
     "status.recentCleared": "Elenco recenti svuotato.",
     "status.recentMissing": "Voce recente non più disponibile.",
@@ -680,11 +701,11 @@ window.STGraphXI18nBundles = {
     "status.snapOn": "Snap-to-grid attivo.",
     "status.strictDefinitionsOff": "Controllo rigoroso delle definizioni disattivato.",
     "status.strictDefinitionsOn": "Controllo rigoroso delle definizioni attivato.",
-    "status.submodelClosed": "Ritornato al livello superiore.",
     "status.submodelInterfaceLoaded": "Interfaccia del sottomodello aggiornata: {name}",
     "status.submodelOpened": "Sottomodello aperto: {name}",
     "status.timeConfigUpdated": "Parametri temporali aggiornati.",
     "status.timeDelayUpdated": "Ritardo temporizzato impostato a {delay} ms.",
+    "status.renderEveryStepsUpdated": "Aggiornamento visivo impostato ogni {steps} passi.",
     "status.timeEndReached": "Fine intervallo temporale raggiunta.",
     "status.textCreated": "Testo nel canvas creato.",
     "status.textDeleted": "Testo nel canvas eliminato.",
@@ -709,10 +730,9 @@ window.STGraphXI18nBundles = {
     "status.widgetSliderCreated": "Widget slider creato.",
     "status.widgetTextCreated": "Widget testo creato.",
     "status.zoom": "Zoom {value}%.",
-    "text.mainModel": "Modello principale",
     "text.noMatches": "Nessun simbolo corrispondente.",
     "text.nodesSelected": "{count} nodi selezionati.",
-    "text.noneProps": "Nessuna proprieta",
+    "text.noneProps": "Nessuna proprietà",
     "text.defaultCanvasText": "Testo formattato",
     "text.submodelBindingDefault": "Seleziona una variabile connessa oppure lascia vuoto per usare il valore definito nel sottomodello.",
     "text.toolbarHeading1": "Titolo 1",
@@ -727,6 +747,7 @@ window.STGraphXI18nBundles = {
     "tab.meta.submodel": "da {node} in {parent}",
     "text.vectorSummary": "vettore di dimensione {size}",
     "text.matrixSummary": "matrice {rows} x {cols}",
+    "text.nodeValueError": "errore",
     "text.unnamed": "(senza nome)",
     "text.valueError": "Errore valutazione: {reason}",
     "tooltip.menu.edit": "Comandi di modifica, cronologia e clipboard.",
@@ -776,6 +797,7 @@ window.STGraphXI18nBundles = {
     "tooltip.menu.view.tooltipDelay": "Imposta dopo quanto tempo compaiono i tooltip, oppure disattivali del tutto.",
     "tooltip.menu.view.showGrid": "Mostra o nasconde la griglia sul canvas.",
     "tooltip.menu.view.highlightNodeEdges": "Evidenzia con colori diversi le frecce entranti e uscenti del nodo selezionato.",
+    "tooltip.menu.view.showNodeValues": "Durante l'esecuzione mostra il valore corrente sotto il nome di ciascun nodo.",
     "tooltip.menu.view.snap": "Aggancia movimenti e ridimensionamenti alla griglia.",
     "tooltip.menu.view.toggleGraph": "Mostra o nasconde il grafo nella finestra principale.",
     "tooltip.menu.view.toggleWidgets": "Mostra o nasconde widget e testi nella finestra principale.",
@@ -783,10 +805,13 @@ window.STGraphXI18nBundles = {
     "tooltip.menu.view.zoomOut": "Riduce lo zoom della finestra del grafo.",
     "tooltip.menu.view.zoomReset": "Riporta lo zoom al 100%.",
     "tooltip.model.currentTime": "Tempo corrente dell'esecuzione.",
+    "tooltip.model.addProperty": "Aggiunge una proprietà descrittiva al modello, salvata nel file JSON.",
     "tooltip.model.decimals": "Numero massimo di cifre decimali mostrate per i valori numerici.",
+    "tooltip.model.renderEverySteps": "Durante l'esecuzione temporizzata ridisegna canvas e widget ogni N passi. Il calcolo e le serie storiche restano completi a ogni passo.",
     "tooltip.model.delay": "Ritardo tra i passi in esecuzione temporizzata, in millisecondi.",
     "tooltip.model.dt": "Passo temporale usato tra un'iterazione e la successiva.",
     "tooltip.model.integrator": "Metodo numerico usato per integral(...). Eulero e il default; RK4 si applica alle chiamate integral(...) presenti nelle transizioni di stato.",
+    "tooltip.model.localFunctions": "Apre l'editor delle funzioni locali, riusabili dalle espressioni dei nodi del modello.",
     "tooltip.model.strictDefinitions": "Se attivo, i nodi non definiti correttamente vengono evidenziati e bloccano l'esecuzione.",
     "tooltip.model.t0": "Istante iniziale dell'esecuzione.",
     "tooltip.model.t1": "Istante finale dell'esecuzione.",
@@ -806,10 +831,72 @@ window.STGraphXI18nBundles = {
     "tooltip.node.openSubmodel": "Apre il sottomodello referenziato nel nodo selezionato.",
     "tooltip.node.output": "Marca il nodo come uscita da mostrare nei widget di visualizzazione.",
     "tooltip.node.refreshSubmodel": "Legge il file del sottomodello e aggiorna l'interfaccia di input/output.",
-    "tooltip.node.showSubmodel": "Mostra il sottomodello gia disponibile.",
+    "tooltip.node.showSubmodel": "Mostra il sottomodello già disponibile.",
     "tooltip.node.submodelBinding": "Seleziona quale variabile connessa alimenta questo input del sottomodello. Se vuoto, il sottomodello usa il proprio valore di default.",
     "tooltip.node.submodelPath": "Nome del file JSON del sottomodello, relativo alla cartella del modello corrente.",
     "tooltip.node.type": "Tipo semantico del nodo: stato, algebrico o parametro.",
+    "tooltip.widget.addColumn": "Aggiunge una nuova colonna alla tabella.",
+    "tooltip.widget.addMapping": "Aggiunge una corrispondenza tra un valore numerico e un testo.",
+    "tooltip.widget.addOption": "Aggiunge un'opzione selezionabile.",
+    "tooltip.widget.addPair": "Aggiunge una nuova coppia di serie X-Y.",
+    "tooltip.widget.axisXMax": "Limite superiore dell'asse X. Lascia vuoto per calcolarlo automaticamente.",
+    "tooltip.widget.axisXMin": "Limite inferiore dell'asse X. Lascia vuoto per calcolarlo automaticamente.",
+    "tooltip.widget.axisYMax": "Limite superiore dell'asse Y. Lascia vuoto per calcolarlo automaticamente.",
+    "tooltip.widget.axisYMin": "Limite inferiore dell'asse Y. Lascia vuoto per calcolarlo automaticamente.",
+    "tooltip.widget.binaryFalseLabel": "Testo sovrapposto al widget quando il valore booleano e 0 o falso. Lascia vuoto per non mostrare testo.",
+    "tooltip.widget.binaryTrueLabel": "Testo sovrapposto al widget quando il valore booleano e 1 o vero. Lascia vuoto per non mostrare testo.",
+    "tooltip.widget.buttonInitialValue": "Imposta il valore del pulsante al reset del modello; non modifica l'esecuzione in corso.",
+    "tooltip.widget.customTitle": "Titolo visualizzato nel widget. Se vuoto, viene generato dal tipo di widget e dal nodo selezionato.",
+    "tooltip.widget.expandNonScalarValues": "Mostra vettori e matrici distribuendone i valori in celle separate. Alternativo alla serie storica.",
+    "tooltip.widget.fontSize": "Dimensione del testo visualizzato dal widget, in pixel.",
+    "tooltip.widget.inputSource": "Nodo di input controllato da questo widget. Un nodo puo essere associato a un solo widget di input.",
+    "tooltip.widget.mappingText": "Testo da visualizzare quando il nodo ha il valore indicato.",
+    "tooltip.widget.mappingValue": "Valore del nodo a cui associare il testo.",
+    "tooltip.widget.legendPosition": "Posizione della legenda del grafico, oppure nessuna legenda.",
+    "tooltip.widget.lineColor": "Colore usato per disegnare la linea della serie.",
+    "tooltip.widget.lineStyle": "Tipo di tratto della linea; scegli 'No linea' per visualizzare solo i punti.",
+    "tooltip.widget.lineWidth": "Spessore della linea della serie, in pixel.",
+    "tooltip.widget.matrixCellSize": "Dimensione delle celle della griglia, in pixel, quando l'adattamento automatico e disattivato.",
+    "tooltip.widget.matrixColorScheme": "Scala di colori usata per rappresentare i valori della matrice o della superficie.",
+    "tooltip.widget.matrixDisplayCols": "Numero massimo di colonne visibili. Lascia vuoto per mostrarle tutte.",
+    "tooltip.widget.matrixDisplayRows": "Numero massimo di righe visibili. Lascia vuoto per mostrarle tutte.",
+    "tooltip.widget.matrixSurfaceAzimuth": "Rotazione orizzontale del punto di vista della superficie, in gradi.",
+    "tooltip.widget.matrixSurfaceElevation": "Altezza del punto di vista della superficie, in gradi.",
+    "tooltip.widget.matrixSurfaceHeightScale": "Fattore che amplifica o riduce l'altezza della superficie.",
+    "tooltip.widget.matrixSurfaceStyle": "Rappresentazione della superficie: piena oppure a reticolo.",
+    "tooltip.widget.matrixValueMax": "Valore superiore della scala dei colori. Lascia vuoto per calcolarlo dai dati.",
+    "tooltip.widget.matrixValueMin": "Valore inferiore della scala dei colori. Lascia vuoto per calcolarlo dai dati.",
+    "tooltip.widget.matrixViewMode": "Sceglie se visualizzare la matrice come griglia di celle o come superficie prospettica.",
+    "tooltip.widget.moveDown": "Sposta questa colonna una posizione verso destra.",
+    "tooltip.widget.moveUp": "Sposta questa colonna una posizione verso sinistra.",
+    "tooltip.widget.matrixAutoFitCells": "Adatta automaticamente la dimensione delle celle allo spazio disponibile.",
+    "tooltip.widget.matrixShowIndices": "Visualizza gli indici di righe e colonne nella griglia.",
+    "tooltip.widget.matrixShowValues": "Visualizza il valore numerico in ogni cella della griglia.",
+    "tooltip.widget.outputSource": "Nodo di output visualizzato dal widget.",
+    "tooltip.widget.removeMapping": "Rimuove questa corrispondenza testo-valore.",
+    "tooltip.widget.removeColumn": "Elimina questa colonna dalla tabella.",
+    "tooltip.widget.removeOption": "Rimuove questa opzione.",
+    "tooltip.widget.removePair": "Elimina questa coppia di serie dal grafico.",
+    "tooltip.widget.pointColor": "Colore usato per disegnare i punti della serie.",
+    "tooltip.widget.pointSize": "Dimensione dei punti della serie, in pixel.",
+    "tooltip.widget.selectOptionLabel": "Testo mostrato nell'elenco delle opzioni.",
+    "tooltip.widget.selectOptionValue": "Valore assegnato al nodo quando l'opzione viene scelta.",
+    "tooltip.widget.selectPair": "Seleziona questa coppia per configurarne sorgenti e stile.",
+    "tooltip.widget.showGrid": "Mostra le linee della griglia nel grafico.",
+    "tooltip.widget.showHistory": "Conserva una riga per ogni istante dell'esecuzione.",
+    "tooltip.widget.showInstantProfile": "Traccia, a ogni istante, il profilo dei valori non scalari della serie selezionata.",
+    "tooltip.widget.showTimeSeries": "Accumula i valori della serie nel tempo durante l'esecuzione.",
+    "tooltip.widget.showTitleBar": "Mostra o nasconde la barra del titolo del widget.",
+    "tooltip.widget.seriesPoints": "Sceglie se mostrare tutti i punti, solo l'ultimo o nessun punto della serie.",
+    "tooltip.widget.sliderMax": "Valore massimo selezionabile con lo slider.",
+    "tooltip.widget.sliderMin": "Valore minimo selezionabile con lo slider.",
+    "tooltip.widget.sliderRange": "Definisce valore minimo, passo di variazione e valore massimo dello slider.",
+    "tooltip.widget.sliderStep": "Incremento applicato quando si sposta lo slider.",
+    "tooltip.widget.tableAlign": "Allineamento orizzontale del testo nelle celle della tabella.",
+    "tooltip.widget.tableColumn": "Nodo o variabile di sistema da visualizzare in questa colonna.",
+    "tooltip.widget.tableDecimals": "Numero di cifre decimali da mostrare; 'Modello' usa la precisione generale del modello.",
+    "tooltip.widget.xSource": "Nodo o tempo da usare come coordinata orizzontale della coppia selezionata.",
+    "tooltip.widget.ySource": "Nodo o tempo da usare come coordinata verticale della coppia selezionata.",
     "view.btn.hideGraph": "Nascondi grafo",
     "view.btn.hideWidgets": "Nascondi widget",
     "view.btn.showGraph": "Mostra grafo",
@@ -857,8 +944,8 @@ window.STGraphXI18nBundles = {
     "widget.matrixShowIndices": "Mostra indici",
     "widget.matrixAutoFitCells": "Adatta automaticamente le celle",
     "widget.matrixCellSize": "Dim. cella",
-    "widget.matrixValueMin": "Valore min",
-    "widget.matrixValueMax": "Valore max",
+    "widget.matrixValueMin": "Min",
+    "widget.matrixValueMax": "Max",
     "widget.matrixDisplayRows": "Righe vis.",
     "widget.matrixDisplayCols": "Colonne vis.",
     "widget.matrixColorSchemeLabel": "Colori",
@@ -867,6 +954,16 @@ window.STGraphXI18nBundles = {
     "widget.matrixColorScheme.grayscale": "Scala di grigi",
     "widget.matrixColorScheme.diverging": "Divergente",
     "widget.matrixColorScheme.none": "Nessuno",
+    "widget.matrixViewMode": "Vista",
+    "widget.matrixViewMode.grid": "Griglia",
+    "widget.matrixViewMode.surface": "Superficie",
+    "widget.matrixSurfaceStyle": "Tessitura",
+    "widget.matrixSurfaceStyle.solid": "Continua",
+    "widget.matrixSurfaceStyle.wireframe": "Wireframe",
+    "widget.matrixSurfaceAzimuth": "Azimut",
+    "widget.matrixSurfaceElevation": "Elevazione",
+    "widget.matrixSurfaceHeightScale": "Scala altezza",
+    "widget.matrixSurfaceNotNumeric": "La vista superficie richiede valori numerici e almeno due righe e due colonne.",
     "widget.matrixSourceLabel": "Nodo",
     "widget.matrixTitle": "Matrice {id}",
     "widget.minimize": "Minimizza",
@@ -1029,8 +1126,7 @@ window.STGraphXI18nBundles = {
     "action.editLocalFunctions": "Local functions...",
     "action.newTab": "+",
     "action.closeTab": "Close tab",
-    "action.exitSubmodel": "Up",
-    "action.loadSubmodel": "Open",
+    "action.loadSubmodel": "Load",
     "action.resetNodeColors": "Automatic colors",
     "color.default": "Automatic",
     "color.blue": "Blue",
@@ -1060,7 +1156,6 @@ window.STGraphXI18nBundles = {
     "about.licenseLabel": "License",
     "about.copyrightLabel": "Copyright",
     "about.body": "Experimental release with web and Electron shells.",
-    "confirm.exitSubmodel.save": "There are unsaved changes in the current submodel. Save them before returning to the upper level?",
     "confirm.closeApp.save": "There are unsaved changes. Save them before closing the app?",
     "confirm.closeApp.detail": "Current model: {name}",
     "confirm.closeTab.save": "There are unsaved changes in this tab. Save them before closing it?",
@@ -1142,6 +1237,7 @@ window.STGraphXI18nBundles = {
     "error.submodelRecursiveReference": "Recursive submodel references are not supported.",
     "error.submodelRk4Unsupported": "RK4 is not supported yet when submodels are present.",
     "error.timeDelayInvalid": "Invalid timed delay.",
+    "error.renderEveryStepsInvalid": "The visual refresh interval must be at least 1.",
     "error.timeDirection": "With current parameters, time does not reach t1.",
     "error.timeInvalid": "Invalid time parameters.",
     "error.timeStepZero": "Time step (delta t) cannot be zero.",
@@ -1180,12 +1276,13 @@ window.STGraphXI18nBundles = {
     "expr.help.cosh": "Hyperbolic cosine.",
     "expr.help.dt": "Execution time step.",
     "expr.help.empty": "Select or type a symbol to see contextual help.",
+    "expr.help.examples": "Examples",
     "expr.help.title": "Contextual help",
     "expr.view.editor": "Formula",
     "expr.view.notes": "Notes",
     "expr.view.help": "Help",
     "expr.help.exp": "Natural exponential e^x.",
-    "expr.help.exponential": "exponential([rate], x, mode): exponential distribution. If x is omitted it samples a value. With mode=0 it computes the pdf, with mode=1 the cdf, with mode=2 the icdf. Examples: exponential([2]) ; exponential([2], 1.5, 0) ; exponential([2], 0.9, 2).",
+    "expr.help.exponential": "exponential([rate], x, mode): exponential distribution; rate defaults to 1. If x is omitted it samples a value. With mode=0 it computes the pdf, with mode=1 the cdf, with mode=2 the icdf. Examples: exponential() ; exponential([2]) ; exponential([2], 1.5, 0) ; exponential([2], 0.9, 2).",
     "expr.help.filter": "filter(condition, array[, mode]): filters a vector or matrix. With omitted mode or 'elements' it keeps the elements for which the condition is true. With mode='rows' it filters matrix rows, where $value is the current row and $0 its index. With mode='cols' it filters matrix columns, where $value is the current column and $0 its index. Examples: filter($value>0, [-2,0,3]) ; filter($0===$1, [[1,2],[3,4]]) ; filter(grid[$value]==1, coordinates, 'rows').",
     "expr.help.flatten": "flatten(matrix): turns a matrix into a vector by concatenating its rows. Example: flatten([[1,2],[3,4]]) -> [1,2,3,4].",
     "expr.help.sum": "sum(array[, axis]): sums the elements of a vector or matrix. For a matrix without axis it returns the overall sum; with axis=0 it returns column sums, with axis=1 row sums. Examples: sum([1,2,3]) -> 6 ; sum([[1,2],[3,4]]) -> 10 ; sum([[1,2],[3,4]], 0) -> [4,6].",
@@ -1197,12 +1294,16 @@ window.STGraphXI18nBundles = {
     "expr.help.coords": "coords(matrix[, value]): returns the [row, column] coordinates of non-zero cells in a matrix, or only of the cells equal to value if provided. Examples: coords([[0,1,0],[2,0,3]]) -> [[0,1],[1,0],[1,2]] ; coords([[0,1,0],[2,0,3]], 2) -> [[1,0]].",
     "expr.help.neighbors": "neighbors(matrix, row, col[, diagonals[, toroidal]]): returns the values of cells neighboring the selected one. With diagonals=true it uses the Moore neighborhood, with diagonals=false only up, down, left, and right. With toroidal=true space wraps around the borders. Examples: neighbors([[1,2,3],[4,5,6],[7,8,9]], 1, 1) -> [1,2,3,4,6,7,8,9] ; neighbors([[1,2,3],[4,5,6],[7,8,9]], 1, 1, false) -> [2,4,6,8] ; neighbors([[1,2,3],[4,5,6],[7,8,9]], 0, 0, false, true) -> [2,4,3,7].",
     "expr.help.floor": "Round down.",
-    "expr.help.gaussian": "gaussian([mu, sigma], x, mode): normal distribution. If x is omitted it samples a value. With mode=0 it computes the pdf, with mode=1 the cdf, with mode=2 the icdf. Examples: gaussian([0,1]) ; gaussian([0,1], 0, 0) ; gaussian([0,1], 0.95, 2).",
+    "expr.help.gaussian": "gaussian([mu, sigma], x, mode): normal distribution; mu defaults to 0 and sigma to 1. If x is omitted it samples a value. With mode=0 it computes the pdf, with mode=1 the cdf, with mode=2 the icdf. Examples: gaussian() ; gaussian([0,1]) ; gaussian([0,1], 0, 0) ; gaussian([0,1], 0.95, 2).",
     "expr.help.getModelProperty": "getModelProperty(name, fallback): reads a custom model property.",
     "expr.help.getProperty": "getProperty(name, fallback): reads a custom property from the current node.",
-    "expr.help.if": "if(condition, whenTrue, whenFalse): returns the second or third argument.",
+    "expr.help.if": "Evaluates conditions in order and returns the value for the first true condition, or defaultValue. Evaluation is lazy and works element by element with vector or matrix conditions. Examples: if(x > 0, x, 0); if(x < 0, -1, x == 0, 0, 1)",
     "expr.help.not": "Boolean operator equivalent to !. Example: not x.",
     "expr.help.and": "Boolean operator equivalent to &&. Example: a and b.",
+    "expr.help.argmax": "argmax(vector|matrix): returns the index of the first maximum value. For a vector it returns an index; for a matrix it returns [row, column]. In a tie it selects the first element in row and column order.",
+    "expr.help.argmin": "argmin(vector|matrix): returns the index of the first minimum value. For a vector it returns an index; for a matrix it returns [row, column]. In a tie it selects the first element in row and column order.",
+    "expr.help.bernoulli": "bernoulli([p], x, mode): Bernoulli distribution; p defaults to 0.5. If x is omitted it samples 0 or 1. With mode=0 it computes the probability mass, with mode=1 the cdf, with mode=2 the discrete quantile. Examples: bernoulli() ; bernoulli([0.3], 1, 0).",
+    "expr.help.binomial": "binomial([n, p], x, mode): binomial distribution with n trials and success probability p; n defaults to 1 and p to 0.5. If x is omitted it samples a value. With mode=0 it computes the probability mass, with mode=1 the cdf, with mode=2 the discrete quantile. Examples: binomial() ; binomial([10,0.2], 3, 0).",
     "expr.help.or": "Boolean operator equivalent to ||. Example: a or b.",
     "expr.help.int": "Remove the fractional part.",
     "expr.help.integral": "integral(x): integrates x over time. With Euler it is equivalent to this + x * dt; with RK4 it automatically uses fourth-order Runge-Kutta on integral(...) calls present in state transitions.",
@@ -1228,6 +1329,8 @@ window.STGraphXI18nBundles = {
     "examples.openError": "Unable to open the example model.",
     "expr.help.pow": "Power: base raised to exponent.",
     "expr.help.pos": "pos(x): returns x if it is positive, otherwise 0. It also operates element by element on vectors and matrices.",
+    "expr.help.poisson": "poisson([rate], x, mode): Poisson distribution with rate; rate defaults to 1. If x is omitted it samples a value. With mode=0 it computes the probability mass, with mode=1 the cdf, with mode=2 the discrete quantile. Examples: poisson() ; poisson([4], 2, 0).",
+    "expr.help.piecewise": "piecewise(cx, cy, x): signal defined by control points with linear interpolation. cx and cy are numeric vectors of the same length, with at least two items; cx must be strictly increasing. x can be a scalar, vector, or matrix. Outside the cx interval it returns the nearest endpoint value. Example: piecewise([0,2,5], [0,10,4], time).",
     "expr.help.agentIndex": "Row index of the current agent or cell. In scalar execution it is 0; in vector execution it identifies the local component; in matrix agent-based contexts it is the current row.",
     "expr.help.agentColumnIndex": "Column index of the current agent or cell in matrix agent-based contexts. It is not available for non-matrix structures.",
     "expr.help.agentFieldAlias": "Alias for agent field {name}. It resolves to column index {index}.",
@@ -1383,6 +1486,7 @@ window.STGraphXI18nBundles = {
     "expr.error.integralValueUnavailable": "Integral value is unavailable",
     "expr.error.integralStateDerivativeMismatch": "integral requires matching numeric state and derivative",
     "expr.error.matchingShapes": "Arguments must have matching shapes",
+    "expr.error.ifOddArgs": "if requires condition-value pairs and a final default value",
     "expr.error.sliceBoundsIntegers": "Slice bounds must be integers",
     "expr.error.sliceStepNonZeroInteger": "Slice step must be a non-zero integer",
     "expr.error.indexingArrayOrMatrix": "Indexing requires an array or matrix",
@@ -1391,6 +1495,7 @@ window.STGraphXI18nBundles = {
     "expr.error.matrixRowOutOfRange": "Matrix row index out of range",
     "expr.error.matrixColOutOfRange": "Matrix column index out of range",
     "expr.error.arrayIndexIntegerOrPair": "Array index must be an integer or a [row, col] pair",
+    "expr.error.arrayIndexIntegerOrVector": "Array index must be an integer or a vector of integers",
     "expr.error.arrayIndexInteger": "Array index must be an integer",
     "expr.error.arrayIndexOutOfRange": "Array index out of range",
     "expr.error.memberAccessObjectOrArray": "Member access requires an object or array",
@@ -1436,6 +1541,7 @@ window.STGraphXI18nBundles = {
     "expr.help.sinh": "Hyperbolic sine.",
     "expr.help.sqrt": "Square root.",
     "expr.help.sort": "sort(vector): returns a copy of the vector sorted in ascending order. Example: sort([3,1,2]) -> [1,2,3].",
+    "expr.help.spline": "spline(cx, cy, x): signal defined by control points with a natural cubic spline. cx and cy are numeric vectors of the same length, with at least two items; cx must be strictly increasing. x can be a scalar, vector, or matrix. Outside the cx interval it returns the nearest endpoint value. Example: spline([0,2,5], [0,10,4], time).",
     "expr.help.stdev": "stdev(array[, axis]): standard deviation of a vector or matrix. For a matrix without axis it returns the overall standard deviation; with axis=0 it returns column standard deviations, with axis=1 row standard deviations.",
     "expr.help.t0": "Execution start time.",
     "expr.help.t1": "Execution end time.",
@@ -1444,7 +1550,7 @@ window.STGraphXI18nBundles = {
     "expr.help.this": "'this' is the current full value of the state node. In scalar mode it is a single value; in vector mode it is the whole vector.",
     "expr.help.time": "Current execution time.",
     "expr.help.trunc": "Remove the fractional part.",
-    "expr.help.uniform": "uniform([min, max], x, mode): uniform distribution. If x is omitted it samples a value. With mode=0 it computes the pdf, with mode=1 the cdf, with mode=2 the icdf. Examples: uniform([0,1]) ; uniform([0,10], 3, 1) ; uniform([0,10], 0.25, 2).",
+    "expr.help.uniform": "uniform([min, max], x, mode): uniform distribution; min defaults to 0 and max to 1. If x is omitted it samples a value. With mode=0 it computes the pdf, with mode=1 the cdf, with mode=2 the icdf. Examples: uniform() ; uniform([0,10], 3, 1) ; uniform([0,10], 0.25, 2).",
     "expr.help.union": "union(vectorA, vectorB): merges two vectors removing duplicates while preserving first appearance order. Example: union([1,2], [2,3]) -> [1,2,3].",
     "expr.hint": "In the editor: Tab inserts a tab, Enter inserts a newline, Ctrl+Enter applies. Shift+Enter inserts the selected symbol, Shift+Up/Down changes the panel selection.",
     "expr.syntaxError": "Syntax error: {message}",
@@ -1496,6 +1602,7 @@ window.STGraphXI18nBundles = {
     "label.submodelPath": "Submodel file",
     "label.timeCurrent": "Current time",
     "label.timeDelayMs": "Delay (ms)",
+    "label.renderEverySteps": "Refresh every (steps)",
     "label.timeEnd": "t1",
     "label.timeStart": "t0",
     "label.timeStep": "delta t",
@@ -1563,6 +1670,7 @@ window.STGraphXI18nBundles = {
     "menu.view.tooltipDelayMode.slower": "Very long",
     "menu.view.showGrid": "Show grid",
     "menu.view.highlightNodeEdges": "Highlight node edges",
+    "menu.view.showNodeValues": "Show current node values",
     "menu.view.snap": "Snap to grid",
     "menu.view.toggleGraph": "Show graph",
     "menu.view.toggleWidgets": "Show widgets",
@@ -1644,6 +1752,8 @@ window.STGraphXI18nBundles = {
     "status.gridOn": "Grid visible.",
     "status.highlightNodeEdgesOff": "Node-edge highlighting disabled.",
     "status.highlightNodeEdgesOn": "Node-edge highlighting enabled.",
+    "status.nodeValuesOff": "Node value display disabled.",
+    "status.nodeValuesOn": "Node value display enabled.",
     "status.integratorUpdated": "Integrator set to {name}.",
     "status.linkedNodeCreated": "New linked node created.",
     "status.loaded": "Graph loaded from JSON.",
@@ -1672,11 +1782,11 @@ window.STGraphXI18nBundles = {
     "status.snapOn": "Snap-to-grid enabled.",
     "status.strictDefinitionsOff": "Strict definition checking disabled.",
     "status.strictDefinitionsOn": "Strict definition checking enabled.",
-    "status.submodelClosed": "Returned to the upper level.",
     "status.submodelInterfaceLoaded": "Submodel interface refreshed: {name}",
     "status.submodelOpened": "Submodel opened: {name}",
     "status.timeConfigUpdated": "Time parameters updated.",
     "status.timeDelayUpdated": "Timed delay set to {delay} ms.",
+    "status.renderEveryStepsUpdated": "Visual refresh set to every {steps} steps.",
     "status.timeEndReached": "Time range reached.",
     "status.textCreated": "Canvas text created.",
     "status.textDeleted": "Canvas text deleted.",
@@ -1704,7 +1814,6 @@ window.STGraphXI18nBundles = {
     "status.widgetSliderCreated": "Slider widget created.",
     "status.widgetTextCreated": "Text widget created.",
     "status.zoom": "Zoom {value}%.",
-    "text.mainModel": "Main model",
     "text.noMatches": "No matching symbols.",
     "text.nodesSelected": "{count} nodes selected.",
     "text.noneProps": "No properties",
@@ -1722,6 +1831,7 @@ window.STGraphXI18nBundles = {
     "tab.meta.submodel": "from {node} in {parent}",
     "text.vectorSummary": "vector of size {size}",
     "text.matrixSummary": "matrix {rows} x {cols}",
+    "text.nodeValueError": "error",
     "text.unnamed": "(unnamed)",
     "text.valueError": "Evaluation error: {reason}",
     "tooltip.menu.edit": "Editing, history, and clipboard commands.",
@@ -1771,6 +1881,7 @@ window.STGraphXI18nBundles = {
     "tooltip.menu.view.tooltipDelay": "Sets how long the UI waits before showing tooltips, or disables them entirely.",
     "tooltip.menu.view.showGrid": "Shows or hides the grid on the canvas.",
     "tooltip.menu.view.highlightNodeEdges": "Highlights incoming and outgoing edges of the selected node with different colors.",
+    "tooltip.menu.view.showNodeValues": "During execution, shows the current value below each node name.",
     "tooltip.menu.view.snap": "Snaps moves and resizes to the grid.",
     "tooltip.menu.view.toggleGraph": "Shows or hides the graph in the main viewport.",
     "tooltip.menu.view.toggleWidgets": "Shows or hides widgets and text in the main viewport.",
@@ -1778,10 +1889,13 @@ window.STGraphXI18nBundles = {
     "tooltip.menu.view.zoomOut": "Decreases the zoom of the graph window.",
     "tooltip.menu.view.zoomReset": "Restores zoom to 100%.",
     "tooltip.model.currentTime": "Current execution time.",
+    "tooltip.model.addProperty": "Adds a descriptive model property, saved in the JSON file.",
     "tooltip.model.decimals": "Maximum number of decimal digits shown for numeric values.",
     "tooltip.model.delay": "Delay between steps in timed execution, in milliseconds.",
+    "tooltip.model.renderEverySteps": "During timed execution, redraws the canvas and widgets every N steps. Computation and time histories remain complete at every step.",
     "tooltip.model.dt": "Time step used between successive iterations.",
     "tooltip.model.integrator": "Numerical method used for integral(...). Euler is the default; RK4 applies to integral(...) calls present in state transitions.",
+    "tooltip.model.localFunctions": "Opens the editor for local functions reusable by the model node expressions.",
     "tooltip.model.strictDefinitions": "When enabled, incorrectly defined nodes are highlighted and block execution.",
     "tooltip.model.t0": "Initial execution time.",
     "tooltip.model.t1": "Final execution time.",
@@ -1805,6 +1919,68 @@ window.STGraphXI18nBundles = {
     "tooltip.node.submodelBinding": "Select which connected variable feeds this submodel input. If left blank, the submodel uses its own default value.",
     "tooltip.node.submodelPath": "JSON file name of the submodel, relative to the current model folder.",
     "tooltip.node.type": "Semantic node type: state, algebraic, or parameter.",
+    "tooltip.widget.addColumn": "Adds a new column to the table.",
+    "tooltip.widget.addMapping": "Adds a mapping between a numeric value and text.",
+    "tooltip.widget.addOption": "Adds a selectable option.",
+    "tooltip.widget.addPair": "Adds a new X-Y series pair.",
+    "tooltip.widget.axisXMax": "Upper limit of the X axis. Leave blank to calculate it automatically.",
+    "tooltip.widget.axisXMin": "Lower limit of the X axis. Leave blank to calculate it automatically.",
+    "tooltip.widget.axisYMax": "Upper limit of the Y axis. Leave blank to calculate it automatically.",
+    "tooltip.widget.axisYMin": "Lower limit of the Y axis. Leave blank to calculate it automatically.",
+    "tooltip.widget.binaryFalseLabel": "Text overlaid on the widget when the Boolean value is 0 or false. Leave blank to show no text.",
+    "tooltip.widget.binaryTrueLabel": "Text overlaid on the widget when the Boolean value is 1 or true. Leave blank to show no text.",
+    "tooltip.widget.buttonInitialValue": "Sets the button value when the model is reset; it does not change an ongoing execution.",
+    "tooltip.widget.customTitle": "Title displayed by the widget. If empty, it is generated from the widget type and selected node.",
+    "tooltip.widget.expandNonScalarValues": "Shows vectors and matrices in separate cells. Alternative to history series.",
+    "tooltip.widget.fontSize": "Size of the text displayed by the widget, in pixels.",
+    "tooltip.widget.inputSource": "Input node controlled by this widget. A node can be associated with one input widget only.",
+    "tooltip.widget.mappingText": "Text displayed when the node has the specified value.",
+    "tooltip.widget.mappingValue": "Node value to associate with the text.",
+    "tooltip.widget.legendPosition": "Chart legend position, or no legend.",
+    "tooltip.widget.lineColor": "Color used to draw the series line.",
+    "tooltip.widget.lineStyle": "Line pattern; select 'No line' to show points only.",
+    "tooltip.widget.lineWidth": "Series line width, in pixels.",
+    "tooltip.widget.matrixCellSize": "Grid cell size, in pixels, when automatic fitting is disabled.",
+    "tooltip.widget.matrixColorScheme": "Color scale used to represent matrix or surface values.",
+    "tooltip.widget.matrixDisplayCols": "Maximum number of visible columns. Leave blank to show all of them.",
+    "tooltip.widget.matrixDisplayRows": "Maximum number of visible rows. Leave blank to show all of them.",
+    "tooltip.widget.matrixSurfaceAzimuth": "Horizontal rotation of the surface viewpoint, in degrees.",
+    "tooltip.widget.matrixSurfaceElevation": "Height of the surface viewpoint, in degrees.",
+    "tooltip.widget.matrixSurfaceHeightScale": "Factor that increases or reduces surface height.",
+    "tooltip.widget.matrixSurfaceStyle": "Surface representation: solid or wireframe.",
+    "tooltip.widget.matrixValueMax": "Upper value of the color scale. Leave blank to calculate it from the data.",
+    "tooltip.widget.matrixValueMin": "Lower value of the color scale. Leave blank to calculate it from the data.",
+    "tooltip.widget.matrixViewMode": "Chooses whether to display the matrix as a cell grid or a perspective surface.",
+    "tooltip.widget.moveDown": "Moves this column one position to the right.",
+    "tooltip.widget.moveUp": "Moves this column one position to the left.",
+    "tooltip.widget.matrixAutoFitCells": "Automatically fits cell size to the available space.",
+    "tooltip.widget.matrixShowIndices": "Shows row and column indices in the grid.",
+    "tooltip.widget.matrixShowValues": "Shows the numeric value in every grid cell.",
+    "tooltip.widget.outputSource": "Output node displayed by this widget.",
+    "tooltip.widget.removeMapping": "Removes this text-value mapping.",
+    "tooltip.widget.removeColumn": "Removes this column from the table.",
+    "tooltip.widget.removeOption": "Removes this option.",
+    "tooltip.widget.removePair": "Removes this series pair from the chart.",
+    "tooltip.widget.pointColor": "Color used to draw the series points.",
+    "tooltip.widget.pointSize": "Size of the series points, in pixels.",
+    "tooltip.widget.selectOptionLabel": "Text shown in the option list.",
+    "tooltip.widget.selectOptionValue": "Value assigned to the node when this option is selected.",
+    "tooltip.widget.selectPair": "Selects this pair to configure its sources and style.",
+    "tooltip.widget.showGrid": "Shows grid lines in the chart.",
+    "tooltip.widget.showHistory": "Keeps one row for every execution instant.",
+    "tooltip.widget.showInstantProfile": "Draws, at each instant, the profile of the selected series non-scalar values.",
+    "tooltip.widget.showTimeSeries": "Accumulates the series values over time during execution.",
+    "tooltip.widget.showTitleBar": "Shows or hides the widget title bar.",
+    "tooltip.widget.seriesPoints": "Chooses whether to show all points, the last point only, or no series points.",
+    "tooltip.widget.sliderMax": "Maximum value selectable with the slider.",
+    "tooltip.widget.sliderMin": "Minimum value selectable with the slider.",
+    "tooltip.widget.sliderRange": "Defines the slider minimum, increment, and maximum value.",
+    "tooltip.widget.sliderStep": "Increment applied when moving the slider.",
+    "tooltip.widget.tableAlign": "Horizontal alignment of text in table cells.",
+    "tooltip.widget.tableColumn": "Node or system variable displayed in this column.",
+    "tooltip.widget.tableDecimals": "Number of decimal digits to show; 'Model' uses the model-wide precision.",
+    "tooltip.widget.xSource": "Node or time to use as the horizontal coordinate of the selected pair.",
+    "tooltip.widget.ySource": "Node or time to use as the vertical coordinate of the selected pair.",
     "view.btn.hideGraph": "Hide graph",
     "view.btn.hideWidgets": "Hide widgets",
     "view.btn.showGraph": "Show graph",
@@ -1852,8 +2028,8 @@ window.STGraphXI18nBundles = {
     "widget.matrixShowIndices": "Show indices",
     "widget.matrixAutoFitCells": "Auto-fit cells",
     "widget.matrixCellSize": "Cell size",
-    "widget.matrixValueMin": "Min value",
-    "widget.matrixValueMax": "Max value",
+    "widget.matrixValueMin": "Min",
+    "widget.matrixValueMax": "Max",
     "widget.matrixDisplayRows": "Rows shown",
     "widget.matrixDisplayCols": "Cols shown",
     "widget.matrixColorSchemeLabel": "Colors",
@@ -1862,6 +2038,16 @@ window.STGraphXI18nBundles = {
     "widget.matrixColorScheme.grayscale": "Grayscale",
     "widget.matrixColorScheme.diverging": "Diverging",
     "widget.matrixColorScheme.none": "None",
+    "widget.matrixViewMode": "View",
+    "widget.matrixViewMode.grid": "Grid",
+    "widget.matrixViewMode.surface": "Surface",
+    "widget.matrixSurfaceStyle": "Texture",
+    "widget.matrixSurfaceStyle.solid": "Solid",
+    "widget.matrixSurfaceStyle.wireframe": "Wireframe",
+    "widget.matrixSurfaceAzimuth": "Azimuth",
+    "widget.matrixSurfaceElevation": "Elevation",
+    "widget.matrixSurfaceHeightScale": "Height scale",
+    "widget.matrixSurfaceNotNumeric": "The surface view requires numeric values and at least two rows and two columns.",
     "widget.matrixSourceLabel": "Node",
     "widget.matrixTitle": "Matrix {id}",
     "widget.minimize": "Minimize",
@@ -2407,10 +2593,267 @@ window.STGraphXI18nBundles = {
     return mapDistributionValue(valueArg, (item) => exponentialPdf(item, rate));
   }
 
+  function probabilityParameter(value, name) {
+    const probabilityValue = toFiniteNumber(value, name);
+    if (probabilityValue < 0 || probabilityValue > 1) {
+      throw new Error(`${name} must be in [0, 1]`);
+    }
+    return probabilityValue;
+  }
+
+  function nonNegativeInteger(value, name) {
+    const integer = toFiniteNumber(value, name);
+    if (!Number.isInteger(integer) || integer < 0) {
+      throw new Error(`${name} must be a non-negative integer`);
+    }
+    return integer;
+  }
+
+  function logGamma(value) {
+    const coefficients = [
+      0.99999999999980993,
+      676.5203681218851,
+      -1259.1392167224028,
+      771.32342877765313,
+      -176.61502916214059,
+      12.507343278686905,
+      -0.13857109526572012,
+      9.9843695780195716e-6,
+      1.5056327351493116e-7,
+    ];
+    if (value < 0.5) {
+      return Math.log(Math.PI) - Math.log(Math.sin(Math.PI * value)) - logGamma(1 - value);
+    }
+    const z = value - 1;
+    let series = coefficients[0];
+    for (let index = 1; index < coefficients.length; index += 1) {
+      series += coefficients[index] / (z + index);
+    }
+    const base = z + coefficients.length - 1.5;
+    return 0.5 * Math.log(2 * Math.PI) + (z + 0.5) * Math.log(base) - base + Math.log(series);
+  }
+
+  function binomialPmf(x, trials, probabilityValue) {
+    const n = nonNegativeInteger(trials, "trials");
+    const p = probabilityParameter(probabilityValue, "probability");
+    const k = toFiniteNumber(x, "x");
+    if (!Number.isInteger(k) || k < 0 || k > n) {
+      return 0;
+    }
+    if (p === 0) return k === 0 ? 1 : 0;
+    if (p === 1) return k === n ? 1 : 0;
+    return Math.exp(logGamma(n + 1) - logGamma(k + 1) - logGamma(n - k + 1) + k * Math.log(p) + (n - k) * Math.log1p(-p));
+  }
+
+  function binomialCdf(x, trials, probabilityValue) {
+    const n = nonNegativeInteger(trials, "trials");
+    const limit = Math.floor(toFiniteNumber(x, "x"));
+    if (limit < 0) return 0;
+    if (limit >= n) return 1;
+    let total = 0;
+    for (let k = 0; k <= limit; k += 1) {
+      total += binomialPmf(k, n, probabilityValue);
+    }
+    return Math.min(1, total);
+  }
+
+  function binomialIcdf(probabilityValue, trials, successProbability) {
+    const q = probabilityParameter(probabilityValue, "probability");
+    const n = nonNegativeInteger(trials, "trials");
+    let cumulative = 0;
+    for (let k = 0; k <= n; k += 1) {
+      cumulative += binomialPmf(k, n, successProbability);
+      if (cumulative >= q || k === n) return k;
+    }
+    return n;
+  }
+
+  function binomialSample(trials = 1, probabilityValue = 0.5) {
+    const n = nonNegativeInteger(trials, "trials");
+    const p = probabilityParameter(probabilityValue, "probability");
+    let successes = 0;
+    for (let trial = 0; trial < n; trial += 1) {
+      if (Math.random() < p) successes += 1;
+    }
+    return successes;
+  }
+
+  function binomial() {
+    const { params, valueArg, mode } = parseDistributionCallArgs(arguments, [1, 0.5]);
+    const [trials, probabilityValue] = params;
+    if (valueArg === undefined) return binomialSample(trials, probabilityValue);
+    if (mode === 1) return mapDistributionValue(valueArg, (item) => binomialCdf(item, trials, probabilityValue));
+    if (mode === 2) return mapDistributionValue(valueArg, (item) => binomialIcdf(item, trials, probabilityValue));
+    return mapDistributionValue(valueArg, (item) => binomialPmf(item, trials, probabilityValue));
+  }
+
+  function bernoulli() {
+    const { params, valueArg, mode } = parseDistributionCallArgs(arguments, [0.5]);
+    const [probabilityValue] = params;
+    if (valueArg === undefined) return Math.random() < probabilityParameter(probabilityValue, "probability") ? 1 : 0;
+    if (mode === 1) return mapDistributionValue(valueArg, (item) => binomialCdf(item, 1, probabilityValue));
+    if (mode === 2) return mapDistributionValue(valueArg, (item) => binomialIcdf(item, 1, probabilityValue));
+    return mapDistributionValue(valueArg, (item) => binomialPmf(item, 1, probabilityValue));
+  }
+
+  function poissonPmf(x, rate) {
+    const lambda = toFiniteNumber(rate, "rate");
+    if (lambda < 0) throw new Error("rate must be >= 0");
+    const k = toFiniteNumber(x, "x");
+    if (!Number.isInteger(k) || k < 0) return 0;
+    if (lambda === 0) return k === 0 ? 1 : 0;
+    return Math.exp(k * Math.log(lambda) - lambda - logGamma(k + 1));
+  }
+
+  function poissonCdf(x, rate) {
+    const limit = Math.floor(toFiniteNumber(x, "x"));
+    if (limit < 0) return 0;
+    let total = 0;
+    for (let k = 0; k <= limit; k += 1) {
+      total += poissonPmf(k, rate);
+    }
+    return Math.min(1, total);
+  }
+
+  function poissonIcdf(probabilityValue, rate) {
+    const q = probabilityParameter(probabilityValue, "probability");
+    const lambda = toFiniteNumber(rate, "rate");
+    if (lambda < 0) throw new Error("rate must be >= 0");
+    let cumulative = 0;
+    const limit = Math.max(100, Math.ceil(lambda + 12 * Math.sqrt(lambda + 1)));
+    for (let k = 0; k <= limit; k += 1) {
+      cumulative += poissonPmf(k, lambda);
+      if (cumulative >= q || k === limit) return k;
+    }
+    return limit;
+  }
+
+  function poissonSample(rate = 1) {
+    const lambda = toFiniteNumber(rate, "rate");
+    if (lambda < 0) throw new Error("rate must be >= 0");
+    if (lambda === 0) return 0;
+    // Splitting preserves the Poisson law and keeps Knuth's loop numerically stable.
+    if (lambda > 30) return poissonSample(lambda / 2) + poissonSample(lambda / 2);
+    let count = 0;
+    let product = 1;
+    const threshold = Math.exp(-lambda);
+    do {
+      count += 1;
+      product *= Math.random();
+    } while (product > threshold);
+    return count - 1;
+  }
+
+  function poisson() {
+    const { params, valueArg, mode } = parseDistributionCallArgs(arguments, [1]);
+    const [rate] = params;
+    if (valueArg === undefined) return poissonSample(rate);
+    if (mode === 1) return mapDistributionValue(valueArg, (item) => poissonCdf(item, rate));
+    if (mode === 2) return mapDistributionValue(valueArg, (item) => poissonIcdf(item, rate));
+    return mapDistributionValue(valueArg, (item) => poissonPmf(item, rate));
+  }
+
+  function signalControlPoints(cxValue, cyValue, name) {
+    if (!Array.isArray(cxValue) || !Array.isArray(cyValue) || cxValue.length < 2 || cxValue.length !== cyValue.length) {
+      throw new Error(`${name} expects two numeric vectors of the same length, with at least two points`);
+    }
+    const cx = cxValue.map((value) => toFiniteNumber(value, "cx"));
+    const cy = cyValue.map((value) => toFiniteNumber(value, "cy"));
+    for (let index = 1; index < cx.length; index += 1) {
+      if (cx[index] <= cx[index - 1]) {
+        throw new Error(`${name} expects strictly increasing cx values`);
+      }
+    }
+    return { cx, cy };
+  }
+
+  function signalSegmentIndex(cx, x) {
+    let low = 0;
+    let high = cx.length - 2;
+    while (low <= high) {
+      const middle = Math.floor((low + high) / 2);
+      if (x < cx[middle]) {
+        high = middle - 1;
+      } else if (x > cx[middle + 1]) {
+        low = middle + 1;
+      } else {
+        return middle;
+      }
+    }
+    return Math.max(0, Math.min(cx.length - 2, low));
+  }
+
+  function piecewise() {
+    if (arguments.length !== 3) {
+      throw new Error("piecewise expects cx, cy, and x");
+    }
+    const { cx, cy } = signalControlPoints(arguments[0], arguments[1], "piecewise");
+    return mapDistributionValue(arguments[2], (value) => {
+      const x = toFiniteNumber(value, "x");
+      if (x <= cx[0]) return cy[0];
+      if (x >= cx[cx.length - 1]) return cy[cy.length - 1];
+      const index = signalSegmentIndex(cx, x);
+      const fraction = (x - cx[index]) / (cx[index + 1] - cx[index]);
+      return cy[index] + fraction * (cy[index + 1] - cy[index]);
+    });
+  }
+
+  function naturalSplineSecondDerivatives(cx, cy) {
+    const size = cx.length;
+    const lower = Array(size).fill(0);
+    const diagonal = Array(size).fill(0);
+    const upper = Array(size).fill(0);
+    const right = Array(size).fill(0);
+    diagonal[0] = 1;
+    diagonal[size - 1] = 1;
+    for (let index = 1; index < size - 1; index += 1) {
+      const leftWidth = cx[index] - cx[index - 1];
+      const rightWidth = cx[index + 1] - cx[index];
+      lower[index] = leftWidth;
+      diagonal[index] = 2 * (leftWidth + rightWidth);
+      upper[index] = rightWidth;
+      right[index] = 6 * ((cy[index + 1] - cy[index]) / rightWidth - (cy[index] - cy[index - 1]) / leftWidth);
+    }
+    for (let index = 1; index < size; index += 1) {
+      const factor = lower[index] / diagonal[index - 1];
+      diagonal[index] -= factor * upper[index - 1];
+      right[index] -= factor * right[index - 1];
+    }
+    const second = Array(size).fill(0);
+    second[size - 1] = right[size - 1] / diagonal[size - 1];
+    for (let index = size - 2; index >= 0; index -= 1) {
+      second[index] = (right[index] - upper[index] * second[index + 1]) / diagonal[index];
+    }
+    return second;
+  }
+
+  function spline() {
+    if (arguments.length !== 3) {
+      throw new Error("spline expects cx, cy, and x");
+    }
+    const { cx, cy } = signalControlPoints(arguments[0], arguments[1], "spline");
+    const second = naturalSplineSecondDerivatives(cx, cy);
+    return mapDistributionValue(arguments[2], (value) => {
+      const x = toFiniteNumber(value, "x");
+      if (x <= cx[0]) return cy[0];
+      if (x >= cx[cx.length - 1]) return cy[cy.length - 1];
+      const index = signalSegmentIndex(cx, x);
+      const width = cx[index + 1] - cx[index];
+      const left = (cx[index + 1] - x) / width;
+      const right = (x - cx[index]) / width;
+      return left * cy[index]
+        + right * cy[index + 1]
+        + ((left ** 3 - left) * second[index] + (right ** 3 - right) * second[index + 1]) * width * width / 6;
+    });
+  }
+
   const probability = Object.freeze({
     gaussian,
     uniform,
     exponential,
+    bernoulli,
+    binomial,
+    poisson,
   });
 
   function normalizeCollectionValueKey(value) {
@@ -3417,6 +3860,20 @@ window.STGraphXI18nBundles = {
     return (...args) => mapFunctionArgs(args, (...scalarArgs) => fn(...scalarArgs));
   }
 
+  function conditionalFunction(...args) {
+    if (args.length < 3 || args.length % 2 === 0) {
+      throw new Error("if expects an odd number of arguments: condition, value pairs, and a default value");
+    }
+    return mapFunctionArgs(args, (...scalarArgs) => {
+      for (let index = 0; index < scalarArgs.length - 1; index += 2) {
+        if (scalarArgs[index]) {
+          return scalarArgs[index + 1];
+        }
+      }
+      return scalarArgs[scalarArgs.length - 1];
+    });
+  }
+
   function buildNumericRange(startValue, endValue, stepValue = null) {
     const start = Number(startValue);
     const end = Number(endValue);
@@ -3457,9 +3914,48 @@ window.STGraphXI18nBundles = {
     };
   }
 
+  function extremumIndex(value, preferGreater, name) {
+    if (!Array.isArray(value) || value.length === 0) {
+      throw new Error(`${name} expects a non-empty numeric vector or matrix`);
+    }
+    const isMatrix = value.every((row) => Array.isArray(row));
+    if (!isMatrix) {
+      if (!value.every((item) => Number.isFinite(item))) {
+        throw new Error(`${name} expects a non-empty numeric vector or matrix`);
+      }
+      let bestIndex = 0;
+      let bestValue = value[0];
+      for (let index = 1; index < value.length; index += 1) {
+        if (preferGreater ? value[index] > bestValue : value[index] < bestValue) {
+          bestIndex = index;
+          bestValue = value[index];
+        }
+      }
+      return bestIndex;
+    }
+    const columnCount = value[0]?.length ?? 0;
+    if (!columnCount || !value.every((row) => row.length === columnCount && row.every((item) => Number.isFinite(item)))) {
+      throw new Error(`${name} expects a non-empty numeric vector or matrix`);
+    }
+    let bestRow = 0;
+    let bestColumn = 0;
+    let bestValue = value[0][0];
+    for (let row = 0; row < value.length; row += 1) {
+      for (let column = 0; column < columnCount; column += 1) {
+        const item = value[row][column];
+        if (preferGreater ? item > bestValue : item < bestValue) {
+          bestRow = row;
+          bestColumn = column;
+          bestValue = item;
+        }
+      }
+    }
+    return [bestRow, bestColumn];
+  }
+
   function createMathScope(options = {}) {
     const scope = {
-      __if: vectorizeFunction((condition, whenTrue, whenFalse) => (condition ? whenTrue : whenFalse)),
+      __if: conditionalFunction,
       sin: vectorizeFunction(Math.sin),
       cos: vectorizeFunction(Math.cos),
       tan: vectorizeFunction(Math.tan),
@@ -3478,6 +3974,8 @@ window.STGraphXI18nBundles = {
       pow: vectorizeFunction(Math.pow),
       abs: vectorizeFunction(Math.abs),
       pos: vectorizeFunction((value) => Math.max(0, Number(value))),
+      argmin: (value) => extremumIndex(value, false, "argmin"),
+      argmax: (value) => extremumIndex(value, true, "argmax"),
       min: vectorizeFunction(Math.min),
       max: vectorizeFunction(Math.max),
       round: vectorizeFunction(Math.round),
@@ -3543,6 +4041,11 @@ window.STGraphXI18nBundles = {
       gaussian,
       uniform,
       exponential,
+      bernoulli,
+      binomial,
+      poisson,
+      piecewise,
+      spline,
       getProperty: options.getProperty || unavailable("getProperty", "getProperty is only available in node expressions"),
       setProperty: options.setProperty || unavailable("setProperty", "setProperty is only available in node expressions"),
       getModelProperty: options.getModelProperty || unavailable("getModelProperty", "getModelProperty is unavailable"),
@@ -3570,7 +4073,7 @@ window.STGraphXI18nBundles = {
       dt: { kind: "variable", signature: "dt", descriptionKey: "expr.help.dt" },
     },
     functions: {
-      if: { kind: "function", signature: "if(condition, whenTrue, whenFalse)", descriptionKey: "expr.help.if", insertText: "if()", cursorOffset: 3 },
+      if: { kind: "function", signature: "if(condition, value[, condition, value, ...], defaultValue)", descriptionKey: "expr.help.if", insertText: "if()", cursorOffset: 3 },
       not: { kind: "function", signature: "not x", descriptionKey: "expr.help.not", insertText: "not ", cursorOffset: 4 },
       and: { kind: "function", signature: "a and b", descriptionKey: "expr.help.and", insertText: " and ", cursorOffset: 5 },
       or: { kind: "function", signature: "a or b", descriptionKey: "expr.help.or", insertText: " or ", cursorOffset: 4 },
@@ -3620,10 +4123,17 @@ window.STGraphXI18nBundles = {
       size: { kind: "array", signature: "size(array[, axis])", descriptionKey: "expr.help.size", insertText: "size()", cursorOffset: 5 },
       average: { kind: "probability", signature: "average(array[, axis])", descriptionKey: "expr.help.average", insertText: "average()", cursorOffset: 8 },
       stdev: { kind: "probability", signature: "stdev(array[, axis])", descriptionKey: "expr.help.stdev", insertText: "stdev()", cursorOffset: 6 },
+      argmin: { kind: "array", signature: "argmin(vector|matrix)", descriptionKey: "expr.help.argmin", insertText: "argmin()", cursorOffset: 7 },
+      argmax: { kind: "array", signature: "argmax(vector|matrix)", descriptionKey: "expr.help.argmax", insertText: "argmax()", cursorOffset: 7 },
       range: { kind: "function", signature: "range(stop) | range(start, stop[, step])", descriptionKey: "expr.help.range", insertText: "range()", cursorOffset: 6 },
-      gaussian: { kind: "probability", signature: "gaussian([params], x, mode)", descriptionKey: "expr.help.gaussian", insertText: "gaussian()", cursorOffset: 9 },
-      uniform: { kind: "probability", signature: "uniform([params], x, mode)", descriptionKey: "expr.help.uniform", insertText: "uniform()", cursorOffset: 8 },
+      gaussian: { kind: "probability", signature: "gaussian([mu, sigma], x, mode)", descriptionKey: "expr.help.gaussian", insertText: "gaussian()", cursorOffset: 9 },
+      uniform: { kind: "probability", signature: "uniform([min, max], x, mode)", descriptionKey: "expr.help.uniform", insertText: "uniform()", cursorOffset: 8 },
       exponential: { kind: "probability", signature: "exponential([params], x, mode)", descriptionKey: "expr.help.exponential", insertText: "exponential()", cursorOffset: 12 },
+      bernoulli: { kind: "probability", signature: "bernoulli([p], x, mode)", descriptionKey: "expr.help.bernoulli", insertText: "bernoulli()", cursorOffset: 10 },
+      binomial: { kind: "probability", signature: "binomial([n, p], x, mode)", descriptionKey: "expr.help.binomial", insertText: "binomial()", cursorOffset: 9 },
+      poisson: { kind: "probability", signature: "poisson([rate], x, mode)", descriptionKey: "expr.help.poisson", insertText: "poisson()", cursorOffset: 8 },
+      piecewise: { kind: "function", signature: "piecewise(cx, cy, x)", descriptionKey: "expr.help.piecewise", insertText: "piecewise()", cursorOffset: 10 },
+      spline: { kind: "function", signature: "spline(cx, cy, x)", descriptionKey: "expr.help.spline", insertText: "spline()", cursorOffset: 7 },
       rand: { kind: "probability", signature: "rand([max]) | rand(min, max)", descriptionKey: "expr.help.rand", insertText: "rand()", cursorOffset: 5 },
       randInt: { kind: "probability", signature: "randInt(max) | randInt(min, max)", descriptionKey: "expr.help.randInt", insertText: "randInt()", cursorOffset: 8 },
       sin: { kind: "math", signature: "sin(x)", descriptionKey: "expr.help.sin", insertText: "sin()", cursorOffset: 4 },
@@ -4603,31 +5113,94 @@ window.STGraphXI18nBundles = {
     return scalarFn(value);
   }
 
-  function vectorizedConditionalOperation(condition, whenTrue, whenFalse) {
-    if (Array.isArray(condition) || Array.isArray(whenTrue) || Array.isArray(whenFalse)) {
-      if (Array.isArray(condition)) {
-        const ref = condition;
-        if ((Array.isArray(whenTrue) && !sameArrayShape(ref, whenTrue)) || (Array.isArray(whenFalse) && !sameArrayShape(ref, whenFalse))) {
-          throw new Error("if arguments must have matching shapes");
-        }
-        return condition.map((item, idx) => vectorizedConditionalOperation(
-          item,
-          Array.isArray(whenTrue) ? whenTrue[idx] : whenTrue,
-          Array.isArray(whenFalse) ? whenFalse[idx] : whenFalse,
-        ));
-      }
-      const ref = Array.isArray(whenTrue) ? whenTrue : whenFalse;
-      const other = Array.isArray(whenTrue) ? whenFalse : whenTrue;
-      if (Array.isArray(other) && !sameArrayShape(ref, other)) {
+  function conditionalPathValue(value, path) {
+    return path.reduce((current, index) => {
+      if (!Array.isArray(current) || index < 0 || index >= current.length) {
         throw new Error("if arguments must have matching shapes");
       }
-      return ref.map((item, idx) => vectorizedConditionalOperation(
-        condition,
-        Array.isArray(whenTrue) ? whenTrue[idx] : whenTrue,
-        Array.isArray(whenFalse) ? whenFalse[idx] : whenFalse,
-      ));
+      return current[index];
+    }, value);
+  }
+
+  function conditionalScopeAtPath(scope, shape, path) {
+    const localScope = { ...scope };
+    Object.entries(localScope).forEach(([name, value]) => {
+      if (Array.isArray(value) && sameArrayShape(value, shape)) {
+        localScope[name] = conditionalPathValue(value, path);
+      }
+    });
+    return localScope;
+  }
+
+  function conditionalLiteralAtPath(node, path) {
+    let selected = node;
+    for (const index of path) {
+      if (selected?.type !== "array") {
+        return selected;
+      }
+      if (index < 0 || index >= selected.elements.length) {
+        throw new Error("if arguments must have matching shapes");
+      }
+      selected = selected.elements[index];
     }
-    return condition ? whenTrue : whenFalse;
+    return selected;
+  }
+
+  function evaluateConditionalBranchAtPath(branchNode, scope, hooks, shape, path) {
+    const value = evaluateAstNode(
+      conditionalLiteralAtPath(branchNode, path),
+      conditionalScopeAtPath(scope, shape, path),
+      hooks,
+    );
+    if (!Array.isArray(value)) {
+      return value;
+    }
+    if (!sameArrayShape(value, shape)) {
+      throw new Error("if arguments must have matching shapes");
+    }
+    return conditionalPathValue(value, path);
+  }
+
+  function evaluateConditionalIf(node, scope, hooks) {
+    if (node.args.length < 3 || node.args.length % 2 === 0) {
+      throw new Error("if expects an odd number of arguments: condition, value pairs, and a default value");
+    }
+
+    // Scalar conditions short-circuit before a vector or matrix condition.
+    let firstArrayCondition = null;
+    for (let index = 0; index < node.args.length - 1; index += 2) {
+      const condition = evaluateAstNode(node.args[index], scope, hooks);
+      if (Array.isArray(condition)) {
+        firstArrayCondition = { index, value: condition };
+        break;
+      }
+      if (condition) {
+        return evaluateAstNode(node.args[index + 1], scope, hooks);
+      }
+    }
+    if (!firstArrayCondition) {
+      return evaluateAstNode(node.args[node.args.length - 1], scope, hooks);
+    }
+
+    const shape = firstArrayCondition.value;
+    const evaluateAtPath = (path) => {
+      for (let index = firstArrayCondition.index; index < node.args.length - 1; index += 2) {
+        const condition = index === firstArrayCondition.index
+          ? firstArrayCondition.value
+          : evaluateConditionalBranchAtPath(node.args[index], scope, hooks, shape, path);
+        const conditionValue = Array.isArray(condition)
+          ? conditionalPathValue(condition, path)
+          : condition;
+        if (conditionValue) {
+          return evaluateConditionalBranchAtPath(node.args[index + 1], scope, hooks, shape, path);
+        }
+      }
+      return evaluateConditionalBranchAtPath(node.args[node.args.length - 1], scope, hooks, shape, path);
+    };
+    const buildResult = (value, path = []) => value.map((item, index) => (
+      Array.isArray(item) ? buildResult(item, [...path, index]) : evaluateAtPath([...path, index])
+    ));
+    return buildResult(shape);
   }
 
   function normalizeSliceIndex(value, size, fallback) {
@@ -5198,6 +5771,50 @@ window.STGraphXI18nBundles = {
     };
 
     const applyIndexAccessor = (target, accessor) => {
+      const isMatrixTarget = (value) => Array.isArray(value) && value.every((row) => Array.isArray(row));
+      const normalizeArrayIndex = (value, length) => {
+        let index = Number(value);
+        if (!Number.isInteger(index)) {
+          throw new Error("array index must be an integer");
+        }
+        if (index < 0) {
+          index += length;
+        }
+        if (index < 0 || index >= length) {
+          throw new Error("array index out of range");
+        }
+        return index;
+      };
+      const selectVectorIndices = (values, indices) => {
+        if (!indices.every((index) => !Array.isArray(index))) {
+          throw new Error("array index must be an integer or a vector of integers");
+        }
+        return indices.map((index) => values[normalizeArrayIndex(index, values.length)]);
+      };
+      const matrixCellAt = (matrix, rowValue, colValue) => {
+        let rowIdx = Number(rowValue);
+        let colIdx = Number(colValue);
+        if (!Number.isInteger(rowIdx) || !Number.isInteger(colIdx)) {
+          throw new Error("matrix index must be a pair of integers");
+        }
+        if (rowIdx < 0) {
+          rowIdx += matrix.length;
+        }
+        if (rowIdx < 0 || rowIdx >= matrix.length) {
+          throw new Error("matrix row index out of range");
+        }
+        const row = matrix[rowIdx];
+        if (!Array.isArray(row)) {
+          throw new Error("matrix index requires a matrix target");
+        }
+        if (colIdx < 0) {
+          colIdx += row.length;
+        }
+        if (colIdx < 0 || colIdx >= row.length) {
+          throw new Error("matrix column index out of range");
+        }
+        return row[colIdx];
+      };
       if (!Array.isArray(target)) {
         if (accessor?.index?.type === "identifier" && accessor.index.name === "$i") {
           return target;
@@ -5206,46 +5823,24 @@ window.STGraphXI18nBundles = {
       }
       const rawIndex = evaluateAstNode(accessor.index, scope, hooks);
       if (Array.isArray(rawIndex)) {
-        if (
-          rawIndex.length === 2 &&
-          target.every((row) => Array.isArray(row))
-        ) {
-          let rowIdx = Number(rawIndex[0]);
-          let colIdx = Number(rawIndex[1]);
-          if (!Number.isInteger(rowIdx) || !Number.isInteger(colIdx)) {
-            throw new Error("matrix index must be a pair of integers");
+        if (isMatrixTarget(target)) {
+          if (rawIndex.every((pair) => Array.isArray(pair))) {
+            return rawIndex.map((pair) => {
+              if (pair.length !== 2) {
+                throw new Error("matrix index must be a pair of integers");
+              }
+              return matrixCellAt(target, pair[0], pair[1]);
+            });
           }
-          if (rowIdx < 0) {
-            rowIdx += target.length;
+          // Preserve m[[row,col]] for a single cell. Other vectors select rows.
+          if (rawIndex.length === 2) {
+            return matrixCellAt(target, rawIndex[0], rawIndex[1]);
           }
-          if (rowIdx < 0 || rowIdx >= target.length) {
-            throw new Error("matrix row index out of range");
-          }
-          const row = target[rowIdx];
-          if (!Array.isArray(row)) {
-            throw new Error("matrix index requires a matrix target");
-          }
-          if (colIdx < 0) {
-            colIdx += row.length;
-          }
-          if (colIdx < 0 || colIdx >= row.length) {
-            throw new Error("matrix column index out of range");
-          }
-          return row[colIdx];
+          return selectVectorIndices(target, rawIndex);
         }
-        throw new Error("array index must be an integer or a [row, col] pair");
+        return selectVectorIndices(target, rawIndex);
       }
-      let idx = Number(rawIndex);
-      if (!Number.isInteger(idx)) {
-        throw new Error("array index must be an integer");
-      }
-      if (idx < 0) {
-        idx += target.length;
-      }
-      if (idx < 0 || idx >= target.length) {
-        throw new Error("array index out of range");
-      }
-      return target[idx];
+      return target[normalizeArrayIndex(rawIndex, target.length)];
     };
 
     const applyAccessors = (target, accessors) => {
@@ -5253,6 +5848,30 @@ window.STGraphXI18nBundles = {
         return target;
       }
       const [first, ...rest] = accessors;
+      if (
+        first.kind === "index"
+        && rest.length > 0
+        && Array.isArray(target)
+        && target.every((row) => Array.isArray(row))
+      ) {
+        const rawIndex = evaluateAstNode(first.index, scope, hooks);
+        if (Array.isArray(rawIndex) && rawIndex.every((index) => !Array.isArray(index))) {
+          const selectedRows = rawIndex.map((index) => {
+            let rowIndex = Number(index);
+            if (!Number.isInteger(rowIndex)) {
+              throw new Error("array index must be an integer or a vector of integers");
+            }
+            if (rowIndex < 0) {
+              rowIndex += target.length;
+            }
+            if (rowIndex < 0 || rowIndex >= target.length) {
+              throw new Error("matrix row index out of range");
+            }
+            return target[rowIndex];
+          });
+          return selectedRows.map((row) => applyAccessors(row, rest));
+        }
+      }
       if (first.kind === "index") {
         return applyAccessors(applyIndexAccessor(target, first), rest);
       }
@@ -5309,18 +5928,7 @@ window.STGraphXI18nBundles = {
           return hooks.onIntegralCall(node, scope);
         }
         if (node.name === "__if") {
-          if (node.args.length !== 3) {
-            throw new Error("if expects exactly 3 arguments");
-          }
-          const condition = evaluateAstNode(node.args[0], scope, hooks);
-          if (!Array.isArray(condition)) {
-            return condition
-              ? evaluateAstNode(node.args[1], scope, hooks)
-              : evaluateAstNode(node.args[2], scope, hooks);
-          }
-          const whenTrue = evaluateAstNode(node.args[1], scope, hooks);
-          const whenFalse = evaluateAstNode(node.args[2], scope, hooks);
-          return vectorizedConditionalOperation(condition, whenTrue, whenFalse);
+          return evaluateConditionalIf(node, scope, hooks);
         }
         if (node.name === "array") {
           if (node.args.length < 2) {
@@ -6461,6 +7069,7 @@ window.STGraphXI18nBundles = {
       const dt = Number(raw?.dt);
       const t1 = Number(raw?.t1);
       const delayMs = Number(raw?.delayMs);
+      const renderEverySteps = Number(raw?.renderEverySteps);
       const decimals = Number(raw?.decimals);
       const integrator = String(raw?.integrator ?? "euler").toLowerCase();
       const strictDefinitions = Boolean(raw?.strictDefinitions);
@@ -6470,6 +7079,9 @@ window.STGraphXI18nBundles = {
         dt: Number.isFinite(dt) && dt !== 0 ? dt : 1,
         t1: Number.isFinite(t1) ? t1 : 10,
         delayMs: Number.isFinite(delayMs) && delayMs > 0 ? Math.round(delayMs) : 1000,
+        renderEverySteps: Number.isFinite(renderEverySteps) && renderEverySteps >= 1
+          ? Math.round(renderEverySteps)
+          : 1,
         decimals: Number.isFinite(decimals) ? clampDisplayDecimals(decimals) : 3,
         integrator: integrator === "rk4" ? "rk4" : "euler",
         strictDefinitions,
@@ -8000,6 +8612,7 @@ window.STGraphXI18nBundles = {
       timedState.timedStepRunning = false;
       timedState.timedRunStartedAt = 0;
       timedState.timedStepLastActivityAt = 0;
+      timedState.timedRenderStepCount = 0;
     }
 
     function stopTimedExecution(updateStatus = true, reason = "stopped") {
@@ -8028,6 +8641,24 @@ window.STGraphXI18nBundles = {
         return timeValue >= cfg.t1 - epsilon;
       }
       return timeValue <= cfg.t1 + epsilon;
+    }
+
+    function visualRefreshInterval(execution) {
+      const value = Number(execution?.renderEverySteps);
+      return Number.isFinite(value) && value >= 1 ? Math.round(value) : 1;
+    }
+
+    function refreshAfterStep(execution, force = false) {
+      if (force || timedState.timedRunHandle == null) {
+        refreshRuntimeView?.({ force });
+        return true;
+      }
+      timedState.timedRenderStepCount = (Number(timedState.timedRenderStepCount) || 0) + 1;
+      if (timedState.timedRenderStepCount % visualRefreshInterval(execution) !== 0) {
+        return false;
+      }
+      refreshRuntimeView?.({ force: false });
+      return true;
     }
 
     async function ensureExecutionReady() {
@@ -8087,9 +8718,9 @@ window.STGraphXI18nBundles = {
       const stepResult = session.evaluateAtTime(nextTime, evaluationEnv());
       execution.currentTime = nextTime;
       const breakpointResult = evaluateBreakpointConditionAtTime?.(nextTime) || { hit: false, invalid: false };
-      refreshRuntimeView?.();
 
       if (breakpointResult.invalid) {
+        refreshAfterStep(execution, true);
         setStatus?.(
           t("error.breakpointInvalid", {
             reason: breakpointResult.message || t("error.evalReason.runtime"),
@@ -8101,6 +8732,7 @@ window.STGraphXI18nBundles = {
       }
 
       if (breakpointResult.hit) {
+        refreshAfterStep(execution, true);
         setStatusKey?.("status.breakpointHit", {
           time: formatNumberValue?.(Number(nextTime)),
         });
@@ -8127,6 +8759,7 @@ window.STGraphXI18nBundles = {
           time: formatNumberValue?.(Number(nextTime)),
         });
       }
+      refreshAfterStep(execution, stepResult.errorCount > 0 || completed);
       return { ok: true, breakpointHit: false, completed };
     }
 
@@ -8271,6 +8904,8 @@ window.STGraphXI18nBundles = {
       clearSimulationHistory?.();
       session.clearSubmodelState();
       session.initializeAt(cfg.t0);
+      // Reset also restores the t0 preview, including outputs fed by submodels.
+      session.evaluateAtTime(cfg.t0, evaluationEnv());
       refreshRuntimeView?.();
       setStatusKey?.("status.executionReset", { time: formatNumberValue?.(Number(cfg.t0)) });
     }
@@ -8305,6 +8940,7 @@ window.STGraphXI18nBundles = {
       timedState.timedStepRunning = false;
       timedState.timedRunStartedAt = nowFn();
       timedState.timedStepLastActivityAt = timedState.timedRunStartedAt;
+      timedState.timedRenderStepCount = 0;
       updateEditingLockUi?.();
 
       timedState.timedRunHandle = setIntervalFn(async () => {
@@ -9585,6 +10221,11 @@ window.STGraphXI18nBundles = {
       autoFitCells: widget?.autoFitCells !== false,
       cellSize: Number.isFinite(Number(widget?.cellSize)) ? clamp(Number(widget.cellSize), 2, 96) : 28,
       colorScheme: String(widget?.colorScheme || "blue"),
+      viewMode: ["grid", "surface"].includes(String(widget?.viewMode ?? "")) ? String(widget.viewMode) : "grid",
+      surfaceStyle: ["solid", "wireframe"].includes(String(widget?.surfaceStyle ?? "")) ? String(widget.surfaceStyle) : "solid",
+      surfaceAzimuth: Number.isFinite(Number(widget?.surfaceAzimuth)) ? clamp(Number(widget.surfaceAzimuth), -180, 180) : 45,
+      surfaceElevation: Number.isFinite(Number(widget?.surfaceElevation)) ? clamp(Number(widget.surfaceElevation), 5, 85) : 32,
+      surfaceHeightScale: Number.isFinite(Number(widget?.surfaceHeightScale)) ? clamp(Number(widget.surfaceHeightScale), 0.1, 10) : 1,
       valueMin: Number.isFinite(Number(widget?.valueMin)) ? Number(widget.valueMin) : null,
       valueMax: Number.isFinite(Number(widget?.valueMax)) ? Number(widget.valueMax) : null,
       displayRows: parseNullablePositiveInt(widget?.displayRows),
@@ -9717,6 +10358,31 @@ window.STGraphXI18nBundles = {
       return matrixPaletteColor(scheme, 0.55);
     }
     return matrixPaletteColor(scheme, (value - minValue) / (maxValue - minValue));
+  }
+
+  function matrixValueRange(matrix, rows, cols, widget) {
+    let min = Number.POSITIVE_INFINITY;
+    let max = Number.NEGATIVE_INFINITY;
+    for (let rowIdx = 0; rowIdx < rows; rowIdx += 1) {
+      for (let colIdx = 0; colIdx < cols; colIdx += 1) {
+        const value = matrix[rowIdx]?.[colIdx];
+        if (Number.isFinite(value)) {
+          min = Math.min(min, value);
+          max = Math.max(max, value);
+        }
+      }
+    }
+    if (!Number.isFinite(min) || !Number.isFinite(max)) {
+      min = 0;
+      max = 0;
+    }
+    const hasMin = Number.isFinite(widget.valueMin);
+    const hasMax = Number.isFinite(widget.valueMax);
+    return {
+      min: hasMin ? widget.valueMin : min,
+      max: hasMax ? widget.valueMax : max,
+      fixed: hasMin || hasMax,
+    };
   }
 
   function widgetTitle(widget, t) {
@@ -9923,38 +10589,23 @@ window.STGraphXI18nBundles = {
       ? clamp(fitSize || widget.cellSize || 28, 2, 96)
       : clamp(Number(widget.cellSize) || 28, 2, 96);
     const compactHeatmap = widget.showNumericValues === false && showIndices === false;
+    const valueRange = matrixValueRange(matrix, displayRows, displayCols, widget);
     if (compactHeatmap) {
       canvas.width = Math.max(1, displayCols);
       canvas.height = Math.max(1, displayRows);
       canvas.style.width = `${Math.max(1, displayCols) * cellSize}px`;
       canvas.style.height = `${Math.max(1, displayRows) * cellSize}px`;
 
-      let minValue = Number.POSITIVE_INFINITY;
-      let maxValue = Number.NEGATIVE_INFINITY;
-      for (let rowIdx = 0; rowIdx < displayRows; rowIdx += 1) {
-        for (let colIdx = 0; colIdx < displayCols; colIdx += 1) {
-          const value = matrix[rowIdx]?.[colIdx];
-          if (Number.isFinite(value)) {
-            minValue = Math.min(minValue, value);
-            maxValue = Math.max(maxValue, value);
-          }
-        }
-      }
-      if (!Number.isFinite(minValue) || !Number.isFinite(maxValue)) {
-        minValue = 0;
-        maxValue = 0;
-      }
-      const fixedRange = Number.isFinite(widget.valueMin) && Number.isFinite(widget.valueMax);
       ctx.clearRect(0, 0, canvas.width, canvas.height);
       for (let rowIdx = 0; rowIdx < displayRows; rowIdx += 1) {
         for (let colIdx = 0; colIdx < displayCols; colIdx += 1) {
           const value = matrix[rowIdx]?.[colIdx];
           const bg = matrixCellBackgroundColor(
             value,
-            fixedRange ? widget.valueMin : minValue,
-            fixedRange ? widget.valueMax : maxValue,
+            valueRange.min,
+            valueRange.max,
             widget.colorScheme,
-            fixedRange,
+            valueRange.fixed,
           );
           ctx.fillStyle = bg || "#ffffff";
           ctx.fillRect(colIdx, rowIdx, 1, 1);
@@ -9969,22 +10620,6 @@ window.STGraphXI18nBundles = {
     canvas.style.width = `${width}px`;
     canvas.style.height = `${height}px`;
 
-    let minValue = Number.POSITIVE_INFINITY;
-    let maxValue = Number.NEGATIVE_INFINITY;
-    for (let rowIdx = 0; rowIdx < displayRows; rowIdx += 1) {
-      for (let colIdx = 0; colIdx < displayCols; colIdx += 1) {
-        const value = matrix[rowIdx]?.[colIdx];
-        if (Number.isFinite(value)) {
-          minValue = Math.min(minValue, value);
-          maxValue = Math.max(maxValue, value);
-        }
-      }
-    }
-    if (!Number.isFinite(minValue) || !Number.isFinite(maxValue)) {
-      minValue = 0;
-      maxValue = 0;
-    }
-
     ctx.clearRect(0, 0, width, height);
     ctx.fillStyle = "#ffffff";
     ctx.fillRect(0, 0, width, height);
@@ -9997,13 +10632,12 @@ window.STGraphXI18nBundles = {
         const x = (colIdx + headerOffset) * cellSize;
         const y = (rowIdx + headerOffset) * cellSize;
         const value = matrix[rowIdx]?.[colIdx];
-        const fixedRange = Number.isFinite(widget.valueMin) && Number.isFinite(widget.valueMax);
         const bg = matrixCellBackgroundColor(
           value,
-          fixedRange ? widget.valueMin : minValue,
-          fixedRange ? widget.valueMax : maxValue,
+          valueRange.min,
+          valueRange.max,
           widget.colorScheme,
-          fixedRange,
+          valueRange.fixed,
         );
         ctx.fillStyle = bg || "#ffffff";
         ctx.fillRect(x, y, cellSize, cellSize);
@@ -10041,6 +10675,64 @@ window.STGraphXI18nBundles = {
       ctx.strokeStyle = "#d9e3ee";
       ctx.strokeRect(0.5, 0.5, Math.max(0, cellSize - 1), Math.max(0, cellSize - 1));
     }
+  }
+
+  function drawMatrixSurfaceWidgetCanvas(canvas, widget, matrix, zoom) {
+    const ctx = canvas.getContext("2d");
+    const rows = Math.min(matrix.length, widget.displayRows ?? matrix.length);
+    const cols = Math.min(matrix[0]?.length ?? 0, widget.displayCols ?? (matrix[0]?.length ?? 0));
+    if (!ctx || rows < 2 || cols < 2) return false;
+    const valueRange = matrixValueRange(matrix, rows, cols, widget);
+    const { min, max } = valueRange;
+    const width = Math.max(80, Math.floor(widget.width * zoom - 24));
+    const height = Math.max(80, Math.floor(widget.height * zoom - 54));
+    canvas.width = width;
+    canvas.height = height;
+    canvas.style.width = `${width}px`;
+    canvas.style.height = `${height}px`;
+    const azimuth = (widget.surfaceAzimuth * Math.PI) / 180;
+    const elevation = (widget.surfaceElevation * Math.PI) / 180;
+    const cosA = Math.cos(azimuth), sinA = Math.sin(azimuth), cosE = Math.cos(elevation), sinE = Math.sin(elevation);
+    const sample = (length) => {
+      const step = Math.max(1, Math.ceil((length - 1) / 71));
+      const result = [];
+      for (let index = 0; index < length; index += step) result.push(index);
+      if (result[result.length - 1] !== length - 1) result.push(length - 1);
+      return result;
+    };
+    const sampledRows = sample(rows), sampledCols = sample(cols), span = max - min || 1;
+    let minX = Infinity, maxX = -Infinity, minY = Infinity, maxY = -Infinity;
+    const points = sampledRows.map((row) => sampledCols.map((col) => {
+      const rawValue = Number(matrix[row]?.[col]);
+      const value = Number.isFinite(rawValue) ? rawValue : min;
+      const normalized = (value - min) / span;
+      const x = (col / (cols - 1)) - 0.5, y = (row / (rows - 1)) - 0.5;
+      const z = (normalized - 0.5) * widget.surfaceHeightScale;
+      const rx = x * cosA - y * sinA, ry = x * sinA + y * cosA, py = ry * sinE - z * cosE;
+      minX = Math.min(minX, rx); maxX = Math.max(maxX, rx); minY = Math.min(minY, py); maxY = Math.max(maxY, py);
+      return { x: rx, y: py, depth: ry * cosE + z * sinE, value };
+    }));
+    const scale = Math.min((width - 24) / Math.max(0.01, maxX - minX), (height - 24) / Math.max(0.01, maxY - minY));
+    const project = (point) => ({ x: width / 2 + point.x * scale, y: height / 2 + point.y * scale });
+    const cells = [];
+    for (let row = 0; row < points.length - 1; row += 1) for (let col = 0; col < points[row].length - 1; col += 1) {
+      const corners = [points[row][col], points[row][col + 1], points[row + 1][col + 1], points[row + 1][col]];
+      cells.push({ corners, depth: corners.reduce((total, point) => total + point.depth, 0) / 4 });
+    }
+    ctx.fillStyle = "#ffffff"; ctx.fillRect(0, 0, width, height);
+    cells.sort((a, b) => a.depth - b.depth).forEach(({ corners }) => {
+      const path = corners.map(project), average = corners.reduce((total, point) => total + point.value, 0) / corners.length;
+      ctx.beginPath(); ctx.moveTo(path[0].x, path[0].y); path.slice(1).forEach((point) => ctx.lineTo(point.x, point.y)); ctx.closePath();
+      if (widget.surfaceStyle === "solid") {
+        ctx.fillStyle = matrixCellBackgroundColor(average, min, max, widget.colorScheme, valueRange.fixed) || "#8ca7c1";
+        ctx.fill(); ctx.strokeStyle = "rgba(255,255,255,.22)"; ctx.lineWidth = 0.65;
+      } else {
+        ctx.strokeStyle = matrixCellBackgroundColor(average, min, max, widget.colorScheme, valueRange.fixed) || "#426983";
+        ctx.lineWidth = 1;
+      }
+      ctx.stroke();
+    });
+    return true;
   }
 
   class STGraphXPlayer extends HTMLElement {
@@ -10082,6 +10774,7 @@ window.STGraphXI18nBundles = {
         timedRunStartedAt: 0,
         timedStepLastActivityAt: 0,
       };
+      this._activeInputWidgetId = null;
       this.ready = Promise.resolve();
       this.syncViewOptionsFromAttributes();
     }
@@ -10913,7 +11606,12 @@ window.STGraphXI18nBundles = {
           const nextTime = runtimeModel.execution.currentTime + cfg.dt;
           return !isTimeWithinBounds(nextTime, cfg.t0, cfg.dt, cfg.t1);
         },
-        refreshRuntimeView: () => this.renderAll(),
+        refreshRuntimeView: ({ force = false } = {}) => {
+          if (!force && this._activeInputWidgetId != null) {
+            return;
+          }
+          this.renderAll();
+        },
         render: () => this.renderAll(),
         updateEditingLockUi: () => this.updateControlState(),
         setStatusKey: (key, vars) => this.setStatus(this.t(key, vars)),
@@ -11426,6 +12124,11 @@ window.STGraphXI18nBundles = {
     }
 
     queuePreviewRefresh(phase = "input") {
+      if (this._timedState.timedRunHandle != null) {
+        // The next timed step reads inputValues. A preview would overwrite the
+        // active runtime state and can interrupt a native range drag.
+        return;
+      }
       void this.refreshPreview()
         .then(() => this.renderAll())
         .catch((err) => {
@@ -11771,7 +12474,14 @@ window.STGraphXI18nBundles = {
         canvas.style.background = "#ffffff";
         canvas.style.border = "1px solid #e1e9f1";
         canvas.style.boxSizing = "border-box";
-        drawMatrixWidgetCanvas(canvas, widget, matrix, execution, this._zoom);
+        if (widget.viewMode === "surface") {
+          if (!drawMatrixSurfaceWidgetCanvas(canvas, widget, matrix, this._zoom)) {
+            body.innerHTML = `<div class="empty">${this.t("widget.matrixSurfaceNotNumeric")}</div>`;
+            return;
+          }
+        } else {
+          drawMatrixWidgetCanvas(canvas, widget, matrix, execution, this._zoom);
+        }
         body.appendChild(canvas);
         return;
       }
@@ -11926,8 +12636,31 @@ window.STGraphXI18nBundles = {
           commit(nextValue);
           this.queuePreviewRefresh("input");
         };
-        range.disabled = this._timedState.timedStepRunning || this._timedState.timedRunHandle != null;
-        number.disabled = range.disabled;
+        range.disabled = false;
+        number.disabled = false;
+        range.addEventListener("pointerdown", () => {
+          this._activeInputWidgetId = widget.id;
+        });
+        range.addEventListener("pointerup", () => {
+          this._activeInputWidgetId = null;
+          this.renderAll();
+        });
+        range.addEventListener("pointercancel", () => {
+          this._activeInputWidgetId = null;
+          this.renderAll();
+        });
+        number.addEventListener("pointerdown", () => {
+          this._activeInputWidgetId = widget.id;
+        });
+        number.addEventListener("focus", () => {
+          this._activeInputWidgetId = widget.id;
+        });
+        number.addEventListener("blur", () => {
+          if (this._activeInputWidgetId === widget.id) {
+            this._activeInputWidgetId = null;
+            this.renderAll();
+          }
+        });
         range.addEventListener("input", () => commit(range.value));
         range.addEventListener("change", () => commitAndRefresh(range.value));
         number.addEventListener("change", () => commitAndRefresh(number.value));
@@ -11949,11 +12682,14 @@ window.STGraphXI18nBundles = {
         button.type = "button";
         button.className = `button-widget-toggle${current ? " is-on" : " is-off"}`;
         button.textContent = widgetBinaryStateLabel(widget, current, this.t.bind(this));
-        button.disabled = this._timedState.timedStepRunning || this._timedState.timedRunHandle != null;
+        button.disabled = false;
         button.addEventListener("click", () => {
           const next = current ? 0 : 1;
           this._state.inputValues.set(widget.source, next);
           widget.value = next === 1;
+          button.classList.toggle("is-on", next === 1);
+          button.classList.toggle("is-off", next !== 1);
+          button.textContent = widgetBinaryStateLabel(widget, next === 1, this.t.bind(this));
           this.queuePreviewRefresh("input");
         });
         wrap.appendChild(button);
@@ -11973,12 +12709,25 @@ window.STGraphXI18nBundles = {
           select.appendChild(opt);
         });
         select.value = String(current);
-        select.disabled = this._timedState.timedStepRunning || this._timedState.timedRunHandle != null;
+        select.disabled = false;
+        select.addEventListener("pointerdown", () => {
+          this._activeInputWidgetId = widget.id;
+        });
         select.addEventListener("change", () => {
           const next = Number(select.value);
           this._state.inputValues.set(widget.source, next);
           widget.value = next;
+          this._activeInputWidgetId = null;
           this.queuePreviewRefresh("input");
+          if (this._timedState.timedRunHandle != null) {
+            this.renderAll();
+          }
+        });
+        select.addEventListener("blur", () => {
+          if (this._activeInputWidgetId === widget.id) {
+            this._activeInputWidgetId = null;
+            this.renderAll();
+          }
         });
         wrap.appendChild(select);
         body.appendChild(wrap);

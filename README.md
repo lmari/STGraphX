@@ -1,6 +1,6 @@
 # STGraphX: Readme
 
-versione 9 settembre 2026
+versione 11 settembre 2026
 
 Copyright (c) 2026 Luca Mari
 
@@ -39,11 +39,13 @@ Ha un'interfaccia utente responsive, che lo rende utilizzabile anche su tablet.
 
 ### Implementati (senza librerie esterne)
 
+((*): funzionalità già presente in STGraph ma migliorata in modo significativo; (**): funzionalità assente in STGraph e introdotta qui)
+
 #### Funzionalità generali
 
 * Editor per grafi orientati, con nodi di forme e colori diversi e tooltip, frecce spline, testi, gruppi di presentazione sovrapponibili con visibilità indipendente, gestione di ridimensionamento, spostamento, cancellazione dei nodi, anche per selezioni multiple, zoom, griglia, clipboard (anche condivisa tra instanze diverse dell'app), undo e redo, ...
-* Player per esecuzione di modelli in pagine HTML
-* API JavaScript per esecuzione headless via script
+* Player per esecuzione di modelli in pagine HTML (**)
+* API JavaScript per esecuzione headless via script (**)
 * Menu, menu contestuale e pannello di configurazione aggiornato dinamicamente, con tooltip
 * Interfaccia responsive a tab per più modelli, con gestione contestuale della relazione tra modelli e sottomodelli
 * Gestione dei testi dell'interfaccia utente in italiano e inglese, con scelta via query string nella shell web (`?lang=it|en`) e via parametro `--lang=it|en` nella shell Electron
@@ -53,10 +55,10 @@ Ha un'interfaccia utente responsive, che lo rende utilizzabile anche su tablet.
 
 #### Funzionalità strutturali
 
-* Gestione dei nodi algebrici, di stato, parametri e sottomodelli, con funzioni in sintassi javascript (compresa la gestione locale di `this` come stato attuale); controllo sintattico sul nome dei nodi; controllo sui parametri (valore non cambia dopo la prima esecuzione; frecce entranti non ammesse); inizializzazione ordinata di stati e nodi algebrici, con controllo di cicli nelle definizioni iniziali; controllo del numero di cifre decimali visualizzate
+* Gestione dei nodi algebrici, di stato, parametri e sottomodelli, con funzioni in sintassi javascript (compresa la gestione locale di `this` come stato attuale); controllo sintattico sul nome dei nodi; controllo sui parametri (valore non cambia dopo la prima esecuzione; frecce entranti non ammesse); inizializzazione ordinata di stati e nodi algebrici, con controllo di cicli nelle definizioni iniziali; controllo del numero di cifre decimali visualizzate (*)
 * Gestione di variabili globali
-* Possibilità di definire funzioni locali ai modelli
-* Gestione di nodi di output e di widget di output: grafici, tabelle, matrici, led, testo; le tabelle possono mostrare una serie storica oppure espandere vettori e matrici in celle scalari; pannello di configurazione aggiornato dinamicamente
+* Possibilità di definire funzioni locali ai modelli (*)
+* Gestione di nodi di output e di widget di output: grafici, tabelle, matrici, led, testo; le tabelle possono mostrare una serie storica oppure espandere vettori e matrici in celle scalari; pannello di configurazione aggiornato dinamicamente (*)
 * Gestione di nodi di input e di widget di input, anche per parametri: slider, pulsante, selettore di testo; pannello di configurazione aggiornato dinamicamente
 * Gestione dei sottomodelli con file JSON separati, con caricamento dalla stessa cartella del modello, binding dei nodi di input e accesso ai nodi di output con notazione `nomeSottomodello.nomeOutput`
 
@@ -64,33 +66,33 @@ Ha un'interfaccia utente responsive, che lo rende utilizzabile anche su tablet.
 
 * Definizione della base dei tempi e modalità varie di esecuzione; pannello di configurazione aggiornato dinamicamente
 * Gestione di esecuzione completa, passo-passo, temporizzata, con modello in modalità read-only durante l'esecuzione
-* Gestione opzionale di blocco di esecuzione ed evidenziazione per nodi non definiti
+* Gestione opzionale del blocco di esecuzione ed evidenziazione per nodi non definiti (**)
 
 #### Funzionalità del linguaggio
 
 * Varie funzioni definite; mapping da valori booleani a valori numerici e funzione `if`
 * Funzione `integral`, con scelta dell'algoritmo di integrazione, se Eulero o RK4;
 * Alcune funzioni per distribuzioni di probabilità
-* Generazione di vettori con la sintassi `range(inizio, fine, [passo])`; indicizzazione/slicing di vettori e matrici con la sintassi di NumPy, `[inizio:fine]` oppure `[inizio:fine:passo]`, anche con indici opzionali e negativi; gestione di funzioni a valori non scalari, per esempio `sin([1,2,3])`; gestione di operatori con argomenti non scalari
-* Funzioni "special form" per operare su vettori e matrici: `array`, `reduce`, `map`, `filter`
-* Una funzione per leggere il contenuto di file dati in formato csv
-* Gestione di proprietà custom per il modello e i singoli nodi e funzioni `getModelProperty`/`getProperty` e `setModelProperty`/`setProperty`
-* Prima gestione in logica ABM dichiarativa / funzionale, mediante variabili di sistema `self` e `$i$`
+* Generazione di vettori con la sintassi `range(inizio, fine, [passo])`; indicizzazione/slicing di vettori e matrici con la sintassi di NumPy, `[inizio:fine]` oppure `[inizio:fine:passo]`, anche con indici opzionali e negativi; gestione di funzioni a valori non scalari, per esempio `sin([1,2,3])`; gestione di operatori con argomenti non scalari (*)
+* Funzioni "special form" per operare su vettori e matrici: `array`, `reduce`, `map`, `filter` (*)
+* Una funzione per leggere il contenuto di file dati in formato csv (*)
+* Gestione di proprietà custom per il modello e i singoli nodi e funzioni `getModelProperty`/`getProperty` e `setModelProperty`/`setProperty` (**)
+* Prima gestione in logica ABM dichiarativa / funzionale, mediante variabili di sistema `self` e `$i$` (**)
 
 #### Funzionalità di interfaccia utente
 
-* Editor per espressioni, con gestione ed help contestuale e controllo sintattico dinamico
+* Editor per espressioni, con controllo sintattico dinamico, visualizzazione dei valori attuali, help contestuale
 * Visualizzazione alternata per il grafo e i widget
+* Gestione di una dashboard a più pagine per raggruppare widget (**)
 * Enfatizzazione delle frecce sul nodo selezionato
 * Editor per testi con formattazione HTML basilare
-* Una voce di menu per esportare la serie storica dei valori delle variabili di output in un file csv
-* Caricamento e salvataggio di modelli in file JSON
-* Editor per espressioni con controllo sintattico interattivo, visualizzazione dei valori attuali, help
-* Una funzione per la generazione dei contenuti noti della 8-upla del modello attivo
-* Gestione dei gruppi di visualizzazione di nodi
+* Una voce di menu per esportare la serie storica dei valori delle variabili di output in un file csv (*)
+* Caricamento e salvataggio di modelli in file JSON (*)
+* Una funzione per la generazione dei contenuti noti della 8-upla del modello attivo (*)
+* Gestione dei gruppi di visualizzazione di nodi (*)
 * Nel menu File, gestione dei modelli aperti di recente
 * Una prima gestione di controllo di correttezza del modello
-* Un primo debugger, con gestione di watch e breakpoint
+* Un primo debugger, con gestione di watch e breakpoint (**)
 
 #### Al momento non implementati (rispetto a STGraph)
 

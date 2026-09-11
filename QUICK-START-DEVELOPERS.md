@@ -1,12 +1,12 @@
 # STGraphX: Quick start per sviluppatori
 
-versione 31 agosto 2026
+versione 11 settembre 2026
 
 Copyright (c) 2026 Luca Mari
 
-Questa guida serve a sviluppare e distribuire STGraphX.
+Questa guida include le informazioni basilari per sviluppare e distribuire STGraphX.
 
-Le modalità basilari sono:
+Le modalità di distribuzione sono:
 
 - editor completo via web;
 - editor desktop con Electron;
@@ -430,3 +430,54 @@ npm run start:web
 ```bash
 node tests/headless-demo.js
 ```
+
+## 6. Versione e data di rilascio
+
+STGraphX mantiene separati la versione tecnica del pacchetto e la data di
+rilascio mostrata nell'applicazione.
+
+### Versione tecnica
+
+La versione e' definita nel campo `version` di `package.json`. Per esempio,
+per passare a `0.2.0` eseguire nella radice del repository:
+
+```bash
+npm version 0.2.0 --no-git-tag-version
+```
+
+Il comando aggiorna `package.json` e `package-lock.json`, senza creare un
+commit o un tag Git. Usare una versione semantica appropriata:
+
+- `MAJOR` per modifiche incompatibili;
+- `MINOR` per nuove funzionalita' compatibili;
+- `PATCH` per correzioni compatibili.
+
+### Data di rilascio
+
+La data di rilascio e' la stringa `releaseDate` in
+`window.STGraphXAppMeta`, all'inizio di `i18n-inline.js`:
+
+```js
+window.STGraphXAppMeta = {
+  author: "Luca Mari",
+  releaseDate: "2026.09.11",
+  // ...
+};
+```
+
+Aggiornare solo la stringa, mantenendo il formato `AAAA.MM.GG`. Questo valore
+e' visualizzato nella finestra di help e usato dagli script di distribuzione
+per identificare la build.
+
+### Verifica e build
+
+Dopo l'aggiornamento di versione e data:
+
+```bash
+npm run check
+npm run build:player
+npm run dist
+```
+
+Creare infine il commit e il tag Git della release secondo la procedura scelta
+per il repository.

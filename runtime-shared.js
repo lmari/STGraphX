@@ -28,6 +28,7 @@
       const dt = Number(raw?.dt);
       const t1 = Number(raw?.t1);
       const delayMs = Number(raw?.delayMs);
+      const renderEverySteps = Number(raw?.renderEverySteps);
       const decimals = Number(raw?.decimals);
       const integrator = String(raw?.integrator ?? "euler").toLowerCase();
       const strictDefinitions = Boolean(raw?.strictDefinitions);
@@ -37,6 +38,9 @@
         dt: Number.isFinite(dt) && dt !== 0 ? dt : 1,
         t1: Number.isFinite(t1) ? t1 : 10,
         delayMs: Number.isFinite(delayMs) && delayMs > 0 ? Math.round(delayMs) : 1000,
+        renderEverySteps: Number.isFinite(renderEverySteps) && renderEverySteps >= 1
+          ? Math.round(renderEverySteps)
+          : 1,
         decimals: Number.isFinite(decimals) ? clampDisplayDecimals(decimals) : 3,
         integrator: integrator === "rk4" ? "rk4" : "euler",
         strictDefinitions,

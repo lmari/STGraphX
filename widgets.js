@@ -70,6 +70,11 @@ function addMatrixWidget(at = null) {
     autoFitCells: true,
     cellSize: 28,
     colorScheme: "blue",
+    viewMode: "grid",
+    surfaceStyle: "solid",
+    surfaceAzimuth: 45,
+    surfaceElevation: 32,
+    surfaceHeightScale: 1,
     valueMin: null,
     valueMax: null,
     displayRows: null,
@@ -80,10 +85,21 @@ function addMatrixWidget(at = null) {
   });
 }
 
+function sortedWidgetNodeNames(nodes) {
+  return nodes
+    .map((node) => String(node?.name ?? "").trim())
+    .filter(Boolean)
+    .sort((left, right) => left.localeCompare(right, undefined, { numeric: true, sensitivity: "base" }));
+}
+
+function outputWidgetNodeNames() {
+  return sortedWidgetNodeNames(graph.nodes.filter((node) => node.output));
+}
+
 function addLedWidget(at = null) {
   const id = widgetCounter++;
   const { x, y } = getSmartCanvasInsertionPoint({ width: 170, height: 96, anchor: at });
-  const outputNames = graph.nodes.filter((n) => n.output).map((n) => n.name);
+  const outputNames = outputWidgetNodeNames();
   graph.widgets.push({
     id,
     type: "led",
@@ -190,7 +206,7 @@ function addSelectWidget(at = null) {
 function addTextWidget(at = null) {
   const id = widgetCounter++;
   const { x, y } = getSmartCanvasInsertionPoint({ width: 220, height: 92, anchor: at });
-  const outputNames = graph.nodes.filter((n) => n.output).map((n) => n.name);
+  const outputNames = outputWidgetNodeNames();
   graph.widgets.push({
     id,
     type: "text",
@@ -214,7 +230,7 @@ function addTextWidget(at = null) {
 function addXYChartWidget(at = null) {
   const id = widgetCounter++;
   const { x, y } = getSmartCanvasInsertionPoint({ width: 320, height: 210, anchor: at });
-  const nodeNames = graph.nodes.filter((n) => n.output).map((n) => n.name);
+  const nodeNames = outputWidgetNodeNames();
   graph.widgets.push({
     id,
     type: "xychart",
@@ -369,6 +385,19 @@ function sanitizeMatrixWidgetOptions(widget) {
   widget.cellSize = Number.isFinite(Number(widget.cellSize)) ? clamp(Number(widget.cellSize), 2, 96) : 28;
   const allowedPalettes = new Set(["blue", "heat", "grayscale", "diverging", "none"]);
   widget.colorScheme = allowedPalettes.has(String(widget.colorScheme ?? "")) ? String(widget.colorScheme) : "blue";
+  widget.viewMode = ["grid", "surface"].includes(String(widget.viewMode ?? "")) ? String(widget.viewMode) : "grid";
+  widget.surfaceStyle = ["solid", "wireframe"].includes(String(widget.surfaceStyle ?? ""))
+    ? String(widget.surfaceStyle)
+    : "solid";
+  widget.surfaceAzimuth = Number.isFinite(Number(widget.surfaceAzimuth))
+    ? clamp(Number(widget.surfaceAzimuth), -180, 180)
+    : 45;
+  widget.surfaceElevation = Number.isFinite(Number(widget.surfaceElevation))
+    ? clamp(Number(widget.surfaceElevation), 5, 85)
+    : 32;
+  widget.surfaceHeightScale = Number.isFinite(Number(widget.surfaceHeightScale))
+    ? clamp(Number(widget.surfaceHeightScale), 0.1, 10)
+    : 1;
   const parseNullableNumber = (value) => {
     if (value === "" || value == null) {
       return null;
@@ -955,14 +984,17 @@ function drawXYChart(canvas, seriesList = [], options = null) {
 
   activeSeries.forEach((series, s) => {
     const color = series.color || defaultChartSeriesColor(s);
-    const chartPoints = sampleSeriesPoints(series.points);
+    // Decimation is appropriate for a continuous path, but not for a scatter
+    // plot: dropping samples changes the displayed population (for example,
+    // an iterated-function-system fractal). Keep every requested point.
+    const linePoints = series.showLine ? sampleSeriesPoints(series.points) : [];
     ctx.strokeStyle = color;
     ctx.lineWidth = series.lineWidth;
     ctx.setLineDash(chartLineDash(series.lineStyle));
     if (series.showLine) {
       ctx.beginPath();
       let moved = false;
-      chartPoints.forEach((p) => {
+      linePoints.forEach((p) => {
         const x = sx(p.x);
         const y = sy(p.y);
         if (!moved) {
@@ -980,11 +1012,15 @@ function drawXYChart(canvas, seriesList = [], options = null) {
     if (series.pointMode !== "none") {
       ctx.fillStyle = series.pointColor || color;
       const pointsToDraw = series.pointMode === "last"
-        ? [chartPoints[chartPoints.length - 1]].filter(Boolean)
-        : chartPoints;
+        ? [series.points[series.points.length - 1]].filter(Boolean)
+        : series.points;
       pointsToDraw.forEach((p) => {
         const x = sx(p.x);
         const y = sy(p.y);
+        if (series.pointSize <= 1) {
+          ctx.fillRect(Math.round(x - 1), Math.round(y - 1), 2, 2);
+          return;
+        }
         ctx.beginPath();
         ctx.arc(x, y, series.pointSize, 0, Math.PI * 2);
         ctx.fill();
@@ -1290,19 +1326,7 @@ function renderMatrixGrid(body, widget, matrix) {
     }
   }
 
-  let minValue = 0;
-  let maxValue = 0;
-  if (widget.valueMin != null && widget.valueMax != null) {
-    minValue = widget.valueMin;
-    maxValue = widget.valueMax;
-  } else if (isFiniteMatrix(matrix) && rowCount > 0 && colCount > 0) {
-    minValue = matrix[0][0];
-    maxValue = matrix[0][0];
-    matrix.forEach((row) => row.forEach((value) => {
-      minValue = Math.min(minValue, value);
-      maxValue = Math.max(maxValue, value);
-    }));
-  }
+  const valueRange = matrixValueRange(matrix, rowCount, colCount, widget);
   for (let rowIdx = 0; rowIdx < displayRows; rowIdx += 1) {
     if (showIndices) {
       const rowHeader = document.createElement("div");
@@ -1318,10 +1342,10 @@ function renderMatrixGrid(body, widget, matrix) {
       const bg = value != null
         ? matrixCellBackgroundColor(
           value,
-          minValue,
-          maxValue,
+          valueRange.min,
+          valueRange.max,
           widget.colorScheme,
-          widget.valueMin != null && widget.valueMax != null,
+          valueRange.fixed,
         )
         : "";
       if (bg) {
@@ -1331,6 +1355,155 @@ function renderMatrixGrid(body, widget, matrix) {
     }
   }
   body.appendChild(grid);
+}
+
+function matrixSurfaceDimensions(matrix, widget) {
+  return {
+    rows: Math.min(matrix.length, widget.displayRows ?? matrix.length),
+    cols: Math.min(matrix[0]?.length ?? 0, widget.displayCols ?? (matrix[0]?.length ?? 0)),
+  };
+}
+
+function matrixSurfaceRange(matrix, rows, cols, widget) {
+  return matrixValueRange(matrix, rows, cols, widget);
+}
+
+function matrixValueRange(matrix, rows, cols, widget) {
+  let min = Number.POSITIVE_INFINITY;
+  let max = Number.NEGATIVE_INFINITY;
+  for (let row = 0; row < rows; row += 1) {
+    for (let col = 0; col < cols; col += 1) {
+      const value = matrix[row]?.[col];
+      if (Number.isFinite(value)) {
+        min = Math.min(min, value);
+        max = Math.max(max, value);
+      }
+    }
+  }
+  if (!Number.isFinite(min) || !Number.isFinite(max)) {
+    return { min: 0, max: 0, fixed: false };
+  }
+  const hasMin = Number.isFinite(widget.valueMin);
+  const hasMax = Number.isFinite(widget.valueMax);
+  return {
+    min: hasMin ? widget.valueMin : min,
+    max: hasMax ? widget.valueMax : max,
+    fixed: hasMin || hasMax,
+  };
+}
+
+function sampledIndices(length, limit = 72) {
+  if (length <= limit) {
+    return Array.from({ length }, (_unused, index) => index);
+  }
+  const step = Math.ceil((length - 1) / (limit - 1));
+  const indices = [];
+  for (let index = 0; index < length; index += step) {
+    indices.push(index);
+  }
+  if (indices[indices.length - 1] !== length - 1) {
+    indices.push(length - 1);
+  }
+  return indices;
+}
+
+function drawMatrixSurfaceCanvas(canvas, widget, matrix) {
+  const ctx = canvas.getContext("2d");
+  const { rows, cols } = matrixSurfaceDimensions(matrix, widget);
+  const range = matrixSurfaceRange(matrix, rows, cols, widget);
+  if (!ctx || rows < 2 || cols < 2 || !range) {
+    return false;
+  }
+  const width = Math.max(80, Math.floor(widget.width - 16));
+  const height = Math.max(80, Math.floor(widget.height - (widget.showTitleBar === false ? 16 : 44)));
+  canvas.width = width;
+  canvas.height = height;
+  canvas.className = "matrix-surface-canvas";
+
+  const azimuth = (widget.surfaceAzimuth * Math.PI) / 180;
+  const elevation = (widget.surfaceElevation * Math.PI) / 180;
+  const cosAzimuth = Math.cos(azimuth);
+  const sinAzimuth = Math.sin(azimuth);
+  const cosElevation = Math.cos(elevation);
+  const sinElevation = Math.sin(elevation);
+  const rowIndices = sampledIndices(rows);
+  const colIndices = sampledIndices(cols);
+  const points = [];
+  let minX = Number.POSITIVE_INFINITY;
+  let maxX = Number.NEGATIVE_INFINITY;
+  let minY = Number.POSITIVE_INFINITY;
+  let maxY = Number.NEGATIVE_INFINITY;
+  const span = range.max - range.min || 1;
+
+  rowIndices.forEach((row, rowIndex) => {
+    points[rowIndex] = [];
+    colIndices.forEach((col, colIndex) => {
+      const rawValue = Number(matrix[row]?.[col]);
+      const value = Number.isFinite(rawValue) ? rawValue : range.min;
+      const normalized = (value - range.min) / span;
+      const x = cols > 1 ? (col / (cols - 1)) - 0.5 : 0;
+      const y = rows > 1 ? (row / (rows - 1)) - 0.5 : 0;
+      const z = (normalized - 0.5) * widget.surfaceHeightScale;
+      const rotatedX = x * cosAzimuth - y * sinAzimuth;
+      const rotatedY = x * sinAzimuth + y * cosAzimuth;
+      const projectedY = rotatedY * sinElevation - z * cosElevation;
+      const depth = rotatedY * cosElevation + z * sinElevation;
+      points[rowIndex][colIndex] = { x: rotatedX, y: projectedY, depth, value };
+      minX = Math.min(minX, rotatedX);
+      maxX = Math.max(maxX, rotatedX);
+      minY = Math.min(minY, projectedY);
+      maxY = Math.max(maxY, projectedY);
+    });
+  });
+  const scale = Math.min(
+    (width - 24) / Math.max(0.01, maxX - minX),
+    (height - 24) / Math.max(0.01, maxY - minY),
+  );
+  const project = (point) => ({
+    x: width / 2 + point.x * scale,
+    y: height / 2 + point.y * scale,
+  });
+  const cells = [];
+  for (let row = 0; row < points.length - 1; row += 1) {
+    for (let col = 0; col < points[row].length - 1; col += 1) {
+      const corners = [points[row][col], points[row][col + 1], points[row + 1][col + 1], points[row + 1][col]];
+      cells.push({ corners, depth: corners.reduce((sum, point) => sum + point.depth, 0) / 4 });
+    }
+  }
+  cells.sort((first, second) => first.depth - second.depth);
+  ctx.fillStyle = "#ffffff";
+  ctx.fillRect(0, 0, width, height);
+  cells.forEach(({ corners }) => {
+    const path = corners.map(project);
+    const average = corners.reduce((sum, point) => sum + point.value, 0) / corners.length;
+    ctx.beginPath();
+    ctx.moveTo(path[0].x, path[0].y);
+    path.slice(1).forEach((point) => ctx.lineTo(point.x, point.y));
+    ctx.closePath();
+    if (widget.surfaceStyle === "solid") {
+      ctx.fillStyle = matrixCellBackgroundColor(average, range.min, range.max, widget.colorScheme, range.fixed) || "#8ca7c1";
+      ctx.fill();
+      ctx.strokeStyle = "rgba(255, 255, 255, 0.22)";
+      ctx.lineWidth = 0.65;
+    } else {
+      ctx.strokeStyle = matrixCellBackgroundColor(average, range.min, range.max, widget.colorScheme, range.fixed) || "#426983";
+      ctx.lineWidth = 1;
+    }
+    ctx.stroke();
+  });
+  return true;
+}
+
+function renderMatrixSurface(body, widget, matrix) {
+  const canvas = document.createElement("canvas");
+  if (drawMatrixSurfaceCanvas(canvas, widget, matrix)) {
+    body.appendChild(canvas);
+    return;
+  }
+  const msg = document.createElement("div");
+  msg.className = "empty-props";
+  msg.textContent = t("widget.matrixSurfaceNotNumeric");
+  body.appendChild(msg);
 }
 
 function widgetDefaultTitle(widget) {
@@ -1754,7 +1927,7 @@ function renderMatrixWidgetBody(body, widget, nodeMap = buildNodeNameMap()) {
   }
   if (sourceNode.computedError) {
     if (Array.isArray(widget.lastMatrixValue)) {
-      renderMatrixGrid(body, widget, widget.lastMatrixValue);
+      widget.viewMode === "surface" ? renderMatrixSurface(body, widget, widget.lastMatrixValue) : renderMatrixGrid(body, widget, widget.lastMatrixValue);
       return;
     }
     const msg = document.createElement("div");
@@ -1766,7 +1939,7 @@ function renderMatrixWidgetBody(body, widget, nodeMap = buildNodeNameMap()) {
   const matrix = matrixWidgetRenderableMatrix(sourceNode.computedValue);
   if (!Array.isArray(matrix)) {
     if (Array.isArray(widget.lastMatrixValue)) {
-      renderMatrixGrid(body, widget, widget.lastMatrixValue);
+      widget.viewMode === "surface" ? renderMatrixSurface(body, widget, widget.lastMatrixValue) : renderMatrixGrid(body, widget, widget.lastMatrixValue);
       return;
     }
     const msg = document.createElement("div");
@@ -1778,7 +1951,11 @@ function renderMatrixWidgetBody(body, widget, nodeMap = buildNodeNameMap()) {
     return;
   }
   widget.lastMatrixValue = deepClone(matrix);
-  renderMatrixGrid(body, widget, matrix);
+  if (widget.viewMode === "surface") {
+    renderMatrixSurface(body, widget, matrix);
+  } else {
+    renderMatrixGrid(body, widget, matrix);
+  }
 }
 
 function renderTableWidgetBody(body, widget, nodeMap = buildNodeNameMap()) {
@@ -2066,7 +2243,7 @@ function refreshTextWidgetRuntimeBody(root, widget, nodeMap = buildNodeNameMap()
   renderTextWidgetBody(body, widget, nodeMap);
 }
 
-function refreshRuntimeWidgetContents() {
+function refreshRuntimeWidgetContents(excludeWidgetId = null) {
   const roots = [...widgetLayer.querySelectorAll(".value-widget[data-widget-id]")];
   const visibleWidgets = graph.widgets.filter((widget) => typeof isDashboardItemVisible !== "function" || isDashboardItemVisible(widget));
   if (roots.length !== visibleWidgets.length) {
@@ -2076,6 +2253,9 @@ function refreshRuntimeWidgetContents() {
   const rootMap = new Map(roots.map((root) => [Number(root.dataset.widgetId), root]));
   const nodeMap = buildNodeNameMap();
   for (const widget of visibleWidgets) {
+    if (widget.id === excludeWidgetId) {
+      continue;
+    }
     const root = rootMap.get(widget.id);
     if (!root) {
       renderWidgets();
@@ -2109,12 +2289,10 @@ function refreshRuntimeView() {
   updateModelRunButtons();
   updateMenuTimeLabel();
   render({ preserveWidgets: true });
-  if (ui.sliderInteraction == null) {
-    applyWidgetDrivenNodeValues();
-    refreshRuntimeWidgetContents();
-  } else {
-    applyWidgetDrivenNodeValues();
-  }
+  applyWidgetDrivenNodeValues();
+  // Preserve the native control being manipulated, while keeping all output
+  // widgets live during the same timed execution.
+  refreshRuntimeWidgetContents(ui.sliderInteraction?.widgetId ?? null);
   refreshRenderedNodeTooltipElements();
   refreshSidebar();
   refreshActiveTooltip();
@@ -3022,7 +3200,7 @@ function openNodeContextMenu(evt, node) {
       ? [{
         label: t("action.openSubmodel"),
         action: () => {
-          void openSubmodelNode(node);
+          void openSubmodelNodeInNewTab(node);
         },
       }]
       : []),
@@ -3464,13 +3642,57 @@ function refreshWidgetConfigPanel(widget) {
     return title;
   };
 
-  const createCompactField = (labelKey, inputEl) => {
+  const setConfigTooltip = (element, tooltipKey, fallbackKey = tooltipKey) => {
+    if (!element) {
+      return;
+    }
+    setTooltipText(element, t(tooltipKey || fallbackKey));
+  };
+
+  const compactFieldTooltipKeys = {
+    "widget.sliderMin": "tooltip.widget.sliderMin",
+    "widget.sliderStep": "tooltip.widget.sliderStep",
+    "widget.sliderMax": "tooltip.widget.sliderMax",
+    "widget.binaryFalseLabel": "tooltip.widget.binaryFalseLabel",
+    "widget.binaryTrueLabel": "tooltip.widget.binaryTrueLabel",
+    "widget.matrixViewMode": "tooltip.widget.matrixViewMode",
+    "widget.matrixCellSize": "tooltip.widget.matrixCellSize",
+    "widget.matrixColorSchemeLabel": "tooltip.widget.matrixColorScheme",
+    "widget.matrixSurfaceStyle": "tooltip.widget.matrixSurfaceStyle",
+    "widget.matrixSurfaceHeightScale": "tooltip.widget.matrixSurfaceHeightScale",
+    "widget.matrixSurfaceAzimuth": "tooltip.widget.matrixSurfaceAzimuth",
+    "widget.matrixSurfaceElevation": "tooltip.widget.matrixSurfaceElevation",
+    "widget.matrixValueMin": "tooltip.widget.matrixValueMin",
+    "widget.matrixValueMax": "tooltip.widget.matrixValueMax",
+    "widget.matrixDisplayRows": "tooltip.widget.matrixDisplayRows",
+    "widget.matrixDisplayCols": "tooltip.widget.matrixDisplayCols",
+    "widget.tableAlign": "tooltip.widget.tableAlign",
+    "widget.tableDecimals": "tooltip.widget.tableDecimals",
+    "widget.lineStyle": "tooltip.widget.lineStyle",
+    "widget.lineWidthShort": "tooltip.widget.lineWidth",
+    "widget.seriesPoints": "tooltip.widget.seriesPoints",
+    "widget.pointSizeShort": "tooltip.widget.pointSize",
+    "widget.lineColor": "tooltip.widget.lineColor",
+    "widget.pointColor": "tooltip.widget.pointColor",
+    "widget.axisXMin": "tooltip.widget.axisXMin",
+    "widget.axisXMax": "tooltip.widget.axisXMax",
+    "widget.axisYMin": "tooltip.widget.axisYMin",
+    "widget.axisYMax": "tooltip.widget.axisYMax",
+    "widget.legendPosition": "tooltip.widget.legendPosition",
+  };
+
+  const createCompactField = (labelKey, inputEl, tooltipKey = labelKey) => {
     const wrap = document.createElement("label");
     wrap.className = "compact-field";
     const text = document.createElement("span");
     text.textContent = t(labelKey);
     wrap.appendChild(text);
     wrap.appendChild(inputEl);
+    const resolvedTooltipKey = tooltipKey === labelKey
+      ? (compactFieldTooltipKeys[labelKey] || labelKey)
+      : tooltipKey;
+    setConfigTooltip(wrap, resolvedTooltipKey, labelKey);
+    setConfigTooltip(inputEl, resolvedTooltipKey, labelKey);
     return wrap;
   };
 
@@ -3489,6 +3711,7 @@ function refreshWidgetConfigPanel(widget) {
       widget.customTitle = titleInput.value;
     });
   });
+  setConfigTooltip(titleInput, "tooltip.widget.customTitle");
   const fontSizeInput = document.createElement("input");
   fontSizeInput.type = "number";
   fontSizeInput.min = "8";
@@ -3516,6 +3739,7 @@ function refreshWidgetConfigPanel(widget) {
   titleBarText.textContent = t("widget.showTitleBar");
   titleBarLabel.appendChild(titleBarInput);
   titleBarLabel.appendChild(titleBarText);
+  setConfigTooltip(titleBarLabel, "tooltip.widget.showTitleBar");
   titleRow.appendChild(titleLabel);
   titleRow.appendChild(titleBarLabel);
   mainSection.appendChild(titleRow);
@@ -3527,10 +3751,11 @@ function refreshWidgetConfigPanel(widget) {
     fontLabel.textContent = t("widget.fontSize");
     fontRow.appendChild(fontLabel);
     fontRow.appendChild(fontSizeInput);
+    setConfigTooltip(fontRow, "tooltip.widget.fontSize");
     mainSection.appendChild(fontRow);
   }
 
-  const outputNodeNames = graph.nodes.filter((n) => n.output).map((n) => n.name);
+  const outputNodeNames = outputWidgetNodeNames();
   const nodeNames = outputNodeNames;
 
   if (widget.type === "slider") {
@@ -3554,10 +3779,13 @@ function refreshWidgetConfigPanel(widget) {
     });
     sliderSection.appendChild(sourceLabel);
     sliderSection.appendChild(sourceSelect);
+    setConfigTooltip(sourceLabel, "tooltip.widget.inputSource");
+    setConfigTooltip(sourceSelect, "tooltip.widget.inputSource");
 
     const limitsLabel = document.createElement("label");
     limitsLabel.textContent = t("widget.sliderRangeLabel");
     sliderSection.appendChild(limitsLabel);
+    setConfigTooltip(limitsLabel, "tooltip.widget.sliderRange");
 
     const rangeRow = document.createElement("div");
     rangeRow.className = "row3-exec";
@@ -3621,6 +3849,8 @@ function refreshWidgetConfigPanel(widget) {
     });
     buttonSection.appendChild(sourceLabel);
     buttonSection.appendChild(sourceSelect);
+    setConfigTooltip(sourceLabel, "tooltip.widget.inputSource");
+    setConfigTooltip(sourceSelect, "tooltip.widget.inputSource");
 
     const valueLabel = document.createElement("label");
     valueLabel.className = "menu-check compact-bool";
@@ -3641,6 +3871,7 @@ function refreshWidgetConfigPanel(widget) {
     valueText.textContent = t("widget.buttonValueLabel");
     valueLabel.appendChild(valueInput);
     valueLabel.appendChild(valueText);
+    setConfigTooltip(valueLabel, "tooltip.widget.buttonInitialValue");
     buttonSection.appendChild(valueLabel);
 
     const labelsRow = document.createElement("div");
@@ -3695,6 +3926,8 @@ function refreshWidgetConfigPanel(widget) {
     });
     selectSection.appendChild(sourceLabel);
     selectSection.appendChild(sourceSelect);
+    setConfigTooltip(sourceLabel, "tooltip.widget.inputSource");
+    setConfigTooltip(sourceSelect, "tooltip.widget.inputSource");
 
     appendWidgetSectionTitle(selectSection, "widget.selectOptions");
     const list = document.createElement("div");
@@ -3707,6 +3940,7 @@ function refreshWidgetConfigPanel(widget) {
       const labelInput = document.createElement("input");
       labelInput.type = "text";
       labelInput.value = option.label;
+      setConfigTooltip(labelInput, "tooltip.widget.selectOptionLabel");
       labelInput.addEventListener("change", () => {
         runAction(() => {
           widget.options[idx].label = labelInput.value;
@@ -3718,6 +3952,7 @@ function refreshWidgetConfigPanel(widget) {
       valueInput.type = "number";
       valueInput.step = "any";
       valueInput.value = String(option.value);
+      setConfigTooltip(valueInput, "tooltip.widget.selectOptionValue");
       valueInput.addEventListener("change", () => {
         runAction(() => {
           widget.options[idx].value = Number(valueInput.value);
@@ -3728,6 +3963,7 @@ function refreshWidgetConfigPanel(widget) {
       const del = document.createElement("button");
       del.type = "button";
       del.textContent = "×";
+      setConfigTooltip(del, "tooltip.widget.removeOption");
       del.addEventListener("click", () => {
         runAction(() => {
           widget.options.splice(idx, 1);
@@ -3745,6 +3981,7 @@ function refreshWidgetConfigPanel(widget) {
     const add = document.createElement("button");
     add.type = "button";
     add.textContent = t("action.addOption");
+    setConfigTooltip(add, "tooltip.widget.addOption");
     add.addEventListener("click", () => {
       runAction(() => {
         const nextValue = widget.options.reduce((max, option) => Math.max(max, Number(option.value) || 0), -1) + 1;
@@ -3782,6 +4019,8 @@ function refreshWidgetConfigPanel(widget) {
     });
     matrixSection.appendChild(sourceLabel);
     matrixSection.appendChild(sourceSelect);
+    setConfigTooltip(sourceLabel, "tooltip.widget.outputSource");
+    setConfigTooltip(sourceSelect, "tooltip.widget.outputSource");
 
     const valuesLabel = document.createElement("label");
     valuesLabel.className = "menu-check compact-bool";
@@ -3797,7 +4036,10 @@ function refreshWidgetConfigPanel(widget) {
     valuesText.textContent = t("widget.matrixShowValues");
     valuesLabel.appendChild(valuesInput);
     valuesLabel.appendChild(valuesText);
-    matrixSection.appendChild(valuesLabel);
+    setConfigTooltip(valuesLabel, "tooltip.widget.matrixShowValues");
+    if (widget.viewMode === "grid") {
+      matrixSection.appendChild(valuesLabel);
+    }
 
     const indicesLabel = document.createElement("label");
     indicesLabel.className = "menu-check compact-bool";
@@ -3813,7 +4055,10 @@ function refreshWidgetConfigPanel(widget) {
     indicesText.textContent = t("widget.matrixShowIndices");
     indicesLabel.appendChild(indicesInput);
     indicesLabel.appendChild(indicesText);
-    matrixSection.appendChild(indicesLabel);
+    setConfigTooltip(indicesLabel, "tooltip.widget.matrixShowIndices");
+    if (widget.viewMode === "grid") {
+      matrixSection.appendChild(indicesLabel);
+    }
 
     const fitLabel = document.createElement("label");
     fitLabel.className = "menu-check compact-bool";
@@ -3830,12 +4075,31 @@ function refreshWidgetConfigPanel(widget) {
     fitText.textContent = t("widget.matrixAutoFitCells");
     fitLabel.appendChild(fitInput);
     fitLabel.appendChild(fitText);
-    matrixSection.appendChild(fitLabel);
+    setConfigTooltip(fitLabel, "tooltip.widget.matrixAutoFitCells");
+    if (widget.viewMode === "grid") {
+      matrixSection.appendChild(fitLabel);
+    }
 
     const matrixAdvancedSection = createWidgetSection(true);
 
     const matrixOptionsRow = document.createElement("div");
     matrixOptionsRow.className = "row3-exec";
+
+    const viewModeSelect = document.createElement("select");
+    ["grid", "surface"].forEach((mode) => {
+      const opt = document.createElement("option");
+      opt.value = mode;
+      opt.textContent = t(`widget.matrixViewMode.${mode}`);
+      viewModeSelect.appendChild(opt);
+    });
+    viewModeSelect.value = widget.viewMode;
+    viewModeSelect.addEventListener("change", () => {
+      runAction(() => {
+        widget.viewMode = viewModeSelect.value;
+        sanitizeMatrixWidgetOptions(widget);
+        refreshWidgetConfigPanel(widget);
+      });
+    });
 
     const cellSizeInput = document.createElement("input");
     cellSizeInput.type = "number";
@@ -3865,9 +4129,66 @@ function refreshWidgetConfigPanel(widget) {
       });
     });
 
-    matrixOptionsRow.appendChild(createCompactField("widget.matrixCellSize", cellSizeInput));
+    matrixOptionsRow.appendChild(createCompactField("widget.matrixViewMode", viewModeSelect));
+    if (widget.viewMode === "grid") {
+      matrixOptionsRow.appendChild(createCompactField("widget.matrixCellSize", cellSizeInput));
+    }
     matrixOptionsRow.appendChild(createCompactField("widget.matrixColorSchemeLabel", colorSelect));
     matrixAdvancedSection.appendChild(matrixOptionsRow);
+
+    if (widget.viewMode === "surface") {
+      const surfaceOptionsRow = document.createElement("div");
+      surfaceOptionsRow.className = "row2-exec";
+      const surfaceStyleSelect = document.createElement("select");
+      ["solid", "wireframe"].forEach((style) => {
+        const opt = document.createElement("option");
+        opt.value = style;
+        opt.textContent = t(`widget.matrixSurfaceStyle.${style}`);
+        surfaceStyleSelect.appendChild(opt);
+      });
+      surfaceStyleSelect.value = widget.surfaceStyle;
+      surfaceStyleSelect.addEventListener("change", () => {
+        runAction(() => { widget.surfaceStyle = surfaceStyleSelect.value; });
+      });
+      const heightScaleInput = document.createElement("input");
+      heightScaleInput.type = "number";
+      heightScaleInput.min = "0.1";
+      heightScaleInput.max = "10";
+      heightScaleInput.step = "0.1";
+      heightScaleInput.value = String(widget.surfaceHeightScale);
+      heightScaleInput.addEventListener("change", () => {
+        runAction(() => {
+          widget.surfaceHeightScale = Number(heightScaleInput.value);
+          sanitizeMatrixWidgetOptions(widget);
+        });
+        heightScaleInput.value = String(widget.surfaceHeightScale);
+      });
+      surfaceOptionsRow.appendChild(createCompactField("widget.matrixSurfaceStyle", surfaceStyleSelect));
+      surfaceOptionsRow.appendChild(createCompactField("widget.matrixSurfaceHeightScale", heightScaleInput));
+      matrixAdvancedSection.appendChild(surfaceOptionsRow);
+
+      const surfaceViewRow = document.createElement("div");
+      surfaceViewRow.className = "row2-exec";
+      const addAngleInput = (label, property, min, max) => {
+        const input = document.createElement("input");
+        input.type = "number";
+        input.min = String(min);
+        input.max = String(max);
+        input.step = "1";
+        input.value = String(widget[property]);
+        input.addEventListener("change", () => {
+          runAction(() => {
+            widget[property] = Number(input.value);
+            sanitizeMatrixWidgetOptions(widget);
+          });
+          input.value = String(widget[property]);
+        });
+        surfaceViewRow.appendChild(createCompactField(label, input));
+      };
+      addAngleInput("widget.matrixSurfaceAzimuth", "surfaceAzimuth", -180, 180);
+      addAngleInput("widget.matrixSurfaceElevation", "surfaceElevation", 5, 85);
+      matrixAdvancedSection.appendChild(surfaceViewRow);
+    }
 
     const matrixRangeRow = document.createElement("div");
     matrixRangeRow.className = "row2-exec";
@@ -3963,6 +4284,8 @@ function refreshWidgetConfigPanel(widget) {
     });
     ledSection.appendChild(sourceLabel);
     ledSection.appendChild(sourceSelect);
+    setConfigTooltip(sourceLabel, "tooltip.widget.outputSource");
+    setConfigTooltip(sourceSelect, "tooltip.widget.outputSource");
 
     const labelsSection = createWidgetSection(true);
     const labelsRow = document.createElement("div");
@@ -4017,6 +4340,8 @@ function refreshWidgetConfigPanel(widget) {
     });
     textSection.appendChild(sourceLabel);
     textSection.appendChild(sourceSelect);
+    setConfigTooltip(sourceLabel, "tooltip.widget.outputSource");
+    setConfigTooltip(sourceSelect, "tooltip.widget.outputSource");
 
     const mappingsSection = createWidgetSection(true);
     appendWidgetSectionTitle(mappingsSection, "widget.textMappings");
@@ -4031,6 +4356,7 @@ function refreshWidgetConfigPanel(widget) {
       valueInput.type = "number";
       valueInput.step = "any";
       valueInput.value = String(mapping.value);
+      setConfigTooltip(valueInput, "tooltip.widget.mappingValue");
       valueInput.addEventListener("change", () => {
         runAction(() => {
           widget.mappings[idx].value = Number(valueInput.value);
@@ -4041,6 +4367,7 @@ function refreshWidgetConfigPanel(widget) {
       const labelInput = document.createElement("input");
       labelInput.type = "text";
       labelInput.value = mapping.label;
+      setConfigTooltip(labelInput, "tooltip.widget.mappingText");
       labelInput.addEventListener("change", () => {
         runAction(() => {
           widget.mappings[idx].label = labelInput.value;
@@ -4051,6 +4378,7 @@ function refreshWidgetConfigPanel(widget) {
       const del = document.createElement("button");
       del.type = "button";
       del.textContent = "×";
+      setConfigTooltip(del, "tooltip.widget.removeMapping");
       del.addEventListener("click", () => {
         runAction(() => {
           widget.mappings.splice(idx, 1);
@@ -4068,6 +4396,7 @@ function refreshWidgetConfigPanel(widget) {
     const add = document.createElement("button");
     add.type = "button";
     add.textContent = t("action.addMapping");
+    setConfigTooltip(add, "tooltip.widget.addMapping");
     add.addEventListener("click", () => {
       runAction(() => {
         widget.mappings.push({ value: 0, label: "" });
@@ -4098,6 +4427,7 @@ function refreshWidgetConfigPanel(widget) {
         sel.appendChild(opt);
       });
       sel.value = tableChoices.includes(colName) ? colName : "time";
+      setConfigTooltip(sel, "tooltip.widget.tableColumn");
       sel.addEventListener("change", () => {
         runAction(() => {
           widget.columns[idx] = sel.value;
@@ -4106,6 +4436,7 @@ function refreshWidgetConfigPanel(widget) {
       const del = document.createElement("button");
       del.type = "button";
       del.textContent = "-";
+      setConfigTooltip(del, "tooltip.widget.removeColumn");
       del.addEventListener("click", () => {
         runAction(() => {
           if (widget.columns.length > 0) {
@@ -4116,7 +4447,7 @@ function refreshWidgetConfigPanel(widget) {
       const upBtn = document.createElement("button");
       upBtn.type = "button";
       upBtn.textContent = "↑";
-      setTooltipText(upBtn, t("widget.moveUp"));
+      setConfigTooltip(upBtn, "tooltip.widget.moveUp");
       upBtn.disabled = idx === 0;
       upBtn.addEventListener("click", () => {
         runAction(() => {
@@ -4131,7 +4462,7 @@ function refreshWidgetConfigPanel(widget) {
       const downBtn = document.createElement("button");
       downBtn.type = "button";
       downBtn.textContent = "↓";
-      setTooltipText(downBtn, t("widget.moveDown"));
+      setConfigTooltip(downBtn, "tooltip.widget.moveDown");
       downBtn.disabled = idx >= widget.columns.length - 1;
       downBtn.addEventListener("click", () => {
         runAction(() => {
@@ -4153,6 +4484,7 @@ function refreshWidgetConfigPanel(widget) {
     add.type = "button";
     add.className = "small-btn";
     add.textContent = t("widget.addColumn");
+    setConfigTooltip(add, "tooltip.widget.addColumn");
     add.addEventListener("click", () => {
       runAction(() => {
         widget.columns.push("time");
@@ -4183,6 +4515,7 @@ function refreshWidgetConfigPanel(widget) {
     modeText.textContent = t("widget.showHistory");
     modeLabel.appendChild(modeInput);
     modeLabel.appendChild(modeText);
+    setConfigTooltip(modeLabel, "tooltip.widget.showHistory");
     const expandLabel = document.createElement("label");
     expandLabel.className = "menu-check compact-bool";
     const expandInput = document.createElement("input");
@@ -4201,6 +4534,7 @@ function refreshWidgetConfigPanel(widget) {
     expandText.textContent = t("widget.expandNonScalarValues");
     expandLabel.appendChild(expandInput);
     expandLabel.appendChild(expandText);
+    setConfigTooltip(expandLabel, "tooltip.widget.expandNonScalarValues");
     const tableModeSection = createWidgetSection(true);
     tableModeSection.appendChild(modeLabel);
     tableModeSection.appendChild(expandLabel);
@@ -4275,6 +4609,7 @@ function refreshWidgetConfigPanel(widget) {
       selectBtn.classList.add("active");
     }
     selectBtn.textContent = `${pair.xSource} -> ${pair.ySource}`;
+    setConfigTooltip(selectBtn, "tooltip.widget.selectPair");
     selectBtn.addEventListener("click", () => {
       ui.activeChartPairByWidgetId.set(widget.id, idx);
       refreshWidgetConfigPanel(widget);
@@ -4284,7 +4619,7 @@ function refreshWidgetConfigPanel(widget) {
     del.type = "button";
     del.textContent = "-";
     del.className = "chart-pair-delete-btn";
-    setTooltipText(del, t("widget.removePair"));
+    setConfigTooltip(del, "tooltip.widget.removePair");
     del.addEventListener("click", () => {
       runAction(() => {
         if (widget.xyPairs.length > 0) {
@@ -4309,6 +4644,7 @@ function refreshWidgetConfigPanel(widget) {
   addBtn.type = "button";
   addBtn.className = "small-btn";
   addBtn.textContent = t("widget.addPair");
+  setConfigTooltip(addBtn, "tooltip.widget.addPair");
   addBtn.addEventListener("click", () => {
     runAction(() => {
       const defaultY = nodeNames[0] || "time";
@@ -4348,7 +4684,7 @@ function refreshWidgetConfigPanel(widget) {
       xSel.appendChild(opt);
     });
     xSel.value = choices.includes(pair.xSource) ? pair.xSource : "time";
-    setTooltipText(xSel, t("widget.xSourceLabel"));
+    setConfigTooltip(xSel, "tooltip.widget.xSource");
     xSel.addEventListener("change", () => {
       runAction(() => {
         widget.xyPairs[activePairIndex].xSource = xSel.value;
@@ -4366,7 +4702,7 @@ function refreshWidgetConfigPanel(widget) {
       ySel.appendChild(opt);
     });
     ySel.value = choices.includes(pair.ySource) ? pair.ySource : "time";
-    setTooltipText(ySel, t("widget.ySeriesLabel"));
+    setConfigTooltip(ySel, "tooltip.widget.ySource");
     ySel.addEventListener("change", () => {
       runAction(() => {
         widget.xyPairs[activePairIndex].ySource = ySel.value;
@@ -4385,7 +4721,7 @@ function refreshWidgetConfigPanel(widget) {
 
     const timeSeriesLabel = document.createElement("label");
     timeSeriesLabel.className = "menu-check compact-bool";
-    setTooltipText(timeSeriesLabel, t("widget.showTimeSeries"));
+    setConfigTooltip(timeSeriesLabel, "tooltip.widget.showTimeSeries");
     const timeSeriesInput = document.createElement("input");
     timeSeriesInput.type = "checkbox";
     timeSeriesInput.checked = pair.showTimeSeries !== false;
@@ -4403,7 +4739,7 @@ function refreshWidgetConfigPanel(widget) {
 
     const instantProfileLabel = document.createElement("label");
     instantProfileLabel.className = "menu-check compact-bool";
-    setTooltipText(instantProfileLabel, t("widget.showInstantProfile"));
+    setConfigTooltip(instantProfileLabel, "tooltip.widget.showInstantProfile");
     const instantProfileInput = document.createElement("input");
     instantProfileInput.type = "checkbox";
     instantProfileInput.checked = pair.showInstantProfile === true;
@@ -4632,6 +4968,7 @@ function refreshWidgetConfigPanel(widget) {
   gridSpan.textContent = t("widget.showGrid");
   gridLabel.appendChild(gridInput);
   gridLabel.appendChild(gridSpan);
+  setConfigTooltip(gridLabel, "tooltip.widget.showGrid");
   chartAxisSection.appendChild(gridLabel);
 
   const legendPositionSelect = document.createElement("select");

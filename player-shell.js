@@ -269,6 +269,11 @@
       autoFitCells: widget?.autoFitCells !== false,
       cellSize: Number.isFinite(Number(widget?.cellSize)) ? clamp(Number(widget.cellSize), 2, 96) : 28,
       colorScheme: String(widget?.colorScheme || "blue"),
+      viewMode: ["grid", "surface"].includes(String(widget?.viewMode ?? "")) ? String(widget.viewMode) : "grid",
+      surfaceStyle: ["solid", "wireframe"].includes(String(widget?.surfaceStyle ?? "")) ? String(widget.surfaceStyle) : "solid",
+      surfaceAzimuth: Number.isFinite(Number(widget?.surfaceAzimuth)) ? clamp(Number(widget.surfaceAzimuth), -180, 180) : 45,
+      surfaceElevation: Number.isFinite(Number(widget?.surfaceElevation)) ? clamp(Number(widget.surfaceElevation), 5, 85) : 32,
+      surfaceHeightScale: Number.isFinite(Number(widget?.surfaceHeightScale)) ? clamp(Number(widget.surfaceHeightScale), 0.1, 10) : 1,
       valueMin: Number.isFinite(Number(widget?.valueMin)) ? Number(widget.valueMin) : null,
       valueMax: Number.isFinite(Number(widget?.valueMax)) ? Number(widget.valueMax) : null,
       displayRows: parseNullablePositiveInt(widget?.displayRows),
@@ -401,6 +406,31 @@
       return matrixPaletteColor(scheme, 0.55);
     }
     return matrixPaletteColor(scheme, (value - minValue) / (maxValue - minValue));
+  }
+
+  function matrixValueRange(matrix, rows, cols, widget) {
+    let min = Number.POSITIVE_INFINITY;
+    let max = Number.NEGATIVE_INFINITY;
+    for (let rowIdx = 0; rowIdx < rows; rowIdx += 1) {
+      for (let colIdx = 0; colIdx < cols; colIdx += 1) {
+        const value = matrix[rowIdx]?.[colIdx];
+        if (Number.isFinite(value)) {
+          min = Math.min(min, value);
+          max = Math.max(max, value);
+        }
+      }
+    }
+    if (!Number.isFinite(min) || !Number.isFinite(max)) {
+      min = 0;
+      max = 0;
+    }
+    const hasMin = Number.isFinite(widget.valueMin);
+    const hasMax = Number.isFinite(widget.valueMax);
+    return {
+      min: hasMin ? widget.valueMin : min,
+      max: hasMax ? widget.valueMax : max,
+      fixed: hasMin || hasMax,
+    };
   }
 
   function widgetTitle(widget, t) {
@@ -607,38 +637,23 @@
       ? clamp(fitSize || widget.cellSize || 28, 2, 96)
       : clamp(Number(widget.cellSize) || 28, 2, 96);
     const compactHeatmap = widget.showNumericValues === false && showIndices === false;
+    const valueRange = matrixValueRange(matrix, displayRows, displayCols, widget);
     if (compactHeatmap) {
       canvas.width = Math.max(1, displayCols);
       canvas.height = Math.max(1, displayRows);
       canvas.style.width = `${Math.max(1, displayCols) * cellSize}px`;
       canvas.style.height = `${Math.max(1, displayRows) * cellSize}px`;
 
-      let minValue = Number.POSITIVE_INFINITY;
-      let maxValue = Number.NEGATIVE_INFINITY;
-      for (let rowIdx = 0; rowIdx < displayRows; rowIdx += 1) {
-        for (let colIdx = 0; colIdx < displayCols; colIdx += 1) {
-          const value = matrix[rowIdx]?.[colIdx];
-          if (Number.isFinite(value)) {
-            minValue = Math.min(minValue, value);
-            maxValue = Math.max(maxValue, value);
-          }
-        }
-      }
-      if (!Number.isFinite(minValue) || !Number.isFinite(maxValue)) {
-        minValue = 0;
-        maxValue = 0;
-      }
-      const fixedRange = Number.isFinite(widget.valueMin) && Number.isFinite(widget.valueMax);
       ctx.clearRect(0, 0, canvas.width, canvas.height);
       for (let rowIdx = 0; rowIdx < displayRows; rowIdx += 1) {
         for (let colIdx = 0; colIdx < displayCols; colIdx += 1) {
           const value = matrix[rowIdx]?.[colIdx];
           const bg = matrixCellBackgroundColor(
             value,
-            fixedRange ? widget.valueMin : minValue,
-            fixedRange ? widget.valueMax : maxValue,
+            valueRange.min,
+            valueRange.max,
             widget.colorScheme,
-            fixedRange,
+            valueRange.fixed,
           );
           ctx.fillStyle = bg || "#ffffff";
           ctx.fillRect(colIdx, rowIdx, 1, 1);
@@ -653,22 +668,6 @@
     canvas.style.width = `${width}px`;
     canvas.style.height = `${height}px`;
 
-    let minValue = Number.POSITIVE_INFINITY;
-    let maxValue = Number.NEGATIVE_INFINITY;
-    for (let rowIdx = 0; rowIdx < displayRows; rowIdx += 1) {
-      for (let colIdx = 0; colIdx < displayCols; colIdx += 1) {
-        const value = matrix[rowIdx]?.[colIdx];
-        if (Number.isFinite(value)) {
-          minValue = Math.min(minValue, value);
-          maxValue = Math.max(maxValue, value);
-        }
-      }
-    }
-    if (!Number.isFinite(minValue) || !Number.isFinite(maxValue)) {
-      minValue = 0;
-      maxValue = 0;
-    }
-
     ctx.clearRect(0, 0, width, height);
     ctx.fillStyle = "#ffffff";
     ctx.fillRect(0, 0, width, height);
@@ -681,13 +680,12 @@
         const x = (colIdx + headerOffset) * cellSize;
         const y = (rowIdx + headerOffset) * cellSize;
         const value = matrix[rowIdx]?.[colIdx];
-        const fixedRange = Number.isFinite(widget.valueMin) && Number.isFinite(widget.valueMax);
         const bg = matrixCellBackgroundColor(
           value,
-          fixedRange ? widget.valueMin : minValue,
-          fixedRange ? widget.valueMax : maxValue,
+          valueRange.min,
+          valueRange.max,
           widget.colorScheme,
-          fixedRange,
+          valueRange.fixed,
         );
         ctx.fillStyle = bg || "#ffffff";
         ctx.fillRect(x, y, cellSize, cellSize);
@@ -725,6 +723,64 @@
       ctx.strokeStyle = "#d9e3ee";
       ctx.strokeRect(0.5, 0.5, Math.max(0, cellSize - 1), Math.max(0, cellSize - 1));
     }
+  }
+
+  function drawMatrixSurfaceWidgetCanvas(canvas, widget, matrix, zoom) {
+    const ctx = canvas.getContext("2d");
+    const rows = Math.min(matrix.length, widget.displayRows ?? matrix.length);
+    const cols = Math.min(matrix[0]?.length ?? 0, widget.displayCols ?? (matrix[0]?.length ?? 0));
+    if (!ctx || rows < 2 || cols < 2) return false;
+    const valueRange = matrixValueRange(matrix, rows, cols, widget);
+    const { min, max } = valueRange;
+    const width = Math.max(80, Math.floor(widget.width * zoom - 24));
+    const height = Math.max(80, Math.floor(widget.height * zoom - 54));
+    canvas.width = width;
+    canvas.height = height;
+    canvas.style.width = `${width}px`;
+    canvas.style.height = `${height}px`;
+    const azimuth = (widget.surfaceAzimuth * Math.PI) / 180;
+    const elevation = (widget.surfaceElevation * Math.PI) / 180;
+    const cosA = Math.cos(azimuth), sinA = Math.sin(azimuth), cosE = Math.cos(elevation), sinE = Math.sin(elevation);
+    const sample = (length) => {
+      const step = Math.max(1, Math.ceil((length - 1) / 71));
+      const result = [];
+      for (let index = 0; index < length; index += step) result.push(index);
+      if (result[result.length - 1] !== length - 1) result.push(length - 1);
+      return result;
+    };
+    const sampledRows = sample(rows), sampledCols = sample(cols), span = max - min || 1;
+    let minX = Infinity, maxX = -Infinity, minY = Infinity, maxY = -Infinity;
+    const points = sampledRows.map((row) => sampledCols.map((col) => {
+      const rawValue = Number(matrix[row]?.[col]);
+      const value = Number.isFinite(rawValue) ? rawValue : min;
+      const normalized = (value - min) / span;
+      const x = (col / (cols - 1)) - 0.5, y = (row / (rows - 1)) - 0.5;
+      const z = (normalized - 0.5) * widget.surfaceHeightScale;
+      const rx = x * cosA - y * sinA, ry = x * sinA + y * cosA, py = ry * sinE - z * cosE;
+      minX = Math.min(minX, rx); maxX = Math.max(maxX, rx); minY = Math.min(minY, py); maxY = Math.max(maxY, py);
+      return { x: rx, y: py, depth: ry * cosE + z * sinE, value };
+    }));
+    const scale = Math.min((width - 24) / Math.max(0.01, maxX - minX), (height - 24) / Math.max(0.01, maxY - minY));
+    const project = (point) => ({ x: width / 2 + point.x * scale, y: height / 2 + point.y * scale });
+    const cells = [];
+    for (let row = 0; row < points.length - 1; row += 1) for (let col = 0; col < points[row].length - 1; col += 1) {
+      const corners = [points[row][col], points[row][col + 1], points[row + 1][col + 1], points[row + 1][col]];
+      cells.push({ corners, depth: corners.reduce((total, point) => total + point.depth, 0) / 4 });
+    }
+    ctx.fillStyle = "#ffffff"; ctx.fillRect(0, 0, width, height);
+    cells.sort((a, b) => a.depth - b.depth).forEach(({ corners }) => {
+      const path = corners.map(project), average = corners.reduce((total, point) => total + point.value, 0) / corners.length;
+      ctx.beginPath(); ctx.moveTo(path[0].x, path[0].y); path.slice(1).forEach((point) => ctx.lineTo(point.x, point.y)); ctx.closePath();
+      if (widget.surfaceStyle === "solid") {
+        ctx.fillStyle = matrixCellBackgroundColor(average, min, max, widget.colorScheme, valueRange.fixed) || "#8ca7c1";
+        ctx.fill(); ctx.strokeStyle = "rgba(255,255,255,.22)"; ctx.lineWidth = 0.65;
+      } else {
+        ctx.strokeStyle = matrixCellBackgroundColor(average, min, max, widget.colorScheme, valueRange.fixed) || "#426983";
+        ctx.lineWidth = 1;
+      }
+      ctx.stroke();
+    });
+    return true;
   }
 
   class STGraphXPlayer extends HTMLElement {
@@ -766,6 +822,7 @@
         timedRunStartedAt: 0,
         timedStepLastActivityAt: 0,
       };
+      this._activeInputWidgetId = null;
       this.ready = Promise.resolve();
       this.syncViewOptionsFromAttributes();
     }
@@ -1597,7 +1654,12 @@
           const nextTime = runtimeModel.execution.currentTime + cfg.dt;
           return !isTimeWithinBounds(nextTime, cfg.t0, cfg.dt, cfg.t1);
         },
-        refreshRuntimeView: () => this.renderAll(),
+        refreshRuntimeView: ({ force = false } = {}) => {
+          if (!force && this._activeInputWidgetId != null) {
+            return;
+          }
+          this.renderAll();
+        },
         render: () => this.renderAll(),
         updateEditingLockUi: () => this.updateControlState(),
         setStatusKey: (key, vars) => this.setStatus(this.t(key, vars)),
@@ -2110,6 +2172,11 @@
     }
 
     queuePreviewRefresh(phase = "input") {
+      if (this._timedState.timedRunHandle != null) {
+        // The next timed step reads inputValues. A preview would overwrite the
+        // active runtime state and can interrupt a native range drag.
+        return;
+      }
       void this.refreshPreview()
         .then(() => this.renderAll())
         .catch((err) => {
@@ -2455,7 +2522,14 @@
         canvas.style.background = "#ffffff";
         canvas.style.border = "1px solid #e1e9f1";
         canvas.style.boxSizing = "border-box";
-        drawMatrixWidgetCanvas(canvas, widget, matrix, execution, this._zoom);
+        if (widget.viewMode === "surface") {
+          if (!drawMatrixSurfaceWidgetCanvas(canvas, widget, matrix, this._zoom)) {
+            body.innerHTML = `<div class="empty">${this.t("widget.matrixSurfaceNotNumeric")}</div>`;
+            return;
+          }
+        } else {
+          drawMatrixWidgetCanvas(canvas, widget, matrix, execution, this._zoom);
+        }
         body.appendChild(canvas);
         return;
       }
@@ -2610,8 +2684,31 @@
           commit(nextValue);
           this.queuePreviewRefresh("input");
         };
-        range.disabled = this._timedState.timedStepRunning || this._timedState.timedRunHandle != null;
-        number.disabled = range.disabled;
+        range.disabled = false;
+        number.disabled = false;
+        range.addEventListener("pointerdown", () => {
+          this._activeInputWidgetId = widget.id;
+        });
+        range.addEventListener("pointerup", () => {
+          this._activeInputWidgetId = null;
+          this.renderAll();
+        });
+        range.addEventListener("pointercancel", () => {
+          this._activeInputWidgetId = null;
+          this.renderAll();
+        });
+        number.addEventListener("pointerdown", () => {
+          this._activeInputWidgetId = widget.id;
+        });
+        number.addEventListener("focus", () => {
+          this._activeInputWidgetId = widget.id;
+        });
+        number.addEventListener("blur", () => {
+          if (this._activeInputWidgetId === widget.id) {
+            this._activeInputWidgetId = null;
+            this.renderAll();
+          }
+        });
         range.addEventListener("input", () => commit(range.value));
         range.addEventListener("change", () => commitAndRefresh(range.value));
         number.addEventListener("change", () => commitAndRefresh(number.value));
@@ -2633,11 +2730,14 @@
         button.type = "button";
         button.className = `button-widget-toggle${current ? " is-on" : " is-off"}`;
         button.textContent = widgetBinaryStateLabel(widget, current, this.t.bind(this));
-        button.disabled = this._timedState.timedStepRunning || this._timedState.timedRunHandle != null;
+        button.disabled = false;
         button.addEventListener("click", () => {
           const next = current ? 0 : 1;
           this._state.inputValues.set(widget.source, next);
           widget.value = next === 1;
+          button.classList.toggle("is-on", next === 1);
+          button.classList.toggle("is-off", next !== 1);
+          button.textContent = widgetBinaryStateLabel(widget, next === 1, this.t.bind(this));
           this.queuePreviewRefresh("input");
         });
         wrap.appendChild(button);
@@ -2657,12 +2757,25 @@
           select.appendChild(opt);
         });
         select.value = String(current);
-        select.disabled = this._timedState.timedStepRunning || this._timedState.timedRunHandle != null;
+        select.disabled = false;
+        select.addEventListener("pointerdown", () => {
+          this._activeInputWidgetId = widget.id;
+        });
         select.addEventListener("change", () => {
           const next = Number(select.value);
           this._state.inputValues.set(widget.source, next);
           widget.value = next;
+          this._activeInputWidgetId = null;
           this.queuePreviewRefresh("input");
+          if (this._timedState.timedRunHandle != null) {
+            this.renderAll();
+          }
+        });
+        select.addEventListener("blur", () => {
+          if (this._activeInputWidgetId === widget.id) {
+            this._activeInputWidgetId = null;
+            this.renderAll();
+          }
         });
         wrap.appendChild(select);
         body.appendChild(wrap);

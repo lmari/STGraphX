@@ -70,6 +70,7 @@
       timedState.timedStepRunning = false;
       timedState.timedRunStartedAt = 0;
       timedState.timedStepLastActivityAt = 0;
+      timedState.timedRenderStepCount = 0;
     }
 
     function stopTimedExecution(updateStatus = true, reason = "stopped") {
@@ -98,6 +99,24 @@
         return timeValue >= cfg.t1 - epsilon;
       }
       return timeValue <= cfg.t1 + epsilon;
+    }
+
+    function visualRefreshInterval(execution) {
+      const value = Number(execution?.renderEverySteps);
+      return Number.isFinite(value) && value >= 1 ? Math.round(value) : 1;
+    }
+
+    function refreshAfterStep(execution, force = false) {
+      if (force || timedState.timedRunHandle == null) {
+        refreshRuntimeView?.({ force });
+        return true;
+      }
+      timedState.timedRenderStepCount = (Number(timedState.timedRenderStepCount) || 0) + 1;
+      if (timedState.timedRenderStepCount % visualRefreshInterval(execution) !== 0) {
+        return false;
+      }
+      refreshRuntimeView?.({ force: false });
+      return true;
     }
 
     async function ensureExecutionReady() {
@@ -157,9 +176,9 @@
       const stepResult = session.evaluateAtTime(nextTime, evaluationEnv());
       execution.currentTime = nextTime;
       const breakpointResult = evaluateBreakpointConditionAtTime?.(nextTime) || { hit: false, invalid: false };
-      refreshRuntimeView?.();
 
       if (breakpointResult.invalid) {
+        refreshAfterStep(execution, true);
         setStatus?.(
           t("error.breakpointInvalid", {
             reason: breakpointResult.message || t("error.evalReason.runtime"),
@@ -171,6 +190,7 @@
       }
 
       if (breakpointResult.hit) {
+        refreshAfterStep(execution, true);
         setStatusKey?.("status.breakpointHit", {
           time: formatNumberValue?.(Number(nextTime)),
         });
@@ -197,6 +217,7 @@
           time: formatNumberValue?.(Number(nextTime)),
         });
       }
+      refreshAfterStep(execution, stepResult.errorCount > 0 || completed);
       return { ok: true, breakpointHit: false, completed };
     }
 
@@ -341,6 +362,8 @@
       clearSimulationHistory?.();
       session.clearSubmodelState();
       session.initializeAt(cfg.t0);
+      // Reset also restores the t0 preview, including outputs fed by submodels.
+      session.evaluateAtTime(cfg.t0, evaluationEnv());
       refreshRuntimeView?.();
       setStatusKey?.("status.executionReset", { time: formatNumberValue?.(Number(cfg.t0)) });
     }
@@ -375,6 +398,7 @@
       timedState.timedStepRunning = false;
       timedState.timedRunStartedAt = nowFn();
       timedState.timedStepLastActivityAt = timedState.timedRunStartedAt;
+      timedState.timedRenderStepCount = 0;
       updateEditingLockUi?.();
 
       timedState.timedRunHandle = setIntervalFn(async () => {

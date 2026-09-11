@@ -1,0 +1,470 @@
+{
+  "version": 1,
+  "modelTitle": "controller pid",
+  "localFunctions": [],
+  "view": {
+    "zoom": 1,
+    "showGrid": true,
+    "highlightNodeEdges": false,
+    "showNodeValues": false,
+    "gridSize": 20,
+    "tooltipDelayMs": 300,
+    "scrollLeft": 0,
+    "scrollTop": 40
+  },
+  "debug": {
+    "watches": [],
+    "breakpointEnabled": false,
+    "breakpointExpression": ""
+  },
+  "modelProperties": [],
+  "nodeCounter": 13,
+  "edgeCounter": 15,
+  "widgetCounter": 6,
+  "textItemCounter": 5,
+  "presentationGroupCounter": 3,
+  "presentationGroups": [],
+  "dashboard": null,
+  "execution": {
+    "t0": 0,
+    "dt": 0.1,
+    "t1": 100,
+    "delayMs": 10,
+    "renderEverySteps": 1,
+    "decimals": 3,
+    "integrator": "euler",
+    "strictDefinitions": false
+  },
+  "nodes": [
+    {
+      "id": 1,
+      "name": "controller",
+      "output": false,
+      "global": false,
+      "type": "algebraic",
+      "x": 210,
+      "y": 121,
+      "width": 75,
+      "height": 45,
+      "fillColor": "#ffffff",
+      "strokeColor": "#000000",
+      "properties": [
+        {
+          "key": "note formula",
+          "value": ""
+        },
+        {
+          "key": "descrizione",
+          "value": ""
+        }
+      ],
+      "input": false,
+      "valueExpression": "k[0]*err+k[1]*interr+k[2]*dererr"
+    },
+    {
+      "id": 2,
+      "name": "dererr",
+      "output": false,
+      "global": false,
+      "type": "state",
+      "x": 200,
+      "y": 290,
+      "width": 75,
+      "height": 45,
+      "fillColor": "#ffffff",
+      "strokeColor": "#000000",
+      "properties": [
+        {
+          "key": "descrizione",
+          "value": ""
+        },
+        {
+          "key": "note formula",
+          "value": "Espressione legacy di output dello stato: (err-this)/timeD"
+        }
+      ],
+      "stateTransition": "err",
+      "initialState": "0"
+    },
+    {
+      "id": 3,
+      "name": "effSis",
+      "output": false,
+      "global": false,
+      "type": "parameter",
+      "x": 650,
+      "y": 60,
+      "width": 75,
+      "height": 45,
+      "fillColor": "#ffffff",
+      "strokeColor": "#000000",
+      "properties": [
+        {
+          "key": "note formula",
+          "value": ""
+        },
+        {
+          "key": "descrizione",
+          "value": ""
+        }
+      ],
+      "valueExpression": "50"
+    },
+    {
+      "id": 4,
+      "name": "err",
+      "output": false,
+      "global": false,
+      "type": "algebraic",
+      "x": 410,
+      "y": 230,
+      "width": 75,
+      "height": 45,
+      "fillColor": "#ffffff",
+      "strokeColor": "#000000",
+      "properties": [
+        {
+          "key": "note formula",
+          "value": ""
+        },
+        {
+          "key": "descrizione",
+          "value": ""
+        }
+      ],
+      "input": false,
+      "valueExpression": "setpoint-tempSis"
+    },
+    {
+      "id": 5,
+      "name": "interr",
+      "output": false,
+      "global": false,
+      "type": "state",
+      "x": 250,
+      "y": 210,
+      "width": 75,
+      "height": 45,
+      "fillColor": "#ffffff",
+      "strokeColor": "#000000",
+      "properties": [
+        {
+          "key": "note formula",
+          "value": ""
+        },
+        {
+          "key": "descrizione",
+          "value": ""
+        }
+      ],
+      "stateTransition": "this+err*dt",
+      "initialState": "0"
+    },
+    {
+      "id": 6,
+      "name": "k",
+      "output": false,
+      "global": false,
+      "type": "parameter",
+      "x": 210,
+      "y": 50,
+      "width": 75,
+      "height": 45,
+      "fillColor": "#00ff00",
+      "strokeColor": "#000000",
+      "properties": [
+        {
+          "key": "note formula",
+          "value": ""
+        },
+        {
+          "key": "descrizione",
+          "value": "Guadagno del controller;\nvettore delle componenti dei coefficienti dei componenti:\n- proporzionale (P)\n- integrale (I)\n- derivativo (D)"
+        }
+      ],
+      "valueExpression": "[0.5,0.1,0.1]"
+    },
+    {
+      "id": 7,
+      "name": "setpoint",
+      "output": true,
+      "global": false,
+      "type": "algebraic",
+      "x": 410,
+      "y": 300,
+      "width": 75,
+      "height": 45,
+      "fillColor": "#00ff00",
+      "strokeColor": "#000000",
+      "properties": [
+        {
+          "key": "note formula",
+          "value": ""
+        },
+        {
+          "key": "descrizione",
+          "value": ""
+        }
+      ],
+      "input": true,
+      "valueExpression": "16.0"
+    },
+    {
+      "id": 8,
+      "name": "tempAmb",
+      "output": false,
+      "global": false,
+      "type": "parameter",
+      "x": 510,
+      "y": 60,
+      "width": 75,
+      "height": 45,
+      "fillColor": "#ffffff",
+      "strokeColor": "#000000",
+      "properties": [
+        {
+          "key": "note formula",
+          "value": ""
+        },
+        {
+          "key": "descrizione",
+          "value": "Temperatura dell'ambiente esterno"
+        }
+      ],
+      "valueExpression": "30"
+    },
+    {
+      "id": 9,
+      "name": "tempSis",
+      "output": true,
+      "global": false,
+      "type": "state",
+      "x": 590,
+      "y": 120,
+      "width": 75,
+      "height": 45,
+      "fillColor": "#ffffff",
+      "strokeColor": "#000000",
+      "properties": [
+        {
+          "key": "note formula",
+          "value": ""
+        },
+        {
+          "key": "descrizione",
+          "value": ""
+        }
+      ],
+      "stateTransition": "integral((tempAmb-this)/effSis+controller)",
+      "initialState": "0"
+    }
+  ],
+  "edges": [
+    {
+      "id": 1,
+      "from": 4,
+      "to": 2,
+      "controlPoints": []
+    },
+    {
+      "id": 2,
+      "from": 9,
+      "to": 4,
+      "controlPoints": []
+    },
+    {
+      "id": 3,
+      "from": 7,
+      "to": 4,
+      "controlPoints": []
+    },
+    {
+      "id": 4,
+      "from": 4,
+      "to": 1,
+      "controlPoints": []
+    },
+    {
+      "id": 5,
+      "from": 4,
+      "to": 5,
+      "controlPoints": []
+    },
+    {
+      "id": 6,
+      "from": 5,
+      "to": 1,
+      "controlPoints": []
+    },
+    {
+      "id": 7,
+      "from": 6,
+      "to": 1,
+      "controlPoints": []
+    },
+    {
+      "id": 8,
+      "from": 1,
+      "to": 9,
+      "controlPoints": []
+    },
+    {
+      "id": 9,
+      "from": 2,
+      "to": 1,
+      "controlPoints": []
+    },
+    {
+      "id": 10,
+      "from": 3,
+      "to": 9,
+      "controlPoints": []
+    },
+    {
+      "id": 11,
+      "from": 8,
+      "to": 9,
+      "controlPoints": []
+    }
+  ],
+  "textItems": [
+    {
+      "id": 1,
+      "x": 80,
+      "y": -40,
+      "width": 131,
+      "height": 35,
+      "fillColor": "",
+      "strokeColor": "",
+      "dashboardPageId": null,
+      "html": "<html>   <head>    </head>   <body>     <p style=\"margin-top: 0\">       <font size=\"5\">Controller PID</font>     </p>   </body> </html> "
+    }
+  ],
+  "widgets": [
+    {
+      "id": 2,
+      "type": "slider",
+      "customTitle": "",
+      "x": 160,
+      "y": 360,
+      "width": 260,
+      "height": 96,
+      "dashboardPageId": null,
+      "minimized": false,
+      "showTitleBar": true,
+      "fontSize": 13,
+      "outputOnly": false,
+      "showHistory": false,
+      "expandNonScalarValues": false,
+      "tableTextAlign": "left",
+      "tableDecimalDigits": 0,
+      "xMin": "auto",
+      "xMax": "auto",
+      "yMin": "auto",
+      "yMax": "auto",
+      "showGrid": true,
+      "legendPosition": "top-right",
+      "source": "setpoint",
+      "showNumericValues": true,
+      "showIndices": true,
+      "autoFitCells": true,
+      "cellSize": 28,
+      "valueMin": "auto",
+      "valueMax": "auto",
+      "displayRows": null,
+      "displayCols": null,
+      "colorScheme": "blue",
+      "viewMode": "grid",
+      "surfaceStyle": "solid",
+      "surfaceAzimuth": 45,
+      "surfaceElevation": 32,
+      "surfaceHeightScale": 1,
+      "min": 0,
+      "max": 40,
+      "step": 1,
+      "value": 5,
+      "falseLabel": "",
+      "trueLabel": "",
+      "options": [],
+      "mappings": [],
+      "columns": [],
+      "xyPairs": []
+    },
+    {
+      "id": 3,
+      "type": "xychart",
+      "customTitle": "",
+      "x": 520,
+      "y": 200,
+      "width": 520,
+      "height": 280,
+      "dashboardPageId": null,
+      "minimized": false,
+      "showTitleBar": true,
+      "fontSize": 13,
+      "outputOnly": false,
+      "showHistory": false,
+      "expandNonScalarValues": false,
+      "tableTextAlign": "left",
+      "tableDecimalDigits": 0,
+      "xMin": "auto",
+      "xMax": "auto",
+      "yMin": "auto",
+      "yMax": "auto",
+      "showGrid": true,
+      "legendPosition": "none",
+      "source": "",
+      "showNumericValues": true,
+      "showIndices": true,
+      "autoFitCells": true,
+      "cellSize": 28,
+      "valueMin": "auto",
+      "valueMax": "auto",
+      "displayRows": null,
+      "displayCols": null,
+      "colorScheme": "blue",
+      "viewMode": "grid",
+      "surfaceStyle": "solid",
+      "surfaceAzimuth": 45,
+      "surfaceElevation": 32,
+      "surfaceHeightScale": 1,
+      "min": 0,
+      "max": 100,
+      "step": 1,
+      "value": 0,
+      "falseLabel": "",
+      "trueLabel": "",
+      "options": [],
+      "mappings": [],
+      "columns": [],
+      "xyPairs": [
+        {
+          "xSource": "time",
+          "ySource": "setpoint",
+          "showTimeSeries": true,
+          "showInstantProfile": false,
+          "color": "#0e7ac4",
+          "pointColor": "#0e7ac4",
+          "showLine": true,
+          "lineWidth": 2.2,
+          "lineStyle": "solid",
+          "pointMode": "none",
+          "pointSize": 2.4
+        },
+        {
+          "xSource": "time",
+          "ySource": "tempSis",
+          "showTimeSeries": true,
+          "showInstantProfile": false,
+          "color": "#e67e22",
+          "pointColor": "#e67e22",
+          "showLine": true,
+          "lineWidth": 2.2,
+          "lineStyle": "solid",
+          "pointMode": "none",
+          "pointSize": 2.4
+        }
+      ]
+    }
+  ]
+}
