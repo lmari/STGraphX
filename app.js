@@ -218,6 +218,7 @@ const functionsHelpCloseBtn = document.getElementById("functionsHelpCloseBtn");
 const functionsHelpDismissBtn = document.getElementById("functionsHelpDismissBtn");
 const functionsHelpContent = document.getElementById("functionsHelpContent");
 const functionsHelpSearch = document.getElementById("functionsHelpSearch");
+const functionsHelpTypeFilter = document.getElementById("functionsHelpTypeFilter");
 const eightTupleModal = document.getElementById("eightTupleModal");
 const eightTupleCloseBtn = document.getElementById("eightTupleCloseBtn");
 const eightTupleDismissBtn = document.getElementById("eightTupleDismissBtn");
@@ -2986,8 +2987,13 @@ function renderFunctionsHelp() {
   }
   functionsHelpContent.innerHTML = "";
   const filter = String(functionsHelpSearch?.value || "").trim().toLocaleLowerCase();
+  const typeFilter = String(functionsHelpTypeFilter?.value || "").trim();
   const groups = new Map();
-  globalHelpEntries().filter((entry) => !filter || entry.name.toLocaleLowerCase().includes(filter)).forEach((entry) => {
+  globalHelpEntries().filter((entry) => {
+    const kind = entry.helpSection || entry.kind || "function";
+    return (!filter || entry.name.toLocaleLowerCase().includes(filter))
+      && (!typeFilter || kind === typeFilter);
+  }).forEach((entry) => {
     const key = entry.helpSection || entry.kind || "function";
     if (!groups.has(key)) {
       groups.set(key, []);
@@ -3036,7 +3042,7 @@ function renderFunctionsHelp() {
         examples.appendChild(label);
         examplesText.split(/\s*;\s*/).filter(Boolean).forEach((example) => {
           const code = document.createElement("code");
-          code.textContent = example;
+          code.textContent = expressionHelpExampleCode(example);
           examples.appendChild(code);
         });
         item.appendChild(examples);
@@ -4363,6 +4369,14 @@ function appendExpressionHelpInlineText(container, text) {
   appendAutomaticFormatting(source.slice(cursor));
 }
 
+function expressionHelpExampleCode(example) {
+  const text = String(example ?? "").trim();
+  const terminatedCode = text.match(/^`([\s\S]*)`\.$/);
+  if (terminatedCode) return terminatedCode[1];
+  const code = text.match(/^`([\s\S]*)`$/);
+  return code ? code[1] : text.replace(/\.$/, "");
+}
+
 function normalizedExpressionHelpDescription(entry) {
   const name = String(entry?.name ?? "");
   const escapedName = name.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
@@ -4414,7 +4428,7 @@ function setExpressionHelp(entry = null) {
     examples.append(label);
     examplesText.split(/\s*;\s*/).filter(Boolean).forEach((example) => {
       const code = document.createElement("code");
-      code.textContent = example;
+      code.textContent = expressionHelpExampleCode(example);
       examples.append(code);
     });
     expressionHelp.append(examples);
@@ -14239,6 +14253,9 @@ if (functionsHelpDismissBtn) {
 }
 if (functionsHelpSearch) {
   functionsHelpSearch.addEventListener("input", renderFunctionsHelp);
+}
+if (functionsHelpTypeFilter) {
+  functionsHelpTypeFilter.addEventListener("change", renderFunctionsHelp);
 }
 if (examplesHelpCloseBtn) {
   examplesHelpCloseBtn.addEventListener("click", closeExamplesHelp);

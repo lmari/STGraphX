@@ -2591,6 +2591,12 @@ button:disabled {
   padding: 10px;
 }
 
+.functions-help-filters {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(180px, 0.42fr);
+  column-gap: 10px;
+}
+
 .functions-help-search-label {
   display: block;
   margin: 10px 0 4px;
@@ -2600,6 +2606,12 @@ button:disabled {
 }
 
 .functions-help-search {
+  width: 100%;
+  min-height: 34px;
+  margin: 0 0 8px;
+}
+
+.functions-help-type-filter {
   width: 100%;
   min-height: 34px;
   margin: 0 0 8px;
@@ -3200,6 +3212,10 @@ button:disabled {
 }
 
 @media (max-width: 980px) {
+  .functions-help-filters {
+    grid-template-columns: 1fr;
+  }
+
   .expression-editor-card {
     width: min(920px, calc(100vw - 24px));
     height: min(86vh, 860px);

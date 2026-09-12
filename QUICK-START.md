@@ -1,6 +1,6 @@
 # STGraphX: Quick start
 
-versione 31 agosto 2026
+versione 12 settembre 2026
 
 Copyright (c) 2026 Luca Mari
 
@@ -31,6 +31,7 @@ Leggi `QUICK-START-USERS.md` se ti interessa:
 - `README-ARCHITECTURE.md`
 - `README-PLAYER.md`
 - `README-USAGE.md`
+- `README-CONVERSION.md`
 
 ## Licenza
 

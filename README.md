@@ -1,6 +1,6 @@
 # STGraphX: Readme
 
-versione 11 settembre 2026
+versione 12 settembre 2026
 
 Copyright (c) 2026 Luca Mari
 
@@ -8,7 +8,7 @@ Copyright (c) 2026 Luca Mari
 
 STGraphX è un editor ed esecutore di modelli dinamici a grafo orientato.
 
-È una reimplementazione di STGraph, da Java a JavaScript, realizzata interamente in _vibe coding_ con GPT-Codex-5.x (ho guardato ma mai toccato il codice generato, che al momento è di circa 1k linee HTML, 3k linee CSS, 30k linee JS).
+È una reimplementazione di STGraph, da Java a JavaScript, realizzata interamente in _vibe coding_ con GPT-Codex-5.x (ho guardato ma mai toccato il codice generato, che al momento è di circa 1k linee HTML, 5k linee CSS, 40k linee JS).
 
 Si può provare <a href="https://lmari.github.io/STGraphX" target="_blank" rel="noopener noreferrer">direttamente da questo repo GitHub</a>.
 
@@ -16,11 +16,11 @@ Il file QUICK-START.md contiene informazioni sull'installazione, l'uso, e lo svi
 
 ## Download dell'applicazione
 
-Per scaricare la versione desktop di STGraphX (versione attuale: 2026.09.09):
+Per scaricare la versione desktop di STGraphX (versione attuale: 2026.09.12):
 
-- Linux: <a href="https://github.com/lmari/STGraphX/releases/download/v26.09.09/STGraphX.AppImage" target="_blank" rel="noopener noreferrer">AppImage</a>, <a href="https://github.com/lmari/STGraphX/releases/download/v26.09.09/STGraphX.tar.gz" target="_blank" rel="noopener noreferrer">tar.gz</a>
+- Linux: <a href="https://github.com/lmari/STGraphX/releases/latest/download/STGraphX.AppImage" target="_blank" rel="noopener noreferrer">AppImage</a>, <a href="https://github.com/lmari/STGraphX/releases/latest/download/STGraphX.tar.gz" target="_blank" rel="noopener noreferrer">tar.gz</a>
 
-- Windows: <a href="https://github.com/lmari/STGraphX/releases/download/v26.09.09/STGraphX-setup.exe" target="_blank" rel="noopener noreferrer">exe di installazione</a>, <a href="https://github.com/lmari/STGraphX/releases/download/v26.09.09/STGraphX-portable.exe" target="_blank" rel="noopener noreferrer">exe portabile</a>
+- Windows: <a href="https://github.com/lmari/STGraphX/releases/latest/download/STGraphX-setup.exe" target="_blank" rel="noopener noreferrer">exe di installazione</a>, <a href="https://github.com/lmari/STGraphX/releases/latest/download/STGraphX-portable.exe" target="_blank" rel="noopener noreferrer">exe portabile</a>
 
 - macOS: ...
 
@@ -50,6 +50,8 @@ Ha un'interfaccia utente responsive, che lo rende utilizzabile anche su tablet.
 * Interfaccia responsive a tab per più modelli, con gestione contestuale della relazione tra modelli e sottomodelli
 * Gestione dei testi dell'interfaccia utente in italiano e inglese, con scelta via query string nella shell web (`?lang=it|en`) e via parametro `--lang=it|en` nella shell Electron
 * Menu di help
+* Script per generare il manuale di riferimento delle funzioni
+* Script per convertire i file dei modelli dal formato stg di STGraph
 * Una pagina di esempi configurabile via file JSON
 * Licenza MPL-2.0
 

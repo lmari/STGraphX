@@ -1,6 +1,6 @@
 # STGraphX: Quick start per sviluppatori
 
-versione 11 settembre 2026
+versione 12 settembre 2026
 
 Copyright (c) 2026 Luca Mari
 
@@ -396,7 +396,114 @@ Esegui:
 node my-script.js
 ```
 
-## 5. Flussi Rapidi
+## 5. Help delle funzioni e riferimenti rapidi
+
+I testi mostrati sia in **Help > Funzioni disponibili** sia nell'elenco
+dell'editor delle espressioni sono mantenuti insieme al catalogo tecnico delle
+funzioni.
+
+### 5.1 File da modificare
+
+I due livelli dell'help sono separati:
+
+- `graph-functions.js` contiene il catalogo tecnico: nome, firma, categoria,
+  chiave del testo, testo da inserire nell'editor e posizione iniziale del
+  cursore;
+- `i18n-inline.js` contiene i testi visibili, nei dizionari `it` e `en`, con
+  chiavi del tipo `expr.help.nomeFunzione`.
+
+Per correggere una spiegazione esistente basta normalmente modificare
+`i18n-inline.js`. Per aggiungere una funzione o una variabile occorre
+aggiornare implementazione, catalogo, testi italiani e inglesi, e test.
+
+### 5.2 Catalogo tecnico
+
+Le voci sono definite nell'oggetto `expressionDocs` di `graph-functions.js`.
+Una funzione ha normalmente questa forma:
+
+```js
+myFunction: {
+  kind: "function",
+  signature: "myFunction(value[, option])",
+  descriptionKey: "expr.help.myFunction",
+  insertText: "myFunction()",
+  cursorOffset: 11,
+},
+```
+
+`signature` è visualizzata separatamente dal testo descrittivo: deve essere
+completa, concisa e usare i nomi effettivi degli argomenti del linguaggio. Le
+categorie disponibili sono `variable`, `function`, `array`, `probability`,
+`math` e `agent`; per una categoria di visualizzazione diversa si può usare
+anche `helpSection`.
+
+### 5.3 Testi localizzati e formattazione
+
+La chiave indicata da `descriptionKey` deve comparire nei dizionari italiano e
+inglese di `i18n-inline.js`:
+
+```js
+"expr.help.myFunction": "Trasforma value secondo option. Esempio: myFunction(2)",
+```
+
+Convenzioni:
+
+- iniziare con una frase che spieghi il risultato, senza ripetere la firma;
+- usare per gli argomenti gli stessi nomi inglesi presenti nella firma;
+- indicare i valori predefiniti degli argomenti opzionali quando rilevanti;
+- mantenere una frase breve, poi eventuali dettagli e infine gli esempi;
+- aggiornare italiano e inglese nella stessa modifica.
+
+Non usare HTML: l'help viene inserito come testo. Il backtick forza il
+monospace su qualsiasi frammento e non viene visualizzato:
+
+```js
+"expr.help.myFunction": "Restituisce `value` se `condition` è vera.",
+```
+
+Per visualizzare esempi in un blocco separato, terminare la descrizione con
+`Esempio:` o `Esempi:` in italiano e con `Example:` o `Examples:` in inglese.
+Separare più esempi con punto e virgola, senza usare il punto e virgola
+all'interno di un singolo esempio:
+
+```js
+"expr.help.myFunction": "Trasforma il valore. Esempi: myFunction(2); myFunction([1, 2])",
+```
+
+### 5.4 Generazione dei riferimenti rapidi
+
+Lo script `scripts/generate-functions-reference.js` legge il catalogo e i
+testi localizzati e genera un manuale Markdown organizzato per categoria,
+comprensivo di firme, descrizioni ed esempi.
+
+```bash
+# Italiano: docs/RIFERIMENTO-RAPIDO-FUNZIONI.md
+npm run docs:functions
+
+# Inglese: docs/QUICK-FUNCTION-REFERENCE.md
+npm run docs:functions -- --lang=en
+
+# Percorso di output esplicito
+npm run docs:functions -- --lang=en --output docs/reference.md
+```
+
+Rigenerare il manuale italiano ogni volta che si modifica l'help delle
+funzioni. I file sono derivati: non vanno aggiornati manualmente.
+
+### 5.5 Controlli
+
+Dopo modifiche a implementazione, catalogo o testi, eseguire:
+
+```bash
+npm run check
+npm run docs:functions
+```
+
+Poi verificare nell'app almeno firma, descrizione, esempi, filtro per tipo,
+ricerca, gruppo, inserimento nell'editor e coerenza con il comportamento della
+funzione.
+
+## 6. Flussi Rapidi
 
 ### Editor Electron
 
@@ -431,7 +538,7 @@ npm run start:web
 node tests/headless-demo.js
 ```
 
-## 6. Versione e data di rilascio
+## 7. Versione e data di rilascio
 
 STGraphX mantiene separati la versione tecnica del pacchetto e la data di
 rilascio mostrata nell'applicazione.

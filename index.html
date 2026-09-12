@@ -497,8 +497,20 @@
           <button id="functionsHelpCloseBtn" class="icon-btn modal-close-btn" type="button" data-i18n-aria-label="aria.close">×</button>
         </div>
         <div id="functionsHelpIntro" class="help-intro" data-i18n="help.intro"></div>
-        <label class="functions-help-search-label" for="functionsHelpSearch" data-i18n="help.search"></label>
-        <input id="functionsHelpSearch" class="functions-help-search" type="search" autocomplete="off" data-i18n-placeholder="help.searchPlaceholder" />
+        <div class="functions-help-filters">
+          <label class="functions-help-search-label" for="functionsHelpSearch" data-i18n="help.search"></label>
+          <label class="functions-help-search-label" for="functionsHelpTypeFilter" data-i18n="help.typeFilter"></label>
+          <input id="functionsHelpSearch" class="functions-help-search" type="search" autocomplete="off" data-i18n-placeholder="help.searchPlaceholder" />
+          <select id="functionsHelpTypeFilter" class="functions-help-type-filter">
+            <option value="" data-i18n="help.type.all"></option>
+            <option value="variable" data-i18n="help.group.variables"></option>
+            <option value="function" data-i18n="help.group.functions"></option>
+            <option value="array" data-i18n="help.group.array"></option>
+            <option value="probability" data-i18n="help.group.probability"></option>
+            <option value="math" data-i18n="help.group.math"></option>
+            <option value="agent" data-i18n="help.group.agent"></option>
+          </select>
+        </div>
         <div id="functionsHelpContent" class="functions-help-content"></div>
         <div class="modal-actions">
           <button id="functionsHelpDismissBtn" type="button" data-i18n="action.close"></button>
