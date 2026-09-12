@@ -1455,6 +1455,11 @@ function t(key, vars = null) {
   return vars ? fillTemplate(value, vars) : value;
 }
 
+function applicationWindowTitle() {
+  const releaseDate = String(window.STGraphXAppMeta?.releaseDate ?? "").trim();
+  return releaseDate ? `STGraphX ${releaseDate}` : "STGraphX";
+}
+
 function setTooltipText(el, text) {
   if (!el) {
     return;
@@ -4329,20 +4334,33 @@ function renderExpressionHighlight() {
 function appendExpressionHelpInlineText(container, text) {
   const formulaPattern = /(\$[A-Za-z0-9_]+|\b(?:axis|mode)\s*=\s*[-A-Za-z0-9_.]+|\b[A-Za-z_][A-Za-z0-9_]*\([^()\n]*\)|\[[^\]\n]*\])/g;
   const source = String(text ?? "");
-  let lastIndex = 0;
-  source.replace(formulaPattern, (match, _unused, offset) => {
-    if (offset > lastIndex) {
-      container.append(document.createTextNode(source.slice(lastIndex, offset)));
+  const appendAutomaticFormatting = (fragment) => {
+    let lastIndex = 0;
+    fragment.replace(formulaPattern, (match, _unused, offset) => {
+      if (offset > lastIndex) {
+        container.append(document.createTextNode(fragment.slice(lastIndex, offset)));
+      }
+      const code = document.createElement("code");
+      code.textContent = match;
+      container.append(code);
+      lastIndex = offset + match.length;
+      return match;
+    });
+    if (lastIndex < fragment.length) {
+      container.append(document.createTextNode(fragment.slice(lastIndex)));
     }
+  };
+
+  let cursor = 0;
+  const explicitFormulaPattern = /`([^`\r\n]+)`/g;
+  for (const match of source.matchAll(explicitFormulaPattern)) {
+    appendAutomaticFormatting(source.slice(cursor, match.index));
     const code = document.createElement("code");
-    code.textContent = match;
+    code.textContent = match[1];
     container.append(code);
-    lastIndex = offset + match.length;
-    return match;
-  });
-  if (lastIndex < source.length) {
-    container.append(document.createTextNode(source.slice(lastIndex)));
+    cursor = match.index + match[0].length;
   }
+  appendAutomaticFormatting(source.slice(cursor));
 }
 
 function normalizedExpressionHelpDescription(entry) {
@@ -5311,7 +5329,7 @@ function applyI18nToDom() {
     }
     const text = t(key);
     if (el.tagName === "TITLE") {
-      document.title = text;
+      document.title = applicationWindowTitle();
     } else {
       el.textContent = text;
     }

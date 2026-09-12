@@ -61,13 +61,22 @@ Convenzioni consigliate:
 - mantenere una frase breve, poi eventuali dettagli e infine gli esempi;
 - aggiornare sempre italiano e inglese nella stessa modifica.
 
-Non usare HTML o Markdown: l'help viene inserito come testo e non interpreta
-marcatori di formattazione.
+Non usare HTML: l'help viene inserito come testo e non interpreta marcatori
+HTML. L'unica sintassi Markdown supportata e' il backtick per il monospace.
 
 ## Formule ed esempi
 
 La UI mette automaticamente in monospace le espressioni riconoscibili nella
 descrizione, ad esempio `range(1, 6)`, `[1, 2]`, `$0`, `axis=0` e `mode=1`.
+
+Per forzare il monospace su qualunque frammento, racchiuderlo tra backtick:
+
+```js
+"expr.help.myFunction": "Restituisce `value` se `condition` e' vera.",
+```
+
+I backtick non sono visualizzati e il loro contenuto non viene ulteriormente
+interpretato. Non sono supportati altri marcatori Markdown.
 
 Per visualizzare esempi in un blocco separato, terminare la descrizione con
 `Esempio:` oppure `Esempi:` in italiano, e con `Example:` oppure `Examples:`

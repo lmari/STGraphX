@@ -3336,11 +3336,15 @@ body.tablet-sidebar-layout .expression-sidebar {
   min-height: 0;
 }
 
+body.tablet-sidebar-layout .expression-editor-highlight,
+body.tablet-sidebar-layout .expression-editor-textarea {
+  font-size: 16px;
+}
+
 body.tablet-sidebar-layout .expression-editor-textarea {
   min-height: min(32vh, 300px);
   height: min(32vh, 300px);
   max-height: min(38vh, 340px);
-  font-size: 16px;
 }
 
 body.tablet-sidebar-layout .expression-state-initial-input {

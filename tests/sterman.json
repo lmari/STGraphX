@@ -1,0 +1,271 @@
+{
+  "version": 1,
+  "modelTitle": "",
+  "localFunctions": [],
+  "view": {
+    "zoom": 1,
+    "showGrid": true,
+    "highlightNodeEdges": false,
+    "showNodeValues": false,
+    "gridSize": 20,
+    "tooltipDelayMs": 300,
+    "scrollLeft": 180,
+    "scrollTop": 120
+  },
+  "debug": {
+    "watches": [],
+    "breakpointEnabled": false,
+    "breakpointExpression": ""
+  },
+  "modelProperties": [],
+  "nodeCounter": 5,
+  "edgeCounter": 4,
+  "widgetCounter": 4,
+  "textItemCounter": 2,
+  "presentationGroupCounter": 2,
+  "presentationGroups": [],
+  "dashboard": null,
+  "execution": {
+    "t0": 0,
+    "dt": 0.1,
+    "t1": 16,
+    "delayMs": 10,
+    "renderEverySteps": 1,
+    "decimals": 3,
+    "integrator": "rk4",
+    "strictDefinitions": false
+  },
+  "nodes": [
+    {
+      "id": 1,
+      "name": "inflow",
+      "output": true,
+      "global": false,
+      "type": "algebraic",
+      "x": 200,
+      "y": -20,
+      "width": 120,
+      "height": 70,
+      "fillColor": "",
+      "strokeColor": "",
+      "properties": [
+        {
+          "key": "note formula",
+          "value": ""
+        },
+        {
+          "key": "descrizione",
+          "value": ""
+        }
+      ],
+      "input": false,
+      "valueExpression": "piecewise([0,4,8,12,16],[100,0,100,0,100],time)"
+    },
+    {
+      "id": 2,
+      "name": "outflow",
+      "output": true,
+      "global": false,
+      "type": "algebraic",
+      "x": 200,
+      "y": 60,
+      "width": 120,
+      "height": 70,
+      "fillColor": "",
+      "strokeColor": "",
+      "properties": [
+        {
+          "key": "note formula",
+          "value": ""
+        },
+        {
+          "key": "descrizione",
+          "value": ""
+        }
+      ],
+      "input": false,
+      "valueExpression": "50"
+    },
+    {
+      "id": 3,
+      "name": "q",
+      "output": true,
+      "global": false,
+      "type": "state",
+      "x": 380,
+      "y": 20,
+      "width": 120,
+      "height": 70,
+      "fillColor": "",
+      "strokeColor": "",
+      "properties": [
+        {
+          "key": "note formula",
+          "value": ""
+        },
+        {
+          "key": "descrizione",
+          "value": ""
+        }
+      ],
+      "stateTransition": "integral(inflow-outflow)",
+      "initialState": "100"
+    }
+  ],
+  "edges": [
+    {
+      "id": 1,
+      "from": 1,
+      "to": 3,
+      "controlPoints": []
+    },
+    {
+      "id": 2,
+      "from": 2,
+      "to": 3,
+      "controlPoints": []
+    }
+  ],
+  "textItems": [],
+  "widgets": [
+    {
+      "id": 1,
+      "type": "xychart",
+      "customTitle": "",
+      "x": 460,
+      "y": -120,
+      "width": 440,
+      "height": 240,
+      "dashboardPageId": null,
+      "minimized": false,
+      "showTitleBar": true,
+      "fontSize": 13,
+      "outputOnly": false,
+      "showHistory": false,
+      "expandNonScalarValues": false,
+      "tableTextAlign": "left",
+      "tableDecimalDigits": 0,
+      "xMin": 0,
+      "xMax": 16,
+      "yMin": 0,
+      "yMax": 150,
+      "showGrid": true,
+      "legendPosition": "top-right",
+      "source": "",
+      "showNumericValues": true,
+      "showIndices": true,
+      "autoFitCells": true,
+      "cellSize": 28,
+      "valueMin": "auto",
+      "valueMax": "auto",
+      "displayRows": null,
+      "displayCols": null,
+      "colorScheme": "blue",
+      "viewMode": "grid",
+      "surfaceStyle": "solid",
+      "surfaceAzimuth": 45,
+      "surfaceElevation": 32,
+      "surfaceHeightScale": 1,
+      "min": 0,
+      "max": 100,
+      "step": 1,
+      "value": 0,
+      "falseLabel": "",
+      "trueLabel": "",
+      "options": [],
+      "mappings": [],
+      "columns": [],
+      "xyPairs": [
+        {
+          "xSource": "time",
+          "ySource": "inflow",
+          "showTimeSeries": true,
+          "showInstantProfile": false,
+          "color": "#0e7ac4",
+          "pointColor": "#0e7ac4",
+          "showLine": true,
+          "lineWidth": 2.2,
+          "lineStyle": "solid",
+          "pointMode": "none",
+          "pointSize": 2.4
+        },
+        {
+          "xSource": "time",
+          "ySource": "outflow",
+          "showTimeSeries": true,
+          "showInstantProfile": false,
+          "color": "#e67e22",
+          "pointColor": "#e67e22",
+          "showLine": true,
+          "lineWidth": 2.2,
+          "lineStyle": "solid",
+          "pointMode": "none",
+          "pointSize": 2.4
+        }
+      ]
+    },
+    {
+      "id": 2,
+      "type": "xychart",
+      "customTitle": "",
+      "x": 460,
+      "y": 120,
+      "width": 440,
+      "height": 240,
+      "dashboardPageId": null,
+      "minimized": false,
+      "showTitleBar": true,
+      "fontSize": 13,
+      "outputOnly": false,
+      "showHistory": false,
+      "expandNonScalarValues": false,
+      "tableTextAlign": "left",
+      "tableDecimalDigits": 0,
+      "xMin": 0,
+      "xMax": 16,
+      "yMin": 0,
+      "yMax": 150,
+      "showGrid": true,
+      "legendPosition": "top-right",
+      "source": "",
+      "showNumericValues": true,
+      "showIndices": true,
+      "autoFitCells": true,
+      "cellSize": 28,
+      "valueMin": "auto",
+      "valueMax": "auto",
+      "displayRows": null,
+      "displayCols": null,
+      "colorScheme": "blue",
+      "viewMode": "grid",
+      "surfaceStyle": "solid",
+      "surfaceAzimuth": 45,
+      "surfaceElevation": 32,
+      "surfaceHeightScale": 1,
+      "min": 0,
+      "max": 100,
+      "step": 1,
+      "value": 0,
+      "falseLabel": "",
+      "trueLabel": "",
+      "options": [],
+      "mappings": [],
+      "columns": [],
+      "xyPairs": [
+        {
+          "xSource": "time",
+          "ySource": "q",
+          "showTimeSeries": true,
+          "showInstantProfile": false,
+          "color": "#20acac",
+          "pointColor": "#0e7ac4",
+          "showLine": true,
+          "lineWidth": 2.2,
+          "lineStyle": "solid",
+          "pointMode": "none",
+          "pointSize": 2.4
+        }
+      ]
+    }
+  ]
+}
