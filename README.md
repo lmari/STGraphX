@@ -22,7 +22,7 @@ Per scaricare la versione desktop di STGraphX (versione attuale: 2026.09.12):
 
 - Windows: <a href="https://github.com/lmari/STGraphX/releases/latest/download/STGraphX-setup.exe" target="_blank" rel="noopener noreferrer">exe di installazione</a>, <a href="https://github.com/lmari/STGraphX/releases/latest/download/STGraphX-portable.exe" target="_blank" rel="noopener noreferrer">exe portabile</a>
 
-- macOS: ...
+- macOS: <a href="https://github.com/lmari/STGraphX/releases/latest/download/STGraphX.dmg" target="_blank" rel="noopener noreferrer">dmg</a>, <a href="https://github.com/lmari/STGraphX/releases/latest/download/STGraphX.zip" target="_blank" rel="noopener noreferrer">zip</a>
 
 ## Stato del progetto
 
@@ -50,8 +50,8 @@ Ha un'interfaccia utente responsive, che lo rende utilizzabile anche su tablet.
 * Interfaccia responsive a tab per più modelli, con gestione contestuale della relazione tra modelli e sottomodelli
 * Gestione dei testi dell'interfaccia utente in italiano e inglese, con scelta via query string nella shell web (`?lang=it|en`) e via parametro `--lang=it|en` nella shell Electron
 * Menu di help
-* Script per generare il manuale di riferimento delle funzioni
-* Script per convertire i file dei modelli dal formato stg di STGraph
+* Script per generare il manuale di riferimento delle funzioni (**)
+* Script per convertire i file dei modelli dal formato stg di STGraph (**)
 * Una pagina di esempi configurabile via file JSON
 * Licenza MPL-2.0
 
