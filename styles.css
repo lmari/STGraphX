@@ -265,7 +265,7 @@ body {
   top: calc(100% + 4px);
   left: 0;
   display: none;
-  min-width: 220px;
+  min-width: 268px;
   padding: 8px;
   border: 1px solid var(--line);
   border-radius: 8px;
@@ -290,6 +290,37 @@ body {
   background: transparent;
   color: var(--text);
   padding: 8px 10px;
+  white-space: nowrap;
+}
+
+.menu-command-label {
+  display: inline-flex;
+  align-items: center;
+  min-width: 0;
+  gap: 8px;
+  white-space: nowrap;
+}
+
+.menu-item-icon {
+  display: inline-grid;
+  width: 18px;
+  place-items: center;
+  color: #4b718c;
+  font-size: 1rem;
+  line-height: 1;
+}
+
+.menu-section-title {
+  margin: 8px 10px 3px;
+  color: #6b7b8b;
+  font-size: 0.68rem;
+  font-weight: 650;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.menu-section-title:first-child {
+  margin-top: 2px;
 }
 
 .menu-submenu {
@@ -308,6 +339,7 @@ body {
   background: transparent;
   color: var(--text);
   padding: 8px 10px;
+  white-space: nowrap;
 }
 
 .menu-command:hover:not(:disabled),
@@ -337,6 +369,7 @@ body {
 }
 
 .menu-shortcut {
+  margin-left: auto;
   color: #6b7b8b;
   font-size: 0.78rem;
 }
@@ -369,6 +402,26 @@ body {
 .menu-check span {
   white-space: nowrap;
   justify-self: start;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .menu-panel {
+    padding: 6px;
+  }
+
+  .menu-command,
+  .menu-submenu-toggle,
+  .menu-check {
+    padding: 6px 9px;
+  }
+
+  .menu-section-title {
+    margin: 6px 9px 2px;
+  }
+
+  .menu-sep {
+    margin: 4px 2px;
+  }
 }
 
 .menu-field {
@@ -431,6 +484,9 @@ body {
   height: 800px;
   background: transparent;
   touch-action: none;
+  -webkit-user-select: none;
+  user-select: none;
+  -webkit-user-drag: none;
   display: block;
   position: relative;
   z-index: 0;
@@ -1076,6 +1132,7 @@ h4 {
 #globalPanel h4 {
   margin: 0;
   font-size: 0.84rem;
+  font-weight: 500;
 }
 
 #globalPanel label {
@@ -1878,6 +1935,70 @@ button:disabled {
   width: min(360px, calc(100vw - 40px));
   display: grid;
   gap: 12px;
+}
+
+.view-options-card {
+  width: min(460px, calc(100vw - 40px));
+  gap: 8px;
+}
+
+.view-options-section {
+  display: grid;
+  gap: 5px;
+  padding: 8px 10px;
+  border: 1px solid #d7e3ec;
+  border-radius: 9px;
+  background: linear-gradient(180deg, #fbfdff 0%, #f4f8fb 100%);
+}
+
+.view-options-section h4 {
+  margin: 0;
+  color: #3f5b72;
+  font-size: 0.78rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+}
+
+.view-options-checks {
+  display: grid;
+  grid-template-columns: repeat(2, max-content);
+  gap: 2px 16px;
+  justify-content: start;
+}
+
+.option-check {
+  display: flex;
+  align-items: center;
+  min-height: 27px;
+  gap: 5px;
+  color: #31485b;
+  font-size: 0.86rem;
+  justify-self: start;
+  white-space: nowrap;
+}
+
+.option-check input {
+  margin: 0;
+}
+
+.view-options-fields {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(135px, 0.7fr);
+  align-items: center;
+  gap: 6px 10px;
+}
+
+.view-options-fields label {
+  color: #526575;
+  font-size: 0.84rem;
+  justify-self: end;
+}
+
+.view-options-fields input,
+.view-options-fields select {
+  min-width: 0;
+  min-height: 30px;
+  padding: 3px 6px;
 }
 
 .watch-debugger-card {
@@ -4349,9 +4470,14 @@ body.tablet-sidebar-layout .menu-run-btn {
   }
 
   .presentation-groups-create,
-  .presentation-group-item {
+  .presentation-group-item,
+  .view-options-fields {
     grid-template-columns: 1fr;
     align-items: stretch;
+  }
+
+  .view-options-fields label {
+    justify-self: start;
   }
 
   .expression-editor-card,
@@ -4409,6 +4535,12 @@ body.tablet-sidebar-layout .menu-run-btn {
   .value-widget th,
   .value-widget td {
     padding: 6px 8px;
+  }
+}
+
+@media (max-width: 480px) {
+  .view-options-checks {
+    grid-template-columns: 1fr;
   }
 }
 

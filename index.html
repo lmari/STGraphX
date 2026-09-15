@@ -59,21 +59,23 @@
         <div class="menu-root">
           <button class="menu-title" type="button" data-menu="insertMenu" data-i18n="menu.insert" data-title-i18n="tooltip.menu.insert"></button>
           <div class="menu-panel" id="insertMenu">
-            <button id="addRectNodeItem" class="menu-command" type="button" data-title-i18n="tooltip.menu.insert.rect"><span data-i18n="menu.insert.rect"></span><span class="menu-shortcut">Alt+1</span></button>
-            <button id="addEllipseNodeItem" class="menu-command" type="button" data-title-i18n="tooltip.menu.insert.ellipse"><span data-i18n="menu.insert.ellipse"></span><span class="menu-shortcut">Alt+2</span></button>
-            <button id="addDiamondNodeItem" class="menu-command" type="button" data-title-i18n="tooltip.menu.insert.diamond"><span data-i18n="menu.insert.diamond"></span><span class="menu-shortcut">Alt+3</span></button>
-            <button id="addSubmodelNodeItem" class="menu-command" type="button" data-title-i18n="tooltip.menu.insert.submodel"><span data-i18n="menu.insert.submodel"></span><span class="menu-shortcut">Alt+4</span></button>
-            <button id="addTextItem" class="menu-command" type="button" data-title-i18n="tooltip.menu.insert.text"><span data-i18n="menu.insert.text"></span></button>
-            <hr class="menu-sep" />
-            <button id="addButtonWidgetItem" class="menu-command" type="button" data-i18n="menu.insert.buttonWidget" data-title-i18n="tooltip.menu.insert.button"></button>
-            <button id="addSelectWidgetItem" class="menu-command" type="button" data-i18n="menu.insert.selectWidget" data-title-i18n="tooltip.menu.insert.select"></button>
-            <button id="addSliderWidgetItem" class="menu-command" type="button" data-i18n="menu.insert.sliderWidget" data-title-i18n="tooltip.menu.insert.slider"></button>
-            <hr class="menu-sep" />
-            <button id="addLedWidgetItem" class="menu-command" type="button" data-i18n="menu.insert.ledWidget" data-title-i18n="tooltip.menu.insert.led"></button>
-            <button id="addTextWidgetItem" class="menu-command" type="button" data-i18n="menu.insert.textWidget" data-title-i18n="tooltip.menu.insert.textWidget"></button>
-            <button id="addMatrixWidgetItem" class="menu-command" type="button" data-i18n="menu.insert.matrixWidget" data-title-i18n="tooltip.menu.insert.matrix"></button>
-            <button id="addTableWidgetItem" class="menu-command" type="button" data-i18n="menu.insert.tableWidget" data-title-i18n="tooltip.menu.insert.table"></button>
-            <button id="addXYChartWidgetItem" class="menu-command" type="button" data-i18n="menu.insert.xyChartWidget" data-title-i18n="tooltip.menu.insert.chart"></button>
+            <div class="menu-section-title" data-i18n="menu.insert.group.nodes"></div>
+            <button id="addRectNodeItem" class="menu-command" type="button" data-title-i18n="tooltip.menu.insert.rect"><span class="menu-command-label"><span class="menu-item-icon" aria-hidden="true">▭</span><span data-i18n="menu.insert.rect"></span></span><span class="menu-shortcut">Alt+1</span></button>
+            <button id="addEllipseNodeItem" class="menu-command" type="button" data-title-i18n="tooltip.menu.insert.ellipse"><span class="menu-command-label"><span class="menu-item-icon" aria-hidden="true">○</span><span data-i18n="menu.insert.ellipse"></span></span><span class="menu-shortcut">Alt+2</span></button>
+            <button id="addDiamondNodeItem" class="menu-command" type="button" data-title-i18n="tooltip.menu.insert.diamond"><span class="menu-command-label"><span class="menu-item-icon" aria-hidden="true">◇</span><span data-i18n="menu.insert.diamond"></span></span><span class="menu-shortcut">Alt+3</span></button>
+            <button id="addSubmodelNodeItem" class="menu-command" type="button" data-title-i18n="tooltip.menu.insert.submodel"><span class="menu-command-label"><span class="menu-item-icon" aria-hidden="true">▣</span><span data-i18n="menu.insert.submodel"></span></span><span class="menu-shortcut">Alt+4</span></button>
+            <div class="menu-section-title" data-i18n="menu.insert.group.inputWidgets"></div>
+            <button id="addButtonWidgetItem" class="menu-command" type="button" data-title-i18n="tooltip.menu.insert.button"><span class="menu-command-label"><span class="menu-item-icon" aria-hidden="true">◉</span><span data-i18n="menu.insert.buttonWidget"></span></span></button>
+            <button id="addSelectWidgetItem" class="menu-command" type="button" data-title-i18n="tooltip.menu.insert.select"><span class="menu-command-label"><span class="menu-item-icon" aria-hidden="true">▾</span><span data-i18n="menu.insert.selectWidget"></span></span></button>
+            <button id="addSliderWidgetItem" class="menu-command" type="button" data-title-i18n="tooltip.menu.insert.slider"><span class="menu-command-label"><span class="menu-item-icon" aria-hidden="true">━●</span><span data-i18n="menu.insert.sliderWidget"></span></span></button>
+            <div class="menu-section-title" data-i18n="menu.insert.group.outputWidgets"></div>
+            <button id="addLedWidgetItem" class="menu-command" type="button" data-title-i18n="tooltip.menu.insert.led"><span class="menu-command-label"><span class="menu-item-icon" aria-hidden="true">●</span><span data-i18n="menu.insert.ledWidget"></span></span></button>
+            <button id="addTextWidgetItem" class="menu-command" type="button" data-title-i18n="tooltip.menu.insert.textWidget"><span class="menu-command-label"><span class="menu-item-icon" aria-hidden="true">¶</span><span data-i18n="menu.insert.textWidget"></span></span></button>
+            <button id="addMatrixWidgetItem" class="menu-command" type="button" data-title-i18n="tooltip.menu.insert.matrix"><span class="menu-command-label"><span class="menu-item-icon" aria-hidden="true">▦</span><span data-i18n="menu.insert.matrixWidget"></span></span></button>
+            <button id="addTableWidgetItem" class="menu-command" type="button" data-title-i18n="tooltip.menu.insert.table"><span class="menu-command-label"><span class="menu-item-icon" aria-hidden="true">▤</span><span data-i18n="menu.insert.tableWidget"></span></span></button>
+            <button id="addXYChartWidgetItem" class="menu-command" type="button" data-title-i18n="tooltip.menu.insert.chart"><span class="menu-command-label"><span class="menu-item-icon" aria-hidden="true">⌁</span><span data-i18n="menu.insert.xyChartWidget"></span></span></button>
+            <div class="menu-section-title" data-i18n="menu.insert.group.content"></div>
+            <button id="addTextItem" class="menu-command" type="button" data-title-i18n="tooltip.menu.insert.text"><span class="menu-command-label"><span class="menu-item-icon" aria-hidden="true">T</span><span data-i18n="menu.insert.text"></span></span></button>
           </div>
         </div>
 
@@ -91,34 +93,7 @@
             <button id="manageDashboardItem" class="menu-command" type="button" data-i18n="menu.view.dashboard"></button>
             <button id="managePresentationGroupsItem" class="menu-command" type="button" data-i18n="menu.view.presentationGroups"></button>
             <hr class="menu-sep" />
-            <label class="menu-check" for="snapToGridInput" data-title-i18n="tooltip.menu.view.snap">
-              <input id="snapToGridInput" type="checkbox" checked />
-              <span data-i18n="menu.view.snap"></span>
-            </label>
-            <label class="menu-check" for="showGridInput" data-title-i18n="tooltip.menu.view.showGrid">
-              <input id="showGridInput" type="checkbox" checked />
-              <span data-i18n="menu.view.showGrid"></span>
-            </label>
-            <label class="menu-check" for="highlightNodeEdgesInput" data-title-i18n="tooltip.menu.view.highlightNodeEdges">
-              <input id="highlightNodeEdgesInput" type="checkbox" />
-              <span data-i18n="menu.view.highlightNodeEdges"></span>
-            </label>
-            <label class="menu-check" for="showNodeValuesInput" data-title-i18n="tooltip.menu.view.showNodeValues">
-              <input id="showNodeValuesInput" type="checkbox" />
-              <span data-i18n="menu.view.showNodeValues"></span>
-            </label>
-            <label class="menu-field" for="gridSizeInput" data-i18n="menu.view.gridStep" data-title-i18n="tooltip.menu.view.gridStep"></label>
-            <input id="gridSizeInput" type="number" min="5" max="100" step="1" value="20" data-title-i18n="tooltip.menu.view.gridStep" />
-            <label class="menu-field" for="tooltipDelayInput" data-i18n="menu.view.tooltipDelay" data-title-i18n="tooltip.menu.view.tooltipDelay"></label>
-            <select id="tooltipDelayInput" data-title-i18n="tooltip.menu.view.tooltipDelay">
-              <option value="0" data-i18n="menu.view.tooltipDelayMode.none"></option>
-              <option value="150" data-i18n="menu.view.tooltipDelayMode.fast"></option>
-              <option value="300" data-i18n="menu.view.tooltipDelayMode.normal"></option>
-              <option value="600" data-i18n="menu.view.tooltipDelayMode.slow"></option>
-              <option value="1000" data-i18n="menu.view.tooltipDelayMode.slower"></option>
-            </select>
-            <label class="menu-field" for="decimalDigitsInput" data-i18n="label.decimals" data-title-i18n="tooltip.model.decimals"></label>
-            <input id="decimalDigitsInput" type="number" min="0" max="12" step="1" data-title-i18n="tooltip.model.decimals" />
+            <button id="viewOptionsItem" class="menu-command" type="button" data-i18n="menu.view.options" data-title-i18n="tooltip.menu.view.options"></button>
           </div>
         </div>
 
@@ -672,6 +647,60 @@
         <div id="presentationGroupsList" class="presentation-groups-list"></div>
         <div class="modal-actions">
           <button id="presentationGroupsDismissBtn" type="button" data-i18n="action.close"></button>
+        </div>
+      </div>
+    </div>
+    <div id="viewOptionsModal" class="modal-backdrop hidden">
+      <div class="modal-card view-options-card" role="dialog" aria-modal="true" aria-labelledby="viewOptionsTitle">
+        <div class="modal-head">
+          <h3 id="viewOptionsTitle" data-i18n="viewOptions.title"></h3>
+          <button id="viewOptionsCloseBtn" class="icon-btn modal-close-btn" type="button" data-i18n-aria-label="aria.close">×</button>
+        </div>
+        <section class="view-options-section">
+          <h4 data-i18n="viewOptions.canvas"></h4>
+          <div class="view-options-checks">
+            <label class="option-check" for="snapToGridInput" data-title-i18n="tooltip.menu.view.snap">
+              <input id="snapToGridInput" type="checkbox" checked />
+              <span data-i18n="menu.view.snap"></span>
+            </label>
+            <label class="option-check" for="showGridInput" data-title-i18n="tooltip.menu.view.showGrid">
+              <input id="showGridInput" type="checkbox" checked />
+              <span data-i18n="menu.view.showGrid"></span>
+            </label>
+            <label class="option-check" for="highlightNodeEdgesInput" data-title-i18n="tooltip.menu.view.highlightNodeEdges">
+              <input id="highlightNodeEdgesInput" type="checkbox" />
+              <span data-i18n="menu.view.highlightNodeEdges"></span>
+            </label>
+            <label class="option-check" for="showNodeValuesInput" data-title-i18n="tooltip.menu.view.showNodeValues">
+              <input id="showNodeValuesInput" type="checkbox" />
+              <span data-i18n="menu.view.showNodeValues"></span>
+            </label>
+          </div>
+        </section>
+        <section class="view-options-section">
+          <h4 data-i18n="viewOptions.interface"></h4>
+          <div class="view-options-fields">
+            <label for="interfaceLanguageInput" data-i18n="viewOptions.language"></label>
+            <select id="interfaceLanguageInput">
+              <option value="it">Italiano</option>
+              <option value="en">English</option>
+            </select>
+            <label for="gridSizeInput" data-i18n="menu.view.gridStep" data-title-i18n="tooltip.menu.view.gridStep"></label>
+            <input id="gridSizeInput" type="number" min="5" max="100" step="1" value="20" data-title-i18n="tooltip.menu.view.gridStep" />
+            <label for="tooltipDelayInput" data-i18n="menu.view.tooltipDelay" data-title-i18n="tooltip.menu.view.tooltipDelay"></label>
+            <select id="tooltipDelayInput" data-title-i18n="tooltip.menu.view.tooltipDelay">
+              <option value="0" data-i18n="menu.view.tooltipDelayMode.none"></option>
+              <option value="150" data-i18n="menu.view.tooltipDelayMode.fast"></option>
+              <option value="300" data-i18n="menu.view.tooltipDelayMode.normal"></option>
+              <option value="600" data-i18n="menu.view.tooltipDelayMode.slow"></option>
+              <option value="1000" data-i18n="menu.view.tooltipDelayMode.slower"></option>
+            </select>
+            <label for="decimalDigitsInput" data-i18n="label.decimals" data-title-i18n="tooltip.model.decimals"></label>
+            <input id="decimalDigitsInput" type="number" min="0" max="12" step="1" data-title-i18n="tooltip.model.decimals" />
+          </div>
+        </section>
+        <div class="modal-actions">
+          <button id="viewOptionsDismissBtn" type="button" data-i18n="action.close"></button>
         </div>
       </div>
     </div>

@@ -48,6 +48,7 @@ const zoomOutItem = document.getElementById("zoomOutItem");
 const zoomResetItem = document.getElementById("zoomResetItem");
 const toggleGraphItem = document.getElementById("toggleGraphItem");
 const toggleWidgetsItem = document.getElementById("toggleWidgetsItem");
+const viewOptionsItem = document.getElementById("viewOptionsItem");
 const toggleGraphBtn = document.getElementById("toggleGraphBtn");
 const toggleWidgetsBtn = document.getElementById("toggleWidgetsBtn");
 const runEvalBtn = document.getElementById("runEvalBtn");
@@ -87,6 +88,7 @@ const highlightNodeEdgesInput = document.getElementById("highlightNodeEdgesInput
 const showNodeValuesInput = document.getElementById("showNodeValuesInput");
 const gridSizeInput = document.getElementById("gridSizeInput");
 const tooltipDelayInput = document.getElementById("tooltipDelayInput");
+const interfaceLanguageInput = document.getElementById("interfaceLanguageInput");
 
 const noSelection = document.getElementById("noSelection");
 const globalPanel = document.getElementById("globalPanel");
@@ -269,6 +271,9 @@ const manageDashboardItem = document.getElementById("manageDashboardItem");
 const presentationGroupsModal = document.getElementById("presentationGroupsModal");
 const presentationGroupsCloseBtn = document.getElementById("presentationGroupsCloseBtn");
 const presentationGroupsDismissBtn = document.getElementById("presentationGroupsDismissBtn");
+const viewOptionsModal = document.getElementById("viewOptionsModal");
+const viewOptionsCloseBtn = document.getElementById("viewOptionsCloseBtn");
+const viewOptionsDismissBtn = document.getElementById("viewOptionsDismissBtn");
 const dashboardRenameModal = document.getElementById("dashboardRenameModal");
 const dashboardRenameInput = document.getElementById("dashboardRenameInput");
 const dashboardRenameCloseBtn = document.getElementById("dashboardRenameCloseBtn");
@@ -3600,6 +3605,47 @@ function closePresentationGroupsEditor() {
   setPresentationGroupsStatus();
 }
 
+function syncViewOptionsInputs() {
+  if (snapToGridInput) {
+    snapToGridInput.checked = ui.snapToGrid === true;
+  }
+  if (showGridInput) {
+    showGridInput.checked = ui.showGrid === true;
+  }
+  if (highlightNodeEdgesInput) {
+    highlightNodeEdgesInput.checked = ui.highlightNodeEdges === true;
+  }
+  if (showNodeValuesInput) {
+    showNodeValuesInput.checked = ui.showNodeValues === true;
+  }
+  if (gridSizeInput) {
+    gridSizeInput.value = String(ui.gridSize);
+  }
+  if (tooltipDelayInput) {
+    tooltipDelayInput.value = String(normalizeTooltipDelayMs(ui.tooltipDelayMs));
+  }
+  if (interfaceLanguageInput) {
+    interfaceLanguageInput.value = currentLang;
+  }
+  if (decimalDigitsInput) {
+    decimalDigitsInput.value = String(clampDisplayDecimals(graph.execution.decimals));
+  }
+}
+
+function openViewOptions() {
+  if (!viewOptionsModal) {
+    return;
+  }
+  closeTopMenus();
+  syncViewOptionsInputs();
+  viewOptionsModal.classList.remove("hidden");
+  snapToGridInput?.focus();
+}
+
+function closeViewOptions() {
+  viewOptionsModal?.classList.add("hidden");
+}
+
 function createPresentationGroupFromSelection() {
   const nodeIds = [...ui.selectedNodes];
   if (!nodeIds.length) {
@@ -5393,8 +5439,8 @@ function applyI18nTooltipsToSubtree(root) {
   });
 }
 
-async function loadI18n() {
-  currentLang = await resolveLangFromUrl();
+function applyInterfaceLanguage(rawLanguage, refreshUi = false) {
+  currentLang = normalizeSupportedLanguage(rawLanguage) || "it";
   const bundledCurrent = bundledI18nMessages(currentLang);
   if (bundledCurrent) {
     i18n = bundledCurrent;
@@ -5411,7 +5457,25 @@ async function loadI18n() {
   if (!functionsHelpModal?.classList.contains("hidden")) {
     renderFunctionsHelp();
   }
+  if (!presentationGroupsModal?.classList.contains("hidden")) {
+    renderPresentationGroupsEditor();
+  }
+  if (!localFunctionsModal?.classList.contains("hidden")) {
+    renderLocalFunctionsEditor();
+  }
+  if (!watchDebuggerModal?.classList.contains("hidden")) {
+    renderWatchDebugger();
+  }
   refreshWorkspaceTabBar();
+  if (refreshUi) {
+    syncViewOptionsInputs();
+    refreshSidebar();
+    render();
+  }
+}
+
+async function loadI18n() {
+  applyInterfaceLanguage(await resolveLangFromUrl());
 }
 
 function setStatus(text) {
@@ -12838,6 +12902,12 @@ svg.addEventListener("pointerdown", (evt) => {
   if (evt.target !== svg) {
     return;
   }
+  if (evt.button !== 0) {
+    return;
+  }
+
+  // Avoid the native SVG selection drag, notably visible in WebKit on macOS.
+  evt.preventDefault();
 
   const additive = evt.ctrlKey || evt.metaKey;
   const p = svgPoint(evt);
@@ -12853,6 +12923,14 @@ svg.addEventListener("pointerdown", (evt) => {
     clearAllSelection();
   }
   render();
+});
+
+svg.addEventListener("selectstart", (evt) => {
+  evt.preventDefault();
+});
+
+svg.addEventListener("dragstart", (evt) => {
+  evt.preventDefault();
 });
 
 [graphViewport, canvasContent].forEach((el) => {
@@ -13127,6 +13205,9 @@ if (zoomRangeInput) {
 if (managePresentationGroupsItem) {
   managePresentationGroupsItem.addEventListener("click", openPresentationGroupsEditor);
 }
+if (viewOptionsItem) {
+  viewOptionsItem.addEventListener("click", openViewOptions);
+}
 toggleGraphItem.addEventListener("click", () => {
   toggleGraphVisibility();
 });
@@ -13313,6 +13394,12 @@ if (tooltipDelayInput) {
     tooltipDelayInput.value = String(ui.tooltipDelayMs);
     scheduleFileStatusRefresh();
     hideAppTooltip();
+  });
+}
+
+if (interfaceLanguageInput) {
+  interfaceLanguageInput.addEventListener("change", () => {
+    applyInterfaceLanguage(interfaceLanguageInput.value, true);
   });
 }
 
@@ -14426,6 +14513,13 @@ if (presentationGroupsModal) {
     }
   });
 }
+if (viewOptionsModal) {
+  viewOptionsModal.addEventListener("pointerdown", (evt) => {
+    if (evt.target === viewOptionsModal) {
+      closeViewOptions();
+    }
+  });
+}
 if (dashboardRenameModal) {
   dashboardRenameModal.addEventListener("pointerdown", (evt) => {
     if (evt.target === dashboardRenameModal) {
@@ -14546,6 +14640,12 @@ if (presentationGroupsCloseBtn) {
 }
 if (presentationGroupsDismissBtn) {
   presentationGroupsDismissBtn.addEventListener("click", closePresentationGroupsEditor);
+}
+if (viewOptionsCloseBtn) {
+  viewOptionsCloseBtn.addEventListener("click", closeViewOptions);
+}
+if (viewOptionsDismissBtn) {
+  viewOptionsDismissBtn.addEventListener("click", closeViewOptions);
 }
 if (dashboardRenameCloseBtn) {
   dashboardRenameCloseBtn.addEventListener("click", closeDashboardPageRenameEditor);
