@@ -13,13 +13,15 @@ const {
 } = require("./path-handles.js");
 const { PLATFORM_API_VERSION, normalizePlatformApi } = require("./platform-contract.js");
 
-function createElectronPlatform({ ipcRenderer, clipboard }) {
+function createElectronPlatform({ ipcRenderer, clipboard = null }) {
   if (!ipcRenderer || typeof ipcRenderer.invoke !== "function") {
     throw new Error("ipcRenderer is required to create the Electron platform bridge");
   }
-  if (!clipboard || typeof clipboard.readText !== "function" || typeof clipboard.writeText !== "function") {
-    throw new Error("clipboard is required to create the Electron platform bridge");
-  }
+  const canUseLocalClipboard = Boolean(
+    clipboard
+    && typeof clipboard.readText === "function"
+    && typeof clipboard.writeText === "function",
+  );
   return normalizePlatformApi({
     apiVersion: PLATFORM_API_VERSION,
     platformId: "electron",
@@ -42,10 +44,17 @@ function createElectronPlatform({ ipcRenderer, clipboard }) {
       return "";
     },
     readClipboardText() {
-      return clipboard.readText();
+      return canUseLocalClipboard
+        ? clipboard.readText()
+        : ipcRenderer.invoke("stgraphx:read-clipboard-text");
     },
     writeClipboardText(text) {
-      clipboard.writeText(typeof text === "string" ? text : String(text ?? ""));
+      const normalized = typeof text === "string" ? text : String(text ?? "");
+      if (canUseLocalClipboard) {
+        clipboard.writeText(normalized);
+        return undefined;
+      }
+      return ipcRenderer.invoke("stgraphx:write-clipboard-text", normalized);
     },
     async showOpenFilePicker(options = {}) {
       const result = await ipcRenderer.invoke("stgraphx:show-open-dialog", {

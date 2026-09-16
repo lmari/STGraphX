@@ -3070,10 +3070,11 @@ function openBackgroundContextMenu(evt) {
   showContextMenu(evt.clientX, evt.clientY, [
     {
       title: true,
-      label: t("context.bg.insertTitle"),
+      label: t("menu.insert.group.nodes"),
     },
     {
       label: t("context.bg.newRect"),
+      icon: "▭",
       action: () => {
         runAction(() => addNode("rect", p));
         setStatusKey("status.nodeCreated");
@@ -3081,6 +3082,7 @@ function openBackgroundContextMenu(evt) {
     },
     {
       label: t("context.bg.newEllipse"),
+      icon: "○",
       action: () => {
         runAction(() => addNode("ellipse", p));
         setStatusKey("status.nodeCreated");
@@ -3088,6 +3090,7 @@ function openBackgroundContextMenu(evt) {
     },
     {
       label: t("context.bg.newDiamond"),
+      icon: "◇",
       action: () => {
         runAction(() => addNode("diamond", p));
         setStatusKey("status.nodeCreated");
@@ -3095,28 +3098,20 @@ function openBackgroundContextMenu(evt) {
     },
     {
       label: t("context.bg.newSubmodel"),
+      icon: "▣",
       action: () => {
         runAction(() => addNode("submodel", p));
         setStatusKey("status.nodeCreated");
       },
     },
-    {
-      label: t("context.bg.newText"),
-      action: () => {
-        runAction(() => addCanvasText({ x: p.x, y: p.y }));
-        setStatusKey("status.textCreated");
-      },
-    },
     { separator: true },
     {
-      label: t("context.bg.newSliderWidget"),
-      action: () => {
-        runAction(() => addSliderWidget({ x: p.x, y: p.y }));
-        setStatusKey("status.widgetSliderCreated");
-      },
+      title: true,
+      label: t("menu.insert.group.inputWidgets"),
     },
     {
       label: t("context.bg.newButtonWidget"),
+      icon: "◉",
       action: () => {
         runAction(() => addButtonWidget({ x: p.x, y: p.y }));
         setStatusKey("status.widgetButtonCreated");
@@ -3124,21 +3119,28 @@ function openBackgroundContextMenu(evt) {
     },
     {
       label: t("context.bg.newSelectWidget"),
+      icon: "▾",
       action: () => {
         runAction(() => addSelectWidget({ x: p.x, y: p.y }));
         setStatusKey("status.widgetSelectCreated");
       },
     },
+    {
+      label: t("context.bg.newSliderWidget"),
+      icon: "━●",
+      action: () => {
+        runAction(() => addSliderWidget({ x: p.x, y: p.y }));
+        setStatusKey("status.widgetSliderCreated");
+      },
+    },
     { separator: true },
     {
-      label: t("context.bg.newMatrixWidget"),
-      action: () => {
-        runAction(() => addMatrixWidget({ x: p.x, y: p.y }));
-        setStatusKey("status.widgetMatrixCreated");
-      },
+      title: true,
+      label: t("menu.insert.group.outputWidgets"),
     },
     {
       label: t("context.bg.newLedWidget"),
+      icon: "●",
       action: () => {
         runAction(() => addLedWidget({ x: p.x, y: p.y }));
         setStatusKey("status.widgetLedCreated");
@@ -3146,13 +3148,23 @@ function openBackgroundContextMenu(evt) {
     },
     {
       label: t("context.bg.newTextWidget"),
+      icon: "¶",
       action: () => {
         runAction(() => addTextWidget({ x: p.x, y: p.y }));
         setStatusKey("status.widgetTextCreated");
       },
     },
     {
+      label: t("context.bg.newMatrixWidget"),
+      icon: "▦",
+      action: () => {
+        runAction(() => addMatrixWidget({ x: p.x, y: p.y }));
+        setStatusKey("status.widgetMatrixCreated");
+      },
+    },
+    {
       label: t("context.bg.newTableWidget"),
+      icon: "▤",
       action: () => {
         runAction(() => addTableWidget({ x: p.x, y: p.y }));
         setStatusKey("status.widgetCreated");
@@ -3160,9 +3172,23 @@ function openBackgroundContextMenu(evt) {
     },
     {
       label: t("context.bg.newXYChartWidget"),
+      icon: "⌁",
       action: () => {
         runAction(() => addXYChartWidget({ x: p.x, y: p.y }));
         setStatusKey("status.widgetChartCreated");
+      },
+    },
+    { separator: true },
+    {
+      title: true,
+      label: t("menu.insert.group.content"),
+    },
+    {
+      label: t("context.bg.newText"),
+      icon: "T",
+      action: () => {
+        runAction(() => addCanvasText({ x: p.x, y: p.y }));
+        setStatusKey("status.textCreated");
       },
     },
   ]);

@@ -56,10 +56,11 @@ async function run() {
   await controller.toggleTimedExecution();
   assert.equal(refreshCount, 1, "a timed run refreshes once before its first step");
   await intervalCallback();
+  assert.equal(execution.currentTime, 2, "a timed tick evaluates the configured number of steps");
+  assert.equal(refreshCount, 2, "each timed tick refreshes the view once");
   await intervalCallback();
-  assert.equal(refreshCount, 1, "intermediate timed steps do not refresh the view");
-  await intervalCallback();
-  assert.equal(refreshCount, 2, "the third timed step refreshes the view");
+  assert.equal(execution.currentTime, 5, "subsequent timed ticks retain the same step batch size");
+  assert.equal(refreshCount, 3, "the visual refresh cadence remains the timer delay");
   controller.stopTimedExecution(false);
   console.log("runtime-controller.test.js: ok");
 }

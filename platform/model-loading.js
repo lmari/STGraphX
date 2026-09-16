@@ -34,6 +34,9 @@
     const resolveRecentModelHandle = typeof options.resolveRecentModelHandle === "function"
       ? options.resolveRecentModelHandle
       : async () => null;
+    const resolveRecentModelDirectoryHandle = typeof options.resolveRecentModelDirectoryHandle === "function"
+      ? options.resolveRecentModelDirectoryHandle
+      : async () => null;
     const supportsOpenFilePicker = typeof options.supportsOpenFilePicker === "function"
       ? options.supportsOpenFilePicker
       : () => false;
@@ -45,6 +48,9 @@
       : async () => [];
     const notifyMissingRecentModelEntry = typeof options.notifyMissingRecentModelEntry === "function"
       ? options.notifyMissingRecentModelEntry
+      : () => {};
+    const removeRecentModelEntry = typeof options.removeRecentModelEntry === "function"
+      ? options.removeRecentModelEntry
       : () => {};
     const isLoadCancelledError = typeof options.isLoadCancelledError === "function"
       ? options.isLoadCancelledError
@@ -69,6 +75,10 @@
       onOpenPreparedStart();
       const handle = rootEntry.fileHandle;
       const file = rootEntry.file;
+      // A browser selected through <input type="file"> has no persistent
+      // FileSystemFileHandle, but its File object can still be kept in
+      // IndexedDB by the recent-models store.
+      const recentFileReference = handle || file || null;
       const text = rootEntry.text;
       const rootData = rootEntry.data || JSON.parse(text);
       const directoryHandle = rootEntry.directoryHandle || await deriveDirectoryHandleFromFileHandle(handle) || null;
@@ -79,9 +89,18 @@
         directoryHandle,
         true,
       );
-      await rememberRecentModel(rootEntry.name || (handle && handle.name) || (file && file.name) || "graph.json", handle || null);
+      await rememberRecentModel(
+        rootEntry.name || (handle && handle.name) || (file && file.name) || "graph.json",
+        recentFileReference,
+        directoryHandle,
+      );
       await preloadSubmodelsAfterLoad();
-      await maybeSelectModelDirectoryForSubmodels(rootData);
+      const selectedDirectoryHandle = await maybeSelectModelDirectoryForSubmodels(rootData);
+      await rememberRecentModel(
+        rootEntry.name || (handle && handle.name) || (file && file.name) || "graph.json",
+        recentFileReference,
+        selectedDirectoryHandle || directoryHandle,
+      );
       await preloadSubmodelsAfterLoad();
       return true;
     }
@@ -104,9 +123,20 @@
       try {
         let rootEntry = null;
         const handle = await resolveRecentModelHandle(entry);
+        const directoryHandle = await resolveRecentModelDirectoryHandle(entry);
         if (handle) {
-          rootEntry = await prepareSelectedJsonEntries([handle]);
-        } else if (supportsOpenFilePicker()) {
+          try {
+            rootEntry = await prepareSelectedJsonEntries([handle]);
+            if (rootEntry && directoryHandle) {
+              rootEntry.directoryHandle = directoryHandle;
+            }
+          } catch (_err) {
+            // A moved or revoked file can be relinked through the picker below.
+            rootEntry = null;
+          }
+        }
+        let relinked = false;
+        if (!rootEntry && supportsOpenFilePicker()) {
           const handles = await showOpenFilePickerCompat({
             multiple: true,
             types: [{
@@ -118,14 +148,20 @@
             return false;
           }
           rootEntry = await prepareSelectedJsonEntries(handles);
-        } else {
+          relinked = Boolean(rootEntry);
+        } else if (!rootEntry) {
           const files = await pickSubmodelFilesWithInput();
           rootEntry = await prepareSelectedJsonEntries(files);
+          relinked = Boolean(rootEntry);
         }
         if (!rootEntry) {
           return false;
         }
-        return openPreparedJsonEntryInNewTab(rootEntry);
+        const opened = await openPreparedJsonEntryInNewTab(rootEntry);
+        if (opened && relinked) {
+          removeRecentModelEntry(entry);
+        }
+        return opened;
       } catch (err) {
         if (isLoadCancelledError(err)) {
           return false;

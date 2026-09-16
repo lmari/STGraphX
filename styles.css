@@ -301,6 +301,31 @@ body {
   white-space: nowrap;
 }
 
+#recentModelsSection .menu-command {
+  white-space: normal;
+}
+
+.recent-model-label {
+  display: grid;
+  min-width: 0;
+  gap: 1px;
+  text-align: left;
+}
+
+.recent-model-name {
+  font-weight: 550;
+}
+
+.recent-model-path {
+  max-width: 290px;
+  overflow: hidden;
+  color: #61778a;
+  font-size: 0.74rem;
+  line-height: 1.2;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
 .menu-item-icon {
   display: inline-grid;
   width: 18px;
@@ -1849,10 +1874,10 @@ button:disabled {
 }
 
 .expression-editor-card {
-  width: min(1120px, calc(100vw - 40px));
-  height: min(84vh, 860px);
-  min-width: 780px;
-  min-height: 560px;
+  width: min(940px, calc(100vw - 40px));
+  height: min(72vh, 720px);
+  min-width: 680px;
+  min-height: 480px;
   max-width: calc(100vw - 20px);
   max-height: calc(100vh - 20px);
   position: absolute;
@@ -3118,8 +3143,8 @@ button:disabled {
 }
 
 .expression-editor-card.state-node-editor {
-  height: min(84vh, 860px);
-  min-height: 560px;
+  height: min(76vh, 760px);
+  min-height: 520px;
 }
 
 .expression-editor-card label,
@@ -3230,6 +3255,19 @@ button:disabled {
 
 .expression-library-group + .expression-library-group {
   margin-top: 10px;
+}
+
+.expression-library-linked-group {
+  margin: 0 0 8px;
+  padding: 3px;
+  border: 1px solid #b8d7ed;
+  border-radius: 7px;
+  background: #eef7fd;
+}
+
+.expression-library-linked-group .expression-library-title {
+  background: #eef7fd;
+  color: #0f5f96;
 }
 
 .expression-library-title {
@@ -3906,7 +3944,10 @@ body.tablet-sidebar-layout .expression-editor-resize-handle {
 .context-menu {
   position: fixed;
   z-index: 1000;
-  min-width: 156px;
+  min-width: 238px;
+  max-height: calc(100vh - 16px);
+  overflow-y: auto;
+  overscroll-behavior: contain;
   background: #ffffff;
   border: 1px solid var(--line);
   border-radius: 8px;
@@ -3931,6 +3972,8 @@ body.tablet-sidebar-layout .expression-editor-resize-handle {
 }
 
 .context-menu button {
+  display: flex;
+  align-items: center;
   width: 100%;
   text-align: left;
   border: 0;
@@ -3938,6 +3981,22 @@ body.tablet-sidebar-layout .expression-editor-resize-handle {
   color: var(--text);
   padding: 7px 9px;
   border-radius: 6px;
+  white-space: nowrap;
+}
+
+.context-menu-command-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.context-menu-item-icon {
+  display: inline-grid;
+  width: 18px;
+  place-items: center;
+  color: #4b718c;
+  font-size: 1rem;
+  line-height: 1;
 }
 
 .context-menu button:hover:not(:disabled) {

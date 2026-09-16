@@ -7,7 +7,7 @@
 
 window.STGraphXAppMeta = {
   author: "Luca Mari",
-  releaseDate: "2026.09.14",
+  releaseDate: "2026.09.16",
   license: "MPL-2.0",
   copyright: "Copyright (c) 2026 Luca Mari",
 };
@@ -337,6 +337,7 @@ window.STGraphXI18nBundles = {
     "expr.help.kind.function": "Funzioni generali",
     "expr.help.kind.local": "Funzioni locali",
     "expr.help.kind.math": "Funzioni matematiche e logiche",
+    "expr.help.kind.linkedNode": "Nodi collegati e globali",
     "expr.help.kind.node": "Nodi disponibili",
     "expr.help.kind.probability": "Funzioni statistiche e probabilistiche",
     "expr.help.kind.variable": "Variabili disponibili",
@@ -1459,6 +1460,7 @@ window.STGraphXI18nBundles = {
     "expr.help.kind.function": "General functions",
     "expr.help.kind.local": "Local functions",
     "expr.help.kind.math": "Math functions",
+    "expr.help.kind.linkedNode": "Connected and global nodes",
     "expr.help.kind.node": "Available nodes",
     "expr.help.kind.probability": "Statistical and probabilistic functions",
     "expr.help.kind.variable": "Available variables",

@@ -10,7 +10,7 @@
     "gridSize": 20,
     "tooltipDelayMs": 300,
     "scrollLeft": 0,
-    "scrollTop": 40
+    "scrollTop": 175
   },
   "debug": {
     "watches": [],
@@ -18,17 +18,17 @@
     "breakpointExpression": ""
   },
   "modelProperties": [],
-  "nodeCounter": 13,
-  "edgeCounter": 8,
-  "widgetCounter": 4,
-  "textItemCounter": 4,
-  "presentationGroupCounter": 2,
+  "nodeCounter": 14,
+  "edgeCounter": 9,
+  "widgetCounter": 5,
+  "textItemCounter": 5,
+  "presentationGroupCounter": 3,
   "presentationGroups": [],
   "dashboard": null,
   "execution": {
     "t0": 0,
     "dt": 1,
-    "t1": 5000,
+    "t1": 10000,
     "delayMs": 1,
     "renderEverySteps": 10,
     "decimals": 3,

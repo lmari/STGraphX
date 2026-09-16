@@ -441,7 +441,12 @@ const recentModelsStore = globalThis.STGraphXRecentModels?.createRecentModelsSto
   getHandlePath: extractFileHandlePath,
   supportsPaths: supportsRecentModelPaths,
   createHandleFromPath(filePath) {
-    return window.STGraphXPlatform.createFileHandleFromPath(filePath);
+    const electronHandle = createElectronPathFileHandle(filePath);
+    if (electronHandle) {
+      return electronHandle;
+    }
+    const createHandle = window.STGraphXPlatform?.createFileHandleFromPath;
+    return typeof createHandle === "function" ? createHandle(filePath) : null;
   },
   unnamedLabel: () => t("file.unnamed"),
 });
@@ -480,10 +485,15 @@ const modelLoadingHelpers = globalThis.STGraphXModelLoading?.createModelLoadingH
   maybeSelectModelDirectoryForSubmodels,
   prepareSelectedJsonEntries,
   resolveRecentModelHandle,
+  resolveRecentModelDirectoryHandle,
   supportsOpenFilePicker,
   showOpenFilePickerCompat,
   pickSubmodelFilesWithInput,
   notifyMissingRecentModelEntry,
+  removeRecentModelEntry(entry) {
+    recentModelsStore.remove(entry);
+    renderRecentModelsMenu();
+  },
   isLoadCancelledError: (err) => err && (err.name === "AbortError" || String(err.message || "") === t("error.loadCancelled")),
   beforeOpenInNewTab() {
     saveActiveWorkspaceTabState();
@@ -869,7 +879,6 @@ const ui = {
   timedStepRunning: false,
   timedRunStartedAt: 0,
   timedStepLastActivityAt: 0,
-  timedRenderStepCount: 0,
   submodelsPrepared: false,
   widgetDrag: null,
   widgetResize: null,
@@ -1344,6 +1353,91 @@ function hasPlatformApi(name) {
   return typeof window.STGraphXPlatform?.[name] === "function";
 }
 
+function electronFileBridge() {
+  const bridge = window.STGraphXElectronFiles;
+  return bridge && typeof bridge === "object" ? bridge : null;
+}
+
+function nativePathName(filePath) {
+  const normalized = String(filePath || "").replace(/\\/g, "/").replace(/\/+$/u, "");
+  const slash = normalized.lastIndexOf("/");
+  return slash >= 0 ? normalized.slice(slash + 1) : normalized;
+}
+
+function nativePathDirectory(filePath) {
+  const normalized = String(filePath || "").replace(/\\/g, "/").replace(/\/+$/u, "");
+  const slash = normalized.lastIndexOf("/");
+  return slash >= 0 ? (normalized.slice(0, slash) || "/") : "";
+}
+
+function joinNativeRelativePath(directoryPath, relativePath) {
+  const relative = String(relativePath || "").replace(/\\/g, "/").replace(/^\/+|\/+$/gu, "");
+  if (!relative || relative.split("/").some((part) => !part || part === "." || part === "..")) {
+    const err = new Error("Invalid relative model path");
+    err.name = "NotFoundError";
+    throw err;
+  }
+  return `${String(directoryPath || "").replace(/\/+$/u, "")}/${relative}`;
+}
+
+function createElectronPathDirectoryHandle(directoryPath) {
+  const bridge = electronFileBridge();
+  if (!bridge || !directoryPath) {
+    return null;
+  }
+  return {
+    kind: "directory",
+    name: nativePathName(directoryPath),
+    path: directoryPath,
+    async getFileHandle(relativePath) {
+      return createElectronPathFileHandle(joinNativeRelativePath(directoryPath, relativePath));
+    },
+  };
+}
+
+function createElectronPathFileHandle(filePath) {
+  const bridge = electronFileBridge();
+  const directoryPath = nativePathDirectory(filePath);
+  if (!bridge || !filePath || typeof bridge.readTextFile !== "function") {
+    return null;
+  }
+  return {
+    kind: "file",
+    name: nativePathName(filePath),
+    path: filePath,
+    async getPath() {
+      return filePath;
+    },
+    async getParentDirectoryPath() {
+      return directoryPath;
+    },
+    async getParentDirectoryHandle() {
+      return createElectronPathDirectoryHandle(directoryPath);
+    },
+    async getFile() {
+      return {
+        name: nativePathName(filePath),
+        path: filePath,
+        text: () => bridge.readTextFile(filePath),
+      };
+    },
+    async createWritable() {
+      let buffer = "";
+      return {
+        async write(data) {
+          buffer = typeof data === "string" ? data : String(data ?? "");
+        },
+        async close() {
+          if (typeof bridge.writeTextFile !== "function") {
+            throw new Error("Electron file write bridge unavailable");
+          }
+          await bridge.writeTextFile(filePath, buffer);
+        },
+      };
+    },
+  };
+}
+
 function widgetMinDimensions(widget) {
   switch (String(widget?.type || "")) {
     case "led":
@@ -1368,11 +1462,15 @@ function widgetMinDimensions(widget) {
 }
 
 function supportsOpenFilePicker() {
-  return hasPlatformApi("showOpenFilePicker") || typeof window.showOpenFilePicker === "function";
+  return typeof electronFileBridge()?.showOpenFilePaths === "function"
+    || hasPlatformApi("showOpenFilePicker")
+    || typeof window.showOpenFilePicker === "function";
 }
 
 function supportsSaveFilePicker() {
-  return hasPlatformApi("showSaveFilePicker") || typeof window.showSaveFilePicker === "function";
+  return typeof electronFileBridge()?.showSaveFilePath === "function"
+    || hasPlatformApi("showSaveFilePicker")
+    || typeof window.showSaveFilePicker === "function";
 }
 
 function supportsDirectoryPicker() {
@@ -1380,6 +1478,11 @@ function supportsDirectoryPicker() {
 }
 
 async function showOpenFilePickerCompat(options) {
+  const electronBridge = electronFileBridge();
+  if (typeof electronBridge?.showOpenFilePaths === "function") {
+    const paths = await electronBridge.showOpenFilePaths(options);
+    return paths.map((filePath) => createElectronPathFileHandle(String(filePath))).filter(Boolean);
+  }
   if (hasPlatformApi("showOpenFilePicker")) {
     return window.STGraphXPlatform.showOpenFilePicker(options);
   }
@@ -1390,6 +1493,16 @@ async function showOpenFilePickerCompat(options) {
 }
 
 async function showSaveFilePickerCompat(options) {
+  const electronBridge = electronFileBridge();
+  if (typeof electronBridge?.showSaveFilePath === "function") {
+    const filePath = await electronBridge.showSaveFilePath(options);
+    if (!filePath) {
+      const err = new Error("Aborted");
+      err.name = "AbortError";
+      throw err;
+    }
+    return createElectronPathFileHandle(filePath);
+  }
   if (hasPlatformApi("showSaveFilePicker")) {
     return window.STGraphXPlatform.showSaveFilePicker(options);
   }
@@ -3075,12 +3188,21 @@ function renderExpressionLibrary() {
   const selectedName = String(ui.expressionEditor?.librarySelectedName || "").trim();
   const filteredEntries = entries
     .filter((entry) => {
+      // Model inputs remain available while the caret filter narrows the
+      // general catalog, so they can always be inserted immediately.
+      if (entry.linkedNode || entry.globalNode) {
+        return true;
+      }
       if (!filter) {
         return true;
       }
       return entry.name.toLowerCase().includes(filter);
     })
     .sort((left, right) => {
+      const linkedDelta = Number(Boolean(right.linkedNode)) - Number(Boolean(left.linkedNode));
+      if (linkedDelta) {
+        return linkedDelta;
+      }
       const leftName = left.name.toLowerCase();
       const rightName = right.name.toLowerCase();
       const leftStarts = filter ? leftName.startsWith(filter) : false;
@@ -3102,7 +3224,7 @@ function renderExpressionLibrary() {
   expressionSidebar?.classList.remove("hidden");
   const groups = new Map();
   filteredEntries.forEach((entry) => {
-    const key = entry.kind || "function";
+    const key = entry.linkedNode || entry.globalNode ? "linkedNode" : (entry.kind || "function");
     if (!groups.has(key)) {
       groups.set(key, []);
     }
@@ -3114,6 +3236,7 @@ function renderExpressionLibrary() {
     .forEach((kind) => {
       const group = document.createElement("section");
       group.className = "expression-library-group";
+      group.classList.toggle("expression-library-linked-group", kind === "linkedNode");
       const title = document.createElement("h4");
       title.className = "expression-library-title";
       title.textContent = t(`expr.help.kind.${kind}`);
@@ -4022,7 +4145,17 @@ function expressionCatalogForEditor() {
   const out = [];
   const seen = new Set();
   const pushEntry = (name, entry) => {
-    if (!name || seen.has(name)) {
+    if (!name) {
+      return;
+    }
+    if (seen.has(name)) {
+      if (entry?.linkedNode || entry?.globalNode) {
+        const existing = out.find((item) => item.name === name);
+        if (existing) {
+          existing.linkedNode = existing.linkedNode || Boolean(entry.linkedNode);
+          existing.globalNode = existing.globalNode || Boolean(entry.globalNode);
+        }
+      }
       return;
     }
     seen.add(name);
@@ -4081,6 +4214,7 @@ function expressionCatalogForEditor() {
         const nodeDescription = getNodeDescription(depNode);
         pushEntry(depNode.name, {
           kind: "variable",
+          globalNode: true,
           signature: depNode.name,
           description: nodeDescription || depNode.name,
           insertText: depNode.name,
@@ -4096,6 +4230,7 @@ function expressionCatalogForEditor() {
         const nodeDescription = getNodeDescription(depNode);
         pushEntry(depNode.name, {
           kind: "variable",
+          linkedNode: true,
           signature: depNode.name,
           description: nodeDescription || depNode.name,
           insertText: depNode.name,
@@ -4109,6 +4244,7 @@ function expressionCatalogForEditor() {
             const qualifiedName = `${depNode.name}.${outputName}`;
             pushEntry(qualifiedName, {
               kind: "variable",
+              linkedNode: true,
               signature: qualifiedName,
               description: nodeDescription
                 ? `${nodeDescription} · ${t("text.submodelOutputEntry", { node: depNode.name, output: outputName })}`
@@ -4121,11 +4257,16 @@ function expressionCatalogForEditor() {
       });
   }
 
-  return out.sort((a, b) => a.name.localeCompare(b.name));
+  return out.sort((a, b) => {
+    const linkedDelta = Number(Boolean(b.linkedNode)) - Number(Boolean(a.linkedNode));
+    return linkedDelta || a.name.localeCompare(b.name);
+  });
 }
 
 function expressionEntryKindOrder(kind) {
   switch (kind) {
+    case "linkedNode":
+      return -1;
     case "variable":
       return 0;
     case "function":
@@ -7799,7 +7940,20 @@ function showContextMenu(clientX, clientY, items) {
     }
     const btn = document.createElement("button");
     btn.type = "button";
-    btn.textContent = item.label;
+    if (item.icon) {
+      const label = document.createElement("span");
+      label.className = "context-menu-command-label";
+      const icon = document.createElement("span");
+      icon.className = "context-menu-item-icon";
+      icon.setAttribute("aria-hidden", "true");
+      icon.textContent = item.icon;
+      const text = document.createElement("span");
+      text.textContent = item.label;
+      label.append(icon, text);
+      btn.appendChild(label);
+    } else {
+      btn.textContent = item.label;
+    }
     btn.disabled = Boolean(item.disabled);
     btn.addEventListener("click", () => {
       hideContextMenu();
@@ -11170,7 +11324,17 @@ function renderRecentModelsMenu() {
     btn.className = "menu-command";
     btn.title = entry.path || entry.name || "";
     const label = document.createElement("span");
-    label.textContent = entry.name || entry.path || `${idx + 1}`;
+    label.className = "recent-model-label";
+    const name = document.createElement("span");
+    name.className = "recent-model-name";
+    name.textContent = entry.name || entry.path || `${idx + 1}`;
+    label.appendChild(name);
+    if (entry.path) {
+      const path = document.createElement("span");
+      path.className = "recent-model-path";
+      path.textContent = entry.path;
+      label.appendChild(path);
+    }
     btn.appendChild(label);
     btn.addEventListener("click", () => {
       closeTopMenus();
@@ -11180,13 +11344,27 @@ function renderRecentModelsMenu() {
   });
 }
 
-async function rememberRecentModel(name, fileHandle = null) {
-  await recentModelsStore.remember(name, fileHandle);
+async function rememberRecentModel(name, fileHandle = null, directoryHandle = currentModelDirectoryHandle) {
+  await recentModelsStore.remember(name, fileHandle, directoryHandle);
   renderRecentModelsMenu();
 }
 
 async function resolveRecentModelHandle(entry) {
+  // Old Electron entries may contain a Chromium file handle without a path.
+  // Relink them once through the native dialog so future openings also recover
+  // the parent folder required by relative submodels.
+  if (electronFileBridge() && !String(entry?.path || "").trim()) {
+    return null;
+  }
   return recentModelsStore.resolveHandle(entry);
+}
+
+async function resolveRecentModelDirectoryHandle(entry) {
+  const handle = await recentModelsStore.resolveDirectoryHandle(entry);
+  if (handle?.kind === "pseudo-directory" && Array.isArray(handle.files)) {
+    return createPseudoDirectoryHandle(handle.files);
+  }
+  return handle;
 }
 
 async function openPreparedJsonEntry(rootEntry) {
@@ -11278,13 +11456,16 @@ async function ensureCurrentModelDirectoryHandle() {
     graph.__directoryPath = String(currentModelDirectoryHandle?.path ?? graph.__directoryPath ?? "");
     return currentModelDirectoryHandle;
   }
-  if (supportsDirectoryInputSelection()) {
-    currentModelDirectoryHandle = await pickModelDirectoryWithInput();
+  if (supportsDirectoryPicker()) {
+    currentModelDirectoryHandle = await showDirectoryPickerCompat({ mode: "read" });
     graph.__directoryPath = String(currentModelDirectoryHandle?.path ?? graph.__directoryPath ?? "");
     return currentModelDirectoryHandle;
   }
-  if (supportsDirectoryPicker()) {
-    currentModelDirectoryHandle = await showDirectoryPickerCompat({ mode: "read" });
+  // Prefer the native File System Access handle: unlike the legacy
+  // webkitdirectory input fallback, it can be stored in IndexedDB and reused
+  // by the Recent models menu.
+  if (supportsDirectoryInputSelection()) {
+    currentModelDirectoryHandle = await pickModelDirectoryWithInput();
     graph.__directoryPath = String(currentModelDirectoryHandle?.path ?? graph.__directoryPath ?? "");
     return currentModelDirectoryHandle;
   }
@@ -11393,6 +11574,8 @@ function createPseudoDirectoryHandle(files) {
   return {
     kind: "directory",
     name: "",
+    // Keep the selected files so recent models can serialize this fallback.
+    files: Array.from(files || []),
     async getFileHandle(name) {
       const normalizedPath = normalizeReadDataPath(name);
       const baseName = normalizeSubmodelPath(name) || basenameOfSubmodelPath(name);
@@ -15061,7 +15244,7 @@ async function boot() {
       setTabletSidebarExpanded(!ui.tabletSidebarExpanded);
     });
   }
-  recentModelsStore.loadFromStorage();
+  await recentModelsStore.loadFromStorage();
   renderRecentModelsMenu();
 
   history.undo = [];

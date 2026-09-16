@@ -70,7 +70,6 @@
       timedState.timedStepRunning = false;
       timedState.timedRunStartedAt = 0;
       timedState.timedStepLastActivityAt = 0;
-      timedState.timedRenderStepCount = 0;
     }
 
     function stopTimedExecution(updateStatus = true, reason = "stopped") {
@@ -106,16 +105,8 @@
       return Number.isFinite(value) && value >= 1 ? Math.round(value) : 1;
     }
 
-    function refreshAfterStep(execution, force = false) {
-      if (force || timedState.timedRunHandle == null) {
-        refreshRuntimeView?.({ force });
-        return true;
-      }
-      timedState.timedRenderStepCount = (Number(timedState.timedRenderStepCount) || 0) + 1;
-      if (timedState.timedRenderStepCount % visualRefreshInterval(execution) !== 0) {
-        return false;
-      }
-      refreshRuntimeView?.({ force: false });
+    function refreshAfterStep(force = false) {
+      refreshRuntimeView?.({ force });
       return true;
     }
 
@@ -132,7 +123,7 @@
       return validateTimeConfig();
     }
 
-    async function executeOneStep(restartIfEnded = true) {
+    async function executeOneStep(restartIfEnded = true, { refreshView = true } = {}) {
       const execution = getExecution();
       const cfg = await ensureExecutionReady();
       if (!cfg) {
@@ -178,7 +169,9 @@
       const breakpointResult = evaluateBreakpointConditionAtTime?.(nextTime) || { hit: false, invalid: false };
 
       if (breakpointResult.invalid) {
-        refreshAfterStep(execution, true);
+        if (refreshView) {
+          refreshAfterStep(true);
+        }
         setStatus?.(
           t("error.breakpointInvalid", {
             reason: breakpointResult.message || t("error.evalReason.runtime"),
@@ -190,7 +183,9 @@
       }
 
       if (breakpointResult.hit) {
-        refreshAfterStep(execution, true);
+        if (refreshView) {
+          refreshAfterStep(true);
+        }
         setStatusKey?.("status.breakpointHit", {
           time: formatNumberValue?.(Number(nextTime)),
         });
@@ -217,7 +212,9 @@
           time: formatNumberValue?.(Number(nextTime)),
         });
       }
-      refreshAfterStep(execution, stepResult.errorCount > 0 || completed);
+      if (refreshView) {
+        refreshAfterStep(stepResult.errorCount > 0 || completed);
+      }
       return { ok: true, breakpointHit: false, completed };
     }
 
@@ -398,7 +395,6 @@
       timedState.timedStepRunning = false;
       timedState.timedRunStartedAt = nowFn();
       timedState.timedStepLastActivityAt = timedState.timedRunStartedAt;
-      timedState.timedRenderStepCount = 0;
       updateEditingLockUi?.();
 
       timedState.timedRunHandle = setIntervalFn(async () => {
@@ -409,7 +405,21 @@
         timedState.timedStepLastActivityAt = nowFn();
         updateEditingLockUi?.();
         try {
-          const outcome = await executeOneStep(false);
+          const stepsPerRefresh = visualRefreshInterval(execution);
+          let outcome = null;
+          for (let step = 0; step < stepsPerRefresh; step += 1) {
+            outcome = await executeOneStep(false, { refreshView: false });
+            if (!outcome?.ok || outcome.completed || outcome.breakpointHit) {
+              break;
+            }
+          }
+          // The delay controls the visual cadence. renderEverySteps only batches
+          // calculations between two visual updates.
+          if (outcome) {
+            refreshRuntimeView?.({
+              force: !outcome.ok || outcome.completed || outcome.breakpointHit,
+            });
+          }
           if (!outcome || !outcome.ok) {
             stopTimedExecution(false, outcome?.completed ? "completed" : "stopped");
             if (!outcome?.completed && !(hasStrictExecutionBlock?.())) {

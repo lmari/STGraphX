@@ -5,8 +5,9 @@
  * Copyright (c) 2026 Luca Mari
  */
 
-const { app, BrowserWindow, dialog, ipcMain } = require('electron');
+const { app, BrowserWindow, clipboard, dialog, ipcMain } = require('electron');
 const path = require('path');
+const fs = require('fs/promises');
 
 function resolveSupportedLang(raw) {
   const value = String(raw || '').trim().toLowerCase();
@@ -109,6 +110,11 @@ function createWindow() {
 
 app.whenReady().then(() => {
   app.setName('STGraphX');
+  ipcMain.handle('stgraphx:read-clipboard-text', () => clipboard.readText());
+  ipcMain.handle('stgraphx:write-clipboard-text', (_event, text) => {
+    clipboard.writeText(String(text ?? ''));
+    return true;
+  });
   ipcMain.handle('stgraphx:show-open-dialog', async (event, options = {}) => {
     const win = BrowserWindow.fromWebContents(event.sender);
     return dialog.showOpenDialog(win, {
@@ -116,6 +122,15 @@ app.whenReady().then(() => {
       properties: options.multiple ? ['openFile', 'multiSelections'] : ['openFile'],
       filters: [{ name: 'JSON', extensions: ['json'] }],
     });
+  });
+
+  ipcMain.handle('stgraphx:read-text-file', async (_event, filePath) => {
+    return fs.readFile(String(filePath || ''), 'utf8');
+  });
+
+  ipcMain.handle('stgraphx:write-text-file', async (_event, filePath, text) => {
+    await fs.writeFile(String(filePath || ''), String(text ?? ''), 'utf8');
+    return true;
   });
 
   ipcMain.handle('stgraphx:show-save-dialog', async (event, options = {}) => {
