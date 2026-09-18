@@ -1,6 +1,6 @@
 /*!
  * STGraphX Embedded Player Bundle
- * Generated: 2026-09-15T19:30:47.543Z
+ * Generated: 2026-09-18T19:43:38.207Z
  */
 
 /* --- i18n-inline.js --- */
@@ -13,7 +13,7 @@
 
 window.STGraphXAppMeta = {
   author: "Luca Mari",
-  releaseDate: "2026.09.15",
+  releaseDate: "2026.09.16",
   license: "MPL-2.0",
   copyright: "Copyright (c) 2026 Luca Mari",
 };
@@ -299,7 +299,7 @@ window.STGraphXI18nBundles = {
     "expr.help.agentSpace": "Un indice spaziale per una popolazione di agenti con coordinate intere non negative nelle colonne xCol e yCol. Se specifichi idCol, nelle celle dello spazio vengono memorizzati i valori di quella proprietà invece degli indici di riga. neighborhood puo valere 'moore' o 'vonNeumann'. Esempio: `agentSpace(agents, X, Y)`.",
     "expr.help.allNeighborCounts": "Un vettore con il numero di vicini di ogni agente. Esempio: `allNeighborCounts(agents, space)`.",
     "expr.help.and": "Congiunzione logica (equivalente a `&&`). Esempio: `a and b`.",
-    "expr.help.append": "Aggiunge o antepone un elemento a un vettore, concatena due vettori, oppure aggiunge una riga a una matrice. Esempi: append([1,2], 3) ; append(1, [2,3]) ; append([1,2], [3,4]) ; append([[1,2],[3,4]], [5,6]).",
+    "expr.help.append": "Concatena in sequenza due o piu valori. Su vettori aggiunge elementi o concatena vettori. Se e presente una matrice, axis=0 (default) concatena righe e axis=1 colonne: l'ordine degli argomenti stabilisce se sono inserite prima o dopo la matrice. Le matrici agents supportano solo axis=0. Esempi: append([1,2], 3, [4,5]) ; append([[1,2]], [3,4], [5,6]) ; append([[1,2],[3,4]], [5,6], 1) ; append([5,6], [[1,2],[3,4]], 1).",
     "expr.help.appendRow": "Una copia della matrice con una nuova riga aggiunta in fondo. Per matrici agents aggiunge un nuovo agente. Esempio: `appendRow(agents, [3,1])`.",
     "expr.help.argmax": "L'indice del primo valore massimo. Per un vettore restituisce un indice; per una matrice restituisce [riga, colonna]. In caso di parita sceglie il primo elemento in ordine di righe e colonne. Esempi: argmax([2,7,4]) -> 1 ; argmax([[1,5],[5,2]]) -> [0,1].",
     "expr.help.argmin": "L'indice del primo valore minimo. Per un vettore restituisce un indice; per una matrice restituisce [riga, colonna]. In caso di parita sceglie il primo elemento in ordine di righe e colonne. Esempi: argmin([2,-1,4]) -> 1 ; argmin([[3,2],[1,1]]) -> [1,0].",
@@ -343,6 +343,7 @@ window.STGraphXI18nBundles = {
     "expr.help.kind.function": "Funzioni generali",
     "expr.help.kind.local": "Funzioni locali",
     "expr.help.kind.math": "Funzioni matematiche e logiche",
+    "expr.help.kind.linkedNode": "Nodi collegati e globali",
     "expr.help.kind.node": "Nodi disponibili",
     "expr.help.kind.probability": "Funzioni statistiche e probabilistiche",
     "expr.help.kind.variable": "Variabili disponibili",
@@ -371,6 +372,7 @@ window.STGraphXI18nBundles = {
     "expr.help.reduce": "Riduzione progressiva di un vettore o di una matrice mediante un operatore o una funzione. Per le matrici axis=0 riduce per colonne, axis=1 per righe. Esempi: reduce(+, [1,2,3]) ; reduce(max, [3,7,2]) ; reduce(+, [[1,2],[3,4]], 0).",
     "expr.help.removeAt": "Una copia senza l'elemento indicato del vettore oppure senza la riga o la colonna indicate della matrice. Per le matrici axis=0 rimuove una riga, axis=1 una colonna. Esempi: removeAt([1,2,3], 1) -> [1,3] ; removeAt([[1,2],[3,4]], 0) -> [[3,4]] ; removeAt([[1,2],[3,4]], 1, 1) -> [[1],[3]].",
     "expr.help.removeRow": "Una copia della matrice senza la riga i. Per matrici agents elimina l'agente i. Esempio: `removeRow(agents, 2)`.",
+    "expr.help.resize": "Copia di un vettore o di una matrice con dimensioni diverse. Mantiene le posizioni esistenti, elimina quelle eccedenti e riempie con zeri quelle nuove. Le matrici agents non sono supportate. Esempi: resize([1,2], 4) -> [1,2,0,0] ; resize([[1,2],[3,4]], 3, 4) -> [[1,2,0,0],[3,4,0,0],[0,0,0,0]].",
     "expr.help.round": "Arrotondamento all'intero più vicino di `x`. Esempio: `round(1.6) -> 2`.",
     "expr.help.row": "La riga i-esima della matrice. Se la matrice rappresenta agenti, restituisce il vettore proprietà dell'agente i. Esempio: `row(agents, 0)`.",
     "expr.help.self": "Valore locale corrente del nodo. In esecuzione scalare coincide con il valore del nodo; in esecuzione vettoriale indica la componente dell'agente corrente; nei contesti matriciali agent-based coincide con il valore della cella corrente.",
@@ -447,9 +449,14 @@ window.STGraphXI18nBundles = {
     "expr.error.agentsRowsLength": "Le righe di agents devono avere tante colonne quanti sono i nomi di campo",
     "expr.error.agentsRowsMatrix": "agents richiede le righe come matrice",
     "expr.error.appendArguments": "append richiede un vettore o una matrice come primo argomento, oppure uno scalare seguito da un vettore",
+    "expr.error.appendMinArguments": "append richiede almeno due argomenti",
     "expr.error.appendFirstArgVectorOrMatrix": "Il primo argomento di append deve essere un vettore o una matrice",
     "expr.error.appendRowLength": "La lunghezza della riga aggiunta non coincide con il numero di colonne della matrice",
     "expr.error.appendSecondArgVectorRow": "Su matrici, append richiede una riga vettore come secondo argomento",
+    "expr.error.appendAxis": "L'axis di append su matrici deve essere 0 o 1",
+    "expr.error.appendColumnVector": "Con axis=1, append richiede una colonna vettore",
+    "expr.error.appendColumnLength": "La lunghezza della colonna aggiunta non coincide con il numero di righe della matrice",
+    "expr.error.appendAgentColumn": "append con axis=1 non e supportato per matrici agents",
     "expr.error.arrayAxisIntegerOrVector": "L'asse {index} di array deve essere un intero non negativo o un vettore",
     "expr.error.arrayDimensionNonNegative": "La dimensione {index} di array deve essere un intero non negativo",
     "expr.error.arrayIndexInteger": "L'indice dell'array deve essere un intero",
@@ -483,6 +490,8 @@ window.STGraphXI18nBundles = {
     "expr.error.expectsTwoVectors": "{name} richiede due vettori",
     "expr.error.expectsVector": "{name} richiede un vettore",
     "expr.error.expectsVectorOrMatrix": "{name} richiede un vettore o una matrice",
+    "expr.error.resizeAgentMatrix": "resize non supporta matrici agents",
+    "expr.error.resizeDimensions": "Le dimensioni di resize devono essere interi non negativi",
     "expr.error.filterMode": "La modalità di filter deve essere 'elements', 'rows' o 'cols'",
     "expr.error.filterRowsColsMatrix": "La modalità 'rows' o 'cols' di filter richiede una matrice",
     "expr.error.filterRowsColsRectMatrix": "La modalità 'rows' o 'cols' di filter richiede una matrice rettangolare",
@@ -606,6 +615,13 @@ window.STGraphXI18nBundles = {
     "widget.axisXMin": "X min",
     "widget.axisYMax": "Y max",
     "widget.axisYMin": "Y min",
+    "widget.barColor": "Colore barre",
+    "widget.barMode": "Barre",
+    "widget.barMode.all": "Barre",
+    "widget.barMode.last": "Ultima barra",
+    "widget.barMode.none": "No barre",
+    "widget.barWidth": "Spessore barre",
+    "widget.barWidthShort": "Spessore",
     "widget.binaryFalseLabel": "Testo per 0",
     "widget.binaryLabelPlaceholder": "Lascia vuoto per nessun testo",
     "widget.binaryTrueLabel": "Testo per 1",
@@ -694,6 +710,8 @@ window.STGraphXI18nBundles = {
     "widget.seriesPointsMode.last": "Ultimo punto",
     "widget.seriesPointsMode.none": "No punti",
     "widget.showGrid": "Griglia",
+    "widget.showAxes": "Assi",
+    "widget.showBars": "Barre",
     "widget.showHistory": "Serie storica",
     "widget.showInstantProfile": "Profilo istantaneo",
     "widget.showTimeSeries": "Serie nel tempo",
@@ -932,6 +950,9 @@ window.STGraphXI18nBundles = {
     "tooltip.widget.axisXMin": "Limite inferiore dell'asse X. Lascia vuoto per calcolarlo automaticamente.",
     "tooltip.widget.axisYMax": "Limite superiore dell'asse Y. Lascia vuoto per calcolarlo automaticamente.",
     "tooltip.widget.axisYMin": "Limite inferiore dell'asse Y. Lascia vuoto per calcolarlo automaticamente.",
+    "tooltip.widget.barColor": "Colore delle barre verticali che uniscono i punti all'asse X.",
+    "tooltip.widget.barMode": "Sceglie se disegnare nessuna barra, solo l'ultima o una barra per ogni punto fino all'asse X.",
+    "tooltip.widget.barWidth": "Spessore delle barre verticali, in pixel.",
     "tooltip.widget.binaryFalseLabel": "Testo sovrapposto al widget quando il valore booleano e 0 o falso. Lascia vuoto per non mostrare testo.",
     "tooltip.widget.binaryTrueLabel": "Testo sovrapposto al widget quando il valore booleano e 1 o vero. Lascia vuoto per non mostrare testo.",
     "tooltip.widget.buttonInitialValue": "Imposta il valore del pulsante al reset del modello; non modifica l'esecuzione in corso.",
@@ -973,6 +994,8 @@ window.STGraphXI18nBundles = {
     "tooltip.widget.selectPair": "Seleziona questa coppia per configurarne sorgenti e stile.",
     "tooltip.widget.seriesPoints": "Sceglie se mostrare tutti i punti, solo l'ultimo o nessun punto della serie.",
     "tooltip.widget.showGrid": "Mostra le linee della griglia nel grafico.",
+    "tooltip.widget.showAxes": "Mostra gli assi, le tacche e le etichette numeriche del grafico.",
+    "tooltip.widget.showBars": "Disegna una barra verticale da ogni punto della serie all'asse X.",
     "tooltip.widget.showHistory": "Conserva una riga per ogni istante dell'esecuzione.",
     "tooltip.widget.showInstantProfile": "Traccia, a ogni istante, il profilo dei valori non scalari della serie selezionata.",
     "tooltip.widget.showTimeSeries": "Accumula i valori della serie nel tempo durante l'esecuzione.",
@@ -991,6 +1014,8 @@ window.STGraphXI18nBundles = {
     "analysis.badge.error": "Errore",
     "analysis.badge.info": "Info",
     "analysis.badge.warning": "Warning",
+    "analysis.action.goTo": "Vai all'oggetto",
+    "analysis.action.inspect": "Esamina il modello",
     "analysis.checks.algebraicCycle": "Segnala possibili cicli tra nodi non di stato, che rischiano di rendere le definizioni non risolvibili.",
     "analysis.checks.button": "Controlli eseguiti",
     "analysis.checks.chartMissingSeriesSource": "Segnala serie di grafici che puntano a nodi non più presenti.",
@@ -1018,6 +1043,11 @@ window.STGraphXI18nBundles = {
     "analysis.checks.widgetSourceNotBindable": "Segnala widget di input collegati a nodi non compatibili con quel tipo di binding.",
     "analysis.checks.widgetSourceNotOutput": "Segnala widget di output collegati a nodi non marcati come output.",
     "analysis.empty": "Nessun problema rilevato nei controlli attualmente attivi.",
+    "analysis.explanation.generic": "Questo controllo evidenzia una possibile incoerenza del modello.",
+    "analysis.filter.all": "Tutti i risultati",
+    "analysis.filter.empty": "Nessun risultato corrisponde ai filtri scelti.",
+    "analysis.filter.search": "Cerca nei risultati",
+    "analysis.filter.severity": "Mostra",
     "analysis.issue.algebraicCycle": "Possibile ciclo tra nodi non di stato: {path}.",
     "analysis.issue.chartMissingSeriesSource": "Il widget grafico {name} usa la sorgente {source}, ma il nodo non esiste più.",
     "analysis.issue.chartNoPairs": "Il widget grafico {name} non ha coppie X-Y configurate.",
@@ -1421,7 +1451,7 @@ window.STGraphXI18nBundles = {
     "expr.help.agentSpace": "A spatial index for an agent population with non-negative integer coordinates in columns xCol and yCol. If you provide idCol, space cells store that property values instead of row indices. neighborhood can be 'moore' or 'vonNeumann'. Example: `agentSpace(agents, X, Y)`.",
     "expr.help.allNeighborCounts": "A vector with the neighbor count of every agent. Example: `allNeighborCounts(agents, space)`.",
     "expr.help.and": "Boolean operator equivalent to &&. Example: a and b.",
-    "expr.help.append": "Appends or prepends an element to a vector, concatenates two vectors, or appends a row to a matrix. Examples: append([1,2], 3) ; append(1, [2,3]) ; append([1,2], [3,4]) ; append([[1,2],[3,4]], [5,6]).",
+    "expr.help.append": "Concatenates two or more values in sequence. On vectors it appends elements or vectors. If a matrix is present, axis=0 (default) concatenates rows and axis=1 columns: argument order determines whether they are placed before or after the matrix. Agent matrices support axis=0 only. Examples: append([1,2], 3, [4,5]) ; append([[1,2]], [3,4], [5,6]) ; append([[1,2],[3,4]], [5,6], 1) ; append([5,6], [[1,2],[3,4]], 1).",
     "expr.help.appendRow": "A copy of the matrix with a new row appended at the end. For agent matrices it adds a new agent. Example: `appendRow(agents, [3,1])`.",
     "expr.help.argmax": "The index of the first maximum value. For a vector it returns an index; for a matrix it returns [row, column]. In a tie it selects the first element in row and column order. Example: `argmax([2,7,4]) -> 1`.",
     "expr.help.argmin": "The index of the first minimum value. For a vector it returns an index; for a matrix it returns [row, column]. In a tie it selects the first element in row and column order. Example: `argmin([2,-1,4]) -> 1`.",
@@ -1465,6 +1495,7 @@ window.STGraphXI18nBundles = {
     "expr.help.kind.function": "General functions",
     "expr.help.kind.local": "Local functions",
     "expr.help.kind.math": "Math functions",
+    "expr.help.kind.linkedNode": "Connected and global nodes",
     "expr.help.kind.node": "Available nodes",
     "expr.help.kind.probability": "Statistical and probabilistic functions",
     "expr.help.kind.variable": "Available variables",
@@ -1493,6 +1524,7 @@ window.STGraphXI18nBundles = {
     "expr.help.reduce": "Progressive reduction of a vector or matrix. For matrices axis=0 reduces columns, axis=1 reduces rows. Examples: reduce(+, [1,2,3]) ; reduce(max, [3,7,2]) ; reduce(+, [[1,2],[3,4]], 0).",
     "expr.help.removeAt": "A copy without the selected vector element or without the selected matrix row or column. For matrices axis=0 removes a row, axis=1 a column. Examples: removeAt([1,2,3], 1) -> [1,3] ; removeAt([[1,2],[3,4]], 0) -> [[3,4]] ; removeAt([[1,2],[3,4]], 1, 1) -> [[1],[3]].",
     "expr.help.removeRow": "A copy of the matrix without row i. For agent matrices it removes agent i. Example: `removeRow(agents, 2)`.",
+    "expr.help.resize": "A copy of a vector or matrix with different dimensions. It keeps existing positions, drops excess values, and fills new positions with zeros. Agent matrices are not supported. Examples: resize([1,2], 4) -> [1,2,0,0] ; resize([[1,2],[3,4]], 3, 4) -> [[1,2,0,0],[3,4,0,0],[0,0,0,0]].",
     "expr.help.round": "Round to the nearest integer. Example: `round(1.6) -> 2`.",
     "expr.help.row": "Row i from the matrix. If the matrix represents agents, it returns the property vector of agent i. Example: row(agents, 0).",
     "expr.help.self": "Current local node value. In scalar execution it matches the node value; in vector execution it refers to the current agent component; in matrix agent-based contexts it matches the current cell value.",
@@ -1569,9 +1601,14 @@ window.STGraphXI18nBundles = {
     "expr.error.agentsRowsLength": "agents rows must match the number of field names",
     "expr.error.agentsRowsMatrix": "agents expects rows as a matrix",
     "expr.error.appendArguments": "append expects a vector or matrix as first argument, or a scalar followed by a vector",
+    "expr.error.appendMinArguments": "append expects at least two arguments",
     "expr.error.appendFirstArgVectorOrMatrix": "append expects a vector or matrix as first argument",
     "expr.error.appendRowLength": "Appended row length does not match matrix column count",
     "expr.error.appendSecondArgVectorRow": "append on matrices expects a row vector as second argument",
+    "expr.error.appendAxis": "append matrix axis must be 0 or 1",
+    "expr.error.appendColumnVector": "append with axis=1 expects a vector column",
+    "expr.error.appendColumnLength": "Appended column length does not match matrix row count",
+    "expr.error.appendAgentColumn": "append with axis=1 is not supported for agent matrices",
     "expr.error.arrayAxisIntegerOrVector": "Array axis {index} must be a non-negative integer or a vector",
     "expr.error.arrayDimensionNonNegative": "Array dimension {index} must be a non-negative integer",
     "expr.error.arrayIndexInteger": "Array index must be an integer",
@@ -1605,6 +1642,8 @@ window.STGraphXI18nBundles = {
     "expr.error.expectsTwoVectors": "{name} expects two vectors",
     "expr.error.expectsVector": "{name} expects a vector",
     "expr.error.expectsVectorOrMatrix": "{name} expects a vector or matrix",
+    "expr.error.resizeAgentMatrix": "resize does not support agent matrices",
+    "expr.error.resizeDimensions": "resize dimensions must be non-negative integers",
     "expr.error.filterMode": "filter mode must be 'elements', 'rows', or 'cols'",
     "expr.error.filterRowsColsMatrix": "filter mode 'rows' or 'cols' requires a matrix",
     "expr.error.filterRowsColsRectMatrix": "filter mode 'rows' or 'cols' requires a rectangular matrix",
@@ -1728,6 +1767,13 @@ window.STGraphXI18nBundles = {
     "widget.axisXMin": "X min",
     "widget.axisYMax": "Y max",
     "widget.axisYMin": "Y min",
+    "widget.barColor": "Bar color",
+    "widget.barMode": "Bars",
+    "widget.barMode.all": "Bars",
+    "widget.barMode.last": "Last bar",
+    "widget.barMode.none": "No bars",
+    "widget.barWidth": "Bar width",
+    "widget.barWidthShort": "Width",
     "widget.binaryFalseLabel": "Text for 0",
     "widget.binaryLabelPlaceholder": "Leave empty for no text",
     "widget.binaryTrueLabel": "Text for 1",
@@ -1816,6 +1862,8 @@ window.STGraphXI18nBundles = {
     "widget.seriesPointsMode.last": "Last point",
     "widget.seriesPointsMode.none": "No points",
     "widget.showGrid": "Grid",
+    "widget.showAxes": "Axes",
+    "widget.showBars": "Bars",
     "widget.showHistory": "History series",
     "widget.showInstantProfile": "Instant profile",
     "widget.showTimeSeries": "Time series",
@@ -2054,6 +2102,9 @@ window.STGraphXI18nBundles = {
     "tooltip.widget.axisXMin": "Lower limit of the X axis. Leave blank to calculate it automatically.",
     "tooltip.widget.axisYMax": "Upper limit of the Y axis. Leave blank to calculate it automatically.",
     "tooltip.widget.axisYMin": "Lower limit of the Y axis. Leave blank to calculate it automatically.",
+    "tooltip.widget.barColor": "Color of the vertical bars joining points to the X axis.",
+    "tooltip.widget.barMode": "Chooses no bars, the last bar only, or one bar for every point down to the X axis.",
+    "tooltip.widget.barWidth": "Width of the vertical bars, in pixels.",
     "tooltip.widget.binaryFalseLabel": "Text overlaid on the widget when the Boolean value is 0 or false. Leave blank to show no text.",
     "tooltip.widget.binaryTrueLabel": "Text overlaid on the widget when the Boolean value is 1 or true. Leave blank to show no text.",
     "tooltip.widget.buttonInitialValue": "Sets the button value when the model is reset; it does not change an ongoing execution.",
@@ -2095,6 +2146,8 @@ window.STGraphXI18nBundles = {
     "tooltip.widget.selectPair": "Selects this pair to configure its sources and style.",
     "tooltip.widget.seriesPoints": "Chooses whether to show all points, the last point only, or no series points.",
     "tooltip.widget.showGrid": "Shows grid lines in the chart.",
+    "tooltip.widget.showAxes": "Shows chart axes, ticks, and numeric labels.",
+    "tooltip.widget.showBars": "Draws a vertical bar from every series point to the X axis.",
     "tooltip.widget.showHistory": "Keeps one row for every execution instant.",
     "tooltip.widget.showInstantProfile": "Draws, at each instant, the profile of the selected series non-scalar values.",
     "tooltip.widget.showTimeSeries": "Accumulates the series values over time during execution.",
@@ -2113,6 +2166,8 @@ window.STGraphXI18nBundles = {
     "analysis.badge.error": "Error",
     "analysis.badge.info": "Info",
     "analysis.badge.warning": "Warning",
+    "analysis.action.goTo": "Go to item",
+    "analysis.action.inspect": "Inspect model",
     "analysis.checks.algebraicCycle": "Reports possible cycles among non-state nodes, which may make definitions unsolvable.",
     "analysis.checks.button": "Checks performed",
     "analysis.checks.chartMissingSeriesSource": "Reports chart series that point to nodes no longer present.",
@@ -2140,6 +2195,11 @@ window.STGraphXI18nBundles = {
     "analysis.checks.widgetSourceNotBindable": "Reports input widgets connected to nodes that are not compatible with that binding type.",
     "analysis.checks.widgetSourceNotOutput": "Reports output widgets connected to nodes not marked as output.",
     "analysis.empty": "No issues were found by the currently active checks.",
+    "analysis.explanation.generic": "This check highlights a possible inconsistency in the model.",
+    "analysis.filter.all": "All results",
+    "analysis.filter.empty": "No results match the selected filters.",
+    "analysis.filter.search": "Search results",
+    "analysis.filter.severity": "Show",
     "analysis.issue.algebraicCycle": "Possible cycle among non-state nodes: {path}.",
     "analysis.issue.chartMissingSeriesSource": "Chart widget {name} uses source {source}, but that node no longer exists.",
     "analysis.issue.chartNoPairs": "Chart widget {name} has no configured X-Y pairs.",
@@ -2976,6 +3036,46 @@ window.STGraphXI18nBundles = {
       throw new Error("flatten expects a matrix");
     }
     return value.flat();
+  }
+
+  function normalizeResizeDimension(value) {
+    const dimension = Number(value);
+    if (!Number.isInteger(dimension) || dimension < 0) {
+      throw new Error("resize dimensions must be non-negative integers");
+    }
+    return dimension;
+  }
+
+  function resizeArrayValues(value, ...dimensions) {
+    if (dimensions.length !== 1 && dimensions.length !== 2) {
+      throw new Error("resize expects 2 or 3 arguments");
+    }
+    if (!Array.isArray(value)) {
+      throw new Error("resize expects a vector or matrix");
+    }
+    if (getAgentFieldNames(value)) {
+      throw new Error("resize does not support agent matrices");
+    }
+    if (dimensions.length === 1) {
+      if (value.some((item) => Array.isArray(item))) {
+        throw new Error("resize expects a vector");
+      }
+      const length = normalizeResizeDimension(dimensions[0]);
+      return Array.from({ length }, (_, index) => (index < value.length ? value[index] : 0));
+    }
+    if (!value.every((row) => Array.isArray(row))) {
+      throw new Error("resize expects a matrix");
+    }
+    const { rowCount, colCount } = ensureRectangularMatrix(value, "resize");
+    const rows = normalizeResizeDimension(dimensions[0]);
+    const cols = normalizeResizeDimension(dimensions[1]);
+    return Array.from(
+      { length: rows },
+      (_, rowIndex) => Array.from(
+        { length: cols },
+        (_, colIndex) => (rowIndex < rowCount && colIndex < colCount ? value[rowIndex][colIndex] : 0),
+      ),
+    );
   }
 
   function ensureFlatVector(value, fnName) {
@@ -4104,6 +4204,7 @@ window.STGraphXI18nBundles = {
       intersection: intersectArrayValues,
       neighbors: neighborsOfCell,
       removeAt: removeAtValue,
+      resize: resizeArrayValues,
       set: setArrayValues,
       setAt: setAtValue,
       shuffle: shuffleVectorValues,
@@ -4195,7 +4296,7 @@ window.STGraphXI18nBundles = {
       spaceMatrix: { kind: "agent", signature: "spaceMatrix(space)", descriptionKey: "expr.help.spaceMatrix", insertText: "spaceMatrix()", cursorOffset: 12, helpSection: "agent" },
 
       // Array functions
-      append: { kind: "array", signature: "append(vector, value|vector) | append(value, vector) | append(matrix, rowVector)", descriptionKey: "expr.help.append", insertText: "append()", cursorOffset: 7 },
+      append: { kind: "array", signature: "append(value1, value2[, value3, ...]) | append(vector|matrix, ..., axis)", descriptionKey: "expr.help.append", insertText: "append()", cursorOffset: 7 },
       argmax: { kind: "array", signature: "argmax(vector|matrix)", descriptionKey: "expr.help.argmax", insertText: "argmax()", cursorOffset: 7 },
       argmin: { kind: "array", signature: "argmin(vector|matrix)", descriptionKey: "expr.help.argmin", insertText: "argmin()", cursorOffset: 7 },
       array: { kind: "array", signature: "array(axis0[, axis1, ...], expr)", descriptionKey: "expr.help.array", insertText: "array()", cursorOffset: 6 },
@@ -4207,6 +4308,7 @@ window.STGraphXI18nBundles = {
       intersection: { kind: "array", signature: "intersection(vectorA, vectorB)", descriptionKey: "expr.help.intersection", insertText: "intersection()", cursorOffset: 13 },
       neighbors: { kind: "array", signature: "neighbors(matrix, row, col[, diagonals[, toroidal]])", descriptionKey: "expr.help.neighbors", insertText: "neighbors()", cursorOffset: 10 },
       removeAt: { kind: "array", signature: "removeAt(vector, index) | removeAt(matrix, index[, axis])", descriptionKey: "expr.help.removeAt", insertText: "removeAt()", cursorOffset: 9 },
+      resize: { kind: "array", signature: "resize(vector, length) | resize(matrix, rows, cols)", descriptionKey: "expr.help.resize", insertText: "resize()", cursorOffset: 7 },
       set: { kind: "array", signature: "set(vector)", descriptionKey: "expr.help.set", insertText: "set()", cursorOffset: 4 },
       setAt: { kind: "array", signature: "setAt(vector, index, value) | setAt(matrix, [row,col], value) | setAt(matrix, row, rowVector)", descriptionKey: "expr.help.setAt", insertText: "setAt()", cursorOffset: 6 },
       shuffle: { kind: "array", signature: "shuffle(vector|matrix)", descriptionKey: "expr.help.shuffle", insertText: "shuffle()", cursorOffset: 8 },
@@ -5418,7 +5520,55 @@ window.STGraphXI18nBundles = {
     return matrix.map((row) => reduceArrayElements(row, reducer, scope, hasInit, initValue));
   }
 
-  function appendArrayValues(target, value) {
+  function isAppendMatrix(value) {
+    return Array.isArray(value) && (
+      Boolean(getAgentFieldNames(value))
+      || (value.length > 0 && value.every((row) => Array.isArray(row)))
+    );
+  }
+
+  function appendMatrixVector(matrix, vector, axis = 0, prepend = false) {
+    const fieldNames = getAgentFieldNames(matrix);
+    if (!Number.isInteger(axis) || (axis !== 0 && axis !== 1)) {
+      throw new Error("append matrix axis must be 0 or 1");
+    }
+    if (axis === 1) {
+      if (fieldNames) {
+        throw new Error("append axis 1 is not supported for agent matrices");
+      }
+      if (!Array.isArray(vector) || vector.some((item) => Array.isArray(item))) {
+        throw new Error("append on matrices axis 1 expects a vector column");
+      }
+      const columnCount = matrix.length > 0 ? matrix[0].length : 0;
+      if (!matrix.every((row) => row.length === columnCount)) {
+        throw new Error("append requires a rectangular matrix");
+      }
+      if (vector.length !== matrix.length) {
+        throw new Error("appended column length does not match matrix row count");
+      }
+      return matrix.map((row, index) => (
+        prepend ? [vector[index], ...row] : [...row, vector[index]]
+      ));
+    }
+    if (!Array.isArray(vector) || vector.some((item) => Array.isArray(item))) {
+      throw new Error("append on matrices expects a vector row as second argument");
+    }
+    const columnCount = matrix.length > 0 ? matrix[0].length : vector.length;
+    if (!matrix.every((row) => row.length === columnCount)) {
+      throw new Error("append requires a rectangular matrix");
+    }
+    if (vector.length !== columnCount) {
+      throw new Error("appended row length does not match matrix column count");
+    }
+    const copiedRows = matrix.map((row) => row.slice());
+    const out = prepend ? [vector.slice(), ...copiedRows] : [...copiedRows, vector.slice()];
+    if (fieldNames) {
+      attachAgentSchema(out, fieldNames);
+    }
+    return out;
+  }
+
+  function appendArrayValues(target, value, axis = 0) {
     if (!Array.isArray(target)) {
       if (Array.isArray(value) && !value.some((item) => Array.isArray(item))) {
         return [target, ...value];
@@ -5426,7 +5576,7 @@ window.STGraphXI18nBundles = {
       throw new Error("append expects a vector or matrix as first argument, or a scalar followed by a vector");
     }
     const fieldNames = getAgentFieldNames(target);
-    const isMatrix = Boolean(fieldNames) || (target.length > 0 && target.every((row) => Array.isArray(row)));
+    const isMatrix = isAppendMatrix(target);
     if (!isMatrix) {
       if (Array.isArray(value)) {
         const out = [...target, ...value];
@@ -5441,21 +5591,7 @@ window.STGraphXI18nBundles = {
       }
       return out;
     }
-    if (!Array.isArray(value) || value.some((item) => Array.isArray(item))) {
-      throw new Error("append on matrices expects a vector row as second argument");
-    }
-    const columnCount = target.length > 0 ? target[0].length : value.length;
-    if (!target.every((row) => row.length === columnCount)) {
-      throw new Error("append requires a rectangular matrix");
-    }
-    if (value.length !== columnCount) {
-      throw new Error("appended row length does not match matrix column count");
-    }
-    const out = [...target.map((row) => row.slice()), value.slice()];
-    if (fieldNames) {
-      attachAgentSchema(out, fieldNames);
-    }
-    return out;
+    return appendMatrixVector(target, value, axis);
   }
 
   function tokenizeExpression(source) {
@@ -6171,12 +6307,41 @@ window.STGraphXI18nBundles = {
           return reduceMatrixAlongAxis(target, axis, reducer, scope, hasInit, initValue);
         }
         if (node.name === "append") {
-          if (node.args.length !== 2) {
-            throw new Error("append expects exactly 2 arguments");
+          if (node.args.length < 2) {
+            throw new Error("append expects at least 2 arguments");
           }
-          const target = evaluateAstNode(node.args[0], scope, hooks);
-          const value = evaluateAstNode(node.args[1], scope, hooks);
-          return appendArrayValues(target, value);
+          const values = node.args.map((argument) => evaluateAstNode(argument, scope, hooks));
+          let axis = 0;
+          const hasMatrix = values.some((value) => isAppendMatrix(value));
+          const hasMatrixBeforeLast = values.slice(0, -1).some((value) => isAppendMatrix(value));
+          // A final numeric argument selects an axis only when concatenating a matrix.
+          if (hasMatrixBeforeLast && values.length >= 3) {
+            const possibleAxis = values[values.length - 1];
+            if (typeof possibleAxis === "number" && Number.isFinite(possibleAxis)) {
+              if (!Number.isInteger(possibleAxis) || (possibleAxis !== 0 && possibleAxis !== 1)) {
+                throw new Error("append matrix axis must be 0 or 1");
+              }
+              axis = possibleAxis;
+              values.pop();
+            }
+          }
+          const matrixIndex = axis === 0 || axis === 1
+            ? values.findIndex((value) => isAppendMatrix(value))
+            : -1;
+          if (hasMatrix && matrixIndex >= 0 && values.length >= 2) {
+            let result = values[matrixIndex];
+            for (let index = matrixIndex - 1; index >= 0; index -= 1) {
+              result = appendMatrixVector(result, values[index], axis, true);
+            }
+            for (let index = matrixIndex + 1; index < values.length; index += 1) {
+              result = appendMatrixVector(result, values[index], axis);
+            }
+            return result;
+          }
+          return values.slice(1).reduce(
+            (current, value) => appendArrayValues(current, value, axis),
+            values[0],
+          );
         }
         if (node.name === "count") {
           if (node.args.length < 1 || node.args.length > 3) {
@@ -10318,6 +10483,7 @@ window.STGraphXI18nBundles = {
         ? clamp(Math.round(Number(widget.fontSize)), 8, 32)
         : (Number.isFinite(Number(widget?.tableFontSize)) ? clamp(Math.round(Number(widget.tableFontSize)), 8, 32) : 13),
       outputOnly: Boolean(widget?.outputOnly),
+      showAxes: widget?.showAxes !== false,
       showHistory: Boolean(widget?.showHistory),
       expandNonScalarValues: Boolean(widget?.expandNonScalarValues) && !Boolean(widget?.showHistory),
       tableTextAlign: ["left", "center", "right"].includes(String(widget?.tableTextAlign ?? "")) ? String(widget.tableTextAlign) : "left",
@@ -10373,6 +10539,14 @@ window.STGraphXI18nBundles = {
           showLine: pair?.showLine !== false,
           lineWidth: Number.isFinite(Number(pair?.lineWidth)) ? clamp(Number(pair.lineWidth), 1, 8) : 2,
           lineStyle: String(pair?.lineStyle || "solid"),
+          barMode: ["none", "last", "all"].includes(String(pair?.barMode ?? ""))
+            ? String(pair.barMode)
+            : ((pair?.barMode === "stems" || pair?.barMode === "columns" || pair?.showBars === true) ? "all" : "none"),
+          showBars: ["none", "last", "all"].includes(String(pair?.barMode ?? ""))
+            ? String(pair.barMode) !== "none"
+            : (pair?.barMode === "stems" || pair?.barMode === "columns" || pair?.showBars === true),
+          barColor: /^#[0-9a-fA-F]{6}$/.test(String(pair?.barColor ?? "")) ? String(pair.barColor) : (/^#[0-9a-fA-F]{6}$/.test(String(pair?.color ?? "")) ? String(pair.color) : "#2d7ff9"),
+          barWidth: Number.isFinite(Number(pair?.barWidth)) ? clamp(Number(pair.barWidth), 1, 12) : 2,
           pointMode: String(pair?.pointMode || "last"),
           pointSize: Number.isFinite(Number(pair?.pointSize)) ? clamp(Number(pair.pointSize), 1, 10) : 2,
           points: [],
@@ -10533,7 +10707,7 @@ window.STGraphXI18nBundles = {
     }
   }
 
-  function drawSimpleXYChart(canvas, pairs, execution, fontSize = 11) {
+  function drawSimpleXYChart(canvas, pairs, execution, fontSize = 11, options = {}) {
     const ctx = canvas.getContext("2d");
     if (!ctx) {
       return;
@@ -10571,6 +10745,10 @@ window.STGraphXI18nBundles = {
         maxY = Math.max(maxY, pt.y);
       });
     });
+    if (series.some((pair) => pair.showBars)) {
+      minY = Math.min(minY, 0);
+      maxY = Math.max(maxY, 0);
+    }
     if (minX === maxX) {
       minX -= 1;
       maxX += 1;
@@ -10583,18 +10761,39 @@ window.STGraphXI18nBundles = {
     const sx = (width - pad * 2) / (maxX - minX);
     const sy = (height - pad * 2) / (maxY - minY);
 
-    ctx.strokeStyle = "#9fb0c0";
-    ctx.beginPath();
-    ctx.moveTo(pad, height - pad);
-    ctx.lineTo(width - pad, height - pad);
-    ctx.moveTo(pad, pad);
-    ctx.lineTo(pad, height - pad);
-    ctx.stroke();
+    if (options.showAxes !== false) {
+      ctx.strokeStyle = "#9fb0c0";
+      ctx.beginPath();
+      ctx.moveTo(pad, height - pad);
+      ctx.lineTo(width - pad, height - pad);
+      ctx.moveTo(pad, pad);
+      ctx.lineTo(pad, height - pad);
+      ctx.stroke();
+    }
 
     series.forEach((pair) => {
       ctx.strokeStyle = pair.color || "#2d7ff9";
       ctx.lineWidth = pair.lineWidth || 2;
       ctx.setLineDash(chartLineDash(pair.lineStyle));
+      if (pair.showBars) {
+        ctx.strokeStyle = pair.barColor || pair.color || "#2d7ff9";
+        ctx.lineWidth = pair.barWidth || 2;
+        ctx.setLineDash([]);
+        const baseline = height - pad - (0 - minY) * sy;
+        const barPoints = pair.barMode === "last"
+          ? [pair.points[pair.points.length - 1]].filter(Boolean)
+          : pair.points;
+        barPoints.forEach((pt) => {
+          const x = pad + (pt.x - minX) * sx;
+          const y = height - pad - (pt.y - minY) * sy;
+          ctx.beginPath();
+          ctx.moveTo(x, baseline);
+          ctx.lineTo(x, y);
+          ctx.stroke();
+        });
+        ctx.strokeStyle = pair.color || "#2d7ff9";
+        ctx.lineWidth = pair.lineWidth || 2;
+      }
       if (pair.showLine !== false) {
         ctx.beginPath();
         pair.points.forEach((pt, idx) => {
@@ -10625,12 +10824,14 @@ window.STGraphXI18nBundles = {
       }
     });
 
-    ctx.fillStyle = "#506070";
-    ctx.font = `${Math.max(8, fontSize)}px sans-serif`;
-    ctx.fillText(formatNumberValue(execution, minX), pad, height - 4);
-    ctx.fillText(formatNumberValue(execution, maxX), width - pad - 24, height - 4);
-    ctx.fillText(formatNumberValue(execution, maxY), 4, pad + 4);
-    ctx.fillText(formatNumberValue(execution, minY), 4, height - pad);
+    if (options.showAxes !== false) {
+      ctx.fillStyle = "#506070";
+      ctx.font = `${Math.max(8, fontSize)}px sans-serif`;
+      ctx.fillText(formatNumberValue(execution, minX), pad, height - 4);
+      ctx.fillText(formatNumberValue(execution, maxX), width - pad - 24, height - 4);
+      ctx.fillText(formatNumberValue(execution, maxY), 4, pad + 4);
+      ctx.fillText(formatNumberValue(execution, minY), 4, height - pad);
+    }
 
     const visibleLegend = series
       .map((pair, idx) => ({
@@ -12708,7 +12909,7 @@ window.STGraphXI18nBundles = {
         canvas.style.display = "block";
         canvas.width = Math.max(160, Math.floor(widget.width * this._zoom - 24));
         canvas.height = Math.max(120, Math.floor(widget.height * this._zoom - 54));
-        drawSimpleXYChart(canvas, widgetState?.pairs || widget.xyPairs || [], execution, widget.fontSize);
+        drawSimpleXYChart(canvas, widgetState?.pairs || widget.xyPairs || [], execution, widget.fontSize, widget);
         body.appendChild(canvas);
         return;
       }

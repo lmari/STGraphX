@@ -248,6 +248,7 @@ function addXYChartWidget(at = null) {
     yMin: null,
     yMax: null,
     showGrid: true,
+    showAxes: true,
     legendPosition: "top-right",
     xyPairs: [
       {
@@ -260,6 +261,10 @@ function addXYChartWidget(at = null) {
         showLine: true,
         lineWidth: 2.2,
         lineStyle: "solid",
+        barMode: "none",
+        showBars: false,
+        barColor: defaultChartSeriesColor(0),
+        barWidth: 2.2,
         pointMode: "all",
         pointSize: 2.4,
         points: [],
@@ -312,6 +317,17 @@ function normalizeChartLineStyle(value) {
     return value;
   }
   return "solid";
+}
+
+function normalizeChartBarMode(value, legacyShowBars = false) {
+  if (value === "none" || value === "last" || value === "all") {
+    return value;
+  }
+  // "stems" and "columns" were used by the first implementation.
+  if (value === "stems" || value === "columns" || legacyShowBars === true) {
+    return "all";
+  }
+  return "none";
 }
 
 function chartLineDash(style) {
@@ -448,6 +464,10 @@ function sanitizeWidgetXYPairs(widget) {
       showLine: pair?.showLine !== false,
       lineWidth: Number.isFinite(Number(pair?.lineWidth)) ? clamp(Number(pair.lineWidth), 1, 8) : 2.2,
       lineStyle: normalizeChartLineStyle(pair?.lineStyle),
+      barMode: normalizeChartBarMode(pair?.barMode, pair?.showBars),
+      showBars: normalizeChartBarMode(pair?.barMode, pair?.showBars) !== "none",
+      barColor: /^#[0-9a-fA-F]{6}$/.test(String(pair?.barColor ?? "")) ? String(pair.barColor) : (/^#[0-9a-fA-F]{6}$/.test(String(pair?.color ?? "")) ? String(pair.color) : defaultChartSeriesColor(idx)),
+      barWidth: Number.isFinite(Number(pair?.barWidth)) ? clamp(Number(pair.barWidth), 1, 12) : 2.2,
       pointMode: normalizeChartPointMode(pair?.pointMode, pair?.showPoints),
       pointSize: Number.isFinite(Number(pair?.pointSize)) ? clamp(Number(pair.pointSize), 1, 12) : 2.4,
       seriesData: Array.isArray(pair?.seriesData)
@@ -479,6 +499,28 @@ function sanitizeWidgetXYPairs(widget) {
     .filter((pair) => pair.ySource);
 }
 
+// Runtime updates append points at every model step. Full sanitization is
+// deliberately reserved for loading and editing: cloning the accumulated
+// history here would otherwise make long simulations quadratic in size.
+function ensureWidgetXYRuntimeData(widget) {
+  if (!Array.isArray(widget.xyPairs)
+    || widget.xyPairs.some((pair) => !pair || typeof pair !== "object")) {
+    sanitizeWidgetXYPairs(widget);
+    return;
+  }
+  widget.xyPairs.forEach((pair) => {
+    if (!Array.isArray(pair.seriesData)) {
+      pair.seriesData = [];
+    }
+    if (!Array.isArray(pair.instantSeriesData)) {
+      pair.instantSeriesData = [];
+    }
+    if (!Array.isArray(pair.points)) {
+      pair.points = [];
+    }
+  });
+}
+
 function sanitizeXYChartOptions(widget) {
   const parseNumOrNull = (value) => {
     if (value == null) {
@@ -498,6 +540,7 @@ function sanitizeXYChartOptions(widget) {
   widget.yMin = parseNumOrNull(widget.yMin);
   widget.yMax = parseNumOrNull(widget.yMax);
   widget.showGrid = widget.showGrid !== false;
+  widget.showAxes = widget.showAxes !== false;
   widget.legendPosition = ["none", "top-right", "top-left", "bottom-right", "bottom-left"].includes(String(widget.legendPosition ?? ""))
     ? String(widget.legendPosition)
     : "top-right";
@@ -558,6 +601,17 @@ function buildChartPairInstantSeriesDefinitions(pair, xValue, yValue) {
   }
 
   return [];
+}
+
+function appendChartSeriesPoint(series, point) {
+  const previous = series.points[series.points.length - 1];
+  // A chart is a visual trace, not a simulation data store. Consecutive
+  // identical coordinates add no visible information, but can occur at every
+  // step for vector-valued profiles and grow the trace by millions of points.
+  if (previous && previous.x === point.x && previous.y === point.y) {
+    return;
+  }
+  series.points.push(point);
 }
 
 function sanitizeSliderWidgetOptions(widget) {
@@ -804,15 +858,18 @@ function drawXYChart(canvas, seriesList = [], options = null) {
       showLine: s?.showLine !== false,
       lineWidth: Number.isFinite(Number(s?.lineWidth)) ? clamp(Number(s.lineWidth), 1, 8) : 2.2,
       lineStyle: normalizeChartLineStyle(s?.lineStyle),
+      barMode: normalizeChartBarMode(s?.barMode, s?.showBars),
+      showBars: normalizeChartBarMode(s?.barMode, s?.showBars) !== "none",
+      barColor: /^#[0-9a-fA-F]{6}$/.test(String(s?.barColor ?? "")) ? String(s.barColor) : (/^#[0-9a-fA-F]{6}$/.test(String(s?.color ?? "")) ? String(s.color) : defaultChartSeriesColor(idx)),
+      barWidth: Number.isFinite(Number(s?.barWidth)) ? clamp(Number(s.barWidth), 1, 12) : 2.2,
       pointMode: normalizeChartPointMode(s?.pointMode, s?.showPoints),
       pointSize: Number.isFinite(Number(s?.pointSize)) ? clamp(Number(s.pointSize), 1, 12) : 2.4,
-      points: Array.isArray(s?.points)
-        ? s.points
-          .map((p) => ({ x: Number(p?.x), y: Number(p?.y) }))
-          .filter((p) => Number.isFinite(p.x) && Number.isFinite(p.y))
-        : [],
+      // Series points are normalized when the widget is loaded or edited.
+      // Keep their identity while drawing: copying every point for every
+      // refresh makes a long chart needlessly expensive.
+      points: Array.isArray(s?.points) ? s.points : [],
     }))
-    .filter((s) => s.points.length > 0 && (s.showLine || s.pointMode !== "none"));
+    .filter((s) => s.points.length > 0 && (s.showLine || s.showBars || s.pointMode !== "none"));
 
   if (activeSeries.length < 1) {
     return;
@@ -838,6 +895,7 @@ function drawXYChart(canvas, seriesList = [], options = null) {
     yMin: parseAxisLimit(options?.yMin),
     yMax: parseAxisLimit(options?.yMax),
     showGrid: options?.showGrid !== false,
+    showAxes: options?.showAxes !== false,
     legendPosition: ["none", "top-right", "top-left", "bottom-right", "bottom-left"].includes(String(options?.legendPosition ?? ""))
       ? String(options.legendPosition)
       : "top-right",
@@ -866,6 +924,10 @@ function drawXYChart(canvas, seriesList = [], options = null) {
   if (cfg.yMin != null && cfg.yMax != null && cfg.yMax > cfg.yMin) {
     minY = cfg.yMin;
     maxY = cfg.yMax;
+  }
+  if (activeSeries.some((series) => series.showBars)) {
+    minY = Math.min(minY, 0);
+    maxY = Math.max(maxY, 0);
   }
   if (minX === maxX) {
     minX -= 1;
@@ -928,9 +990,11 @@ function drawXYChart(canvas, seriesList = [], options = null) {
   const plotW = Math.max(10, width - leftPad - rightPad);
   const plotH = Math.max(10, height - topPad - bottomPad);
 
-  ctx.strokeStyle = "#c4d3df";
-  ctx.lineWidth = 1;
-  ctx.strokeRect(leftPad, topPad, plotW, plotH);
+  if (cfg.showAxes) {
+    ctx.strokeStyle = "#c4d3df";
+    ctx.lineWidth = 1;
+    ctx.strokeRect(leftPad, topPad, plotW, plotH);
+  }
 
   const sx = (x) => leftPad + ((x - minX) / (maxX - minX)) * plotW;
   const sy = (y) => topPad + plotH - ((y - minY) / (maxY - minY)) * plotH;
@@ -950,6 +1014,41 @@ function drawXYChart(canvas, seriesList = [], options = null) {
       sampled.push(points[points.length - 1]);
     }
     return sampled;
+  };
+  const denseScatterThreshold = Math.max(2_000, Math.floor(plotW * plotH * 0.12));
+  const drawScatterPoints = (series) => {
+    const points = series.points;
+    if (points.length <= denseScatterThreshold) {
+      points.forEach((p) => {
+        const x = sx(p.x);
+        const y = sy(p.y);
+        if (series.pointSize <= 1) {
+          ctx.fillRect(Math.round(x - 1), Math.round(y - 1), 2, 2);
+          return;
+        }
+        ctx.beginPath();
+        ctx.arc(x, y, series.pointSize, 0, Math.PI * 2);
+        ctx.fill();
+      });
+      return;
+    }
+
+    // At this density individual discs cannot be distinguished. Draw one
+    // marker per occupied pixel instead, retaining the visible distribution
+    // while avoiding a canvas operation for every historical observation.
+    const occupiedPixels = new Set();
+    points.forEach((p) => {
+      const x = Math.round(sx(p.x));
+      const y = Math.round(sy(p.y));
+      if (x >= leftPad && x <= leftPad + plotW && y >= topPad && y <= topPad + plotH) {
+        occupiedPixels.add(y * width + x);
+      }
+    });
+    occupiedPixels.forEach((pixel) => {
+      const x = pixel % width;
+      const y = Math.floor(pixel / width);
+      ctx.fillRect(x, y, 1, 1);
+    });
   };
 
   if (cfg.showGrid) {
@@ -971,23 +1070,42 @@ function drawXYChart(canvas, seriesList = [], options = null) {
     });
   }
 
-  ctx.strokeStyle = "#aebfd0";
-  ctx.lineWidth = 1.2;
-  ctx.beginPath();
-  ctx.moveTo(leftPad, topPad + plotH);
-  ctx.lineTo(leftPad + plotW, topPad + plotH);
-  ctx.stroke();
-  ctx.beginPath();
-  ctx.moveTo(leftPad, topPad);
-  ctx.lineTo(leftPad, topPad + plotH);
-  ctx.stroke();
+  if (cfg.showAxes) {
+    ctx.strokeStyle = "#aebfd0";
+    ctx.lineWidth = 1.2;
+    ctx.beginPath();
+    ctx.moveTo(leftPad, topPad + plotH);
+    ctx.lineTo(leftPad + plotW, topPad + plotH);
+    ctx.stroke();
+    ctx.beginPath();
+    ctx.moveTo(leftPad, topPad);
+    ctx.lineTo(leftPad, topPad + plotH);
+    ctx.stroke();
+  }
 
   activeSeries.forEach((series, s) => {
     const color = series.color || defaultChartSeriesColor(s);
-    // Decimation is appropriate for a continuous path, but not for a scatter
-    // plot: dropping samples changes the displayed population (for example,
-    // an iterated-function-system fractal). Keep every requested point.
+    // Decimation is appropriate for a continuous path. Dense scatter plots
+    // instead use a pixel representation, which retains the distribution
+    // without discarding the underlying samples.
     const linePoints = series.showLine ? sampleSeriesPoints(series.points) : [];
+    if (series.showBars) {
+      ctx.strokeStyle = series.barColor || color;
+      ctx.lineWidth = series.barWidth;
+      ctx.setLineDash([]);
+      const baseline = sy(0);
+      const barPoints = series.barMode === "last"
+        ? [series.points[series.points.length - 1]].filter(Boolean)
+        : sampleSeriesPoints(series.points);
+      barPoints.forEach((p) => {
+        const x = sx(p.x);
+        const y = sy(p.y);
+        ctx.beginPath();
+        ctx.moveTo(x, baseline);
+        ctx.lineTo(x, y);
+        ctx.stroke();
+      });
+    }
     ctx.strokeStyle = color;
     ctx.lineWidth = series.lineWidth;
     ctx.setLineDash(chartLineDash(series.lineStyle));
@@ -1011,10 +1129,11 @@ function drawXYChart(canvas, seriesList = [], options = null) {
     ctx.setLineDash([]);
     if (series.pointMode !== "none") {
       ctx.fillStyle = series.pointColor || color;
-      const pointsToDraw = series.pointMode === "last"
-        ? [series.points[series.points.length - 1]].filter(Boolean)
-        : series.points;
-      pointsToDraw.forEach((p) => {
+      if (series.pointMode === "last") {
+        const p = series.points[series.points.length - 1];
+        if (!p) {
+          return;
+        }
         const x = sx(p.x);
         const y = sy(p.y);
         if (series.pointSize <= 1) {
@@ -1024,56 +1143,60 @@ function drawXYChart(canvas, seriesList = [], options = null) {
         ctx.beginPath();
         ctx.arc(x, y, series.pointSize, 0, Math.PI * 2);
         ctx.fill();
-      });
+      } else {
+        drawScatterPoints(series);
+      }
     }
   });
 
-  ctx.strokeStyle = "#b8c8d8";
-  ctx.lineWidth = 1;
-  xTicks.forEach((tick) => {
-    const x = sx(tick);
-    ctx.beginPath();
-    ctx.moveTo(x, topPad + plotH);
-    ctx.lineTo(x, topPad + plotH + 4);
-    ctx.stroke();
-  });
-  yTicks.forEach((tick) => {
-    const y = sy(tick);
-    ctx.beginPath();
-    ctx.moveTo(leftPad - 4, y);
-    ctx.lineTo(leftPad, y);
-    ctx.stroke();
-  });
+  if (cfg.showAxes) {
+    ctx.strokeStyle = "#b8c8d8";
+    ctx.lineWidth = 1;
+    xTicks.forEach((tick) => {
+      const x = sx(tick);
+      ctx.beginPath();
+      ctx.moveTo(x, topPad + plotH);
+      ctx.lineTo(x, topPad + plotH + 4);
+      ctx.stroke();
+    });
+    yTicks.forEach((tick) => {
+      const y = sy(tick);
+      ctx.beginPath();
+      ctx.moveTo(leftPad - 4, y);
+      ctx.lineTo(leftPad, y);
+      ctx.stroke();
+    });
 
-  ctx.fillStyle = "#4e6072";
-  ctx.textBaseline = "top";
-  ctx.textAlign = "center";
-  xTicks.forEach((tick, index) => {
-    const label = formatNumberValue(tick);
-    const x = sx(tick);
-    if (index === 0) {
-      ctx.textAlign = "left";
-      ctx.fillText(label, leftPad, topPad + plotH + 8);
-    } else if (index === xTicks.length - 1) {
-      ctx.textAlign = "right";
-      ctx.fillText(label, leftPad + plotW, topPad + plotH + 8);
-    } else {
-      ctx.textAlign = "center";
-      ctx.fillText(label, x, topPad + plotH + 8);
-    }
-  });
-  ctx.textAlign = "right";
-  yTicks.forEach((tick, index) => {
-    const label = formatNumberValue(tick);
-    const y = sy(tick);
-    if (index === 0) {
-      ctx.fillText(label, leftPad - 8, topPad + plotH - 6);
-    } else if (index === yTicks.length - 1) {
-      ctx.fillText(label, leftPad - 8, topPad - 6);
-    } else {
-      ctx.fillText(label, leftPad - 8, y - 6);
-    }
-  });
+    ctx.fillStyle = "#4e6072";
+    ctx.textBaseline = "top";
+    ctx.textAlign = "center";
+    xTicks.forEach((tick, index) => {
+      const label = formatNumberValue(tick);
+      const x = sx(tick);
+      if (index === 0) {
+        ctx.textAlign = "left";
+        ctx.fillText(label, leftPad, topPad + plotH + 8);
+      } else if (index === xTicks.length - 1) {
+        ctx.textAlign = "right";
+        ctx.fillText(label, leftPad + plotW, topPad + plotH + 8);
+      } else {
+        ctx.textAlign = "center";
+        ctx.fillText(label, x, topPad + plotH + 8);
+      }
+    });
+    ctx.textAlign = "right";
+    yTicks.forEach((tick, index) => {
+      const label = formatNumberValue(tick);
+      const y = sy(tick);
+      if (index === 0) {
+        ctx.fillText(label, leftPad - 8, topPad + plotH - 6);
+      } else if (index === yTicks.length - 1) {
+        ctx.fillText(label, leftPad - 8, topPad - 6);
+      } else {
+        ctx.fillText(label, leftPad - 8, y - 6);
+      }
+    });
+  }
 
   const legendSeries = [];
   const seenLegendLabels = new Set();
@@ -1152,7 +1275,7 @@ function updateXYWidgetsFromComputedValues(timeValue = null, nodeMap = buildNode
     if (widget.type !== "xychart") {
       return;
     }
-    sanitizeWidgetXYPairs(widget);
+    ensureWidgetXYRuntimeData(widget);
     widget.xyPairs.forEach((pair) => {
       if (widget.outputOnly) {
         const xAllowed = pair.xSource === "time" || nodeMap.get(pair.xSource)?.output;
@@ -1196,7 +1319,7 @@ function updateXYWidgetsFromComputedValues(timeValue = null, nodeMap = buildNode
           if (!pair.seriesData[idx] || pair.seriesData[idx].label !== seriesDef.label) {
             pair.seriesData[idx] = { label: seriesDef.label, points: [] };
           }
-          pair.seriesData[idx].points.push(seriesDef.point);
+          appendChartSeriesPoint(pair.seriesData[idx], seriesDef.point);
         });
         if (pair.seriesData.length > seriesDefs.length) {
           pair.seriesData = pair.seriesData.slice(0, seriesDefs.length);
@@ -2127,6 +2250,10 @@ function refreshChartWidgetRuntimeBody(root, widget, nodeMap = buildNodeNameMap(
         showLine: pair.showLine,
         lineWidth: pair.lineWidth,
         lineStyle: pair.lineStyle,
+        barMode: pair.barMode,
+        showBars: pair.showBars,
+        barColor: pair.barColor,
+        barWidth: pair.barWidth,
         pointMode: pair.pointMode,
         pointSize: pair.pointSize,
         points: series.points || [],
@@ -2143,6 +2270,10 @@ function refreshChartWidgetRuntimeBody(root, widget, nodeMap = buildNodeNameMap(
         showLine: pair.showLine,
         lineWidth: pair.lineWidth,
         lineStyle: pair.lineStyle,
+        barMode: pair.barMode,
+        showBars: pair.showBars,
+        barColor: pair.barColor,
+        barWidth: pair.barWidth,
         pointMode: pair.pointMode === "last" ? "all" : pair.pointMode,
         pointSize: pair.pointSize,
         points: series.points || [],
@@ -2565,6 +2696,10 @@ function renderWidgets() {
             showLine: pair.showLine,
             lineWidth: pair.lineWidth,
             lineStyle: pair.lineStyle,
+            barMode: pair.barMode,
+            showBars: pair.showBars,
+            barColor: pair.barColor,
+            barWidth: pair.barWidth,
             pointMode: pair.pointMode,
             pointSize: pair.pointSize,
             points: series.points || [],
@@ -2581,6 +2716,10 @@ function renderWidgets() {
             showLine: pair.showLine,
             lineWidth: pair.lineWidth,
             lineStyle: pair.lineStyle,
+            barMode: pair.barMode,
+            showBars: pair.showBars,
+            barColor: pair.barColor,
+            barWidth: pair.barWidth,
             pointMode: pair.pointMode === "last" ? "all" : pair.pointMode,
             pointSize: pair.pointSize,
             points: series.points || [],
@@ -3700,6 +3839,9 @@ function refreshWidgetConfigPanel(widget) {
     "widget.pointSizeShort": "tooltip.widget.pointSize",
     "widget.lineColor": "tooltip.widget.lineColor",
     "widget.pointColor": "tooltip.widget.pointColor",
+    "widget.barColor": "tooltip.widget.barColor",
+    "widget.barMode": "tooltip.widget.barMode",
+    "widget.barWidthShort": "tooltip.widget.barWidth",
     "widget.axisXMin": "tooltip.widget.axisXMin",
     "widget.axisXMax": "tooltip.widget.axisXMax",
     "widget.axisYMin": "tooltip.widget.axisYMin",
@@ -4684,6 +4826,10 @@ function refreshWidgetConfigPanel(widget) {
           showLine: true,
           lineWidth: 2.2,
           lineStyle: "solid",
+          barMode: "none",
+          showBars: false,
+          barColor: defaultChartSeriesColor(widget.xyPairs.length),
+          barWidth: 2.2,
           pointMode: "all",
           pointSize: 2.4,
           points: [],
@@ -4805,6 +4951,18 @@ function refreshWidgetConfigPanel(widget) {
       });
     });
 
+    const barColorInput = document.createElement("input");
+    barColorInput.type = "color";
+    barColorInput.value = /^#[0-9a-fA-F]{6}$/.test(String(pair.barColor ?? ""))
+      ? String(pair.barColor)
+      : lineColorInput.value;
+    setTooltipText(barColorInput, t("widget.barColor"));
+    barColorInput.addEventListener("change", () => {
+      runAction(() => {
+        widget.xyPairs[activePairIndex].barColor = barColorInput.value;
+      });
+    });
+
     const pointColorInput = document.createElement("input");
     pointColorInput.type = "color";
     pointColorInput.value = /^#[0-9a-fA-F]{6}$/.test(String(pair.pointColor ?? ""))
@@ -4880,13 +5038,46 @@ function refreshWidgetConfigPanel(widget) {
       });
     });
 
+    const barModeSelect = document.createElement("select");
+    setTooltipText(barModeSelect, t("widget.barMode"));
+    ["none", "last", "all"].forEach((mode) => {
+      const opt = document.createElement("option");
+      opt.value = mode;
+      opt.textContent = t(`widget.barMode.${mode}`);
+      barModeSelect.appendChild(opt);
+    });
+    barModeSelect.value = normalizeChartBarMode(pair.barMode, pair.showBars);
+    barModeSelect.addEventListener("change", () => {
+      runAction(() => {
+        widget.xyPairs[activePairIndex].barMode = barModeSelect.value;
+        widget.xyPairs[activePairIndex].showBars = barModeSelect.value !== "none";
+      });
+      updateSeriesStyleControls();
+    });
+
+    const barWidthInput = document.createElement("input");
+    barWidthInput.type = "number";
+    barWidthInput.step = "0.2";
+    barWidthInput.min = "1";
+    barWidthInput.max = "12";
+    barWidthInput.value = String(Number(pair.barWidth ?? 2.2));
+    setTooltipText(barWidthInput, t("widget.barWidth"));
+    barWidthInput.addEventListener("change", () => {
+      runAction(() => {
+        widget.xyPairs[activePairIndex].barWidth = clamp(Number(barWidthInput.value) || 2.2, 1, 12);
+      });
+    });
+
     const updateSeriesStyleControls = () => {
       const lineDisabled = lineStyleSelect.value === "none";
       const pointsDisabled = pointsSelect.value === "none";
+      const barsDisabled = barModeSelect.value === "none";
       lineWidthInput.disabled = lineDisabled;
       pointSizeInput.disabled = pointsDisabled;
       lineColorInput.disabled = lineDisabled;
       pointColorInput.disabled = pointsDisabled;
+      barColorInput.disabled = barsDisabled;
+      barWidthInput.disabled = barsDisabled;
     };
 
     const primaryStyleRow = document.createElement("div");
@@ -4898,11 +5089,17 @@ function refreshWidgetConfigPanel(widget) {
     pointControls.appendChild(createCompactField("widget.seriesPoints", pointsSelect));
     pointControls.appendChild(createCompactField("widget.pointSizeShort", pointSizeInput));
     primaryStyleRow.appendChild(pointControls);
+    const barControls = document.createElement("div");
+    barControls.className = "chart-pair-point-controls";
+    barControls.appendChild(createCompactField("widget.barMode", barModeSelect));
+    barControls.appendChild(createCompactField("widget.barWidthShort", barWidthInput));
+    primaryStyleRow.appendChild(barControls);
 
     const secondaryStyleRow = document.createElement("div");
     secondaryStyleRow.className = "chart-pair-style-secondary";
     secondaryStyleRow.appendChild(createCompactField("widget.lineColor", lineColorInput));
     secondaryStyleRow.appendChild(createCompactField("widget.pointColor", pointColorInput));
+    secondaryStyleRow.appendChild(createCompactField("widget.barColor", barColorInput));
 
     updateSeriesStyleControls();
 
@@ -4995,7 +5192,26 @@ function refreshWidgetConfigPanel(widget) {
   gridLabel.appendChild(gridInput);
   gridLabel.appendChild(gridSpan);
   setConfigTooltip(gridLabel, "tooltip.widget.showGrid");
-  chartAxisSection.appendChild(gridLabel);
+  const axesLabel = document.createElement("label");
+  axesLabel.className = "menu-check compact-bool";
+  const axesInput = document.createElement("input");
+  axesInput.type = "checkbox";
+  axesInput.checked = widget.showAxes !== false;
+  axesInput.addEventListener("change", () => {
+    runAction(() => {
+      widget.showAxes = axesInput.checked;
+    });
+  });
+  const axesSpan = document.createElement("span");
+  axesSpan.textContent = t("widget.showAxes");
+  axesLabel.appendChild(axesInput);
+  axesLabel.appendChild(axesSpan);
+  setConfigTooltip(axesLabel, "tooltip.widget.showAxes");
+  const axisToggles = document.createElement("div");
+  axisToggles.className = "chart-axis-toggles";
+  axisToggles.appendChild(gridLabel);
+  axisToggles.appendChild(axesLabel);
+  chartAxisSection.appendChild(axisToggles);
 
   const legendPositionSelect = document.createElement("select");
   ["none", "top-right", "top-left", "bottom-right", "bottom-left"].forEach((pos) => {
@@ -5030,6 +5246,7 @@ globalThis.Widgets = {
   normalizeChartPointMode,
   normalizeChartSeriesToggle,
   normalizeChartLineStyle,
+  normalizeChartBarMode,
   applyWidgetDrivenNodeValues,
   applyRuntimeModelInputOverrides,
   refreshRuntimeView,

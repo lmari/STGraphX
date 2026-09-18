@@ -25,7 +25,18 @@ contextBridge.exposeInMainWorld("STGraphXElectronFiles", {
     const result = await ipcRenderer.invoke("stgraphx:show-save-dialog", options);
     return result?.canceled ? "" : String(result?.filePath || "");
   },
-  readTextFile: (filePath) => ipcRenderer.invoke("stgraphx:read-text-file", String(filePath || "")),
+  async readTextFile(filePath) {
+    const result = await ipcRenderer.invoke("stgraphx:read-text-file", String(filePath || ""));
+    if (result?.ok) {
+      return String(result.text ?? "");
+    }
+    const err = new Error(String(result?.message || "Unable to read file"));
+    err.code = String(result?.code || "READ_ERROR");
+    if (err.code === "ENOENT") {
+      err.name = "NotFoundError";
+    }
+    throw err;
+  },
   writeTextFile: (filePath, text) => ipcRenderer.invoke(
     "stgraphx:write-text-file",
     String(filePath || ""),

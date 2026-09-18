@@ -257,6 +257,7 @@
         ? clamp(Math.round(Number(widget.fontSize)), 8, 32)
         : (Number.isFinite(Number(widget?.tableFontSize)) ? clamp(Math.round(Number(widget.tableFontSize)), 8, 32) : 13),
       outputOnly: Boolean(widget?.outputOnly),
+      showAxes: widget?.showAxes !== false,
       showHistory: Boolean(widget?.showHistory),
       expandNonScalarValues: Boolean(widget?.expandNonScalarValues) && !Boolean(widget?.showHistory),
       tableTextAlign: ["left", "center", "right"].includes(String(widget?.tableTextAlign ?? "")) ? String(widget.tableTextAlign) : "left",
@@ -312,6 +313,14 @@
           showLine: pair?.showLine !== false,
           lineWidth: Number.isFinite(Number(pair?.lineWidth)) ? clamp(Number(pair.lineWidth), 1, 8) : 2,
           lineStyle: String(pair?.lineStyle || "solid"),
+          barMode: ["none", "last", "all"].includes(String(pair?.barMode ?? ""))
+            ? String(pair.barMode)
+            : ((pair?.barMode === "stems" || pair?.barMode === "columns" || pair?.showBars === true) ? "all" : "none"),
+          showBars: ["none", "last", "all"].includes(String(pair?.barMode ?? ""))
+            ? String(pair.barMode) !== "none"
+            : (pair?.barMode === "stems" || pair?.barMode === "columns" || pair?.showBars === true),
+          barColor: /^#[0-9a-fA-F]{6}$/.test(String(pair?.barColor ?? "")) ? String(pair.barColor) : (/^#[0-9a-fA-F]{6}$/.test(String(pair?.color ?? "")) ? String(pair.color) : "#2d7ff9"),
+          barWidth: Number.isFinite(Number(pair?.barWidth)) ? clamp(Number(pair.barWidth), 1, 12) : 2,
           pointMode: String(pair?.pointMode || "last"),
           pointSize: Number.isFinite(Number(pair?.pointSize)) ? clamp(Number(pair.pointSize), 1, 10) : 2,
           points: [],
@@ -472,7 +481,7 @@
     }
   }
 
-  function drawSimpleXYChart(canvas, pairs, execution, fontSize = 11) {
+  function drawSimpleXYChart(canvas, pairs, execution, fontSize = 11, options = {}) {
     const ctx = canvas.getContext("2d");
     if (!ctx) {
       return;
@@ -510,6 +519,10 @@
         maxY = Math.max(maxY, pt.y);
       });
     });
+    if (series.some((pair) => pair.showBars)) {
+      minY = Math.min(minY, 0);
+      maxY = Math.max(maxY, 0);
+    }
     if (minX === maxX) {
       minX -= 1;
       maxX += 1;
@@ -522,18 +535,39 @@
     const sx = (width - pad * 2) / (maxX - minX);
     const sy = (height - pad * 2) / (maxY - minY);
 
-    ctx.strokeStyle = "#9fb0c0";
-    ctx.beginPath();
-    ctx.moveTo(pad, height - pad);
-    ctx.lineTo(width - pad, height - pad);
-    ctx.moveTo(pad, pad);
-    ctx.lineTo(pad, height - pad);
-    ctx.stroke();
+    if (options.showAxes !== false) {
+      ctx.strokeStyle = "#9fb0c0";
+      ctx.beginPath();
+      ctx.moveTo(pad, height - pad);
+      ctx.lineTo(width - pad, height - pad);
+      ctx.moveTo(pad, pad);
+      ctx.lineTo(pad, height - pad);
+      ctx.stroke();
+    }
 
     series.forEach((pair) => {
       ctx.strokeStyle = pair.color || "#2d7ff9";
       ctx.lineWidth = pair.lineWidth || 2;
       ctx.setLineDash(chartLineDash(pair.lineStyle));
+      if (pair.showBars) {
+        ctx.strokeStyle = pair.barColor || pair.color || "#2d7ff9";
+        ctx.lineWidth = pair.barWidth || 2;
+        ctx.setLineDash([]);
+        const baseline = height - pad - (0 - minY) * sy;
+        const barPoints = pair.barMode === "last"
+          ? [pair.points[pair.points.length - 1]].filter(Boolean)
+          : pair.points;
+        barPoints.forEach((pt) => {
+          const x = pad + (pt.x - minX) * sx;
+          const y = height - pad - (pt.y - minY) * sy;
+          ctx.beginPath();
+          ctx.moveTo(x, baseline);
+          ctx.lineTo(x, y);
+          ctx.stroke();
+        });
+        ctx.strokeStyle = pair.color || "#2d7ff9";
+        ctx.lineWidth = pair.lineWidth || 2;
+      }
       if (pair.showLine !== false) {
         ctx.beginPath();
         pair.points.forEach((pt, idx) => {
@@ -564,12 +598,14 @@
       }
     });
 
-    ctx.fillStyle = "#506070";
-    ctx.font = `${Math.max(8, fontSize)}px sans-serif`;
-    ctx.fillText(formatNumberValue(execution, minX), pad, height - 4);
-    ctx.fillText(formatNumberValue(execution, maxX), width - pad - 24, height - 4);
-    ctx.fillText(formatNumberValue(execution, maxY), 4, pad + 4);
-    ctx.fillText(formatNumberValue(execution, minY), 4, height - pad);
+    if (options.showAxes !== false) {
+      ctx.fillStyle = "#506070";
+      ctx.font = `${Math.max(8, fontSize)}px sans-serif`;
+      ctx.fillText(formatNumberValue(execution, minX), pad, height - 4);
+      ctx.fillText(formatNumberValue(execution, maxX), width - pad - 24, height - 4);
+      ctx.fillText(formatNumberValue(execution, maxY), 4, pad + 4);
+      ctx.fillText(formatNumberValue(execution, minY), 4, height - pad);
+    }
 
     const visibleLegend = series
       .map((pair, idx) => ({
@@ -2647,7 +2683,7 @@
         canvas.style.display = "block";
         canvas.width = Math.max(160, Math.floor(widget.width * this._zoom - 24));
         canvas.height = Math.max(120, Math.floor(widget.height * this._zoom - 54));
-        drawSimpleXYChart(canvas, widgetState?.pairs || widget.xyPairs || [], execution, widget.fontSize);
+        drawSimpleXYChart(canvas, widgetState?.pairs || widget.xyPairs || [], execution, widget.fontSize, widget);
         body.appendChild(canvas);
         return;
       }

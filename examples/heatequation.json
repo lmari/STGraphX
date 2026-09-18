@@ -1,0 +1,400 @@
+{
+  "version": 1,
+  "modelTitle": "heat_equation 2D",
+  "localFunctions": [],
+  "view": {
+    "zoom": 1,
+    "showGrid": true,
+    "highlightNodeEdges": false,
+    "showNodeValues": false,
+    "gridSize": 20,
+    "tooltipDelayMs": 300,
+    "scrollLeft": 1,
+    "scrollTop": 0
+  },
+  "debug": {
+    "watches": [],
+    "breakpointEnabled": false,
+    "breakpointExpression": ""
+  },
+  "modelProperties": [],
+  "nodeCounter": 15,
+  "edgeCounter": 16,
+  "widgetCounter": 5,
+  "textItemCounter": 6,
+  "presentationGroupCounter": 3,
+  "presentationGroups": [],
+  "dashboard": null,
+  "execution": {
+    "t0": 0,
+    "dt": 0.01,
+    "t1": 7,
+    "delayMs": 1,
+    "renderEverySteps": 1,
+    "decimals": 3,
+    "integrator": "euler",
+    "strictDefinitions": false
+  },
+  "nodes": [
+    {
+      "id": 1,
+      "name": "Dx",
+      "output": false,
+      "global": false,
+      "type": "parameter",
+      "x": 190,
+      "y": 280,
+      "width": 65,
+      "height": 45,
+      "fillColor": "#ffffff",
+      "strokeColor": "#000000",
+      "properties": [
+        {
+          "key": "note formula",
+          "value": ""
+        },
+        {
+          "key": "descrizione",
+          "value": "Space step of the x array"
+        }
+      ],
+      "valueExpression": "0.5"
+    },
+    {
+      "id": 2,
+      "name": "k",
+      "output": false,
+      "global": false,
+      "type": "parameter",
+      "x": 190,
+      "y": 110,
+      "width": 75,
+      "height": 45,
+      "fillColor": "#ffffff",
+      "strokeColor": "#000000",
+      "properties": [
+        {
+          "key": "note formula",
+          "value": ""
+        },
+        {
+          "key": "descrizione",
+          "value": "Thermal constant"
+        }
+      ],
+      "valueExpression": "2"
+    },
+    {
+      "id": 3,
+      "name": "sx",
+      "output": false,
+      "global": true,
+      "type": "parameter",
+      "x": 20,
+      "y": 130,
+      "width": 75,
+      "height": 45,
+      "fillColor": "#ffff00",
+      "strokeColor": "#000000",
+      "properties": [
+        {
+          "key": "note formula",
+          "value": ""
+        },
+        {
+          "key": "descrizione",
+          "value": ""
+        }
+      ],
+      "valueExpression": "50"
+    },
+    {
+      "id": 4,
+      "name": "u",
+      "output": true,
+      "global": false,
+      "type": "state",
+      "x": 190,
+      "y": 180,
+      "width": 75,
+      "height": 45,
+      "fillColor": "#ffffff",
+      "strokeColor": "#000000",
+      "properties": [
+        {
+          "key": "note formula",
+          "value": ""
+        },
+        {
+          "key": "descrizione",
+          "value": "Array of temperature along the x,y dimensions"
+        }
+      ],
+      "stateTransition": "integral(k*(uxxw+uyyw))",
+      "initialState": "u0"
+    },
+    {
+      "id": 5,
+      "name": "u0",
+      "output": false,
+      "global": false,
+      "type": "algebraic",
+      "x": 70,
+      "y": 180,
+      "width": 75,
+      "height": 45,
+      "fillColor": "#ffffff",
+      "strokeColor": "#000000",
+      "properties": [
+        {
+          "key": "note formula",
+          "value": ""
+        },
+        {
+          "key": "descrizione",
+          "value": "Initial temperature along the x dimension"
+        }
+      ],
+      "input": false,
+      "valueExpression": "array(sx,sx,\n  if(($i0>5&&$i1>5&&$i0<20&&$i1<20),1.5,\n     ($i0>40&&$i1>40&&$i0<45&&$i1<45),-2,\n  0)\n)"
+    },
+    {
+      "id": 6,
+      "name": "uxx",
+      "output": false,
+      "global": false,
+      "type": "algebraic",
+      "x": 100,
+      "y": 240,
+      "width": 75,
+      "height": 45,
+      "fillColor": "#ffffff",
+      "strokeColor": "#000000",
+      "properties": [
+        {
+          "key": "note formula",
+          "value": "(u[[],[2:sx-1]]-2*u[[],[1:sx-2]]+u[[],[0:sx-3]])/(Dx^2)"
+        },
+        {
+          "key": "descrizione",
+          "value": "Array of second derivative of temperature along the x dimension"
+        }
+      ],
+      "input": false,
+      "valueExpression": "(u[:,2:sx]-2*u[:,1:sx-1]+u[:,0:sx-2])/(Dx^2)"
+    },
+    {
+      "id": 7,
+      "name": "uxxw",
+      "output": false,
+      "global": false,
+      "type": "algebraic",
+      "x": 100,
+      "y": 320,
+      "width": 75,
+      "height": 45,
+      "fillColor": "#ffffff",
+      "strokeColor": "#000000",
+      "properties": [
+        {
+          "key": "note formula",
+          "value": "uxx[[],[0]]#uxx#uxx[[],[sx-3]]"
+        },
+        {
+          "key": "descrizione",
+          "value": "Array of second derivative of temperature along the x dimension\n(fixed dimension)"
+        }
+      ],
+      "input": false,
+      "valueExpression": "append(uxx[:,0], uxx, uxx[:,sx-3], 1)"
+    },
+    {
+      "id": 8,
+      "name": "uyy",
+      "output": false,
+      "global": false,
+      "type": "algebraic",
+      "x": 270,
+      "y": 240,
+      "width": 75,
+      "height": 45,
+      "fillColor": "#ffffff",
+      "strokeColor": "#000000",
+      "properties": [
+        {
+          "key": "note formula",
+          "value": "(u[[2:sx-1]]-2*u[[1:sx-2]]+u[[0:sx-3]])/(Dx^2)"
+        },
+        {
+          "key": "descrizione",
+          "value": "Array of second derivative of temperature along the y dimension"
+        }
+      ],
+      "input": false,
+      "valueExpression": "(u[2:sx]-2*u[1:sx-1]+u[0:sx-2])/(Dx^2)"
+    },
+    {
+      "id": 9,
+      "name": "uyyw",
+      "output": false,
+      "global": false,
+      "type": "algebraic",
+      "x": 270,
+      "y": 320,
+      "width": 75,
+      "height": 45,
+      "fillColor": "#ffffff",
+      "strokeColor": "#000000",
+      "properties": [
+        {
+          "key": "note formula",
+          "value": "\nconc(conc([uyy[0]],uyy,0),[uyy[sx-3]],0)"
+        },
+        {
+          "key": "descrizione",
+          "value": "Array of second derivative of temperature along the y dimension\n(fixed dimension)"
+        }
+      ],
+      "input": false,
+      "valueExpression": "append(uyy[0],uyy,uyy[sx-3])"
+    }
+  ],
+  "edges": [
+    {
+      "id": 1,
+      "from": 1,
+      "to": 8,
+      "controlPoints": []
+    },
+    {
+      "id": 2,
+      "from": 1,
+      "to": 6,
+      "controlPoints": []
+    },
+    {
+      "id": 3,
+      "from": 4,
+      "to": 8,
+      "controlPoints": []
+    },
+    {
+      "id": 4,
+      "from": 5,
+      "to": 4,
+      "controlPoints": []
+    },
+    {
+      "id": 5,
+      "from": 2,
+      "to": 4,
+      "controlPoints": []
+    },
+    {
+      "id": 6,
+      "from": 4,
+      "to": 6,
+      "controlPoints": []
+    },
+    {
+      "id": 7,
+      "from": 6,
+      "to": 7,
+      "controlPoints": []
+    },
+    {
+      "id": 8,
+      "from": 7,
+      "to": 4,
+      "controlPoints": []
+    },
+    {
+      "id": 9,
+      "from": 8,
+      "to": 9,
+      "controlPoints": []
+    },
+    {
+      "id": 10,
+      "from": 9,
+      "to": 4,
+      "controlPoints": []
+    }
+  ],
+  "textItems": [
+    {
+      "id": 1,
+      "x": 40,
+      "y": 20,
+      "width": 260,
+      "height": 60,
+      "fillColor": "",
+      "strokeColor": "",
+      "dashboardPageId": null,
+      "html": "<html>   <head>        </head>   <body>     <p style=\"margin-top: 0\">       <font size=\"5\">Heat (Fourier's) equation </font>     </p>     <p style=\"margin-top: 0\">       <font size=\"5\">of thermal conductivity</font>     </p>   </body> </html> "
+    },
+    {
+      "id": 2,
+      "x": 30,
+      "y": 380,
+      "width": 300,
+      "height": 40,
+      "fillColor": "",
+      "strokeColor": "",
+      "dashboardPageId": null,
+      "html": "<html>   <head>        </head>   <body>     <p style=\"margin-top: 0\">       <font size=\"4\">A classical, and simple, 2D&#160; PDE...</font>     </p>   </body> </html> "
+    }
+  ],
+  "widgets": [
+    {
+      "id": 3,
+      "type": "matrix",
+      "customTitle": "",
+      "x": 400,
+      "y": 0,
+      "width": 520,
+      "height": 440,
+      "dashboardPageId": null,
+      "minimized": false,
+      "showTitleBar": true,
+      "fontSize": 13,
+      "outputOnly": true,
+      "showHistory": false,
+      "expandNonScalarValues": false,
+      "tableTextAlign": "left",
+      "tableDecimalDigits": 0,
+      "xMin": "auto",
+      "xMax": "auto",
+      "yMin": "auto",
+      "yMax": "auto",
+      "showGrid": true,
+      "showAxes": true,
+      "legendPosition": "top-right",
+      "source": "u",
+      "showNumericValues": true,
+      "showIndices": true,
+      "autoFitCells": true,
+      "cellSize": 28,
+      "valueMin": -2,
+      "valueMax": 2,
+      "displayRows": null,
+      "displayCols": null,
+      "colorScheme": "heat",
+      "viewMode": "surface",
+      "surfaceStyle": "solid",
+      "surfaceAzimuth": 25,
+      "surfaceElevation": 18,
+      "surfaceHeightScale": 0.5,
+      "min": 0,
+      "max": 100,
+      "step": 1,
+      "value": 0,
+      "falseLabel": "",
+      "trueLabel": "",
+      "options": [],
+      "mappings": [],
+      "columns": [],
+      "xyPairs": []
+    }
+  ]
+}

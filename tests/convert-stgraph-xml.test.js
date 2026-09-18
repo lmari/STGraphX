@@ -5,7 +5,7 @@ const { convertStGraphXml } = require("../scripts/convert-stgraph-xml.js");
 
 const source = `<?xml version="1.0"?>
 <stgraph>
-  <head systemName="Modello di prova" description="Descrizione" timeUnitDescription="giorni" time0="2" timeD="0.5" time1="10" simulationDelay="25" scale="0.75" integrationMethod="0"/>
+  <head systemName="Modello di prova" description="Descrizione" timeUnitDescription="giorni" time0="2" timeD="0.5" time1="10" simulationDelay="25" stepsBeforePause="7" scale="0.75" integrationMethod="2"/>
   <nodes>
     <node name="p" type="ValueNode" pos-x="10" pos-y="20" width="80" height="30"><isIn>true</isIn><isOut>false</isOut><isGlobal>true</isGlobal><valueType>0</valueType><expression>2</expression><backcol>255,0,10</backcol><forecol>0,0,0</forecol><documentation>Parametro &amp; prova</documentation></node>
     <node name="x" type="ValueNode" pos-x="100" pos-y="20" width="80" height="30"><isOut>true</isOut><valueType>1</valueType><stateInit>0</stateInit><stateTrans>integral(p-this)</stateTrans></node>
@@ -19,7 +19,7 @@ const source = `<?xml version="1.0"?>
 
 const { model, report } = convertStGraphXml(source, { sourceName: "prova.stg" });
 assert.equal(model.modelTitle, "Modello di prova");
-assert.deepEqual(model.execution, { t0: 2, dt: 0.5, t1: 10, delayMs: 25, decimals: 3, integrator: "euler", strictDefinitions: false });
+assert.deepEqual(model.execution, { t0: 2, dt: 0.5, t1: 10, delayMs: 25, renderEverySteps: 7, decimals: 3, integrator: "rk4", strictDefinitions: false });
 assert.equal(model.view.zoom, 0.75);
 assert.equal(model.nodes.length, 4);
 assert.equal(model.nodes[0].type, "parameter");

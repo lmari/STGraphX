@@ -97,6 +97,39 @@ function numberValue(value, fallback = 0) {
   return Number.isFinite(parsed) ? parsed : fallback;
 }
 
+function firstDefinedAttribute(attributes, names) {
+  for (const name of names) {
+    if (Object.prototype.hasOwnProperty.call(attributes || {}, name)) {
+      return { name, value: attributes[name] };
+    }
+  }
+  return null;
+}
+
+function convertRenderEverySteps(head) {
+  // STGraph used different names in saved files across releases.
+  const attribute = firstDefinedAttribute(head?.attrs, [
+    "stepsBeforePause",
+    "renderEverySteps",
+    "stepsPerUpdate",
+    "updateEverySteps",
+    "simulationSteps",
+  ]);
+  if (!attribute) return 1;
+  const value = Number(attribute.value);
+  return Number.isFinite(value) && value >= 1 ? Math.round(value) : 1;
+}
+
+function convertIntegrator(value, warnings) {
+  const raw = String(value ?? "").trim().toLowerCase();
+  if (!raw || raw === "0" || raw === "euler") return "euler";
+  // Legacy RK2(3) is the second selectable non-Euler method in STGraph.
+  if (["2", "rk2(3)", "rk23", "rk2-3", "rk2_3"].includes(raw)) return "rk4";
+  if (["3", "rk4", "rungekutta4", "runge-kutta4"].includes(raw)) return "rk4";
+  warnings.push(`Metodo di integrazione legacy ${value} convertito in Eulero; verificare la configurazione temporale.`);
+  return "euler";
+}
+
 function colorValue(value) {
   const parts = String(value || "").split(",").map((part) => Number.parseInt(part.trim(), 10));
   if (parts.length !== 3 || parts.some((part) => !Number.isInteger(part) || part < 0 || part > 255)) return "";
@@ -562,15 +595,12 @@ function convertStGraphXml(xml, options = {}) {
   const head = childrenNamed(document, "head")[0];
   const sourceName = options.sourceName || "modello.stg";
   const title = String(head?.attrs.systemName || "").trim() || path.basename(sourceName, path.extname(sourceName));
-  const integrationMethod = Number.parseInt(head?.attrs.integrationMethod, 10);
   const modelProperties = [];
   const description = String(head?.attrs.description || "").trim();
   const timeUnit = String(head?.attrs.timeUnitDescription || "").trim();
   if (description) modelProperties.push({ key: "description", value: description });
   if (timeUnit) modelProperties.push({ key: "time unit", value: timeUnit });
-  if (Number.isFinite(integrationMethod) && integrationMethod !== 0) {
-    warnings.push(`Metodo di integrazione legacy ${integrationMethod} convertito in Eulero; verificare la configurazione temporale.`);
-  }
+  const integrator = convertIntegrator(head?.attrs.integrationMethod, warnings);
   const idsByName = new Map();
   const nodeCounter = { value: 1 };
   const legacyNodes = childrenNamed(childrenNamed(document, "nodes")[0], "node");
@@ -632,8 +662,9 @@ function convertStGraphXml(xml, options = {}) {
       dt: numberValue(head?.attrs.timeD, 1),
       t1: numberValue(head?.attrs.time1, 1),
       delayMs: numberValue(head?.attrs.simulationDelay, 1),
+      renderEverySteps: convertRenderEverySteps(head),
       decimals: 3,
-      integrator: "euler",
+      integrator,
       strictDefinitions: false,
     },
     nodes,

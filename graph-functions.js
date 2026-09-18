@@ -709,6 +709,46 @@
     return value.flat();
   }
 
+  function normalizeResizeDimension(value) {
+    const dimension = Number(value);
+    if (!Number.isInteger(dimension) || dimension < 0) {
+      throw new Error("resize dimensions must be non-negative integers");
+    }
+    return dimension;
+  }
+
+  function resizeArrayValues(value, ...dimensions) {
+    if (dimensions.length !== 1 && dimensions.length !== 2) {
+      throw new Error("resize expects 2 or 3 arguments");
+    }
+    if (!Array.isArray(value)) {
+      throw new Error("resize expects a vector or matrix");
+    }
+    if (getAgentFieldNames(value)) {
+      throw new Error("resize does not support agent matrices");
+    }
+    if (dimensions.length === 1) {
+      if (value.some((item) => Array.isArray(item))) {
+        throw new Error("resize expects a vector");
+      }
+      const length = normalizeResizeDimension(dimensions[0]);
+      return Array.from({ length }, (_, index) => (index < value.length ? value[index] : 0));
+    }
+    if (!value.every((row) => Array.isArray(row))) {
+      throw new Error("resize expects a matrix");
+    }
+    const { rowCount, colCount } = ensureRectangularMatrix(value, "resize");
+    const rows = normalizeResizeDimension(dimensions[0]);
+    const cols = normalizeResizeDimension(dimensions[1]);
+    return Array.from(
+      { length: rows },
+      (_, rowIndex) => Array.from(
+        { length: cols },
+        (_, colIndex) => (rowIndex < rowCount && colIndex < colCount ? value[rowIndex][colIndex] : 0),
+      ),
+    );
+  }
+
   function ensureFlatVector(value, fnName) {
     if (!Array.isArray(value) || value.some((item) => Array.isArray(item))) {
       throw new Error(`${fnName} expects a vector`);
@@ -1835,6 +1875,7 @@
       intersection: intersectArrayValues,
       neighbors: neighborsOfCell,
       removeAt: removeAtValue,
+      resize: resizeArrayValues,
       set: setArrayValues,
       setAt: setAtValue,
       shuffle: shuffleVectorValues,
@@ -1926,7 +1967,7 @@
       spaceMatrix: { kind: "agent", signature: "spaceMatrix(space)", descriptionKey: "expr.help.spaceMatrix", insertText: "spaceMatrix()", cursorOffset: 12, helpSection: "agent" },
 
       // Array functions
-      append: { kind: "array", signature: "append(vector, value|vector) | append(value, vector) | append(matrix, rowVector)", descriptionKey: "expr.help.append", insertText: "append()", cursorOffset: 7 },
+      append: { kind: "array", signature: "append(value1, value2[, value3, ...]) | append(vector|matrix, ..., axis)", descriptionKey: "expr.help.append", insertText: "append()", cursorOffset: 7 },
       argmax: { kind: "array", signature: "argmax(vector|matrix)", descriptionKey: "expr.help.argmax", insertText: "argmax()", cursorOffset: 7 },
       argmin: { kind: "array", signature: "argmin(vector|matrix)", descriptionKey: "expr.help.argmin", insertText: "argmin()", cursorOffset: 7 },
       array: { kind: "array", signature: "array(axis0[, axis1, ...], expr)", descriptionKey: "expr.help.array", insertText: "array()", cursorOffset: 6 },
@@ -1938,6 +1979,7 @@
       intersection: { kind: "array", signature: "intersection(vectorA, vectorB)", descriptionKey: "expr.help.intersection", insertText: "intersection()", cursorOffset: 13 },
       neighbors: { kind: "array", signature: "neighbors(matrix, row, col[, diagonals[, toroidal]])", descriptionKey: "expr.help.neighbors", insertText: "neighbors()", cursorOffset: 10 },
       removeAt: { kind: "array", signature: "removeAt(vector, index) | removeAt(matrix, index[, axis])", descriptionKey: "expr.help.removeAt", insertText: "removeAt()", cursorOffset: 9 },
+      resize: { kind: "array", signature: "resize(vector, length) | resize(matrix, rows, cols)", descriptionKey: "expr.help.resize", insertText: "resize()", cursorOffset: 7 },
       set: { kind: "array", signature: "set(vector)", descriptionKey: "expr.help.set", insertText: "set()", cursorOffset: 4 },
       setAt: { kind: "array", signature: "setAt(vector, index, value) | setAt(matrix, [row,col], value) | setAt(matrix, row, rowVector)", descriptionKey: "expr.help.setAt", insertText: "setAt()", cursorOffset: 6 },
       shuffle: { kind: "array", signature: "shuffle(vector|matrix)", descriptionKey: "expr.help.shuffle", insertText: "shuffle()", cursorOffset: 8 },

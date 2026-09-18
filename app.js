@@ -246,6 +246,8 @@ const modelAnalysisDismissBtn = document.getElementById("modelAnalysisDismissBtn
 const modelAnalysisChecksBtn = document.getElementById("modelAnalysisChecksBtn");
 const modelAnalysisSummary = document.getElementById("modelAnalysisSummary");
 const modelAnalysisContent = document.getElementById("modelAnalysisContent");
+const modelAnalysisSeverityFilter = document.getElementById("modelAnalysisSeverityFilter");
+const modelAnalysisSearchInput = document.getElementById("modelAnalysisSearchInput");
 const modelAnalysisChecksModal = document.getElementById("modelAnalysisChecksModal");
 const modelAnalysisChecksCloseBtn = document.getElementById("modelAnalysisChecksCloseBtn");
 const modelAnalysisChecksDismissBtn = document.getElementById("modelAnalysisChecksDismissBtn");
@@ -323,6 +325,7 @@ const {
   normalizeChartPointMode,
   normalizeChartSeriesToggle,
   normalizeChartLineStyle,
+  normalizeChartBarMode,
   applyWidgetDrivenNodeValues,
   applyRuntimeModelInputOverrides,
   updateTableWidgetsFromComputedValues,
@@ -435,6 +438,44 @@ function normalizeTableColumnName(column) {
 }
 
 const graphFunctionHelpers = globalThis.GraphFunctions?.helpers || {};
+const selectionStateHelpers = globalThis.STGraphXSelectionState;
+if (!selectionStateHelpers) {
+  throw new Error("STGraphX selection state helpers are unavailable");
+}
+const workspaceTabsUi = globalThis.STGraphXWorkspaceTabsUi;
+if (!workspaceTabsUi) {
+  throw new Error("STGraphX workspace tabs UI helpers are unavailable");
+}
+const workspaceTabsCore = globalThis.STGraphXWorkspaceTabsCore;
+if (!workspaceTabsCore) {
+  throw new Error("STGraphX workspace tabs core helpers are unavailable");
+}
+const workspaceRuntimeStateFactory = globalThis.STGraphXWorkspaceRuntimeState?.createWorkspaceRuntimeStateHelpers;
+if (typeof workspaceRuntimeStateFactory !== "function") {
+  throw new Error("STGraphX workspace runtime state helpers are unavailable");
+}
+const workspaceRuntimeStateHelpers = workspaceRuntimeStateFactory({ deepClone, cloneRuntimeModel, cloneSimulationOutputValue });
+const valueFormattingFactory = globalThis.STGraphXValueFormatting?.createValueFormattingHelpers;
+if (typeof valueFormattingFactory !== "function") {
+  throw new Error("STGraphX value formatting helpers are unavailable");
+}
+const valueFormatting = valueFormattingFactory({
+  t,
+  clamp,
+  getDecimals: () => graph.execution.decimals,
+});
+const {
+  clampDisplayDecimals,
+  describeExpressionPreviewShape,
+  formatAgentSpaceSummary,
+  formatComputedValue,
+  formatExecutionDuration,
+  formatNumberValue,
+  isAgentSpaceValue,
+  summarizeExpressionPreviewValue,
+  summarizeNodeRuntimeValue,
+  summarizeTooltipValue,
+} = valueFormatting;
 const recentModelsStore = globalThis.STGraphXRecentModels?.createRecentModelsStore({
   storageKey: RECENT_MODELS_STORAGE_KEY,
   maxEntries: MAX_RECENT_MODELS,
@@ -907,6 +948,7 @@ const ui = {
   textDrag: null,
   textResize: null,
   expressionPreviewTimer: null,
+  nodeDefinitionRefreshTimer: null,
   expressionEditorPendingSelectionAction: null,
   expressionPreviewInitCache: null,
   analysisFocus: null,
@@ -1020,6 +1062,8 @@ const modelAnalysisUiHelpers = globalThis.STGraphXModelAnalysisUi?.createModelAn
   modelAnalysisModal,
   modelAnalysisSummary,
   modelAnalysisContent,
+  modelAnalysisSeverityFilter,
+  modelAnalysisSearchInput,
   modelAnalysisChecksModal,
   modelAnalysisChecksContent,
   analyzeModelStaticIssues,
@@ -2054,6 +2098,12 @@ function localizeExpressionErrorMessage(message) {
   if (lower === "range is too large") {
     return t("expr.error.rangeTooLarge");
   }
+  if (lower === "resize dimensions must be non-negative integers") {
+    return t("expr.error.resizeDimensions");
+  }
+  if (lower === "resize does not support agent matrices") {
+    return t("expr.error.resizeAgentMatrix");
+  }
   if (lower === "array is too large") {
     return t("expr.error.arrayTooLarge");
   }
@@ -2153,7 +2203,7 @@ function localizeExpressionErrorMessage(message) {
   if (reducerCallableMatch) {
     return t("expr.error.notCallable", { name: reducerCallableMatch[1] });
   }
-  if (lower === "reduce expects a vector or matrix" || lower === "sum expects a vector or matrix" || lower === "count expects a vector or matrix" || lower === "indiceswhere expects a vector or matrix" || lower === "size expects a vector or matrix" || lower === "average expects a vector or matrix" || lower === "stdev expects a vector or matrix") {
+  if (lower === "reduce expects a vector or matrix" || lower === "sum expects a vector or matrix" || lower === "count expects a vector or matrix" || lower === "indiceswhere expects a vector or matrix" || lower === "size expects a vector or matrix" || lower === "average expects a vector or matrix" || lower === "stdev expects a vector or matrix" || lower === "resize expects a vector or matrix") {
     const fn = raw.split(" ")[0];
     return t("expr.error.expectsVectorOrMatrix", { name: fn });
   }
@@ -2189,8 +2239,23 @@ function localizeExpressionErrorMessage(message) {
   ) {
     return t("expr.error.appendArguments");
   }
+  if (lower === "append expects at least 2 arguments") {
+    return t("expr.error.appendMinArguments");
+  }
   if (lower === "append on matrices expects a vector row as second argument") {
     return t("expr.error.appendSecondArgVectorRow");
+  }
+  if (lower === "append matrix axis must be 0 or 1") {
+    return t("expr.error.appendAxis");
+  }
+  if (lower === "append on matrices axis 1 expects a vector column") {
+    return t("expr.error.appendColumnVector");
+  }
+  if (lower === "appended column length does not match matrix row count") {
+    return t("expr.error.appendColumnLength");
+  }
+  if (lower === "append axis 1 is not supported for agent matrices") {
+    return t("expr.error.appendAgentColumn");
   }
   if (lower === "append requires a rectangular matrix") {
     return t("expr.error.expectsRectangularMatrix", { name: "append" });
@@ -5486,6 +5551,7 @@ function commitExpressionEditorValue(closeAfter = true) {
       node.initialStateExpression = String(nextInitialValue ?? "");
     }
   });
+  recalculateAfterNodeDefinitionChange();
   if (meta.inputEl && document.activeElement !== meta.inputEl) {
     meta.inputEl.value = nextValue;
   }
@@ -5511,6 +5577,43 @@ function commitExpressionEditorValue(closeAfter = true) {
 
 function applyExpressionEditor() {
   commitExpressionEditorValue(true);
+}
+
+function recalculateAfterNodeDefinitionChange() {
+  if (ui.nodeDefinitionRefreshTimer != null) {
+    window.clearTimeout(ui.nodeDefinitionRefreshTimer);
+    ui.nodeDefinitionRefreshTimer = null;
+  }
+  if (ui.timedRunHandle != null || ui.timedStepRunning) {
+    return;
+  }
+  const timeValue = Number(graph.execution.t0);
+  if (!Number.isFinite(timeValue)) {
+    render();
+    return;
+  }
+  invalidateExecutionPlan();
+  invalidateExpressionPreviewInitializationCache();
+  clearRuntimeSubmodelState();
+  clearAllXYChartPoints();
+  clearAllTableWidgetRows();
+  clearSimulationOutputHistory();
+  graph.execution.currentTime = null;
+  initializeStateNodes(timeValue);
+  evaluateAtTime(timeValue);
+  // This is a preview of the revised definition, not an execution step.
+  graph.execution.currentTime = null;
+  refreshRuntimeView();
+}
+
+function scheduleNodeDefinitionRecalculation(delayMs = 260) {
+  if (ui.nodeDefinitionRefreshTimer != null) {
+    window.clearTimeout(ui.nodeDefinitionRefreshTimer);
+  }
+  ui.nodeDefinitionRefreshTimer = window.setTimeout(() => {
+    ui.nodeDefinitionRefreshTimer = null;
+    recalculateAfterNodeDefinitionChange();
+  }, delayMs);
 }
 
 function isFirefoxBrowser() {
@@ -5643,6 +5746,19 @@ function isCompactTabletLayout() {
   const noPrimaryHover = window.matchMedia("(hover: none)").matches;
   const touchPrimaryDevice = coarsePrimaryPointer && noPrimaryHover;
   return narrowViewport || touchPrimaryDevice;
+}
+
+function nodeEdgePortPosition(node) {
+  return {
+    x: Number(node?.x || 0),
+    y: Number(node?.y || 0),
+  };
+}
+
+function nodeEdgePortRadius(node) {
+  const preferredRadius = isCompactTabletLayout() ? 10 : 7;
+  const smallestDimension = Math.max(0, Math.min(Number(node?.width || 0), Number(node?.height || 0)));
+  return Math.max(5, Math.min(preferredRadius, smallestDimension * 0.22));
 }
 
 function isTabletCanvasPanMode() {
@@ -5889,264 +6005,51 @@ function workspaceTabMetaText(tab) {
 }
 
 function getWorkspaceTabById(tabId) {
-  return workspace.tabs.find((tab) => tab.id === tabId) || null;
+  return workspaceTabsCore.getTabById(workspace.tabs, tabId);
 }
 
 function currentWorkspaceTab() {
-  return getWorkspaceTabById(workspace.activeTabId);
+  return workspaceTabsCore.currentTab(workspace.tabs, workspace.activeTabId);
 }
 
 function collectWorkspaceDescendantTabIds(tabId) {
-  const descendants = [];
-  const visit = (parentId) => {
-    workspace.tabs
-      .filter((tab) => tab?.meta?.parentTabId === parentId)
-      .forEach((childTab) => {
-        descendants.push(childTab.id);
-        visit(childTab.id);
-      });
-  };
-  visit(tabId);
-  return descendants;
+  return workspaceTabsCore.collectDescendantTabIds(workspace.tabs, tabId);
 }
 
 function workspaceContextHasUnsavedChanges(context) {
-  if (!context) {
-    return false;
-  }
-  try {
-    return JSON.stringify(context.data) !== String(context.lastSavedSnapshot || "");
-  } catch (_err) {
-    return Boolean(context.dirtySinceLastSave);
-  }
+  return workspaceTabsCore.contextHasUnsavedChanges(context);
 }
 
 function cloneRuntimeNodeState(node) {
-  if (!node) {
-    return null;
-  }
-  return {
-    id: Number(node.id),
-    computedValue: deepClone(node.computedValue),
-    computedError: String(node.computedError || ""),
-    pendingStateValue: deepClone(node.pendingStateValue),
-    pendingStateError: String(node.pendingStateError || ""),
-    submodelError: String(node.submodelError || ""),
-    runtimeSubmodelPath: String(node.__runtimeSubmodelPath || ""),
-    runtimeSubmodel: node.__runtimeSubmodel ? cloneRuntimeModel(node.__runtimeSubmodel) : null,
-  };
+  return workspaceRuntimeStateHelpers.cloneRuntimeNodeState(node);
 }
 
 function cloneRuntimeWidgetState(widget) {
-  if (!widget) {
-    return null;
-  }
-  const state = {
-    id: Number(widget.id),
-    type: String(widget.type || ""),
-  };
-  if (widget.type === "slider") {
-    state.value = Number(widget.value);
-  }
-  if (widget.type === "button") {
-    state.value = Boolean(widget.value);
-  }
-  if (widget.type === "select") {
-    state.value = Number(widget.value);
-  }
-  if (widget.type === "table") {
-    state.rows = Array.isArray(widget.rows) ? deepClone(widget.rows) : [];
-  }
-  if (widget.type === "matrix") {
-    state.lastMatrixValue = Array.isArray(widget.lastMatrixValue) ? deepClone(widget.lastMatrixValue) : null;
-  }
-  if (widget.type === "xychart") {
-    state.xyPairs = Array.isArray(widget.xyPairs)
-      ? widget.xyPairs.map((pair) => ({
-        xSource: String(pair?.xSource ?? "time"),
-        ySource: String(pair?.ySource ?? ""),
-        points: Array.isArray(pair?.points) ? deepClone(pair.points) : [],
-        seriesData: Array.isArray(pair?.seriesData) ? deepClone(pair.seriesData) : [],
-        instantSeriesData: Array.isArray(pair?.instantSeriesData) ? deepClone(pair.instantSeriesData) : [],
-      }))
-      : [];
-  }
-  return state;
+  return workspaceRuntimeStateHelpers.cloneRuntimeWidgetState(widget);
 }
 
 function cloneEmptyRuntimeNodeStateFromDataNode(node) {
-  return {
-    id: Number(node?.id),
-    computedValue: null,
-    computedError: "",
-    pendingStateValue: null,
-    pendingStateError: "",
-    submodelError: "",
-    runtimeSubmodelPath: "",
-    runtimeSubmodel: null,
-  };
+  return workspaceRuntimeStateHelpers.cloneEmptyRuntimeNodeStateFromDataNode(node);
 }
 
 function buildNodeMapFromRuntimeNodes(nodes = []) {
-  return new Map((Array.isArray(nodes) ? nodes : []).map((node) => [String(node?.name ?? ""), node]));
+  return workspaceRuntimeStateHelpers.buildNodeMapFromRuntimeNodes(nodes);
 }
 
 function buildChartPairSeriesDefinitionsForSync(pair, xValue, yValue) {
-  const finiteScalar = (value) => typeof value === "number" && Number.isFinite(value);
-  const finiteVector = (value) => Array.isArray(value) && value.every((item) => finiteScalar(item));
-  if (finiteScalar(xValue) && finiteScalar(yValue)) {
-    return [{ label: `${pair.xSource} -> ${pair.ySource}`, point: { x: xValue, y: yValue } }];
-  }
-  if (finiteScalar(xValue) && finiteVector(yValue)) {
-    return yValue.map((item) => ({
-      label: `${pair.xSource} -> ${pair.ySource}`,
-      point: { x: xValue, y: item },
-    }));
-  }
-  if (finiteVector(xValue) && finiteVector(yValue) && xValue.length === yValue.length) {
-    return xValue.map((xItem, idx) => ({
-      label: `${pair.xSource} -> ${pair.ySource}`,
-      point: { x: xItem, y: yValue[idx] },
-    }));
-  }
-  return [];
+  return workspaceRuntimeStateHelpers.buildChartPairSeriesDefinitionsForSync(pair, xValue, yValue);
 }
 
 function buildChartPairInstantSeriesDefinitionsForSync(pair, xValue, yValue) {
-  const finiteScalar = (value) => typeof value === "number" && Number.isFinite(value);
-  const finiteVector = (value) => Array.isArray(value) && value.every((item) => finiteScalar(item));
-  if (finiteScalar(xValue) && finiteVector(yValue)) {
-    return [{
-      label: `${pair.xSource} -> ${pair.ySource}`,
-      points: yValue.map((item) => ({ x: xValue, y: item })),
-    }];
-  }
-  if (finiteVector(xValue) && finiteVector(yValue) && xValue.length === yValue.length) {
-    return [{
-      label: `${pair.xSource} -> ${pair.ySource}`,
-      points: xValue.map((xItem, idx) => ({ x: xItem, y: yValue[idx] })),
-    }];
-  }
-  return [];
+  return workspaceRuntimeStateHelpers.buildChartPairInstantSeriesDefinitionsForSync(pair, xValue, yValue);
 }
 
 function buildSubmodelSimulationHistory(prevHistory, runtimeModel) {
-  const currentTime = Number(runtimeModel?.execution?.currentTime);
-  if (!Number.isFinite(currentTime)) {
-    return [];
-  }
-  const outputNodes = (runtimeModel?.nodes || []).filter((node) => node.output);
-  if (!outputNodes.length) {
-    return [];
-  }
-  const history = Array.isArray(prevHistory) ? deepClone(prevHistory) : [];
-  const lastTime = history.length ? Number(history[history.length - 1]?.time) : null;
-  if (lastTime != null && Math.abs(lastTime - currentTime) < 1e-12) {
-    return history;
-  }
-  history.push({
-    time: currentTime,
-    values: Object.fromEntries(outputNodes.map((node) => [
-      node.name,
-      {
-        value: cloneSimulationOutputValue(node.computedValue),
-        error: String(node.computedError || ""),
-      },
-    ])),
-  });
-  return history;
+  return workspaceRuntimeStateHelpers.buildSubmodelSimulationHistory(prevHistory, runtimeModel);
 }
 
 function buildSyncedWidgetRuntimeStates(widgetDefs, runtimeNodes, timeValue, previousStates = []) {
-  const nodeMap = buildNodeMapFromRuntimeNodes(runtimeNodes);
-  const previousById = new Map((Array.isArray(previousStates) ? previousStates : []).map((state) => [Number(state?.id), state]));
-  return (Array.isArray(widgetDefs) ? widgetDefs : []).map((widget) => {
-    const prev = previousById.get(Number(widget?.id)) || null;
-    if (widget?.type === "table") {
-      const state = cloneRuntimeWidgetState(widget) || { id: Number(widget?.id), type: "table", rows: [] };
-      state.rows = Array.isArray(prev?.rows) ? deepClone(prev.rows) : [];
-      state.lastSyncedTime = Number(prev?.lastSyncedTime);
-      if (widget.showHistory && Number.isFinite(timeValue) && state.lastSyncedTime !== timeValue) {
-        const displayedCols = widget.outputOnly
-          ? (Array.isArray(widget.columns) ? widget.columns.filter((name) => name === "time" || nodeMap.get(name)?.output) : [])
-          : (Array.isArray(widget.columns) ? widget.columns.slice() : []);
-        const values = {};
-        displayedCols.forEach((colName) => {
-          if (colName === "time") {
-            values.time = { value: timeValue };
-            return;
-          }
-          const node = nodeMap.get(colName);
-          if (!node) {
-            values[colName] = { value: null };
-          } else if (node.computedError) {
-            values[colName] = { error: node.computedError };
-          } else {
-            values[colName] = { value: cloneSimulationOutputValue(node.computedValue) };
-          }
-        });
-        state.rows.push({ values });
-        state.lastSyncedTime = timeValue;
-      }
-      return state;
-    }
-    if (widget?.type === "xychart") {
-      const state = cloneRuntimeWidgetState(widget) || { id: Number(widget?.id), type: "xychart", xyPairs: [] };
-      const prevPairs = new Map((Array.isArray(prev?.xyPairs) ? prev.xyPairs : []).map((pair) => [
-        `${String(pair?.xSource ?? "time")}__${String(pair?.ySource ?? "")}`,
-        pair,
-      ]));
-      state.xyPairs = (Array.isArray(widget.xyPairs) ? widget.xyPairs : []).map((pair) => {
-        const pairKey = `${String(pair?.xSource ?? "time")}__${String(pair?.ySource ?? "")}`;
-        const prevPair = prevPairs.get(pairKey) || null;
-        const nextPair = {
-          xSource: String(pair?.xSource ?? "time"),
-          ySource: String(pair?.ySource ?? ""),
-          points: Array.isArray(prevPair?.points) ? deepClone(prevPair.points) : [],
-          seriesData: Array.isArray(prevPair?.seriesData) ? deepClone(prevPair.seriesData) : [],
-          instantSeriesData: [],
-          lastSyncedTime: Number(prevPair?.lastSyncedTime),
-        };
-        const xAllowed = !widget.outputOnly || nextPair.xSource === "time" || nodeMap.get(nextPair.xSource)?.output;
-        const yAllowed = !widget.outputOnly || nextPair.ySource === "time" || nodeMap.get(nextPair.ySource)?.output;
-        const xNode = nextPair.xSource === "time" ? null : nodeMap.get(nextPair.xSource);
-        const yNode = nextPair.ySource === "time" ? null : nodeMap.get(nextPair.ySource);
-        if (!xAllowed || !yAllowed || (xNode && xNode.computedError) || (yNode && yNode.computedError)) {
-          nextPair.instantSeriesData = Array.isArray(prevPair?.instantSeriesData) ? deepClone(prevPair.instantSeriesData) : [];
-          return nextPair;
-        }
-        const xVal = nextPair.xSource === "time" ? timeValue : xNode?.computedValue;
-        const yVal = nextPair.ySource === "time" ? timeValue : yNode?.computedValue;
-        nextPair.instantSeriesData = pair?.showInstantProfile
-          ? buildChartPairInstantSeriesDefinitionsForSync(nextPair, xVal, yVal)
-          : [];
-        if (pair?.showTimeSeries !== false && Number.isFinite(timeValue) && nextPair.lastSyncedTime !== timeValue) {
-          const defs = buildChartPairSeriesDefinitionsForSync(nextPair, xVal, yVal);
-          defs.forEach((seriesDef, idx) => {
-            if (!nextPair.seriesData[idx] || nextPair.seriesData[idx].label !== seriesDef.label) {
-              nextPair.seriesData[idx] = { label: seriesDef.label, points: [] };
-            }
-            nextPair.seriesData[idx].points.push(seriesDef.point);
-          });
-          if (nextPair.seriesData.length > defs.length) {
-            nextPair.seriesData = nextPair.seriesData.slice(0, defs.length);
-          }
-          nextPair.lastSyncedTime = timeValue;
-        } else if (pair?.showTimeSeries === false) {
-          nextPair.seriesData = [];
-        }
-        return nextPair;
-      });
-      return state;
-    }
-    if (widget?.type === "matrix") {
-      const state = cloneRuntimeWidgetState(widget) || { id: Number(widget?.id), type: "matrix", lastMatrixValue: null };
-      const sourceNode = nodeMap.get(String(widget?.source ?? ""));
-      state.lastMatrixValue = Array.isArray(sourceNode?.computedValue) ? deepClone(sourceNode.computedValue) : state.lastMatrixValue;
-      return state;
-    }
-    return cloneRuntimeWidgetState(widget);
-  }).filter(Boolean);
+  return workspaceRuntimeStateHelpers.buildSyncedWidgetRuntimeStates(widgetDefs, runtimeNodes, timeValue, previousStates);
 }
 
 function syncSubmodelWorkspaceTabsFromActiveParent() {
@@ -6187,85 +6090,11 @@ function syncSubmodelWorkspaceTabsFromActiveParent() {
 }
 
 function captureRuntimeStateSnapshot() {
-  return {
-    executionCurrentTime: graph.execution.currentTime == null ? null : deepClone(graph.execution.currentTime),
-    simulationHistory: deepClone(graph.__simulationHistory || []),
-    readDataCache: deepClone(graph.__readDataCache || Object.create(null)),
-    nodeStates: graph.nodes.map((node) => cloneRuntimeNodeState(node)),
-    widgetStates: graph.widgets.map((widget) => cloneRuntimeWidgetState(widget)),
-  };
+  return workspaceRuntimeStateHelpers.captureRuntimeStateSnapshot(graph);
 }
 
 function applyRuntimeStateSnapshot(snapshot) {
-  if (!snapshot || typeof snapshot !== "object") {
-    return;
-  }
-  graph.execution.currentTime = snapshot.executionCurrentTime == null ? null : deepClone(snapshot.executionCurrentTime);
-  graph.__simulationHistory = Array.isArray(snapshot.simulationHistory) ? deepClone(snapshot.simulationHistory) : [];
-  graph.__readDataCache = snapshot.readDataCache && typeof snapshot.readDataCache === "object"
-    ? deepClone(snapshot.readDataCache)
-    : Object.create(null);
-  const nodeStateById = new Map(
-    Array.isArray(snapshot.nodeStates)
-      ? snapshot.nodeStates.map((entry) => [Number(entry?.id), entry])
-      : [],
-  );
-  const widgetStateById = new Map(
-    Array.isArray(snapshot.widgetStates)
-      ? snapshot.widgetStates.map((entry) => [Number(entry?.id), entry])
-      : [],
-  );
-  graph.nodes.forEach((node) => {
-    const saved = nodeStateById.get(Number(node.id));
-    node.computedValue = saved ? deepClone(saved.computedValue) : null;
-    node.computedError = saved ? String(saved.computedError || "") : "";
-    node.pendingStateValue = saved ? deepClone(saved.pendingStateValue) : null;
-    node.pendingStateError = saved ? String(saved.pendingStateError || "") : "";
-    node.submodelError = saved ? String(saved.submodelError || "") : "";
-    node.__runtimeSubmodelPath = saved ? String(saved.runtimeSubmodelPath || "") : "";
-    node.__runtimeSubmodel = saved?.runtimeSubmodel ? cloneRuntimeModel(saved.runtimeSubmodel) : null;
-  });
-  graph.widgets.forEach((widget) => {
-    const saved = widgetStateById.get(Number(widget.id));
-    if (!saved) {
-      if (widget.type === "table") {
-        widget.rows = [];
-      } else if (widget.type === "matrix") {
-        widget.lastMatrixValue = null;
-      } else if (widget.type === "xychart" && Array.isArray(widget.xyPairs)) {
-        widget.xyPairs.forEach((pair) => {
-          pair.points = [];
-          pair.seriesData = [];
-          pair.instantSeriesData = [];
-        });
-      }
-      return;
-    }
-    if (widget.type === "slider") {
-      widget.value = Number(saved.value);
-    } else if (widget.type === "button") {
-      widget.value = Boolean(saved.value);
-    } else if (widget.type === "select") {
-      widget.value = Number(saved.value);
-    }
-    if (widget.type === "table") {
-      widget.rows = Array.isArray(saved.rows) ? deepClone(saved.rows) : [];
-    } else if (widget.type === "matrix") {
-      widget.lastMatrixValue = Array.isArray(saved.lastMatrixValue) ? deepClone(saved.lastMatrixValue) : null;
-    } else if (widget.type === "xychart" && Array.isArray(widget.xyPairs)) {
-      const savedPairs = Array.isArray(saved.xyPairs) ? saved.xyPairs : [];
-      const savedPairByKey = new Map(
-        savedPairs.map((pair) => [`${String(pair?.xSource ?? "time")}__${String(pair?.ySource ?? "")}`, pair]),
-      );
-      widget.xyPairs.forEach((pair) => {
-        const pairKey = `${String(pair?.xSource ?? "time")}__${String(pair?.ySource ?? "")}`;
-        const savedPair = savedPairByKey.get(pairKey);
-        pair.points = Array.isArray(savedPair?.points) ? deepClone(savedPair.points) : [];
-        pair.seriesData = Array.isArray(savedPair?.seriesData) ? deepClone(savedPair.seriesData) : [];
-        pair.instantSeriesData = Array.isArray(savedPair?.instantSeriesData) ? deepClone(savedPair.instantSeriesData) : [];
-      });
-    }
-  });
+  workspaceRuntimeStateHelpers.applyRuntimeStateSnapshot(graph, snapshot);
 }
 
 function captureWorkspaceTabState() {
@@ -6308,49 +6137,18 @@ function createWorkspaceTabFromCurrentState(options = {}) {
 }
 
 function refreshWorkspaceTabBar() {
-  if (!workspaceTabBar) {
-    return;
-  }
-  workspaceTabBar.innerHTML = "";
-  workspace.tabs.forEach((tab) => {
-    const item = document.createElement("div");
-    item.className = `workspace-tab${tab.id === workspace.activeTabId ? " active" : ""}${workspaceContextHasUnsavedChanges(tab.state?.context) ? " workspace-tab-dirty" : ""}`;
-    const tabTitle = displayFileNameFromContext(tab.state?.context);
-    const tabMeta = workspaceTabMetaText(tab);
-    item.title = tabMeta ? `${tabTitle}\n${tabMeta}` : tabTitle;
-
-    const button = document.createElement("button");
-    button.type = "button";
-    button.className = "workspace-tab-btn";
-    button.dataset.tabId = String(tab.id);
-    button.title = item.title;
-
-    const textWrap = document.createElement("span");
-    textWrap.className = "workspace-tab-text";
-
-    const label = document.createElement("span");
-    label.className = "workspace-tab-label";
-    label.textContent = tabTitle;
-    textWrap.appendChild(label);
-    if (tabMeta) {
-      const meta = document.createElement("span");
-      meta.className = "workspace-tab-meta";
-      meta.textContent = tabMeta;
-      textWrap.appendChild(meta);
-    }
-    button.appendChild(textWrap);
-    item.appendChild(button);
-
-    const close = document.createElement("button");
-    close.type = "button";
-    close.className = "workspace-tab-close";
-    close.dataset.tabCloseId = String(tab.id);
-    close.textContent = "×";
-    close.setAttribute("aria-label", t("action.closeTab"));
-    close.title = t("action.closeTab");
-    item.appendChild(close);
-
-    workspaceTabBar.appendChild(item);
+  workspaceTabsUi.renderWorkspaceTabs({
+    root: workspaceTabBar,
+    tabs: workspace.tabs,
+    activeTabId: workspace.activeTabId,
+    displayTitle: (tab) => displayFileNameFromContext(tab.state?.context),
+    displayMeta: workspaceTabMetaText,
+    isDirty: (tab) => workspaceContextHasUnsavedChanges(tab.state?.context),
+    closeLabel: () => t("action.closeTab"),
+    onActivate: switchWorkspaceTab,
+    onClose: (tabId) => {
+      void closeWorkspaceTab(tabId);
+    },
   });
 }
 
@@ -6418,8 +6216,7 @@ async function closeWorkspaceTab(tabId) {
   saveActiveWorkspaceTabState();
   const descendantIds = collectWorkspaceDescendantTabIds(tabId);
   const tabsToClose = [tabId, ...descendantIds];
-  const originalTabIds = workspace.tabs.map((entry) => entry.id);
-  const originalCloseIndex = originalTabIds.indexOf(tabId);
+  const originalTabs = workspace.tabs.slice();
   const saved = await ensureWorkspaceTabsSavedBeforeClose(tabsToClose);
   if (!saved) {
     return false;
@@ -6440,10 +6237,11 @@ async function closeWorkspaceTab(tabId) {
     refreshWorkspaceTabBar();
     return true;
   }
-  const remainingIds = new Set(workspace.tabs.map((entry) => entry.id));
-  const rightCandidate = originalTabIds.slice(originalCloseIndex + 1).find((id) => remainingIds.has(id));
-  const leftCandidate = originalTabIds.slice(0, Math.max(0, originalCloseIndex)).reverse().find((id) => remainingIds.has(id));
-  const nextTabId = rightCandidate || leftCandidate || workspace.tabs[0]?.id || null;
+  const nextTabId = workspaceTabsCore.nextTabIdAfterClosing(
+    originalTabs,
+    tabsToClose,
+    tabId,
+  );
   if (nextTabId == null) {
     return false;
   }
@@ -6526,182 +6324,6 @@ function scheduleFileStatusRefresh() {
 
 function evalReasonText(reason) {
   return t(`error.evalReason.${reason || "runtime"}`);
-}
-
-function clampDisplayDecimals(value) {
-  return clamp(Math.round(Number(value) || 0), 0, 12);
-}
-
-function formatNumberValue(value) {
-  if (!Number.isFinite(value)) {
-    return "-";
-  }
-  const decimals = clampDisplayDecimals(graph.execution.decimals);
-  let text = value.toFixed(decimals);
-  if (decimals > 0) {
-    text = text.replace(/(\.\d*?[1-9])0+$/u, "$1").replace(/\.0+$/u, "");
-  }
-  if (text === "-0") {
-    return "0";
-  }
-  return text;
-}
-
-function formatExecutionDuration(ms) {
-  const value = Number(ms);
-  if (!Number.isFinite(value) || value < 0) {
-    return "-";
-  }
-  if (value < 1000) {
-    return `${Math.round(value)} ms`;
-  }
-  return `${formatNumberValue(value / 1000)} s`;
-}
-
-function isAgentSpaceValue(value) {
-  return Boolean(
-    value
-    && typeof value === "object"
-    && value.kind === "agentSpace"
-    && Number.isInteger(Number(value.rowCount))
-    && Number.isInteger(Number(value.colCount))
-  );
-}
-
-function formatAgentSpaceSummary(value) {
-  return t("text.agentSpaceSummary", {
-    rows: Number(value?.rowCount) || 0,
-    cols: Number(value?.colCount) || 0,
-    agents: Number(value?.agentCount) || 0,
-  });
-}
-
-function formatComputedValue(value) {
-  if (value === null || value === undefined) {
-    return "-";
-  }
-  if (typeof value === "number") {
-    return formatNumberValue(value);
-  }
-  if (isAgentSpaceValue(value)) {
-    return formatAgentSpaceSummary(value);
-  }
-  if (Array.isArray(value)) {
-    return `[${value.map((item) => formatComputedValue(item)).join(", ")}]`;
-  }
-  if (typeof value === "object") {
-    const entries = Object.entries(value);
-    try {
-      return `{${entries.map(([key, item]) => `${key}: ${formatComputedValue(item)}`).join(", ")}}`;
-    } catch (_err) {
-      return String(value);
-    }
-  }
-  return String(value);
-}
-
-function summarizeTooltipValue(value) {
-  if (isAgentSpaceValue(value)) {
-    return formatAgentSpaceSummary(value);
-  }
-  if (Array.isArray(value)) {
-    const isMatrix =
-      value.length > 0 &&
-      value.every((row) => Array.isArray(row)) &&
-      value.every((row) => row.length === value[0].length);
-    if (isMatrix) {
-      const rows = value.length;
-      const cols = value[0]?.length ?? 0;
-      if ((rows * cols) > 16) {
-        return t("text.matrixSummary", { rows, cols });
-      }
-    } else if (value.every((item) => !Array.isArray(item)) && value.length > 8) {
-      return t("text.vectorSummary", { size: value.length });
-    }
-  }
-  return formatComputedValue(value);
-}
-
-function summarizeNodeRuntimeValue(node) {
-  if (node?.computedError) {
-    return { text: t("text.nodeValueError"), error: true };
-  }
-  const value = node?.computedValue;
-  if (isAgentSpaceValue(value)) {
-    return { text: formatAgentSpaceSummary(value), error: false };
-  }
-  if (Array.isArray(value)) {
-    const isMatrix = value.length > 0
-      && value.every((row) => Array.isArray(row))
-      && value.every((row) => row.length === value[0].length);
-    if (isMatrix) {
-      return { text: `[${value.length},${value[0]?.length ?? 0}]`, error: false };
-    }
-    return { text: `[${value.length}]`, error: false };
-  }
-  if (value && typeof value === "object") {
-    const keys = Object.keys(value);
-    const visibleKeys = keys.slice(0, 3).join(", ");
-    return { text: keys.length > 3 ? `{${visibleKeys}, ...}` : `{${visibleKeys}}`, error: false };
-  }
-  return { text: formatComputedValue(value), error: false };
-}
-
-function summarizeExpressionPreviewValue(value) {
-  if (isAgentSpaceValue(value)) {
-    return formatAgentSpaceSummary(value);
-  }
-  if (Array.isArray(value)) {
-    const isMatrix =
-      value.length > 0 &&
-      value.every((row) => Array.isArray(row)) &&
-      value.every((row) => row.length === value[0].length);
-    if (isMatrix) {
-      const rows = value.length;
-      const cols = value[0]?.length ?? 0;
-      if ((rows * cols) > 25) {
-        return t("text.matrixSummary", { rows, cols });
-      }
-    } else if (value.every((item) => !Array.isArray(item)) && value.length > 12) {
-      return t("text.vectorSummary", { size: value.length });
-    }
-  }
-  return formatComputedValue(value);
-}
-
-function describeExpressionPreviewShape(value) {
-  if (value === null || value === undefined) {
-    return t("expr.preview.shape.empty");
-  }
-  if (typeof value === "number" || typeof value === "boolean") {
-    return t("expr.preview.shape.scalar");
-  }
-  if (typeof value === "string") {
-    return t("expr.preview.shape.text");
-  }
-  if (Array.isArray(value)) {
-    const isMatrix =
-      value.length > 0 &&
-      value.every((row) => Array.isArray(row)) &&
-      value.every((row) => row.length === value[0].length);
-    if (isMatrix) {
-      return t("expr.preview.shape.matrix", { rows: value.length, cols: value[0]?.length ?? 0 });
-    }
-    if (value.every((item) => !Array.isArray(item))) {
-      return t("expr.preview.shape.vector", { size: value.length });
-    }
-    return t("expr.preview.shape.array");
-  }
-  if (isAgentSpaceValue(value)) {
-    return t("expr.preview.shape.agentSpace", {
-      rows: Number(value?.rowCount) || 0,
-      cols: Number(value?.colCount) || 0,
-    });
-  }
-  if (typeof value === "object") {
-    return t("expr.preview.shape.object");
-  }
-  return t("expr.preview.shape.scalar");
 }
 
 function normalizeExecutionConfig(raw) {
@@ -7208,6 +6830,7 @@ function renderSubmodelBindingsEditor(node) {
       updateFileStatusLabel(true);
       scheduleFileStatusRefresh();
       commitTransaction();
+      recalculateAfterNodeDefinitionChange();
     });
     row.appendChild(label);
     row.appendChild(select);
@@ -7868,106 +7491,49 @@ function fitToContent() {
   setStatusKey("status.fit", { value: Math.round(ui.zoom * 100) });
 }
 
-function closeTopMenus() {
-  menuRoots.forEach((root) => {
-    root.classList.remove("open");
-    const panel = root.querySelector(".menu-panel");
-    if (panel) {
-      panel.style.position = "";
-      panel.style.left = "";
-      panel.style.right = "";
-      panel.style.top = "";
-      panel.style.maxHeight = "";
-      panel.style.width = "";
-    }
+let menuUi = null;
+
+function getMenuUi() {
+  if (menuUi) {
+    return menuUi;
+  }
+  const factory = globalThis.STGraphXMenuUi?.createMenuUi;
+  if (typeof factory !== "function") {
+    throw new Error("STGraphX menu UI helpers are unavailable");
+  }
+  menuUi = factory({
+    menuRoots,
+    menuTitles,
+    menuCommands,
+    contextMenu,
+    isCompactLayout: isCompactTabletLayout,
+    isCompactTouchPointerEvent,
+    getLastTouchAt: () => ui.lastMenuTouchAt,
+    setLastTouchAt: (value) => {
+      ui.lastMenuTouchAt = value;
+    },
   });
-  document.querySelectorAll(".menu-submenu.open").forEach((item) => item.classList.remove("open"));
+  return menuUi;
+}
+
+function closeTopMenus() {
+  getMenuUi().closeTopMenus();
 }
 
 function positionCompactTopMenu(root) {
-  if (!root || !isCompactTabletLayout()) {
-    return;
-  }
-  const panel = root.querySelector(".menu-panel");
-  const title = root.querySelector(".menu-title");
-  if (!panel || !title) {
-    return;
-  }
-  const titleRect = title.getBoundingClientRect();
-  const viewportPadding = 8;
-  const desiredWidth = Math.min(380, Math.max(240, window.innerWidth - viewportPadding * 2));
-  const maxLeft = Math.max(viewportPadding, window.innerWidth - desiredWidth - viewportPadding);
-  const left = Math.round(Math.min(Math.max(titleRect.left, viewportPadding), maxLeft));
-  const top = Math.round(titleRect.bottom + 4);
-  panel.style.position = "fixed";
-  panel.style.left = `${left}px`;
-  panel.style.right = "auto";
-  panel.style.top = `${top}px`;
-  panel.style.width = `${desiredWidth}px`;
-  panel.style.maxHeight = `${Math.max(180, window.innerHeight - top - 12)}px`;
+  getMenuUi().positionCompactTopMenu(root);
 }
 
 function toggleTopMenu(root) {
-  const wasOpen = root.classList.contains("open");
-  closeTopMenus();
-  if (!wasOpen) {
-    root.classList.add("open");
-    positionCompactTopMenu(root);
-  }
+  getMenuUi().toggleTopMenu(root);
 }
 
 function hideContextMenu() {
-  contextMenu.classList.add("hidden");
-  contextMenu.innerHTML = "";
+  getMenuUi().hideContextMenu();
 }
 
 function showContextMenu(clientX, clientY, items) {
-  closeTopMenus();
-  contextMenu.innerHTML = "";
-  items.forEach((item) => {
-    if (item?.title) {
-      const title = document.createElement("div");
-      title.className = "context-menu-title";
-      title.textContent = item.label;
-      contextMenu.appendChild(title);
-      return;
-    }
-    if (item?.separator) {
-      const sep = document.createElement("hr");
-      sep.className = "context-menu-sep";
-      contextMenu.appendChild(sep);
-      return;
-    }
-    const btn = document.createElement("button");
-    btn.type = "button";
-    if (item.icon) {
-      const label = document.createElement("span");
-      label.className = "context-menu-command-label";
-      const icon = document.createElement("span");
-      icon.className = "context-menu-item-icon";
-      icon.setAttribute("aria-hidden", "true");
-      icon.textContent = item.icon;
-      const text = document.createElement("span");
-      text.textContent = item.label;
-      label.append(icon, text);
-      btn.appendChild(label);
-    } else {
-      btn.textContent = item.label;
-    }
-    btn.disabled = Boolean(item.disabled);
-    btn.addEventListener("click", () => {
-      hideContextMenu();
-      item.action();
-    });
-    contextMenu.appendChild(btn);
-  });
-
-  contextMenu.classList.remove("hidden");
-  const rect = contextMenu.getBoundingClientRect();
-  const left = Math.min(clientX, window.innerWidth - rect.width - 8);
-  const top = Math.min(clientY, window.innerHeight - rect.height - 8);
-  contextMenu.style.left = `${Math.max(8, left)}px`;
-  contextMenu.style.top = `${Math.max(8, top)}px`;
+  getMenuUi().showContextMenu(clientX, clientY, items);
 }
 
 function getNodeById(id) {
@@ -7994,75 +7560,42 @@ function getTextItemById(id) {
   return graph.textItems.find((item) => item.id === id) || null;
 }
 
+function selectionExistenceOptions() {
+  return {
+    nodeExists,
+    widgetExists: (id) => Boolean(getWidgetById(id)),
+    textExists: textItemExists,
+  };
+}
+
 function clearAllSelection() {
   requestExpressionEditorSelectionChange(() => {
-    ui.selected = null;
-    ui.selectedNodes.clear();
-    ui.selectedControlPoint = null;
-    ui.lastControlPointTap = null;
+    selectionStateHelpers.clearSelection(ui);
     refreshSidebar();
   }, "");
 }
 
 function syncNodeSelectionFocus() {
-  if (ui.selected?.type === "widget") {
-    const widget = getWidgetById(ui.selected.id);
-    if (!widget) {
-      ui.selected = null;
-    }
-    ui.selectedNodes.clear();
-    return;
-  }
-
-  ui.selectedNodes = new Set([...ui.selectedNodes].filter(nodeExists));
-
-  if (ui.selected?.type === "edge") {
-    ui.selectedNodes.clear();
-    return;
-  }
-
-  if (ui.selected?.type === "text") {
-    const item = getTextItemById(ui.selected.id);
-    if (!item) {
-      ui.selected = null;
-    }
-    ui.selectedNodes.clear();
-    return;
-  }
-
-  if (ui.selectedNodes.size === 1) {
-    const id = [...ui.selectedNodes][0];
-    ui.selected = { type: "node", id };
-  } else {
-    if (ui.selected?.type === "node") {
-      ui.selected = null;
-    }
-  }
+  selectionStateHelpers.synchronizeSelection(ui, selectionExistenceOptions());
 }
 
 function selectEdge(id) {
   requestExpressionEditorSelectionChange(() => {
-    ui.selected = { type: "edge", id };
-    ui.selectedNodes.clear();
-    ui.selectedControlPoint = null;
+    selectionStateHelpers.selectTarget(ui, "edge", id);
     refreshSidebar();
   }, `edge:${id}`);
 }
 
 function selectWidget(id) {
   requestExpressionEditorSelectionChange(() => {
-    ui.selected = { type: "widget", id };
-    ui.selectedNodes.clear();
-    ui.selectedControlPoint = null;
+    selectionStateHelpers.selectTarget(ui, "widget", id);
     refreshSidebar();
   }, `widget:${id}`);
 }
 
 function selectTextItem(id) {
   requestExpressionEditorSelectionChange(() => {
-    ui.selected = { type: "text", id };
-    ui.selectedNodes.clear();
-    ui.selectedControlPoint = null;
+    selectionStateHelpers.selectTarget(ui, "text", id);
     refreshSidebar();
   }, `text:${id}`);
 }
@@ -8106,9 +7639,7 @@ function openTextEditor() {
 
 function selectSingleNode(id) {
   requestExpressionEditorSelectionChange(() => {
-    ui.selected = { type: "node", id };
-    ui.selectedNodes = new Set([id]);
-    ui.selectedControlPoint = null;
+    selectionStateHelpers.selectSingleNode(ui, id);
     refreshSidebar();
   }, `node:${id}`);
 }
@@ -8118,10 +7649,7 @@ function addNodeToSelection(id) {
     return;
   }
   requestExpressionEditorSelectionChange(() => {
-    ui.selectedNodes.add(id);
-    ui.selectedControlPoint = null;
-    ui.selected = null;
-    syncNodeSelectionFocus();
+    selectionStateHelpers.addNode(ui, id, selectionExistenceOptions());
     refreshSidebar();
   }, "");
 }
@@ -8131,13 +7659,7 @@ function setNodeSelection(ids, additive = false) {
   ids.forEach((id) => nextIds.add(id));
   const nextSelectionKey = nextIds.size === 1 ? `node:${[...nextIds][0]}` : "";
   requestExpressionEditorSelectionChange(() => {
-    if (!additive) {
-      ui.selectedNodes.clear();
-    }
-    ids.forEach((id) => ui.selectedNodes.add(id));
-    ui.selected = null;
-    ui.selectedControlPoint = null;
-    syncNodeSelectionFocus();
+    selectionStateHelpers.setNodes(ui, ids, additive, selectionExistenceOptions());
     refreshSidebar();
   }, nextSelectionKey);
 }
@@ -8286,6 +7808,7 @@ function exportGraphData() {
       yMin: serializeAutoNullableNumber(w.yMin),
       yMax: serializeAutoNullableNumber(w.yMax),
       showGrid: w.showGrid !== false,
+      showAxes: w.showAxes !== false,
       legendPosition: ["none", "top-right", "top-left", "bottom-right", "bottom-left"].includes(String(w.legendPosition ?? ""))
         ? String(w.legendPosition)
         : "top-right",
@@ -8339,6 +7862,10 @@ function exportGraphData() {
           showLine: pair?.showLine !== false,
           lineWidth: Number.isFinite(Number(pair?.lineWidth)) ? clamp(Number(pair.lineWidth), 1, 8) : 2.2,
           lineStyle: normalizeChartLineStyle(pair?.lineStyle),
+          barMode: normalizeChartBarMode(pair?.barMode, pair?.showBars),
+          showBars: normalizeChartBarMode(pair?.barMode, pair?.showBars) !== "none",
+          barColor: /^#[0-9a-fA-F]{6}$/.test(String(pair?.barColor ?? "")) ? String(pair.barColor) : (/^#[0-9a-fA-F]{6}$/.test(String(pair?.color ?? "")) ? String(pair.color) : defaultChartSeriesColor(idx)),
+          barWidth: Number.isFinite(Number(pair?.barWidth)) ? clamp(Number(pair.barWidth), 1, 12) : 2.2,
           pointMode: normalizeChartPointMode(pair?.pointMode, pair?.showPoints),
           pointSize: Number.isFinite(Number(pair?.pointSize)) ? clamp(Number(pair.pointSize), 1, 12) : 2.4,
         }))
@@ -8548,6 +8075,7 @@ function applyGraphData(data) {
         yMin: parseAutoNullableNumber(w.yMin),
         yMax: parseAutoNullableNumber(w.yMax),
         showGrid: w.showGrid !== false,
+        showAxes: w.showAxes !== false,
         legendPosition: ["none", "top-right", "top-left", "bottom-right", "bottom-left"].includes(String(w.legendPosition ?? ""))
           ? String(w.legendPosition)
           : "top-right",
@@ -8606,6 +8134,10 @@ function applyGraphData(data) {
             showLine: pair?.showLine !== false,
             lineWidth: Number.isFinite(Number(pair?.lineWidth)) ? clamp(Number(pair.lineWidth), 1, 8) : 2.2,
             lineStyle: normalizeChartLineStyle(pair?.lineStyle),
+            barMode: normalizeChartBarMode(pair?.barMode, pair?.showBars),
+            showBars: normalizeChartBarMode(pair?.barMode, pair?.showBars) !== "none",
+            barColor: /^#[0-9a-fA-F]{6}$/.test(String(pair?.barColor ?? "")) ? String(pair.barColor) : (/^#[0-9a-fA-F]{6}$/.test(String(pair?.color ?? "")) ? String(pair.color) : defaultChartSeriesColor(idx)),
+            barWidth: Number.isFinite(Number(pair?.barWidth)) ? clamp(Number(pair.barWidth), 1, 12) : 2.2,
             pointMode: normalizeChartPointMode(pair?.pointMode, pair?.showPoints),
             pointSize: Number.isFinite(Number(pair?.pointSize)) ? clamp(Number(pair.pointSize), 1, 12) : 2.4,
             points: [],
@@ -8624,6 +8156,10 @@ function applyGraphData(data) {
               showLine: true,
               lineWidth: 2.2,
               lineStyle: "solid",
+              barMode: "none",
+              showBars: false,
+              barColor: defaultChartSeriesColor(idx),
+              barWidth: 2.2,
               pointMode: "all",
               pointSize: 2.4,
               points: [],
@@ -10741,19 +10277,18 @@ function render(options = {}) {
       makePorts(node.interfaceCache?.outputs, "output");
     }
 
-    const centerPortHit = document.createElementNS(SVG_NS, "circle");
-    const disableCenterPortForMultiSelection =
-      ui.selectedNodes.size > 1 && ui.selectedNodes.has(node.id);
-    centerPortHit.classList.add("center-port-hit");
-    centerPortHit.setAttribute("cx", node.x);
-    centerPortHit.setAttribute("cy", node.y);
-    centerPortHit.setAttribute("r", isCompactTabletLayout() ? "26" : "18");
-    if (disableCenterPortForMultiSelection) {
-      centerPortHit.style.pointerEvents = "none";
-      centerPortHit.style.cursor = "inherit";
+    const edgePort = document.createElementNS(SVG_NS, "circle");
+    const edgePortPosition = nodeEdgePortPosition(node);
+    const edgePortEnabled = !(ui.selectedNodes.size > 1 && ui.selectedNodes.has(node.id));
+    edgePort.classList.add("node-edge-port");
+    edgePort.setAttribute("cx", edgePortPosition.x);
+    edgePort.setAttribute("cy", edgePortPosition.y);
+    edgePort.setAttribute("r", nodeEdgePortRadius(node));
+    if (!edgePortEnabled) {
+      edgePort.style.pointerEvents = "none";
     } else {
-      centerPortHit.addEventListener("pointerdown", startEdgeCreate);
-      centerPortHit.addEventListener("mousedown", startEdgeCreateMouse);
+      edgePort.addEventListener("pointerdown", startEdgeCreate);
+      edgePort.addEventListener("mousedown", startEdgeCreateMouse);
     }
 
     const handle = document.createElementNS(SVG_NS, "circle");
@@ -10812,7 +10347,7 @@ function render(options = {}) {
       g.appendChild(globalBadgeLabel);
     }
     submodelPorts.forEach((port) => g.appendChild(port));
-    g.appendChild(centerPortHit);
+    g.appendChild(edgePort);
     g.appendChild(handle);
     nodesLayer.appendChild(g);
   });
@@ -11127,6 +10662,7 @@ function importGraphData(data) {
         yMin: parseAutoNullableNumber(w.yMin),
         yMax: parseAutoNullableNumber(w.yMax),
         showGrid: w.showGrid !== false,
+        showAxes: w.showAxes !== false,
         legendPosition: ["none", "top-right", "top-left", "bottom-right", "bottom-left"].includes(String(w.legendPosition ?? ""))
           ? String(w.legendPosition)
           : "top-right",
@@ -11185,6 +10721,10 @@ function importGraphData(data) {
             showLine: pair?.showLine !== false,
             lineWidth: Number.isFinite(Number(pair?.lineWidth)) ? clamp(Number(pair.lineWidth), 1, 8) : 2.2,
             lineStyle: normalizeChartLineStyle(pair?.lineStyle),
+            barMode: normalizeChartBarMode(pair?.barMode, pair?.showBars),
+            showBars: normalizeChartBarMode(pair?.barMode, pair?.showBars) !== "none",
+            barColor: /^#[0-9a-fA-F]{6}$/.test(String(pair?.barColor ?? "")) ? String(pair.barColor) : (/^#[0-9a-fA-F]{6}$/.test(String(pair?.color ?? "")) ? String(pair.color) : defaultChartSeriesColor(idx)),
+            barWidth: Number.isFinite(Number(pair?.barWidth)) ? clamp(Number(pair.barWidth), 1, 12) : 2.2,
             pointMode: normalizeChartPointMode(pair?.pointMode, pair?.showPoints),
             pointSize: Number.isFinite(Number(pair?.pointSize)) ? clamp(Number(pair.pointSize), 1, 12) : 2.4,
             points: [],
@@ -11203,6 +10743,10 @@ function importGraphData(data) {
               showLine: true,
               lineWidth: 2.2,
               lineStyle: "solid",
+              barMode: "none",
+              showBars: false,
+              barColor: defaultChartSeriesColor(idx),
+              barWidth: 2.2,
               pointMode: "all",
               pointSize: 2.4,
               points: [],
@@ -12747,10 +12291,16 @@ window.addEventListener("pointermove", (evt) => {
   const p = snapPoint(pRaw);
   const hoverNodeId = nodeIdAtGraphPoint(pRaw);
   const hoverNode = hoverNodeId != null ? getNodeById(hoverNodeId) : null;
-  const hoverNearCenter = hoverNode ? Math.hypot(pRaw.x - hoverNode.x, pRaw.y - hoverNode.y) <= 20 : false;
+  const hoverPort = hoverNode ? nodeEdgePortPosition(hoverNode) : null;
+  const hoverNearPort = Boolean(
+    hoverNode
+    && ui.selectedNodes.size === 1
+    && ui.selectedNodes.has(hoverNode.id)
+    && Math.hypot(pRaw.x - hoverPort.x, pRaw.y - hoverPort.y) <= nodeEdgePortRadius(hoverNode),
+  );
 
   if (!ui.drag && !ui.resize && !ui.edgeCreate && !ui.controlPointDrag && !ui.marquee && !ui.textDrag && !ui.textResize) {
-    if (hoverNearCenter) {
+    if (hoverNearPort) {
       svg.style.cursor = "crosshair";
     } else if (hoverNode) {
       svg.style.cursor = "grab";
@@ -12838,10 +12388,16 @@ window.addEventListener("mousemove", (evt) => {
   const pRaw = svgPointFromClient(evt.clientX, evt.clientY);
   const hoverNodeId = nodeIdAtGraphPoint(pRaw);
   const hoverNode = hoverNodeId != null ? getNodeById(hoverNodeId) : null;
-  const hoverNearCenter = hoverNode ? Math.hypot(pRaw.x - hoverNode.x, pRaw.y - hoverNode.y) <= 20 : false;
+  const hoverPort = hoverNode ? nodeEdgePortPosition(hoverNode) : null;
+  const hoverNearPort = Boolean(
+    hoverNode
+    && ui.selectedNodes.size === 1
+    && ui.selectedNodes.has(hoverNode.id)
+    && Math.hypot(pRaw.x - hoverPort.x, pRaw.y - hoverPort.y) <= nodeEdgePortRadius(hoverNode),
+  );
 
   if (!ui.drag && !ui.resize && !ui.edgeCreate && !ui.controlPointDrag && !ui.marquee) {
-    if (hoverNearCenter) {
+    if (hoverNearPort) {
       svg.style.cursor = "crosshair";
     } else if (hoverNode) {
       svg.style.cursor = "grab";
@@ -13161,106 +12717,7 @@ svg.addEventListener("contextmenu", (evt) => {
   });
 });
 
-menuTitles.forEach((title) => {
-  const openCompactMenu = (evt) => {
-    if (!isCompactTabletLayout()) {
-      return;
-    }
-    evt.preventDefault();
-    evt.stopPropagation();
-    hideContextMenu();
-    const root = title.closest(".menu-root");
-    if (root) {
-      toggleTopMenu(root);
-    }
-  };
-  title.addEventListener("touchstart", (evt) => {
-    ui.lastMenuTouchAt = Date.now();
-    openCompactMenu(evt);
-  }, { passive: false });
-  title.addEventListener("pointerdown", (evt) => {
-    if (!isCompactTabletLayout()) {
-      return;
-    }
-    if (evt.pointerType === "touch" && (Date.now() - ui.lastMenuTouchAt) < 700) {
-      return;
-    }
-    openCompactMenu(evt);
-  });
-  title.addEventListener("click", (evt) => {
-    if (isCompactTabletLayout()) {
-      if ((Date.now() - ui.lastMenuTouchAt) < 700) {
-        return;
-      }
-      openCompactMenu(evt);
-      return;
-    }
-    evt.stopPropagation();
-    hideContextMenu();
-    const root = title.closest(".menu-root");
-    if (root) {
-      toggleTopMenu(root);
-    }
-  });
-});
-
-menuRoots.forEach((root) => {
-  root.addEventListener("pointerenter", () => {
-    const hasOpen = menuRoots.some((r) => r.classList.contains("open"));
-    if (hasOpen && !root.classList.contains("open")) {
-      toggleTopMenu(root);
-    }
-  });
-});
-
-menuCommands.forEach((cmd) => {
-  cmd.addEventListener("click", () => {
-    closeTopMenus();
-  });
-});
-
-if (recentModelsMenuBtn) {
-  const toggleRecentModelsSubmenu = (evt) => {
-    if (!isCompactTabletLayout()) {
-      return;
-    }
-    evt.preventDefault();
-    evt.stopPropagation();
-    const submenu = recentModelsMenuBtn.closest(".menu-submenu");
-    if (!submenu) {
-      return;
-    }
-    const willOpen = !submenu.classList.contains("open");
-    document.querySelectorAll(".menu-submenu.open").forEach((item) => {
-      if (item !== submenu) {
-        item.classList.remove("open");
-      }
-    });
-    submenu.classList.toggle("open", willOpen);
-  };
-  recentModelsMenuBtn.addEventListener("touchstart", (evt) => {
-    ui.lastMenuTouchAt = Date.now();
-    toggleRecentModelsSubmenu(evt);
-  }, { passive: false });
-  recentModelsMenuBtn.addEventListener("pointerdown", (evt) => {
-    if (!isCompactTouchPointerEvent(evt)) {
-      return;
-    }
-    if ((Date.now() - ui.lastMenuTouchAt) < 700) {
-      return;
-    }
-    toggleRecentModelsSubmenu(evt);
-  });
-  recentModelsMenuBtn.addEventListener("click", (evt) => {
-    if (!isCompactTabletLayout()) {
-      return;
-    }
-    if ((Date.now() - ui.lastMenuTouchAt) < 700) {
-      return;
-    }
-    toggleRecentModelsSubmenu(evt);
-  });
-}
+getMenuUi().bindInteractions(recentModelsMenuBtn);
 
 addRectNodeItem.addEventListener("click", () => {
   runAction(() => {
@@ -13513,24 +12970,6 @@ if (newTabBtn) {
     void createNewGraph();
   });
 }
-if (workspaceTabBar) {
-  workspaceTabBar.addEventListener("click", (evt) => {
-    const closeBtn = evt.target.closest("[data-tab-close-id]");
-    if (closeBtn) {
-      evt.preventDefault();
-      evt.stopPropagation();
-      void closeWorkspaceTab(Number(closeBtn.dataset.tabCloseId));
-      return;
-    }
-    const tabBtn = evt.target.closest("[data-tab-id]");
-    if (tabBtn) {
-      evt.preventDefault();
-      switchWorkspaceTab(Number(tabBtn.dataset.tabId));
-    }
-  });
-}
-
-
 snapToGridInput.addEventListener("change", () => {
   ui.snapToGrid = snapToGridInput.checked;
   setStatusKey(ui.snapToGrid ? "status.snapOn" : "status.snapOff");
@@ -13729,6 +13168,7 @@ nodeNameInput.addEventListener("input", () => {
     const oldName = node.name;
     node.name = attempt.name;
     propagateNodeRenameInExpressions(oldName, node.name);
+    scheduleNodeDefinitionRecalculation();
     render();
     return;
   }
@@ -13821,6 +13261,7 @@ nodeShapeInput.addEventListener("change", () => {
       removeNodeFromInputWidgetBindings(node.name);
     }
   });
+  recalculateAfterNodeDefinitionChange();
 });
 
 if (nodeModelPathInput) {
@@ -13929,6 +13370,7 @@ nodeInputInput.addEventListener("change", () => {
       removeNodeFromInputWidgetBindings(node.name);
     }
   });
+  recalculateAfterNodeDefinitionChange();
 });
 
 nodeGlobalInput.addEventListener("change", () => {
@@ -13947,6 +13389,7 @@ nodeGlobalInput.addEventListener("change", () => {
   runAction(() => {
     node.global = nodeGlobalInput.checked;
   });
+  recalculateAfterNodeDefinitionChange();
 });
 
 nodeOutputInput.addEventListener("change", () => {
@@ -13963,6 +13406,7 @@ nodeOutputInput.addEventListener("change", () => {
       }
     });
   });
+  recalculateAfterNodeDefinitionChange();
   nodeOutputInput.indeterminate = false;
 });
 
@@ -14189,7 +13633,16 @@ nodeValueExprInput.addEventListener("input", () => {
     return;
   }
   meta.setValue(nodeValueExprInput.value);
-  updateExpressionFieldState(nodeValueExprInput, nodeValueExprStatus, nodeValueExprInput.value, false, "value");
+  const syntaxResult = updateExpressionFieldState(
+    nodeValueExprInput,
+    nodeValueExprStatus,
+    nodeValueExprInput.value,
+    false,
+    "value",
+  );
+  if (syntaxResult.ok) {
+    scheduleNodeDefinitionRecalculation();
+  }
   scheduleFileStatusRefresh();
 });
 
@@ -14199,9 +13652,29 @@ nodeInitialStateInput.addEventListener("input", () => {
     return;
   }
   meta.setValue(nodeInitialStateInput.value);
-  updateExpressionFieldState(nodeInitialStateInput, nodeInitialStateStatus, nodeInitialStateInput.value, false, "initial");
+  const syntaxResult = updateExpressionFieldState(
+    nodeInitialStateInput,
+    nodeInitialStateStatus,
+    nodeInitialStateInput.value,
+    false,
+    "initial",
+  );
+  if (syntaxResult.ok) {
+    scheduleNodeDefinitionRecalculation();
+  }
   scheduleFileStatusRefresh();
 });
+
+if (propsList) {
+  propsList.addEventListener("input", () => {
+    scheduleNodeDefinitionRecalculation();
+  });
+  propsList.addEventListener("click", (evt) => {
+    if (evt.target.closest("button")) {
+      scheduleNodeDefinitionRecalculation();
+    }
+  });
+}
 
 if (expressionDescriptionInput) {
   expressionDescriptionInput.addEventListener("focus", () => {
@@ -14864,6 +14337,7 @@ addPropBtn.addEventListener("click", () => {
   runAction(() => {
     node.properties.push({ key: "", value: "" });
   });
+  recalculateAfterNodeDefinitionChange();
 });
 
 window.addEventListener("keydown", (evt) => {

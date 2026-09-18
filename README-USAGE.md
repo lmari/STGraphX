@@ -270,20 +270,18 @@ Esempi:
 
 ### Append e concatenazione
 
-- `append(vettore, valore)`
-  - aggiunge un elemento in fondo a un vettore
-
-- `append(vettore, vettore2)`
-  - concatena due vettori
-
-- `append(matrice, vettoreRiga)`
-  - aggiunge una riga a una matrice, se la lunghezza è compatibile
+- `append(valore1, valore2[, valore3, ...])`: concatena i valori in sequenza.
+- Con un vettore aggiunge scalari o concatena vettori; il primo valore può essere uno scalare se il secondo è un vettore.
+- Se è presente una matrice, `axis=0` (predefinito) concatena righe vettore di lunghezza compatibile e `axis=1` colonne vettore di lunghezza pari al numero di righe. L'ordine degli argomenti determina se sono inserite prima o dopo la matrice. Le matrici `agents` supportano solo `axis=0`.
 
 Esempi:
 
 - `append([1,2], 3)` -> `[1,2,3]`
+- `append([1], 2, [3,4])` -> `[1,2,3,4]`
 - `append([1,2], [3,4])` -> `[1,2,3,4]`
 - `append([[1,2],[3,4]], [5,6])` -> `[[1,2],[3,4],[5,6]]`
+- `append([[1,2],[3,4]], [5,6], 1)` -> `[[1,2,5],[3,4,6]]`
+- `append([5,6], [[1,2],[3,4]], 1)` -> `[[5,1,2],[6,3,4]]`
 
 ### Operazioni insiemistiche e flatten
 
@@ -299,12 +297,17 @@ Esempi:
 - `flatten(matrice)`
   - trasforma una matrice in un vettore concatenando le righe
 
+- `resize(vettore, n)` oppure `resize(matrice, righe, colonne)`
+  - restituisce una copia ridimensionata, mantenendo le posizioni esistenti, eliminando quelle eccedenti e riempiendo le nuove con `0`
+
 Esempi:
 
 - `set([3,1,3,2,1])` -> `[3,1,2]`
 - `union([1,2], [2,3])` -> `[1,2,3]`
 - `intersection([1,2,2,3], [2,3,4])` -> `[2,3]`
 - `flatten([[1,2],[3,4]])` -> `[1,2,3,4]`
+- `resize([1,2], 4)` -> `[1,2,0,0]`
+- `resize([[1,2],[3,4]], 1, 3)` -> `[[1,2,0]]`
 
 ### Indici e sostituzione
 

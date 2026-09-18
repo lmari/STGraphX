@@ -1131,7 +1131,55 @@
     return matrix.map((row) => reduceArrayElements(row, reducer, scope, hasInit, initValue));
   }
 
-  function appendArrayValues(target, value) {
+  function isAppendMatrix(value) {
+    return Array.isArray(value) && (
+      Boolean(getAgentFieldNames(value))
+      || (value.length > 0 && value.every((row) => Array.isArray(row)))
+    );
+  }
+
+  function appendMatrixVector(matrix, vector, axis = 0, prepend = false) {
+    const fieldNames = getAgentFieldNames(matrix);
+    if (!Number.isInteger(axis) || (axis !== 0 && axis !== 1)) {
+      throw new Error("append matrix axis must be 0 or 1");
+    }
+    if (axis === 1) {
+      if (fieldNames) {
+        throw new Error("append axis 1 is not supported for agent matrices");
+      }
+      if (!Array.isArray(vector) || vector.some((item) => Array.isArray(item))) {
+        throw new Error("append on matrices axis 1 expects a vector column");
+      }
+      const columnCount = matrix.length > 0 ? matrix[0].length : 0;
+      if (!matrix.every((row) => row.length === columnCount)) {
+        throw new Error("append requires a rectangular matrix");
+      }
+      if (vector.length !== matrix.length) {
+        throw new Error("appended column length does not match matrix row count");
+      }
+      return matrix.map((row, index) => (
+        prepend ? [vector[index], ...row] : [...row, vector[index]]
+      ));
+    }
+    if (!Array.isArray(vector) || vector.some((item) => Array.isArray(item))) {
+      throw new Error("append on matrices expects a vector row as second argument");
+    }
+    const columnCount = matrix.length > 0 ? matrix[0].length : vector.length;
+    if (!matrix.every((row) => row.length === columnCount)) {
+      throw new Error("append requires a rectangular matrix");
+    }
+    if (vector.length !== columnCount) {
+      throw new Error("appended row length does not match matrix column count");
+    }
+    const copiedRows = matrix.map((row) => row.slice());
+    const out = prepend ? [vector.slice(), ...copiedRows] : [...copiedRows, vector.slice()];
+    if (fieldNames) {
+      attachAgentSchema(out, fieldNames);
+    }
+    return out;
+  }
+
+  function appendArrayValues(target, value, axis = 0) {
     if (!Array.isArray(target)) {
       if (Array.isArray(value) && !value.some((item) => Array.isArray(item))) {
         return [target, ...value];
@@ -1139,7 +1187,7 @@
       throw new Error("append expects a vector or matrix as first argument, or a scalar followed by a vector");
     }
     const fieldNames = getAgentFieldNames(target);
-    const isMatrix = Boolean(fieldNames) || (target.length > 0 && target.every((row) => Array.isArray(row)));
+    const isMatrix = isAppendMatrix(target);
     if (!isMatrix) {
       if (Array.isArray(value)) {
         const out = [...target, ...value];
@@ -1154,21 +1202,7 @@
       }
       return out;
     }
-    if (!Array.isArray(value) || value.some((item) => Array.isArray(item))) {
-      throw new Error("append on matrices expects a vector row as second argument");
-    }
-    const columnCount = target.length > 0 ? target[0].length : value.length;
-    if (!target.every((row) => row.length === columnCount)) {
-      throw new Error("append requires a rectangular matrix");
-    }
-    if (value.length !== columnCount) {
-      throw new Error("appended row length does not match matrix column count");
-    }
-    const out = [...target.map((row) => row.slice()), value.slice()];
-    if (fieldNames) {
-      attachAgentSchema(out, fieldNames);
-    }
-    return out;
+    return appendMatrixVector(target, value, axis);
   }
 
   function tokenizeExpression(source) {
@@ -1884,12 +1918,41 @@
           return reduceMatrixAlongAxis(target, axis, reducer, scope, hasInit, initValue);
         }
         if (node.name === "append") {
-          if (node.args.length !== 2) {
-            throw new Error("append expects exactly 2 arguments");
+          if (node.args.length < 2) {
+            throw new Error("append expects at least 2 arguments");
           }
-          const target = evaluateAstNode(node.args[0], scope, hooks);
-          const value = evaluateAstNode(node.args[1], scope, hooks);
-          return appendArrayValues(target, value);
+          const values = node.args.map((argument) => evaluateAstNode(argument, scope, hooks));
+          let axis = 0;
+          const hasMatrix = values.some((value) => isAppendMatrix(value));
+          const hasMatrixBeforeLast = values.slice(0, -1).some((value) => isAppendMatrix(value));
+          // A final numeric argument selects an axis only when concatenating a matrix.
+          if (hasMatrixBeforeLast && values.length >= 3) {
+            const possibleAxis = values[values.length - 1];
+            if (typeof possibleAxis === "number" && Number.isFinite(possibleAxis)) {
+              if (!Number.isInteger(possibleAxis) || (possibleAxis !== 0 && possibleAxis !== 1)) {
+                throw new Error("append matrix axis must be 0 or 1");
+              }
+              axis = possibleAxis;
+              values.pop();
+            }
+          }
+          const matrixIndex = axis === 0 || axis === 1
+            ? values.findIndex((value) => isAppendMatrix(value))
+            : -1;
+          if (hasMatrix && matrixIndex >= 0 && values.length >= 2) {
+            let result = values[matrixIndex];
+            for (let index = matrixIndex - 1; index >= 0; index -= 1) {
+              result = appendMatrixVector(result, values[index], axis, true);
+            }
+            for (let index = matrixIndex + 1; index < values.length; index += 1) {
+              result = appendMatrixVector(result, values[index], axis);
+            }
+            return result;
+          }
+          return values.slice(1).reduce(
+            (current, value) => appendArrayValues(current, value, axis),
+            values[0],
+          );
         }
         if (node.name === "count") {
           if (node.args.length < 1 || node.args.length > 3) {

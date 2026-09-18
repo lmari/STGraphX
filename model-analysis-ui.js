@@ -17,6 +17,8 @@
     const modelAnalysisModal = options.modelAnalysisModal || null;
     const modelAnalysisSummary = options.modelAnalysisSummary || null;
     const modelAnalysisContent = options.modelAnalysisContent || null;
+    const modelAnalysisSeverityFilter = options.modelAnalysisSeverityFilter || null;
+    const modelAnalysisSearchInput = options.modelAnalysisSearchInput || null;
     const modelAnalysisChecksModal = options.modelAnalysisChecksModal || null;
     const modelAnalysisChecksContent = options.modelAnalysisChecksContent || null;
     const analyzeModelStaticIssues = typeof options.analyzeModelStaticIssues === "function"
@@ -24,6 +26,8 @@
       : () => [];
     const setStatusKey = typeof options.setStatusKey === "function" ? options.setStatusKey : () => {};
     const onFocusIssueTarget = typeof options.onFocusIssueTarget === "function" ? options.onFocusIssueTarget : () => {};
+    let lastIssues = [];
+    let controlsBound = false;
 
     function modelAnalysisCheckEntries() {
       return [
@@ -143,11 +147,31 @@
       return t("analysis.target.model");
     }
 
+    function analysisIssueCheck(issue) {
+      return modelAnalysisCheckEntries().find((entry) => entry.nameKey === `analysis.issue.${issue?.key}`) || null;
+    }
+
     function renderModelAnalysisReport(issues) {
       if (!modelAnalysisSummary || !modelAnalysisContent) {
         return;
       }
-      const safeIssues = Array.isArray(issues) ? issues : [];
+      if (Array.isArray(issues)) {
+        lastIssues = issues;
+      }
+      const safeIssues = lastIssues;
+      const severity = String(modelAnalysisSeverityFilter?.value || "all");
+      const query = String(modelAnalysisSearchInput?.value || "").trim().toLocaleLowerCase();
+      const visibleIssues = safeIssues.filter((issue) => {
+        if (severity !== "all" && issue.severity !== severity) return false;
+        if (!query) return true;
+        const check = analysisIssueCheck(issue);
+        const searchable = [
+          issue.message,
+          analysisIssueTargetLabel(issue),
+          check ? t(check.descKey) : t("analysis.explanation.generic"),
+        ].join(" ").toLocaleLowerCase();
+        return searchable.includes(query);
+      });
       const counts = {
         total: safeIssues.length,
         error: safeIssues.filter((issue) => issue.severity === "error").length,
@@ -169,16 +193,16 @@
       });
 
       modelAnalysisContent.innerHTML = "";
-      if (safeIssues.length === 0) {
+      if (visibleIssues.length === 0) {
         const empty = document.createElement("div");
         empty.className = "model-analysis-empty";
-        empty.textContent = t("analysis.empty");
+        empty.textContent = safeIssues.length ? t("analysis.filter.empty") : t("analysis.empty");
         modelAnalysisContent.appendChild(empty);
         return;
       }
 
       ["error", "warning", "info"].forEach((severity) => {
-        const items = safeIssues.filter((issue) => issue.severity === severity);
+        const items = visibleIssues.filter((issue) => issue.severity === severity);
         if (items.length === 0) {
           return;
         }
@@ -203,9 +227,20 @@
           const target = document.createElement("div");
           target.className = "model-analysis-target";
           target.textContent = analysisIssueTargetLabel(issue);
+          const explanation = document.createElement("div");
+          explanation.className = "model-analysis-explanation";
+          const check = analysisIssueCheck(issue);
+          explanation.textContent = check ? t(check.descKey) : t("analysis.explanation.generic");
+          const action = document.createElement("div");
+          action.className = "model-analysis-action";
+          action.textContent = issue.target?.type === "model"
+            ? t("analysis.action.inspect")
+            : t("analysis.action.goTo");
           button.appendChild(badge);
           button.appendChild(message);
           button.appendChild(target);
+          button.appendChild(explanation);
+          button.appendChild(action);
           button.addEventListener("click", () => {
             onFocusIssueTarget(issue);
           });
@@ -221,6 +256,13 @@
         return;
       }
       const issues = analyzeModelStaticIssues();
+      if (!controlsBound) {
+        [modelAnalysisSeverityFilter, modelAnalysisSearchInput].forEach((control) => {
+          control?.addEventListener("input", () => renderModelAnalysisReport());
+          control?.addEventListener("change", () => renderModelAnalysisReport());
+        });
+        controlsBound = true;
+      }
       renderModelAnalysisReport(issues);
       modelAnalysisModal.classList.remove("hidden");
       setStatusKey("status.modelAnalyzed", {

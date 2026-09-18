@@ -1,0 +1,664 @@
+{
+  "version": 1,
+  "modelTitle": "brownian 3D",
+  "localFunctions": [],
+  "view": {
+    "zoom": 1,
+    "showGrid": true,
+    "highlightNodeEdges": false,
+    "showNodeValues": false,
+    "gridSize": 20,
+    "tooltipDelayMs": 300,
+    "scrollLeft": 40,
+    "scrollTop": 0
+  },
+  "debug": {
+    "watches": [],
+    "breakpointEnabled": false,
+    "breakpointExpression": ""
+  },
+  "modelProperties": [],
+  "nodeCounter": 18,
+  "edgeCounter": 26,
+  "widgetCounter": 4,
+  "textItemCounter": 3,
+  "presentationGroupCounter": 2,
+  "presentationGroups": [],
+  "dashboard": null,
+  "execution": {
+    "t0": 0,
+    "dt": 1,
+    "t1": 10000,
+    "delayMs": 1,
+    "renderEverySteps": 1,
+    "decimals": 3,
+    "integrator": "euler",
+    "strictDefinitions": false
+  },
+  "nodes": [
+    {
+      "id": 1,
+      "name": "k",
+      "output": false,
+      "global": true,
+      "type": "parameter",
+      "x": -20,
+      "y": 180,
+      "width": 75,
+      "height": 45,
+      "fillColor": "#ffffff",
+      "strokeColor": "#000000",
+      "properties": [
+        {
+          "key": "note formula",
+          "value": ""
+        },
+        {
+          "key": "descrizione",
+          "value": ""
+        }
+      ],
+      "valueExpression": "[pi/4,0.3]"
+    },
+    {
+      "id": 2,
+      "name": "l",
+      "output": false,
+      "global": true,
+      "type": "parameter",
+      "x": -20,
+      "y": 260,
+      "width": 75,
+      "height": 45,
+      "fillColor": "#ffffff",
+      "strokeColor": "#000000",
+      "properties": [
+        {
+          "key": "note formula",
+          "value": ""
+        },
+        {
+          "key": "descrizione",
+          "value": ""
+        }
+      ],
+      "valueExpression": "50"
+    },
+    {
+      "id": 3,
+      "name": "p1",
+      "output": false,
+      "global": false,
+      "type": "algebraic",
+      "x": 80,
+      "y": 240,
+      "width": 75,
+      "height": 45,
+      "fillColor": "#ffffff",
+      "strokeColor": "#000000",
+      "properties": [
+        {
+          "key": "note formula",
+          "value": ""
+        },
+        {
+          "key": "descrizione",
+          "value": ""
+        }
+      ],
+      "input": false,
+      "valueExpression": "[0,l,l,0,0]"
+    },
+    {
+      "id": 4,
+      "name": "p2",
+      "output": false,
+      "global": false,
+      "type": "algebraic",
+      "x": 80,
+      "y": 300,
+      "width": 75,
+      "height": 45,
+      "fillColor": "#ffffff",
+      "strokeColor": "#000000",
+      "properties": [
+        {
+          "key": "note formula",
+          "value": ""
+        },
+        {
+          "key": "descrizione",
+          "value": ""
+        }
+      ],
+      "input": false,
+      "valueExpression": "[0,0,l,l,0]"
+    },
+    {
+      "id": 5,
+      "name": "p3",
+      "output": false,
+      "global": false,
+      "type": "parameter",
+      "x": 80,
+      "y": 360,
+      "width": 75,
+      "height": 45,
+      "fillColor": "#ffffff",
+      "strokeColor": "#000000",
+      "properties": [
+        {
+          "key": "note formula",
+          "value": ""
+        },
+        {
+          "key": "descrizione",
+          "value": ""
+        }
+      ],
+      "valueExpression": "[0,0,0,0,0]"
+    },
+    {
+      "id": 6,
+      "name": "x",
+      "output": true,
+      "global": false,
+      "type": "state",
+      "x": 171,
+      "y": 153,
+      "width": 75,
+      "height": 30,
+      "fillColor": "#00ffff",
+      "strokeColor": "#00ff00",
+      "properties": [
+        {
+          "key": "note formula",
+          "value": ""
+        },
+        {
+          "key": "descrizione",
+          "value": ""
+        }
+      ],
+      "stateTransition": "this+gaussian()",
+      "initialState": "0"
+    },
+    {
+      "id": 7,
+      "name": "x1",
+      "output": true,
+      "global": false,
+      "type": "algebraic",
+      "x": 170,
+      "y": 80,
+      "width": 75,
+      "height": 45,
+      "fillColor": "#ffffff",
+      "strokeColor": "#000000",
+      "properties": [
+        {
+          "key": "note formula",
+          "value": ""
+        },
+        {
+          "key": "descrizione",
+          "value": ""
+        }
+      ],
+      "input": false,
+      "valueExpression": "x-z*sin(k[0])"
+    },
+    {
+      "id": 8,
+      "name": "xa",
+      "output": false,
+      "global": false,
+      "type": "algebraic",
+      "x": 280,
+      "y": 240,
+      "width": 75,
+      "height": 45,
+      "fillColor": "#ffffff",
+      "strokeColor": "#000000",
+      "properties": [
+        {
+          "key": "note formula",
+          "value": ""
+        },
+        {
+          "key": "descrizione",
+          "value": ""
+        }
+      ],
+      "input": false,
+      "valueExpression": "append(p1, p1, p3, p1, 0, p1)"
+    },
+    {
+      "id": 9,
+      "name": "xa1",
+      "output": true,
+      "global": false,
+      "type": "algebraic",
+      "x": 380,
+      "y": 270,
+      "width": 75,
+      "height": 45,
+      "fillColor": "#ffffff",
+      "strokeColor": "#000000",
+      "properties": [
+        {
+          "key": "note formula",
+          "value": ""
+        },
+        {
+          "key": "descrizione",
+          "value": ""
+        }
+      ],
+      "input": false,
+      "valueExpression": "xa-za*sin(k[0])"
+    },
+    {
+      "id": 10,
+      "name": "y",
+      "output": true,
+      "global": false,
+      "type": "state",
+      "x": 411,
+      "y": 153,
+      "width": 75,
+      "height": 30,
+      "fillColor": "#00ffff",
+      "strokeColor": "#00ff00",
+      "properties": [
+        {
+          "key": "note formula",
+          "value": ""
+        },
+        {
+          "key": "descrizione",
+          "value": ""
+        }
+      ],
+      "stateTransition": "this+gaussian()",
+      "initialState": "1"
+    },
+    {
+      "id": 11,
+      "name": "y1",
+      "output": true,
+      "global": false,
+      "type": "algebraic",
+      "x": 410,
+      "y": 80,
+      "width": 75,
+      "height": 45,
+      "fillColor": "#ffffff",
+      "strokeColor": "#000000",
+      "properties": [
+        {
+          "key": "note formula",
+          "value": ""
+        },
+        {
+          "key": "descrizione",
+          "value": ""
+        }
+      ],
+      "input": false,
+      "valueExpression": "y-z*sin(k[1])"
+    },
+    {
+      "id": 12,
+      "name": "ya",
+      "output": false,
+      "global": false,
+      "type": "algebraic",
+      "x": 280,
+      "y": 360,
+      "width": 75,
+      "height": 45,
+      "fillColor": "#ffffff",
+      "strokeColor": "#000000",
+      "properties": [
+        {
+          "key": "note formula",
+          "value": ""
+        },
+        {
+          "key": "descrizione",
+          "value": ""
+        }
+      ],
+      "input": false,
+      "valueExpression": "append(p2, p3, p2, p2, 0, (l+p3))"
+    },
+    {
+      "id": 13,
+      "name": "ya1",
+      "output": true,
+      "global": false,
+      "type": "algebraic",
+      "x": 380,
+      "y": 330,
+      "width": 75,
+      "height": 45,
+      "fillColor": "#ffffff",
+      "strokeColor": "#000000",
+      "properties": [
+        {
+          "key": "note formula",
+          "value": ""
+        },
+        {
+          "key": "descrizione",
+          "value": ""
+        }
+      ],
+      "input": false,
+      "valueExpression": "ya-za*sin(k[1])"
+    },
+    {
+      "id": 14,
+      "name": "z",
+      "output": true,
+      "global": false,
+      "type": "state",
+      "x": 297,
+      "y": 57,
+      "width": 75,
+      "height": 30,
+      "fillColor": "#00ffff",
+      "strokeColor": "#00ff00",
+      "properties": [
+        {
+          "key": "note formula",
+          "value": ""
+        },
+        {
+          "key": "descrizione",
+          "value": ""
+        }
+      ],
+      "stateTransition": "this+gaussian()",
+      "initialState": "1"
+    },
+    {
+      "id": 15,
+      "name": "za",
+      "output": false,
+      "global": false,
+      "type": "algebraic",
+      "x": 220,
+      "y": 300,
+      "width": 75,
+      "height": 45,
+      "fillColor": "#ffffff",
+      "strokeColor": "#000000",
+      "properties": [
+        {
+          "key": "note formula",
+          "value": ""
+        },
+        {
+          "key": "descrizione",
+          "value": ""
+        }
+      ],
+      "input": false,
+      "valueExpression": "append(p3, p2, p1, (l+p3), 0, p2)"
+    }
+  ],
+  "edges": [
+    {
+      "id": 1,
+      "from": 2,
+      "to": 4,
+      "controlPoints": []
+    },
+    {
+      "id": 2,
+      "from": 2,
+      "to": 3,
+      "controlPoints": []
+    },
+    {
+      "id": 3,
+      "from": 12,
+      "to": 13,
+      "controlPoints": []
+    },
+    {
+      "id": 4,
+      "from": 15,
+      "to": 13,
+      "controlPoints": []
+    },
+    {
+      "id": 5,
+      "from": 15,
+      "to": 9,
+      "controlPoints": []
+    },
+    {
+      "id": 6,
+      "from": 8,
+      "to": 9,
+      "controlPoints": []
+    },
+    {
+      "id": 7,
+      "from": 14,
+      "to": 11,
+      "controlPoints": []
+    },
+    {
+      "id": 8,
+      "from": 10,
+      "to": 11,
+      "controlPoints": []
+    },
+    {
+      "id": 9,
+      "from": 14,
+      "to": 7,
+      "controlPoints": []
+    },
+    {
+      "id": 10,
+      "from": 6,
+      "to": 7,
+      "controlPoints": []
+    },
+    {
+      "id": 11,
+      "from": 14,
+      "to": 10,
+      "controlPoints": [
+        {
+          "x": 400,
+          "y": 110
+        },
+        {
+          "x": 427,
+          "y": 152
+        }
+      ]
+    },
+    {
+      "id": 12,
+      "from": 6,
+      "to": 14,
+      "controlPoints": []
+    },
+    {
+      "id": 13,
+      "from": 6,
+      "to": 10,
+      "controlPoints": [
+        {
+          "x": 335,
+          "y": 195
+        }
+      ]
+    },
+    {
+      "id": 14,
+      "from": 10,
+      "to": 6,
+      "controlPoints": [
+        {
+          "x": 320,
+          "y": 150
+        }
+      ]
+    },
+    {
+      "id": 15,
+      "from": 10,
+      "to": 14,
+      "controlPoints": [
+        {
+          "x": 350,
+          "y": 110
+        }
+      ]
+    },
+    {
+      "id": 17,
+      "from": 3,
+      "to": 8,
+      "controlPoints": []
+    },
+    {
+      "id": 18,
+      "from": 4,
+      "to": 8,
+      "controlPoints": []
+    },
+    {
+      "id": 19,
+      "from": 5,
+      "to": 8,
+      "controlPoints": []
+    },
+    {
+      "id": 20,
+      "from": 4,
+      "to": 12,
+      "controlPoints": []
+    },
+    {
+      "id": 21,
+      "from": 5,
+      "to": 12,
+      "controlPoints": []
+    },
+    {
+      "id": 22,
+      "from": 5,
+      "to": 15,
+      "controlPoints": []
+    },
+    {
+      "id": 23,
+      "from": 4,
+      "to": 15,
+      "controlPoints": []
+    },
+    {
+      "id": 24,
+      "from": 3,
+      "to": 15,
+      "controlPoints": []
+    }
+  ],
+  "textItems": [],
+  "widgets": [
+    {
+      "id": 2,
+      "type": "xychart",
+      "customTitle": "",
+      "x": 480,
+      "y": 60,
+      "width": 460,
+      "height": 380,
+      "dashboardPageId": null,
+      "minimized": false,
+      "showTitleBar": true,
+      "fontSize": 13,
+      "outputOnly": false,
+      "showHistory": false,
+      "expandNonScalarValues": false,
+      "tableTextAlign": "left",
+      "tableDecimalDigits": 0,
+      "xMin": "auto",
+      "xMax": "auto",
+      "yMin": "auto",
+      "yMax": "auto",
+      "showGrid": false,
+      "showAxes": false,
+      "legendPosition": "none",
+      "source": "",
+      "showNumericValues": true,
+      "showIndices": true,
+      "autoFitCells": true,
+      "cellSize": 28,
+      "valueMin": "auto",
+      "valueMax": "auto",
+      "displayRows": null,
+      "displayCols": null,
+      "colorScheme": "blue",
+      "viewMode": "grid",
+      "surfaceStyle": "solid",
+      "surfaceAzimuth": 45,
+      "surfaceElevation": 32,
+      "surfaceHeightScale": 1,
+      "min": 0,
+      "max": 100,
+      "step": 1,
+      "value": 0,
+      "falseLabel": "",
+      "trueLabel": "",
+      "options": [],
+      "mappings": [],
+      "columns": [],
+      "xyPairs": [
+        {
+          "xSource": "xa1",
+          "ySource": "ya1",
+          "showTimeSeries": false,
+          "showInstantProfile": true,
+          "color": "#0e7ac4",
+          "pointColor": "#0e7ac4",
+          "showLine": true,
+          "lineWidth": 2.2,
+          "lineStyle": "solid",
+          "barMode": "none",
+          "showBars": false,
+          "barColor": "#0e7ac4",
+          "barWidth": 2.2,
+          "pointMode": "all",
+          "pointSize": 2.4
+        },
+        {
+          "xSource": "x1",
+          "ySource": "y1",
+          "showTimeSeries": true,
+          "showInstantProfile": false,
+          "color": "#e67e22",
+          "pointColor": "#e67e22",
+          "showLine": true,
+          "lineWidth": 1,
+          "lineStyle": "solid",
+          "barMode": "none",
+          "showBars": false,
+          "barColor": "#e67e22",
+          "barWidth": 2.2,
+          "pointMode": "last",
+          "pointSize": 3
+        }
+      ]
+    }
+  ]
+}

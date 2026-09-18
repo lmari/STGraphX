@@ -27,6 +27,12 @@ Frontend condiviso:
 - `model-analysis-ui.js`
 - `watch-debugger-core.js`
 - `watch-debugger-ui.js`
+- `menu-ui.js`
+- `selection-state.js`
+- `workspace-tabs-ui.js`
+- `workspace-tabs-core.js`
+- `workspace-runtime-state.js`
+- `value-formatting.js`
 - `widgets.js`
 - `semantic.js`
 - `graph-functions.js`

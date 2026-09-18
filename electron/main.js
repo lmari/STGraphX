@@ -9,6 +9,13 @@ const { app, BrowserWindow, clipboard, dialog, ipcMain } = require('electron');
 const path = require('path');
 const fs = require('fs/promises');
 
+// The XDG portal emits a Chromium error-level message when a file dialog is
+// cancelled. STGraphX is not sandboxed, so prefer the native GTK/KDE chooser
+// on Linux and keep an explicit caller-provided portal requirement intact.
+if (process.platform === 'linux' && !process.argv.some((arg) => String(arg).startsWith('--xdg-portal-required-version'))) {
+  app.commandLine.appendSwitch('xdg-portal-required-version', '999');
+}
+
 function resolveSupportedLang(raw) {
   const value = String(raw || '').trim().toLowerCase();
   if (!value) {
@@ -125,7 +132,18 @@ app.whenReady().then(() => {
   });
 
   ipcMain.handle('stgraphx:read-text-file', async (_event, filePath) => {
-    return fs.readFile(String(filePath || ''), 'utf8');
+    try {
+      return { ok: true, text: await fs.readFile(String(filePath || ''), 'utf8') };
+    } catch (err) {
+      // IPC handlers must resolve expected filesystem failures. Throwing here
+      // makes Electron report a handled missing recent file as a main-process
+      // error in the terminal.
+      return {
+        ok: false,
+        code: String(err?.code || 'READ_ERROR'),
+        message: String(err?.message || 'Unable to read file'),
+      };
+    }
   });
 
   ipcMain.handle('stgraphx:write-text-file', async (_event, filePath, text) => {

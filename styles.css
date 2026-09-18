@@ -1751,6 +1751,14 @@ button:disabled {
   min-width: 0;
 }
 
+.chart-axis-toggles {
+  display: grid;
+  grid-template-columns: max-content max-content;
+  gap: 12px;
+  align-items: center;
+  justify-content: start;
+}
+
 .chart-pair-point-controls {
   display: grid;
   grid-template-columns: minmax(72px, 1fr) 50px;
@@ -2317,6 +2325,17 @@ button:disabled {
   gap: 8px;
 }
 
+.model-analysis-tools {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 8px 0;
+}
+
+.model-analysis-tools label { color: #617283; font-size: 0.86rem; }
+.model-analysis-tools select { width: auto; min-width: 112px; }
+.model-analysis-tools input { flex: 1; min-width: 120px; }
+
 .model-analysis-pill {
   display: inline-flex;
   align-items: center;
@@ -2485,6 +2504,11 @@ button:disabled {
   cursor: pointer;
 }
 
+.model-analysis-item .model-analysis-badge {
+  grid-column: 1;
+  grid-row: 1 / span 3;
+}
+
 .model-analysis-item:hover {
   background: #f7fbfe;
   border-color: #b8cad8;
@@ -2537,14 +2561,31 @@ button:disabled {
 }
 
 .model-analysis-message {
+  grid-column: 2;
   color: #314a5d;
   line-height: 1.4;
 }
 
 .model-analysis-target {
+  grid-column: 3;
+  grid-row: 1;
   color: #60798b;
   font-size: 0.82rem;
   white-space: nowrap;
+}
+
+.model-analysis-explanation {
+  grid-column: 2 / span 2;
+  color: #617283;
+  font-size: 0.82rem;
+  line-height: 1.35;
+}
+
+.model-analysis-action {
+  grid-column: 2 / span 2;
+  color: #256c9e;
+  font-size: 0.8rem;
+  font-weight: 600;
 }
 
 .help-intro {
@@ -3903,9 +3944,12 @@ body.tablet-sidebar-layout .expression-editor-resize-handle {
   cursor: nwse-resize;
 }
 
-.center-port-hit {
-  fill: #000;
-  fill-opacity: 0.001;
+.node-edge-port {
+  fill: #0e7ac4;
+  fill-opacity: 0;
+  stroke: #fff;
+  stroke-opacity: 0;
+  stroke-width: 1.5;
   pointer-events: fill;
   cursor: crosshair;
 }
@@ -4583,9 +4627,6 @@ body.tablet-sidebar-layout .menu-run-btn {
     stroke-width: 2;
   }
 
-  .center-port-hit {
-    fill-opacity: 0.002;
-  }
 
   .control-point {
     stroke-width: 3;

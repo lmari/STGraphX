@@ -569,6 +569,16 @@
           <button id="modelAnalysisCloseBtn" class="icon-btn modal-close-btn" type="button" data-i18n-aria-label="aria.close">×</button>
         </div>
         <div id="modelAnalysisSummary" class="model-analysis-summary"></div>
+        <div class="model-analysis-tools">
+          <label for="modelAnalysisSeverityFilter" data-i18n="analysis.filter.severity"></label>
+          <select id="modelAnalysisSeverityFilter">
+            <option value="all" data-i18n="analysis.filter.all"></option>
+            <option value="error" data-i18n="analysis.section.error"></option>
+            <option value="warning" data-i18n="analysis.section.warning"></option>
+            <option value="info" data-i18n="analysis.section.info"></option>
+          </select>
+          <input id="modelAnalysisSearchInput" type="search" data-i18n-placeholder="analysis.filter.search" />
+        </div>
         <div id="modelAnalysisContent" class="model-analysis-content"></div>
         <div class="modal-actions">
           <button id="modelAnalysisChecksBtn" type="button" data-i18n="analysis.checks.button"></button>
@@ -790,6 +800,12 @@
     <script src="runtime-loader.js"></script>
     <script src="runtime-session.js"></script>
     <script src="runtime-controller.js"></script>
+    <script src="menu-ui.js"></script>
+    <script src="selection-state.js"></script>
+    <script src="workspace-tabs-ui.js"></script>
+    <script src="workspace-tabs-core.js"></script>
+    <script src="workspace-runtime-state.js"></script>
+    <script src="value-formatting.js"></script>
     <script src="app.js"></script>
   </body>
 </html>

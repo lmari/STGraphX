@@ -1,0 +1,880 @@
+{
+  "version": 1,
+  "modelTitle": "damped harmonic (linear and nonlinear) oscillator",
+  "localFunctions": [],
+  "view": {
+    "zoom": 1,
+    "showGrid": true,
+    "highlightNodeEdges": false,
+    "showNodeValues": false,
+    "gridSize": 20,
+    "tooltipDelayMs": 300,
+    "scrollLeft": 157,
+    "scrollTop": 160
+  },
+  "debug": {
+    "watches": [],
+    "breakpointEnabled": false,
+    "breakpointExpression": ""
+  },
+  "modelProperties": [],
+  "nodeCounter": 15,
+  "edgeCounter": 18,
+  "widgetCounter": 10,
+  "textItemCounter": 5,
+  "presentationGroupCounter": 3,
+  "presentationGroups": [],
+  "dashboard": null,
+  "execution": {
+    "t0": 0,
+    "dt": 0.01,
+    "t1": 100,
+    "delayMs": 50,
+    "renderEverySteps": 15,
+    "decimals": 3,
+    "integrator": "rk4",
+    "strictDefinitions": false
+  },
+  "nodes": [
+    {
+      "id": 1,
+      "name": "a",
+      "output": false,
+      "global": false,
+      "type": "algebraic",
+      "x": 160,
+      "y": 40,
+      "width": 75,
+      "height": 35,
+      "fillColor": "#ffffff",
+      "strokeColor": "#000000",
+      "properties": [
+        {
+          "key": "note formula",
+          "value": ""
+        },
+        {
+          "key": "descrizione",
+          "value": ""
+        }
+      ],
+      "input": true,
+      "valueExpression": "0.0"
+    },
+    {
+      "id": 2,
+      "name": "b",
+      "output": false,
+      "global": false,
+      "type": "parameter",
+      "x": 160,
+      "y": 100,
+      "width": 75,
+      "height": 35,
+      "fillColor": "#ffffff",
+      "strokeColor": "#000000",
+      "properties": [
+        {
+          "key": "note formula",
+          "value": ""
+        },
+        {
+          "key": "descrizione",
+          "value": ""
+        }
+      ],
+      "valueExpression": "1"
+    },
+    {
+      "id": 3,
+      "name": "omega",
+      "output": true,
+      "global": false,
+      "type": "state",
+      "x": 80,
+      "y": 160,
+      "width": 50,
+      "height": 50,
+      "fillColor": "#f5f5f5",
+      "strokeColor": "#f5f5f5",
+      "properties": [
+        {
+          "key": "note formula",
+          "value": ""
+        },
+        {
+          "key": "descrizione",
+          "value": "The angular velocity"
+        }
+      ],
+      "stateTransition": "integral(-a*this-b*sin(theta))",
+      "initialState": "0"
+    },
+    {
+      "id": 4,
+      "name": "omega2",
+      "output": true,
+      "global": false,
+      "type": "state",
+      "x": 240,
+      "y": 160,
+      "width": 50,
+      "height": 50,
+      "fillColor": "#f5f5f5",
+      "strokeColor": "#f5f5f5",
+      "properties": [
+        {
+          "key": "note formula",
+          "value": ""
+        },
+        {
+          "key": "descrizione",
+          "value": "The angular velocity"
+        }
+      ],
+      "stateTransition": "integral(-a*this-b*theta2)",
+      "initialState": "0"
+    },
+    {
+      "id": 5,
+      "name": "theta",
+      "output": true,
+      "global": false,
+      "type": "state",
+      "x": 40,
+      "y": 240,
+      "width": 50,
+      "height": 50,
+      "fillColor": "#f5f5f5",
+      "strokeColor": "#f5f5f5",
+      "properties": [
+        {
+          "key": "note formula",
+          "value": ""
+        },
+        {
+          "key": "descrizione",
+          "value": "The angular position"
+        }
+      ],
+      "stateTransition": "integral(omega)",
+      "initialState": "theta0"
+    },
+    {
+      "id": 6,
+      "name": "theta0",
+      "output": false,
+      "global": false,
+      "type": "parameter",
+      "x": 160,
+      "y": 240,
+      "width": 61,
+      "height": 51,
+      "fillColor": "#ffffff",
+      "strokeColor": "#f5f5f5",
+      "properties": [
+        {
+          "key": "note formula",
+          "value": ""
+        },
+        {
+          "key": "descrizione",
+          "value": ""
+        }
+      ],
+      "valueExpression": "3.0"
+    },
+    {
+      "id": 7,
+      "name": "theta2",
+      "output": true,
+      "global": false,
+      "type": "state",
+      "x": 260,
+      "y": 240,
+      "width": 50,
+      "height": 50,
+      "fillColor": "#f5f5f5",
+      "strokeColor": "#f5f5f5",
+      "properties": [
+        {
+          "key": "note formula",
+          "value": ""
+        },
+        {
+          "key": "descrizione",
+          "value": "The angular position"
+        }
+      ],
+      "stateTransition": "integral(omega2)",
+      "initialState": "theta0"
+    },
+    {
+      "id": 8,
+      "name": "x",
+      "output": true,
+      "global": false,
+      "type": "algebraic",
+      "x": 20,
+      "y": 320,
+      "width": 45,
+      "height": 35,
+      "fillColor": "#ffffff",
+      "strokeColor": "#000000",
+      "properties": [
+        {
+          "key": "note formula",
+          "value": ""
+        },
+        {
+          "key": "descrizione",
+          "value": "The linear position x"
+        }
+      ],
+      "input": false,
+      "valueExpression": "[0,sin(theta)]"
+    },
+    {
+      "id": 9,
+      "name": "x1",
+      "output": true,
+      "global": false,
+      "type": "algebraic",
+      "x": 240,
+      "y": 320,
+      "width": 45,
+      "height": 35,
+      "fillColor": "#ffffff",
+      "strokeColor": "#000000",
+      "properties": [
+        {
+          "key": "note formula",
+          "value": ""
+        },
+        {
+          "key": "descrizione",
+          "value": "The linear position x1"
+        }
+      ],
+      "input": false,
+      "valueExpression": "3+[0,sin(theta2)]"
+    },
+    {
+      "id": 10,
+      "name": "y",
+      "output": true,
+      "global": false,
+      "type": "algebraic",
+      "x": 70,
+      "y": 320,
+      "width": 41,
+      "height": 35,
+      "fillColor": "#ffffff",
+      "strokeColor": "#000000",
+      "properties": [
+        {
+          "key": "note formula",
+          "value": ""
+        },
+        {
+          "key": "descrizione",
+          "value": "The linear position y"
+        }
+      ],
+      "input": false,
+      "valueExpression": "[0,-cos(theta)]"
+    },
+    {
+      "id": 11,
+      "name": "y1",
+      "output": true,
+      "global": false,
+      "type": "algebraic",
+      "x": 290,
+      "y": 320,
+      "width": 41,
+      "height": 35,
+      "fillColor": "#ffffff",
+      "strokeColor": "#000000",
+      "properties": [
+        {
+          "key": "note formula",
+          "value": ""
+        },
+        {
+          "key": "descrizione",
+          "value": "The linear position y1"
+        }
+      ],
+      "input": false,
+      "valueExpression": "[0,-cos(theta2)]"
+    }
+  ],
+  "edges": [
+    {
+      "id": 1,
+      "from": 6,
+      "to": 7,
+      "controlPoints": []
+    },
+    {
+      "id": 2,
+      "from": 6,
+      "to": 5,
+      "controlPoints": []
+    },
+    {
+      "id": 3,
+      "from": 7,
+      "to": 11,
+      "controlPoints": []
+    },
+    {
+      "id": 4,
+      "from": 7,
+      "to": 9,
+      "controlPoints": []
+    },
+    {
+      "id": 5,
+      "from": 7,
+      "to": 4,
+      "controlPoints": [
+        {
+          "x": 300,
+          "y": 180
+        }
+      ]
+    },
+    {
+      "id": 6,
+      "from": 4,
+      "to": 7,
+      "controlPoints": [
+        {
+          "x": 200,
+          "y": 200
+        }
+      ]
+    },
+    {
+      "id": 7,
+      "from": 1,
+      "to": 4,
+      "controlPoints": [
+        {
+          "x": 220,
+          "y": 130
+        }
+      ]
+    },
+    {
+      "id": 8,
+      "from": 2,
+      "to": 4,
+      "controlPoints": []
+    },
+    {
+      "id": 9,
+      "from": 5,
+      "to": 3,
+      "controlPoints": [
+        {
+          "x": 100,
+          "y": 220
+        }
+      ]
+    },
+    {
+      "id": 10,
+      "from": 3,
+      "to": 5,
+      "controlPoints": [
+        {
+          "x": 40,
+          "y": 180
+        }
+      ]
+    },
+    {
+      "id": 11,
+      "from": 5,
+      "to": 10,
+      "controlPoints": []
+    },
+    {
+      "id": 12,
+      "from": 5,
+      "to": 8,
+      "controlPoints": []
+    },
+    {
+      "id": 13,
+      "from": 1,
+      "to": 3,
+      "controlPoints": []
+    },
+    {
+      "id": 14,
+      "from": 2,
+      "to": 3,
+      "controlPoints": []
+    }
+  ],
+  "textItems": [
+    {
+      "id": 1,
+      "x": 60,
+      "y": -40,
+      "width": 251,
+      "height": 35,
+      "fillColor": "",
+      "strokeColor": "",
+      "dashboardPageId": null,
+      "html": "<html>   <head>        </head>   <body>     Damped harmonic oscillator   </body> </html> "
+    }
+  ],
+  "widgets": [
+    {
+      "id": 2,
+      "type": "xychart",
+      "customTitle": "orbita non lineare",
+      "x": 320,
+      "y": -160,
+      "width": 380,
+      "height": 260,
+      "dashboardPageId": null,
+      "minimized": false,
+      "showTitleBar": true,
+      "fontSize": 13,
+      "outputOnly": false,
+      "showHistory": false,
+      "expandNonScalarValues": false,
+      "tableTextAlign": "left",
+      "tableDecimalDigits": 0,
+      "xMin": "auto",
+      "xMax": "auto",
+      "yMin": "auto",
+      "yMax": "auto",
+      "showGrid": true,
+      "showAxes": true,
+      "legendPosition": "none",
+      "source": "",
+      "showNumericValues": true,
+      "showIndices": true,
+      "autoFitCells": true,
+      "cellSize": 28,
+      "valueMin": "auto",
+      "valueMax": "auto",
+      "displayRows": null,
+      "displayCols": null,
+      "colorScheme": "blue",
+      "viewMode": "grid",
+      "surfaceStyle": "solid",
+      "surfaceAzimuth": 45,
+      "surfaceElevation": 32,
+      "surfaceHeightScale": 1,
+      "min": 0,
+      "max": 100,
+      "step": 1,
+      "value": 0,
+      "falseLabel": "",
+      "trueLabel": "",
+      "options": [],
+      "mappings": [],
+      "columns": [],
+      "xyPairs": [
+        {
+          "xSource": "theta",
+          "ySource": "omega",
+          "showTimeSeries": true,
+          "showInstantProfile": false,
+          "color": "#0e7ac4",
+          "pointColor": "#c40e17",
+          "showLine": true,
+          "lineWidth": 2.2,
+          "lineStyle": "solid",
+          "barMode": "none",
+          "showBars": false,
+          "barColor": "#0e7ac4",
+          "barWidth": 2.2,
+          "pointMode": "last",
+          "pointSize": 5
+        }
+      ]
+    },
+    {
+      "id": 3,
+      "type": "xychart",
+      "customTitle": "dinamica non lineare",
+      "x": 320,
+      "y": 100,
+      "width": 380,
+      "height": 240,
+      "dashboardPageId": null,
+      "minimized": false,
+      "showTitleBar": true,
+      "fontSize": 13,
+      "outputOnly": false,
+      "showHistory": false,
+      "expandNonScalarValues": false,
+      "tableTextAlign": "left",
+      "tableDecimalDigits": 0,
+      "xMin": "auto",
+      "xMax": "auto",
+      "yMin": "auto",
+      "yMax": "auto",
+      "showGrid": true,
+      "showAxes": true,
+      "legendPosition": "top-right",
+      "source": "",
+      "showNumericValues": true,
+      "showIndices": true,
+      "autoFitCells": true,
+      "cellSize": 28,
+      "valueMin": "auto",
+      "valueMax": "auto",
+      "displayRows": null,
+      "displayCols": null,
+      "colorScheme": "blue",
+      "viewMode": "grid",
+      "surfaceStyle": "solid",
+      "surfaceAzimuth": 45,
+      "surfaceElevation": 32,
+      "surfaceHeightScale": 1,
+      "min": 0,
+      "max": 100,
+      "step": 1,
+      "value": 0,
+      "falseLabel": "",
+      "trueLabel": "",
+      "options": [],
+      "mappings": [],
+      "columns": [],
+      "xyPairs": [
+        {
+          "xSource": "time",
+          "ySource": "theta",
+          "showTimeSeries": true,
+          "showInstantProfile": false,
+          "color": "#0e7ac4",
+          "pointColor": "#0e7ac4",
+          "showLine": true,
+          "lineWidth": 2.2,
+          "lineStyle": "solid",
+          "barMode": "none",
+          "showBars": false,
+          "barColor": "#0e7ac4",
+          "barWidth": 2.2,
+          "pointMode": "none",
+          "pointSize": 2.4
+        },
+        {
+          "xSource": "time",
+          "ySource": "omega",
+          "showTimeSeries": true,
+          "showInstantProfile": false,
+          "color": "#e67e22",
+          "pointColor": "#e67e22",
+          "showLine": true,
+          "lineWidth": 2.2,
+          "lineStyle": "solid",
+          "barMode": "none",
+          "showBars": false,
+          "barColor": "#e67e22",
+          "barWidth": 2.2,
+          "pointMode": "none",
+          "pointSize": 2.4
+        }
+      ]
+    },
+    {
+      "id": 4,
+      "type": "xychart",
+      "customTitle": "",
+      "x": -20,
+      "y": 360,
+      "width": 420,
+      "height": 280,
+      "dashboardPageId": null,
+      "minimized": false,
+      "showTitleBar": true,
+      "fontSize": 13,
+      "outputOnly": false,
+      "showHistory": false,
+      "expandNonScalarValues": false,
+      "tableTextAlign": "left",
+      "tableDecimalDigits": 0,
+      "xMin": -1,
+      "xMax": 5,
+      "yMin": -1.5,
+      "yMax": 1,
+      "showGrid": false,
+      "showAxes": false,
+      "legendPosition": "none",
+      "source": "",
+      "showNumericValues": true,
+      "showIndices": true,
+      "autoFitCells": true,
+      "cellSize": 28,
+      "valueMin": "auto",
+      "valueMax": "auto",
+      "displayRows": null,
+      "displayCols": null,
+      "colorScheme": "blue",
+      "viewMode": "grid",
+      "surfaceStyle": "solid",
+      "surfaceAzimuth": 45,
+      "surfaceElevation": 32,
+      "surfaceHeightScale": 1,
+      "min": 0,
+      "max": 100,
+      "step": 1,
+      "value": 0,
+      "falseLabel": "",
+      "trueLabel": "",
+      "options": [],
+      "mappings": [],
+      "columns": [],
+      "xyPairs": [
+        {
+          "xSource": "x",
+          "ySource": "y",
+          "showTimeSeries": false,
+          "showInstantProfile": true,
+          "color": "#0e7ac4",
+          "pointColor": "#0e7ac4",
+          "showLine": true,
+          "lineWidth": 2.2,
+          "lineStyle": "solid",
+          "barMode": "none",
+          "showBars": false,
+          "barColor": "#0e7ac4",
+          "barWidth": 2.2,
+          "pointMode": "last",
+          "pointSize": 6
+        },
+        {
+          "xSource": "x1",
+          "ySource": "y1",
+          "showTimeSeries": false,
+          "showInstantProfile": true,
+          "color": "#e67e22",
+          "pointColor": "#e67e22",
+          "showLine": true,
+          "lineWidth": 2.2,
+          "lineStyle": "solid",
+          "barMode": "none",
+          "showBars": false,
+          "barColor": "#e67e22",
+          "barWidth": 2.2,
+          "pointMode": "last",
+          "pointSize": 6
+        }
+      ]
+    },
+    {
+      "id": 7,
+      "type": "xychart",
+      "customTitle": "",
+      "x": 700,
+      "y": -160,
+      "width": 360,
+      "height": 260,
+      "dashboardPageId": null,
+      "minimized": false,
+      "showTitleBar": true,
+      "fontSize": 13,
+      "outputOnly": false,
+      "showHistory": false,
+      "expandNonScalarValues": false,
+      "tableTextAlign": "left",
+      "tableDecimalDigits": null,
+      "xMin": "auto",
+      "xMax": "auto",
+      "yMin": "auto",
+      "yMax": "auto",
+      "showGrid": true,
+      "showAxes": true,
+      "legendPosition": "top-right",
+      "source": "",
+      "showNumericValues": true,
+      "showIndices": true,
+      "autoFitCells": true,
+      "cellSize": 28,
+      "valueMin": "auto",
+      "valueMax": "auto",
+      "displayRows": null,
+      "displayCols": null,
+      "colorScheme": "blue",
+      "viewMode": "grid",
+      "surfaceStyle": "solid",
+      "surfaceAzimuth": 45,
+      "surfaceElevation": 32,
+      "surfaceHeightScale": 1,
+      "min": 0,
+      "max": 100,
+      "step": 1,
+      "value": 0,
+      "falseLabel": "",
+      "trueLabel": "",
+      "options": [],
+      "mappings": [],
+      "columns": [],
+      "xyPairs": [
+        {
+          "xSource": "theta2",
+          "ySource": "omega2",
+          "showTimeSeries": true,
+          "showInstantProfile": false,
+          "color": "#0e7ac4",
+          "pointColor": "#c40e29",
+          "showLine": true,
+          "lineWidth": 2.2,
+          "lineStyle": "solid",
+          "barMode": "none",
+          "showBars": false,
+          "barColor": "#0e7ac4",
+          "barWidth": 2.2,
+          "pointMode": "last",
+          "pointSize": 5
+        }
+      ]
+    },
+    {
+      "id": 8,
+      "type": "xychart",
+      "customTitle": "",
+      "x": 700,
+      "y": 100,
+      "width": 360,
+      "height": 240,
+      "dashboardPageId": null,
+      "minimized": false,
+      "showTitleBar": true,
+      "fontSize": 13,
+      "outputOnly": false,
+      "showHistory": false,
+      "expandNonScalarValues": false,
+      "tableTextAlign": "left",
+      "tableDecimalDigits": null,
+      "xMin": "auto",
+      "xMax": "auto",
+      "yMin": "auto",
+      "yMax": "auto",
+      "showGrid": true,
+      "showAxes": true,
+      "legendPosition": "top-right",
+      "source": "",
+      "showNumericValues": true,
+      "showIndices": true,
+      "autoFitCells": true,
+      "cellSize": 28,
+      "valueMin": "auto",
+      "valueMax": "auto",
+      "displayRows": null,
+      "displayCols": null,
+      "colorScheme": "blue",
+      "viewMode": "grid",
+      "surfaceStyle": "solid",
+      "surfaceAzimuth": 45,
+      "surfaceElevation": 32,
+      "surfaceHeightScale": 1,
+      "min": 0,
+      "max": 100,
+      "step": 1,
+      "value": 0,
+      "falseLabel": "",
+      "trueLabel": "",
+      "options": [],
+      "mappings": [],
+      "columns": [],
+      "xyPairs": [
+        {
+          "xSource": "time",
+          "ySource": "theta2",
+          "showTimeSeries": true,
+          "showInstantProfile": false,
+          "color": "#0e7ac4",
+          "pointColor": "#0e7ac4",
+          "showLine": true,
+          "lineWidth": 2.2,
+          "lineStyle": "solid",
+          "barMode": "none",
+          "showBars": false,
+          "barColor": "#0e7ac4",
+          "barWidth": 2.2,
+          "pointMode": "none",
+          "pointSize": 2.4
+        },
+        {
+          "xSource": "time",
+          "ySource": "omega2",
+          "showTimeSeries": true,
+          "showInstantProfile": false,
+          "color": "#e67e22",
+          "pointColor": "#e67e22",
+          "showLine": true,
+          "lineWidth": 2.2,
+          "lineStyle": "solid",
+          "barMode": "none",
+          "showBars": false,
+          "barColor": "#e67e22",
+          "barWidth": 2.2,
+          "pointMode": "none",
+          "pointSize": 2.4
+        }
+      ]
+    },
+    {
+      "id": 9,
+      "type": "slider",
+      "customTitle": "",
+      "x": -120,
+      "y": 0,
+      "width": 220,
+      "height": 82,
+      "dashboardPageId": null,
+      "minimized": false,
+      "showTitleBar": true,
+      "fontSize": 13,
+      "outputOnly": false,
+      "showHistory": false,
+      "expandNonScalarValues": false,
+      "tableTextAlign": "left",
+      "tableDecimalDigits": null,
+      "xMin": "auto",
+      "xMax": "auto",
+      "yMin": "auto",
+      "yMax": "auto",
+      "showGrid": true,
+      "showAxes": true,
+      "legendPosition": "top-right",
+      "source": "a",
+      "showNumericValues": true,
+      "showIndices": true,
+      "autoFitCells": true,
+      "cellSize": 28,
+      "valueMin": "auto",
+      "valueMax": "auto",
+      "displayRows": null,
+      "displayCols": null,
+      "colorScheme": "blue",
+      "viewMode": "grid",
+      "surfaceStyle": "solid",
+      "surfaceAzimuth": 45,
+      "surfaceElevation": 32,
+      "surfaceHeightScale": 1,
+      "min": -0.1,
+      "max": 0.1,
+      "step": 0.01,
+      "value": 0,
+      "falseLabel": "",
+      "trueLabel": "",
+      "options": [],
+      "mappings": [],
+      "columns": [],
+      "xyPairs": []
+    }
+  ]
+}

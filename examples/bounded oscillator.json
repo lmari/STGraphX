@@ -18,11 +18,11 @@
     "breakpointExpression": ""
   },
   "modelProperties": [],
-  "nodeCounter": 19,
-  "edgeCounter": 16,
-  "widgetCounter": 10,
-  "textItemCounter": 5,
-  "presentationGroupCounter": 2,
+  "nodeCounter": 20,
+  "edgeCounter": 17,
+  "widgetCounter": 11,
+  "textItemCounter": 6,
+  "presentationGroupCounter": 3,
   "presentationGroups": [],
   "dashboard": null,
   "execution": {
@@ -30,7 +30,7 @@
     "dt": 0.01,
     "t1": 100,
     "delayMs": 1,
-    "renderEverySteps": 5,
+    "renderEverySteps": 1,
     "decimals": 3,
     "integrator": "rk4",
     "strictDefinitions": false
@@ -420,6 +420,7 @@
       "yMin": "auto",
       "yMax": "auto",
       "showGrid": true,
+      "showAxes": true,
       "legendPosition": "none",
       "source": "",
       "showNumericValues": true,
@@ -456,6 +457,10 @@
           "showLine": true,
           "lineWidth": 2.2,
           "lineStyle": "solid",
+          "barMode": "none",
+          "showBars": false,
+          "barColor": "#0e7ac4",
+          "barWidth": 2.2,
           "pointMode": "none",
           "pointSize": 2.4
         }
@@ -483,6 +488,7 @@
       "yMin": "auto",
       "yMax": "auto",
       "showGrid": true,
+      "showAxes": true,
       "legendPosition": "none",
       "source": "",
       "showNumericValues": true,
@@ -519,6 +525,10 @@
           "showLine": true,
           "lineWidth": 1.6,
           "lineStyle": "solid",
+          "barMode": "none",
+          "showBars": false,
+          "barColor": "#0e7ac4",
+          "barWidth": 2.2,
           "pointMode": "last",
           "pointSize": 3.4
         }
@@ -546,6 +556,7 @@
       "yMin": "auto",
       "yMax": "auto",
       "showGrid": true,
+      "showAxes": true,
       "legendPosition": "none",
       "source": "",
       "showNumericValues": true,
@@ -582,6 +593,10 @@
           "showLine": false,
           "lineWidth": 2.2,
           "lineStyle": "solid",
+          "barMode": "none",
+          "showBars": false,
+          "barColor": "#0e7ac4",
+          "barWidth": 2.2,
           "pointMode": "last",
           "pointSize": 10
         }
@@ -609,6 +624,7 @@
       "yMin": "auto",
       "yMax": "auto",
       "showGrid": true,
+      "showAxes": true,
       "legendPosition": "none",
       "source": "",
       "showNumericValues": true,
@@ -645,6 +661,10 @@
           "showLine": true,
           "lineWidth": 1.6,
           "lineStyle": "solid",
+          "barMode": "none",
+          "showBars": false,
+          "barColor": "#0e7ac4",
+          "barWidth": 2.2,
           "pointMode": "last",
           "pointSize": 3.4
         }

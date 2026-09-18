@@ -28,7 +28,7 @@ Il comando mostra sempre a terminale il numero di elementi convertiti e gli avvi
 
 ## Convertito
 
-* intestazione del modello e base dei tempi: `time0`, `timeD`, `time1`, ritardo e zoom;
+* intestazione del modello e base dei tempi: `time0`, `timeD`, `time1`, ritardo, frequenza di aggiornamento e zoom;
 * nodi `ValueNode` e `AuxiliaryNode`: parametri, variabili algebriche e di stato;
 * posizione, dimensione, colori, descrizione e proprietà custom dei nodi;
 * frecce, inclusi i punti di controllo intermedi;
@@ -53,7 +53,7 @@ Questa versione converte:
 
 Il convertitore segnala inoltre costrutti sospetti, come indici legacy residui, eventuali operatori `#` non convertiti, letture da foglio elettronico e `&&`/`||`.  
 I nodi legacy di stato con un'espressione di output separata vengono convertiti in nodi di stato e quell'espressione viene conservata nelle `formula notes`, perché STGraphX non usa quel costrutto.  
-I metodi di integrazione legacy diversi da Eulero richiedono una verifica manuale: il JSON prodotto imposta `euler` e registra un avviso.
+Il metodo legacy RK2(3) viene convertito in `rk4`, il metodo numericamente disponibile più vicino in STGraphX. Gli altri metodi legacy diversi da Eulero richiedono una verifica manuale: il JSON prodotto imposta `euler` e registra un avviso.
 
 ## Verifica Del Convertitore
 

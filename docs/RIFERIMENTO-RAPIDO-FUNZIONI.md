@@ -1,6 +1,6 @@
 # STGraphX - Riferimento rapido alle funzioni
 
-Generato automaticamente da `i18n-inline.js` e `graph-functions.js` (release 2026.09.12).
+Generato automaticamente da `i18n-inline.js` e `graph-functions.js` (release 2026.09.16).
 
 Rigenerare con `npm run docs:functions`.
 
@@ -181,15 +181,15 @@ Assegnazione di una proprietà custom del nodo, con restituzione del valore asse
 
 ### `append`
 
-`append(vector, value|vector) | append(value, vector) | append(matrix, rowVector)`
+`append(value1, value2[, value3, ...]) | append(vector|matrix, ..., axis)`
 
-Aggiunge o antepone un elemento a un vettore, concatena due vettori, oppure aggiunge una riga a una matrice.
+Concatena in sequenza due o piu valori. Su vettori aggiunge elementi o concatena vettori. Se e presente una matrice, axis=0 (default) concatena righe e axis=1 colonne: l'ordine degli argomenti stabilisce se sono inserite prima o dopo la matrice. Le matrici agents supportano solo axis=0.
 
 **Esempi**
-- `append([1,2], 3)`
-- `append(1, [2,3])`
-- `append([1,2], [3,4])`
-- `append([[1,2],[3,4]], [5,6])`
+- `append([1,2], 3, [4,5])`
+- `append([[1,2]], [3,4], [5,6])`
+- `append([[1,2],[3,4]], [5,6], 1)`
+- `append([5,6], [[1,2],[3,4]], 1)`
 
 ---
 
@@ -325,6 +325,18 @@ Una copia senza l'elemento indicato del vettore oppure senza la riga o la colonn
 - `removeAt([1,2,3], 1) -> [1,3]`
 - `removeAt([[1,2],[3,4]], 0) -> [[3,4]]`
 - `removeAt([[1,2],[3,4]], 1, 1) -> [[1],[3]]`
+
+---
+
+### `resize`
+
+`resize(vector, length) | resize(matrix, rows, cols)`
+
+Copia di un vettore o di una matrice con dimensioni diverse. Mantiene le posizioni esistenti, elimina quelle eccedenti e riempie con zeri quelle nuove. Le matrici agents non sono supportate.
+
+**Esempi**
+- `resize([1,2], 4) -> [1,2,0,0]`
+- `resize([[1,2],[3,4]], 3, 4) -> [[1,2,0,0],[3,4,0,0],[0,0,0,0]]`
 
 ---
 

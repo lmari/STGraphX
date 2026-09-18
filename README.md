@@ -1,6 +1,6 @@
 # STGraphX: Readme
 
-versione 16 settembre 2026
+versione 18 settembre 2026
 
 Copyright (c) 2026 Luca Mari
 
