@@ -7,7 +7,7 @@
 
 window.STGraphXAppMeta = {
   author: "Luca Mari",
-  releaseDate: "2026.09.18",
+  releaseDate: "2026.09.20",
   license: "MPL-2.0",
   copyright: "Copyright (c) 2026 Luca Mari",
 };
@@ -29,6 +29,8 @@ window.STGraphXI18nBundles = {
     "action.apply": "Applica",
     "action.cancel": "Annulla",
     "action.close": "Chiudi",
+    "action.closeWithoutSaving": "No, chiudi senza salvare",
+    "action.dontCloseApp": "Non chiudere l'app",
     "action.closeTab": "Chiudi scheda",
     "action.copy": "Copia",
     "action.delete": "Elimina",
@@ -44,6 +46,7 @@ window.STGraphXI18nBundles = {
     "action.resetExecution": "Reset esecuzione",
     "action.resetNodeColors": "Colori automatici",
     "action.save": "Salva",
+    "action.yes": "Sì",
     "action.select": "Seleziona",
     "action.showSubmodel": "Mostra",
     "action.tabletCanvasEdit": "Modalità modifica canvas",
@@ -65,7 +68,8 @@ window.STGraphXI18nBundles = {
     // Files and menus
     "confirm.closeApp.detail": "Modello corrente: {name}",
     "confirm.closeApp.save": "Ci sono modifiche non salvate. Vuoi salvarle prima di chiudere l'app?",
-    "confirm.closeTab.save": "Ci sono modifiche non salvate in questa scheda. Vuoi salvarle prima di chiuderla?",
+    "confirm.closeTab.save": "Ci sono modifiche non salvate in questo modello. Vuoi salvarle prima di chiuderlo?",
+    "confirm.closeTab.title": "Modifiche non salvate",
     "confirm.newGraph.save": "Ci sono modifiche non salvate. Vuoi salvare prima di creare un nuovo modello?",
     "confirm.openGraph.save": "Ci sono modifiche non salvate. Vuoi salvarle prima di aprire un altro modello?",
     "confirm.selectModelFolder": "Il modello usa sottomodelli. Vuoi selezionare la cartella del modello per consentirne il caricamento automatico?",
@@ -1181,6 +1185,8 @@ window.STGraphXI18nBundles = {
     "action.apply": "Apply",
     "action.cancel": "Cancel",
     "action.close": "Close",
+    "action.closeWithoutSaving": "No, close without saving",
+    "action.dontCloseApp": "Do not close the app",
     "action.closeTab": "Close tab",
     "action.copy": "Copy",
     "action.delete": "Delete",
@@ -1196,6 +1202,7 @@ window.STGraphXI18nBundles = {
     "action.resetExecution": "Reset execution",
     "action.resetNodeColors": "Automatic colors",
     "action.save": "Save",
+    "action.yes": "Yes",
     "action.select": "Select",
     "action.showSubmodel": "Show",
     "action.tabletCanvasEdit": "Canvas edit mode",
@@ -1217,7 +1224,8 @@ window.STGraphXI18nBundles = {
     // Files and menus
     "confirm.closeApp.detail": "Current model: {name}",
     "confirm.closeApp.save": "There are unsaved changes. Save them before closing the app?",
-    "confirm.closeTab.save": "There are unsaved changes in this tab. Save them before closing it?",
+    "confirm.closeTab.save": "There are unsaved changes in this model. Save them before closing it?",
+    "confirm.closeTab.title": "Unsaved changes",
     "confirm.newGraph.save": "There are unsaved changes. Save before creating a new model?",
     "confirm.openGraph.save": "There are unsaved changes. Save them before opening another model?",
     "confirm.selectModelFolder": "This model uses submodels. Do you want to select the model folder so they can be loaded automatically?",

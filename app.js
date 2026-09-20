@@ -281,6 +281,9 @@ const dashboardRenameInput = document.getElementById("dashboardRenameInput");
 const dashboardRenameCloseBtn = document.getElementById("dashboardRenameCloseBtn");
 const dashboardRenameCancelBtn = document.getElementById("dashboardRenameCancelBtn");
 const dashboardRenameApplyBtn = document.getElementById("dashboardRenameApplyBtn");
+const modelCloseConfirmModal = document.getElementById("modelCloseConfirmModal");
+const modelCloseConfirmDiscardBtn = document.getElementById("modelCloseConfirmDiscardBtn");
+const modelCloseConfirmSaveBtn = document.getElementById("modelCloseConfirmSaveBtn");
 const presentationGroupNameInput = document.getElementById("presentationGroupNameInput");
 const presentationGroupCreateBtn = document.getElementById("presentationGroupCreateBtn");
 const presentationGroupsStatus = document.getElementById("presentationGroupsStatus");
@@ -929,6 +932,7 @@ const ui = {
   dashboardTabClickPageId: null,
   dashboardDropState: null,
   dashboardRenamePageId: null,
+  modelCloseConfirmResolver: null,
   sliderInteraction: null,
   showGraph: true,
   showWidgets: true,
@@ -6187,7 +6191,7 @@ async function ensureWorkspaceTabSavedBeforeClose(tabId) {
   if (!tab || !workspaceContextHasUnsavedChanges(tab.state?.context)) {
     return true;
   }
-  const shouldSave = window.confirm(t("confirm.closeTab.save"));
+  const shouldSave = await confirmWorkspaceTabSaveBeforeClose();
   if (!shouldSave) {
     return true;
   }
@@ -6195,6 +6199,35 @@ async function ensureWorkspaceTabSavedBeforeClose(tabId) {
     switchWorkspaceTab(tabId);
   }
   return saveGraphJson(false);
+}
+
+async function confirmWorkspaceTabSaveBeforeClose() {
+  const electronBridge = electronFileBridge();
+  if (typeof electronBridge?.showConfirmDialog === "function") {
+    const response = await electronBridge.showConfirmDialog({
+      title: t("confirm.closeTab.title"),
+      message: t("confirm.closeTab.save"),
+      buttons: [t("action.yes"), t("action.closeWithoutSaving")],
+      defaultId: 0,
+      cancelId: 1,
+    });
+    return response === 0;
+  }
+  if (!modelCloseConfirmModal) {
+    return window.confirm(t("confirm.closeTab.save"));
+  }
+  return new Promise((resolve) => {
+    ui.modelCloseConfirmResolver = resolve;
+    modelCloseConfirmModal.classList.remove("hidden");
+    window.setTimeout(() => modelCloseConfirmSaveBtn?.focus(), 0);
+  });
+}
+
+function resolveWorkspaceTabSaveConfirmation(shouldSave) {
+  modelCloseConfirmModal?.classList.add("hidden");
+  const resolve = ui.modelCloseConfirmResolver;
+  ui.modelCloseConfirmResolver = null;
+  resolve?.(Boolean(shouldSave));
 }
 
 async function ensureWorkspaceTabsSavedBeforeClose(tabIds) {
@@ -6264,6 +6297,25 @@ async function closeActiveWorkspaceTab() {
   return closeWorkspaceTab(activeTab.id);
 }
 
+window.__stgraphxCloseActiveModel = function __stgraphxCloseActiveModel() {
+  return closeActiveWorkspaceTab();
+};
+
+// Browsers reserve Ctrl/Cmd+W and window closing for themselves. They only
+// permit a generic beforeunload confirmation, so use it whenever a web/Tauri
+// document contains unsaved models. Electron has its own native dialog.
+if (!electronFileBridge()) {
+  window.addEventListener("beforeunload", (evt) => {
+    saveActiveWorkspaceTabState();
+    const hasUnsaved = workspace.tabs.some((tab) => workspaceContextHasUnsavedChanges(tab.state?.context));
+    if (!hasUnsaved) {
+      return;
+    }
+    evt.preventDefault();
+    evt.returnValue = "";
+  });
+}
+
 async function saveAllWorkspaceTabsBeforeClose() {
   saveActiveWorkspaceTabState();
   const unsavedTabs = workspace.tabs.filter((tab) => workspaceContextHasUnsavedChanges(tab.state?.context));
@@ -6284,7 +6336,7 @@ window.__stgraphxGetClosePromptData = function __stgraphxGetClosePromptData() {
     hasUnsaved: unsavedCount > 0,
     message: t("confirm.closeApp.save"),
     detail: t("confirm.closeApp.detail", { name: unsavedCount > 1 ? `${displayFileName()} (+${unsavedCount - 1})` : displayFileName() }),
-    buttons: [t("action.save"), t("action.discard"), t("action.cancel")],
+    buttons: [t("action.yes"), t("action.closeWithoutSaving"), t("action.dontCloseApp")],
   };
 };
 
@@ -14311,6 +14363,12 @@ if (dashboardRenameCancelBtn) {
 }
 if (dashboardRenameApplyBtn) {
   dashboardRenameApplyBtn.addEventListener("click", applyDashboardPageRename);
+}
+if (modelCloseConfirmDiscardBtn) {
+  modelCloseConfirmDiscardBtn.addEventListener("click", () => resolveWorkspaceTabSaveConfirmation(false));
+}
+if (modelCloseConfirmSaveBtn) {
+  modelCloseConfirmSaveBtn.addEventListener("click", () => resolveWorkspaceTabSaveConfirmation(true));
 }
 if (manageDashboardItem) {
   manageDashboardItem.addEventListener("click", () => {

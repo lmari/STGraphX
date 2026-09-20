@@ -1860,6 +1860,20 @@ button:disabled {
   box-shadow: 0 18px 36px rgba(18, 33, 47, 0.22);
 }
 
+.model-close-confirm-card {
+  width: min(470px, calc(100vw - 40px));
+}
+
+.model-close-confirm-message {
+  margin: 2px 0 8px;
+  color: var(--text-muted);
+  line-height: 1.45;
+}
+
+.model-close-confirm-card .modal-actions {
+  justify-content: center;
+}
+
 .modal-head {
   display: flex;
   align-items: center;

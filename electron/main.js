@@ -56,6 +56,22 @@ function createWindow() {
 
   const startupLang = resolveStartupLang();
   win.loadFile(path.join(__dirname, '..', 'index.html'), startupLang ? { query: { lang: startupLang } } : undefined);
+  win.webContents.on('before-input-event', (event, input) => {
+    const isCloseShortcut = input.type === 'keyDown'
+      && !input.shift
+      && (input.control || input.meta)
+      && String(input.key || '').toLowerCase() === 'w';
+    if (!isCloseShortcut) {
+      return;
+    }
+    // Chromium handles Ctrl/Cmd+W before the renderer's key listener. Route
+    // it to the active model so the unsaved-changes confirmation is preserved.
+    event.preventDefault();
+    void win.webContents.executeJavaScript(
+      'window.__stgraphxCloseActiveModel ? window.__stgraphxCloseActiveModel() : false',
+      true,
+    ).catch(() => {});
+  });
   win.once('ready-to-show', () => {
     win.show();
   });
@@ -121,6 +137,28 @@ app.whenReady().then(() => {
   ipcMain.handle('stgraphx:write-clipboard-text', (_event, text) => {
     clipboard.writeText(String(text ?? ''));
     return true;
+  });
+  ipcMain.handle('stgraphx:show-confirm-dialog', async (event, options = {}) => {
+    const win = BrowserWindow.fromWebContents(event.sender);
+    const buttons = Array.isArray(options.buttons) && options.buttons.length > 0
+      ? options.buttons.slice(0, 3).map((label) => String(label || ''))
+      : ['Yes', 'No'];
+    const defaultId = Number.isInteger(options.defaultId) && options.defaultId >= 0 && options.defaultId < buttons.length
+      ? options.defaultId
+      : 0;
+    const cancelId = Number.isInteger(options.cancelId) && options.cancelId >= 0 && options.cancelId < buttons.length
+      ? options.cancelId
+      : buttons.length - 1;
+    const result = await dialog.showMessageBox(win, {
+      type: 'question',
+      title: String(options.title || 'STGraphX'),
+      message: String(options.message || ''),
+      buttons,
+      defaultId,
+      cancelId,
+      noLink: true,
+    });
+    return { response: result.response };
   });
   ipcMain.handle('stgraphx:show-open-dialog', async (event, options = {}) => {
     const win = BrowserWindow.fromWebContents(event.sender);

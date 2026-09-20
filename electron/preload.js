@@ -17,6 +17,10 @@ exposePlatformInMainWorld(contextBridge, platform);
 // native File System Access handles do not expose a parent directory, which is
 // needed to reopen models and their relative submodels reliably.
 contextBridge.exposeInMainWorld("STGraphXElectronFiles", {
+  async showConfirmDialog(options = {}) {
+    const result = await ipcRenderer.invoke("stgraphx:show-confirm-dialog", options);
+    return Number.isInteger(result?.response) ? result.response : -1;
+  },
   async showOpenFilePaths(options = {}) {
     const result = await ipcRenderer.invoke("stgraphx:show-open-dialog", options);
     return result?.canceled ? [] : (result?.filePaths || []);
