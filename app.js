@@ -2029,6 +2029,14 @@ function localizeExpressionErrorMessage(message) {
   if (expectsVectorOrMatrixMatch) {
     return t("expr.error.expectsNonEmptyVectorOrMatrix", { name: expectsVectorOrMatrixMatch[1] });
   }
+  const expectsNumericVectorOrMatrixMatch = raw.match(/^([A-Za-z_$][A-Za-z0-9_$]*) expects a non-empty numeric vector or matrix$/i);
+  if (expectsNumericVectorOrMatrixMatch) {
+    return t("expr.error.expectsNonEmptyNumericVectorOrMatrix", { name: expectsNumericVectorOrMatrixMatch[1] });
+  }
+  const expectsVectorOrMatrixGenericMatch = raw.match(/^([A-Za-z_$][A-Za-z0-9_$]*) expects a vector or matrix$/i);
+  if (expectsVectorOrMatrixGenericMatch) {
+    return t("expr.error.expectsVectorOrMatrix", { name: expectsVectorOrMatrixGenericMatch[1] });
+  }
   const expectsVectorGenericMatch = raw.match(/^([A-Za-z_$][A-Za-z0-9_$]*) expects a vector$/i);
   if (expectsVectorGenericMatch) {
     return t("expr.error.expectsVector", { name: expectsVectorGenericMatch[1] });
@@ -2067,7 +2075,17 @@ function localizeExpressionErrorMessage(message) {
   }
   const expectsOptionsArgsMatch = raw.match(/^([A-Za-z_$][A-Za-z0-9_$]*) expects (.+) arguments?$/i);
   if (expectsOptionsArgsMatch) {
-    return t("expr.error.expectsArgsDescription", { name: expectsOptionsArgsMatch[1], description: expectsOptionsArgsMatch[2] });
+    const descriptions = {
+      "0, 1, or 2": "expr.error.argumentList.0_1_2",
+      "1 or 2": "expr.error.argumentList.1_2",
+      "1, 2, or 3": "expr.error.argumentList.1_2_3",
+      "2 or 3": "expr.error.argumentList.2_3",
+    };
+    const description = expectsOptionsArgsMatch[2].trim().toLowerCase();
+    return t("expr.error.expectsArgsDescription", {
+      name: expectsOptionsArgsMatch[1],
+      description: descriptions[description] ? t(descriptions[description]) : expectsOptionsArgsMatch[2],
+    });
   }
   if (lower === "probability must be in (0, 1)") {
     return t("expr.error.probabilityOpen01");
@@ -2081,8 +2099,31 @@ function localizeExpressionErrorMessage(message) {
   if (lower === "sigma must be > 0") {
     return t("expr.error.sigmaPositive");
   }
+  const closedUnitIntervalMatch = raw.match(/^([A-Za-z_$][A-Za-z0-9_$]*) must be in \[0, 1\]$/i);
+  if (closedUnitIntervalMatch) {
+    return t("expr.error.valueClosed01", { name: closedUnitIntervalMatch[1] });
+  }
+  const nonNegativeIntegerMatch = raw.match(/^([A-Za-z_$][A-Za-z0-9_$]*) must be a non-negative integer$/i);
+  if (nonNegativeIntegerMatch) {
+    return t("expr.error.mustBeNonNegativeInteger", { name: nonNegativeIntegerMatch[1] });
+  }
+  const signalArgsMatch = raw.match(/^([A-Za-z_$][A-Za-z0-9_$]*) expects cx, cy, and x$/i);
+  if (signalArgsMatch) {
+    return t("expr.error.signalArgs", { name: signalArgsMatch[1] });
+  }
+  const signalPointsMatch = raw.match(/^([A-Za-z_$][A-Za-z0-9_$]*) expects two numeric vectors of the same length, with at least two points$/i);
+  if (signalPointsMatch) {
+    return t("expr.error.signalControlPoints", { name: signalPointsMatch[1] });
+  }
+  const signalOrderMatch = raw.match(/^([A-Za-z_$][A-Za-z0-9_$]*) expects strictly increasing cx values$/i);
+  if (signalOrderMatch) {
+    return t("expr.error.signalControlPointsIncreasing", { name: signalOrderMatch[1] });
+  }
   if (lower === "rate must be > 0") {
     return t("expr.error.ratePositive");
+  }
+  if (lower === "rate must be >= 0") {
+    return t("expr.error.rateNonNegative");
   }
   if (lower === "max must be > min") {
     return t("expr.error.maxGreaterThanMin");
@@ -2232,6 +2273,9 @@ function localizeExpressionErrorMessage(message) {
   }
   if (lower === "reduce axis requires a matrix") {
     return t("expr.error.axisRequiresMatrix", { name: "reduce" });
+  }
+  if (lower === "reduce axis requires a rectangular matrix") {
+    return t("expr.error.axisRequiresRectangularMatrix", { name: "reduce" });
   }
   if (lower === "reduce requires a non-empty vector when no initial value is provided") {
     return t("expr.error.reduceNeedsNonEmptyVector");
