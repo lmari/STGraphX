@@ -1,6 +1,6 @@
 /*!
  * STGraphX Embedded Player Bundle
- * Generated: 2026-09-18T19:43:38.207Z
+ * Generated: 2026-09-23T11:56:10.339Z
  */
 
 /* --- i18n-inline.js --- */
@@ -13,7 +13,7 @@
 
 window.STGraphXAppMeta = {
   author: "Luca Mari",
-  releaseDate: "2026.09.16",
+  releaseDate: "2026.09.22",
   license: "MPL-2.0",
   copyright: "Copyright (c) 2026 Luca Mari",
 };
@@ -35,6 +35,8 @@ window.STGraphXI18nBundles = {
     "action.apply": "Applica",
     "action.cancel": "Annulla",
     "action.close": "Chiudi",
+    "action.closeWithoutSaving": "No, chiudi senza salvare",
+    "action.dontCloseApp": "Non chiudere l'app",
     "action.closeTab": "Chiudi scheda",
     "action.copy": "Copia",
     "action.delete": "Elimina",
@@ -50,6 +52,7 @@ window.STGraphXI18nBundles = {
     "action.resetExecution": "Reset esecuzione",
     "action.resetNodeColors": "Colori automatici",
     "action.save": "Salva",
+    "action.yes": "Sì",
     "action.select": "Seleziona",
     "action.showSubmodel": "Mostra",
     "action.tabletCanvasEdit": "Modalità modifica canvas",
@@ -71,7 +74,8 @@ window.STGraphXI18nBundles = {
     // Files and menus
     "confirm.closeApp.detail": "Modello corrente: {name}",
     "confirm.closeApp.save": "Ci sono modifiche non salvate. Vuoi salvarle prima di chiudere l'app?",
-    "confirm.closeTab.save": "Ci sono modifiche non salvate in questa scheda. Vuoi salvarle prima di chiuderla?",
+    "confirm.closeTab.save": "Ci sono modifiche non salvate in questo modello. Vuoi salvarle prima di chiuderlo?",
+    "confirm.closeTab.title": "Modifiche non salvate",
     "confirm.newGraph.save": "Ci sono modifiche non salvate. Vuoi salvare prima di creare un nuovo modello?",
     "confirm.openGraph.save": "Ci sono modifiche non salvate. Vuoi salvarle prima di aprire un altro modello?",
     "confirm.selectModelFolder": "Il modello usa sottomodelli. Vuoi selezionare la cartella del modello per consentirne il caricamento automatico?",
@@ -466,9 +470,14 @@ window.STGraphXI18nBundles = {
     "expr.error.arrayNeedsAxisExpression": "array richiede almeno un asse e un'espressione",
     "expr.error.arrayNeedsDimension": "array richiede almeno una dimensione",
     "expr.error.arrayTooLarge": "L'array è troppo grande",
+    "expr.error.argumentList.0_1_2": "0, 1 o 2",
+    "expr.error.argumentList.1_2": "1 o 2",
+    "expr.error.argumentList.1_2_3": "1, 2 o 3",
+    "expr.error.argumentList.2_3": "2 o 3",
     "expr.error.averageNonEmptyMatrix": "average richiede una matrice non vuota",
     "expr.error.averageNonEmptyRows": "average richiede righe di matrice non vuote",
     "expr.error.axisRequiresMatrix": "L'asse di {name} richiede una matrice",
+    "expr.error.axisRequiresRectangularMatrix": "L'asse di {name} richiede una matrice rettangolare",
     "expr.error.axisZeroOrOne": "L'asse di {name} per matrici deve essere 0 o 1",
     "expr.error.distributionMode": "Il modo deve essere 0 (pdf), 1 (cdf) o 2 (icdf)",
     "expr.error.dtFinite": "dt deve essere finito",
@@ -485,6 +494,7 @@ window.STGraphXI18nBundles = {
     "expr.error.expectsMatrix": "{name} richiede una matrice",
     "expr.error.expectsNonEmptyVector": "{name} richiede un vettore non vuoto",
     "expr.error.expectsNonEmptyVectorOrMatrix": "{name} richiede un vettore o una matrice non vuoti",
+    "expr.error.expectsNonEmptyNumericVectorOrMatrix": "{name} richiede un vettore o una matrice numerici e non vuoti",
     "expr.error.expectsRectangularMatrix": "{name} richiede una matrice rettangolare",
     "expr.error.expectsRectangularNumericMatrix": "{name} richiede una matrice numerica rettangolare",
     "expr.error.expectsTwoVectors": "{name} richiede due vettori",
@@ -492,6 +502,9 @@ window.STGraphXI18nBundles = {
     "expr.error.expectsVectorOrMatrix": "{name} richiede un vettore o una matrice",
     "expr.error.resizeAgentMatrix": "resize non supporta matrici agents",
     "expr.error.resizeDimensions": "Le dimensioni di resize devono essere interi non negativi",
+    "expr.error.signalArgs": "{name} richiede cx, cy e x",
+    "expr.error.signalControlPoints": "{name} richiede due vettori numerici della stessa lunghezza, con almeno due punti",
+    "expr.error.signalControlPointsIncreasing": "{name} richiede valori cx strettamente crescenti",
     "expr.error.filterMode": "La modalità di filter deve essere 'elements', 'rows' o 'cols'",
     "expr.error.filterRowsColsMatrix": "La modalità 'rows' o 'cols' di filter richiede una matrice",
     "expr.error.filterRowsColsRectMatrix": "La modalità 'rows' o 'cols' di filter richiede una matrice rettangolare",
@@ -533,6 +546,7 @@ window.STGraphXI18nBundles = {
     "expr.error.missingCloseParen": "Parentesi chiusa mancante.",
     "expr.error.missingReduceOperator": "Manca l'operatore di reduce",
     "expr.error.mustBeFinite": "{name} deve essere finito",
+    "expr.error.mustBeNonNegativeInteger": "{name} deve essere un intero non negativo",
     "expr.error.notCallable": "{name} non è invocabile",
     "expr.error.notDefined": "{name} non definito",
     "expr.error.objectColon": "Manca ':' dopo il nome della proprietà.",
@@ -546,6 +560,7 @@ window.STGraphXI18nBundles = {
     "expr.error.rangeStepNotReachEnd": "Il passo di range non raggiunge il valore finale",
     "expr.error.rangeTooLarge": "Il range è troppo grande",
     "expr.error.ratePositive": "rate deve essere > 0",
+    "expr.error.rateNonNegative": "rate deve essere >= 0",
     "expr.error.readDataCsvEmpty": "Il file CSV di readData è vuoto",
     "expr.error.readDataCsvNumericCell": "La cella CSV di readData in [{row}, {col}] non è numerica",
     "expr.error.readDataCsvQuotedField": "Il file CSV di readData contiene un campo tra virgolette non terminato",
@@ -579,6 +594,7 @@ window.STGraphXI18nBundles = {
     "expr.error.unsupportedReducerOperator": "Operatore di reduce non supportato: {op}",
     "expr.error.unterminatedString": "Stringa non terminata.",
     "expr.error.vectorAxisZero": "L'asse di {name} per vettori deve essere 0",
+    "expr.error.valueClosed01": "{name} deve essere in [0, 1]",
 
     // Local functions
     "localFunctions.add": "Aggiungi funzione",
@@ -1187,6 +1203,8 @@ window.STGraphXI18nBundles = {
     "action.apply": "Apply",
     "action.cancel": "Cancel",
     "action.close": "Close",
+    "action.closeWithoutSaving": "No, close without saving",
+    "action.dontCloseApp": "Do not close the app",
     "action.closeTab": "Close tab",
     "action.copy": "Copy",
     "action.delete": "Delete",
@@ -1202,6 +1220,7 @@ window.STGraphXI18nBundles = {
     "action.resetExecution": "Reset execution",
     "action.resetNodeColors": "Automatic colors",
     "action.save": "Save",
+    "action.yes": "Yes",
     "action.select": "Select",
     "action.showSubmodel": "Show",
     "action.tabletCanvasEdit": "Canvas edit mode",
@@ -1223,7 +1242,8 @@ window.STGraphXI18nBundles = {
     // Files and menus
     "confirm.closeApp.detail": "Current model: {name}",
     "confirm.closeApp.save": "There are unsaved changes. Save them before closing the app?",
-    "confirm.closeTab.save": "There are unsaved changes in this tab. Save them before closing it?",
+    "confirm.closeTab.save": "There are unsaved changes in this model. Save them before closing it?",
+    "confirm.closeTab.title": "Unsaved changes",
     "confirm.newGraph.save": "There are unsaved changes. Save before creating a new model?",
     "confirm.openGraph.save": "There are unsaved changes. Save them before opening another model?",
     "confirm.selectModelFolder": "This model uses submodels. Do you want to select the model folder so they can be loaded automatically?",
@@ -1618,9 +1638,14 @@ window.STGraphXI18nBundles = {
     "expr.error.arrayNeedsAxisExpression": "array requires at least one axis and an expression",
     "expr.error.arrayNeedsDimension": "array requires at least one dimension",
     "expr.error.arrayTooLarge": "Array is too large",
+    "expr.error.argumentList.0_1_2": "0, 1, or 2",
+    "expr.error.argumentList.1_2": "1 or 2",
+    "expr.error.argumentList.1_2_3": "1, 2, or 3",
+    "expr.error.argumentList.2_3": "2 or 3",
     "expr.error.averageNonEmptyMatrix": "average expects a non-empty matrix",
     "expr.error.averageNonEmptyRows": "average expects non-empty matrix rows",
     "expr.error.axisRequiresMatrix": "{name} axis requires a matrix",
+    "expr.error.axisRequiresRectangularMatrix": "{name} axis requires a rectangular matrix",
     "expr.error.axisZeroOrOne": "{name} axis for matrices must be 0 or 1",
     "expr.error.distributionMode": "Mode must be 0 (pdf), 1 (cdf), or 2 (icdf)",
     "expr.error.dtFinite": "dt must be finite",
@@ -1637,6 +1662,7 @@ window.STGraphXI18nBundles = {
     "expr.error.expectsMatrix": "{name} expects a matrix",
     "expr.error.expectsNonEmptyVector": "{name} expects a non-empty vector",
     "expr.error.expectsNonEmptyVectorOrMatrix": "{name} expects a non-empty vector or matrix",
+    "expr.error.expectsNonEmptyNumericVectorOrMatrix": "{name} expects a non-empty numeric vector or matrix",
     "expr.error.expectsRectangularMatrix": "{name} expects a rectangular matrix",
     "expr.error.expectsRectangularNumericMatrix": "{name} expects a rectangular numeric matrix",
     "expr.error.expectsTwoVectors": "{name} expects two vectors",
@@ -1644,6 +1670,9 @@ window.STGraphXI18nBundles = {
     "expr.error.expectsVectorOrMatrix": "{name} expects a vector or matrix",
     "expr.error.resizeAgentMatrix": "resize does not support agent matrices",
     "expr.error.resizeDimensions": "resize dimensions must be non-negative integers",
+    "expr.error.signalArgs": "{name} expects cx, cy, and x",
+    "expr.error.signalControlPoints": "{name} expects two numeric vectors of the same length, with at least two points",
+    "expr.error.signalControlPointsIncreasing": "{name} expects strictly increasing cx values",
     "expr.error.filterMode": "filter mode must be 'elements', 'rows', or 'cols'",
     "expr.error.filterRowsColsMatrix": "filter mode 'rows' or 'cols' requires a matrix",
     "expr.error.filterRowsColsRectMatrix": "filter mode 'rows' or 'cols' requires a rectangular matrix",
@@ -1685,6 +1714,7 @@ window.STGraphXI18nBundles = {
     "expr.error.missingCloseParen": "Missing closing parenthesis.",
     "expr.error.missingReduceOperator": "Missing reduce operator",
     "expr.error.mustBeFinite": "{name} must be finite",
+    "expr.error.mustBeNonNegativeInteger": "{name} must be a non-negative integer",
     "expr.error.notCallable": "{name} is not callable",
     "expr.error.notDefined": "{name} is not defined",
     "expr.error.objectColon": "Missing ':' after property name.",
@@ -1698,6 +1728,7 @@ window.STGraphXI18nBundles = {
     "expr.error.rangeStepNotReachEnd": "Range step does not reach the end value",
     "expr.error.rangeTooLarge": "Range is too large",
     "expr.error.ratePositive": "rate must be > 0",
+    "expr.error.rateNonNegative": "rate must be >= 0",
     "expr.error.readDataCsvEmpty": "readData CSV file is empty",
     "expr.error.readDataCsvNumericCell": "readData CSV cell at [{row}, {col}] is not numeric",
     "expr.error.readDataCsvQuotedField": "readData CSV file contains an unterminated quoted field",
@@ -1731,6 +1762,7 @@ window.STGraphXI18nBundles = {
     "expr.error.unsupportedReducerOperator": "Unsupported reducer operator: {op}",
     "expr.error.unterminatedString": "Unterminated string.",
     "expr.error.vectorAxisZero": "{name} axis for vectors must be 0",
+    "expr.error.valueClosed01": "{name} must be in [0, 1]",
 
     // Local functions
     "localFunctions.add": "Add function",
@@ -8724,6 +8756,10 @@ window.STGraphXI18nBundles = {
       throw new Error("STGraphXRuntimeSession requires core and isStateNode dependencies");
     }
 
+    // A valid state may intentionally have a null value. Track initialization
+    // explicitly instead of inferring it from computed values or errors.
+    const initializedNodeLists = new WeakMap();
+
     const session = {
       model,
       rootExecution,
@@ -8742,21 +8778,22 @@ window.STGraphXI18nBundles = {
         return this.rootExecution || this.model?.execution || null;
       },
       hasInitializedStateSnapshot(targetModel = this.model) {
-        const stateNodes = (targetModel?.nodes || []).filter((node) => isStateNode(node));
-        if (stateNodes.length === 0) {
-          return true;
-        }
-        return stateNodes.some((node) =>
-          (node.computedValue !== null && node.computedValue !== undefined)
-          || String(node.computedError || "").trim()
-          || (node.pendingStateValue !== null && node.pendingStateValue !== undefined)
-          || String(node.pendingStateError || "").trim());
+        const nodeList = targetModel?.nodes;
+        return Boolean(
+          targetModel
+          && typeof targetModel === "object"
+          && Array.isArray(nodeList)
+          && initializedNodeLists.get(targetModel) === nodeList,
+        );
       },
       initializeAt(timeValue, targetModel = this.model, execution = this.getRootExecution()) {
         if (typeof beforeInitialize === "function") {
           beforeInitialize({ session: this, model: targetModel, timeValue, execution });
         }
         core.initializeStateNodesForModel(targetModel, timeValue, execution);
+        if (targetModel && typeof targetModel === "object" && Array.isArray(targetModel.nodes)) {
+          initializedNodeLists.set(targetModel, targetModel.nodes);
+        }
         if (typeof afterInitialize === "function") {
           afterInitialize({ session: this, model: targetModel, timeValue, execution });
         }

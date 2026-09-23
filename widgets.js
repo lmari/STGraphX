@@ -1364,7 +1364,17 @@ function updateTableWidgetsFromComputedValues(timeValue = null, nodeMap = buildN
       }
       values[colName] = { value: node.computedValue };
     });
-    widget.rows.push({ values });
+    // A preview and the first timed evaluation can target the same instant.
+    // Keep a history row per simulation time, updating it if that instant is
+    // evaluated again instead of displaying a duplicate first value.
+    const previousRow = widget.rows[widget.rows.length - 1];
+    const previousTime = Number(previousRow?.timeValue ?? previousRow?.values?.time?.value);
+    if (Number.isFinite(currentTime) && previousTime === currentTime) {
+      previousRow.values = values;
+      previousRow.timeValue = currentTime;
+    } else {
+      widget.rows.push({ timeValue: currentTime, values });
+    }
   });
 }
 

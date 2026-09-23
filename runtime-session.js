@@ -26,6 +26,10 @@
       throw new Error("STGraphXRuntimeSession requires core and isStateNode dependencies");
     }
 
+    // A valid state may intentionally have a null value. Track initialization
+    // explicitly instead of inferring it from computed values or errors.
+    const initializedNodeLists = new WeakMap();
+
     const session = {
       model,
       rootExecution,
@@ -44,21 +48,22 @@
         return this.rootExecution || this.model?.execution || null;
       },
       hasInitializedStateSnapshot(targetModel = this.model) {
-        const stateNodes = (targetModel?.nodes || []).filter((node) => isStateNode(node));
-        if (stateNodes.length === 0) {
-          return true;
-        }
-        return stateNodes.some((node) =>
-          (node.computedValue !== null && node.computedValue !== undefined)
-          || String(node.computedError || "").trim()
-          || (node.pendingStateValue !== null && node.pendingStateValue !== undefined)
-          || String(node.pendingStateError || "").trim());
+        const nodeList = targetModel?.nodes;
+        return Boolean(
+          targetModel
+          && typeof targetModel === "object"
+          && Array.isArray(nodeList)
+          && initializedNodeLists.get(targetModel) === nodeList,
+        );
       },
       initializeAt(timeValue, targetModel = this.model, execution = this.getRootExecution()) {
         if (typeof beforeInitialize === "function") {
           beforeInitialize({ session: this, model: targetModel, timeValue, execution });
         }
         core.initializeStateNodesForModel(targetModel, timeValue, execution);
+        if (targetModel && typeof targetModel === "object" && Array.isArray(targetModel.nodes)) {
+          initializedNodeLists.set(targetModel, targetModel.nodes);
+        }
         if (typeof afterInitialize === "function") {
           afterInitialize({ session: this, model: targetModel, timeValue, execution });
         }
