@@ -3285,7 +3285,8 @@ button:disabled {
 
 .expression-sidebar {
   display: grid;
-  grid-template-rows: auto minmax(0, 1fr) 124px auto;
+  /* The symbol library is the primary aid while writing an expression. */
+  grid-template-rows: auto minmax(180px, 1fr) auto auto;
   gap: 8px;
   min-width: 0;
   min-height: 0;
@@ -3438,7 +3439,7 @@ button:disabled {
   }
 
   .expression-editor-layout {
-    grid-template-columns: 1fr;
+    grid-template-columns: minmax(0, 1fr) minmax(250px, 0.9fr);
   }
 
   .expression-main-docs {
@@ -3457,6 +3458,30 @@ button:disabled {
 
   .expression-editor-hint {
     text-align: left;
+  }
+}
+
+@media (max-width: 700px) {
+  /* Stack only on genuinely narrow screens, keeping the symbols pane usable. */
+  .expression-editor-layout {
+    grid-template-columns: 1fr;
+    grid-template-rows: minmax(160px, 0.85fr) minmax(230px, 1.15fr);
+    overflow: auto;
+  }
+
+  .expression-editor-main {
+    overflow: visible;
+  }
+
+  .expression-editor-textarea {
+    min-height: min(24vh, 200px);
+    height: min(24vh, 200px);
+  }
+
+  .expression-sidebar {
+    min-height: 230px;
+    max-height: none;
+    grid-template-rows: auto minmax(180px, 1fr) auto auto;
   }
 }
 
@@ -3628,7 +3653,7 @@ body.tablet-sidebar-layout .expression-editor-card.expression-view-help .express
 }
 
 body.tablet-sidebar-layout .expression-library {
-  min-height: 120px;
+  min-height: 180px;
 }
 
 body.tablet-sidebar-layout .expression-help {
