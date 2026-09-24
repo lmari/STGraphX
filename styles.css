@@ -564,6 +564,11 @@ body {
   min-height: 82px;
 }
 
+.value-widget.widget-type-numeric {
+  min-width: 160px;
+  min-height: 100px;
+}
+
 .value-widget.widget-type-text {
   min-width: 120px;
   min-height: 82px;
@@ -782,6 +787,28 @@ body {
 .slider-widget-wrap {
   display: grid;
   gap: 6px;
+}
+
+.numeric-widget-wrap {
+  height: 100%;
+  min-width: 0;
+}
+
+.numeric-widget-grid {
+  display: grid;
+  gap: 4px;
+  max-height: 100%;
+  overflow: auto;
+  align-content: start;
+}
+
+.numeric-widget-grid input {
+  box-sizing: border-box;
+  min-width: 0;
+  width: 100%;
+  padding: 4px 6px;
+  font: inherit;
+  text-align: right;
 }
 
 .select-widget-wrap,
@@ -1985,7 +2012,11 @@ button:disabled {
 }
 
 .view-options-card {
+  /* Fallback for Safari versions that do not support CSS min(). */
+  width: 460px;
+  max-width: calc(100vw - 40px);
   width: min(460px, calc(100vw - 40px));
+  box-sizing: border-box;
   gap: 8px;
 }
 
@@ -2007,10 +2038,10 @@ button:disabled {
 }
 
 .view-options-checks {
-  display: grid;
-  grid-template-columns: repeat(2, max-content);
+  display: flex;
+  flex-wrap: wrap;
   gap: 2px 16px;
-  justify-content: start;
+  align-items: stretch;
 }
 
 .option-check {
@@ -2020,8 +2051,9 @@ button:disabled {
   gap: 5px;
   color: #31485b;
   font-size: 0.86rem;
-  justify-self: start;
-  white-space: nowrap;
+  flex: 0 1 calc(50% - 8px);
+  min-width: 0;
+  white-space: normal;
 }
 
 .option-check input {
@@ -4678,8 +4710,8 @@ body.tablet-sidebar-layout .menu-run-btn {
 }
 
 @media (max-width: 480px) {
-  .view-options-checks {
-    grid-template-columns: 1fr;
+  .view-options-checks .option-check {
+    flex-basis: 100%;
   }
 }
 

@@ -1,6 +1,6 @@
 # STGraphX: Readme
 
-versione 23 settembre 2026
+versione 24 settembre 2026
 
 Copyright (c) 2026 Luca Mari
 
@@ -61,7 +61,7 @@ Ha un'interfaccia utente responsive, che lo rende utilizzabile anche su tablet.
 * Gestione di variabili globali
 * Possibilità di definire funzioni locali ai modelli (*)
 * Gestione di nodi di output e di widget di output: grafici, tabelle, matrici, led, testo; le tabelle possono mostrare una serie storica oppure espandere vettori e matrici in celle scalari; pannello di configurazione aggiornato dinamicamente (*)
-* Gestione di nodi di input e di widget di input, anche per parametri: slider, pulsante, selettore di testo; pannello di configurazione aggiornato dinamicamente
+* Gestione di nodi di input e di widget di input, anche per parametri: slider, pulsante, selettore di testo, tabella di input numerico scalare, vettoriale o matriciale; pannello di configurazione aggiornato dinamicamente
 * Gestione dei sottomodelli con file JSON separati, con caricamento dalla stessa cartella del modello, binding dei nodi di input e accesso ai nodi di output con notazione `nomeSottomodello.nomeOutput`
 
 #### Funzionalità dell'engine

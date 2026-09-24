@@ -148,6 +148,31 @@ function addSliderWidget(at = null) {
   });
 }
 
+function addNumericWidget(at = null) {
+  const id = widgetCounter++;
+  const { x, y } = getSmartCanvasInsertionPoint({ width: 240, height: 130, anchor: at });
+  const bindableNames = sliderBindableNodeNames(null, "");
+  graph.widgets.push({
+    id,
+    type: "numeric",
+    customTitle: "",
+    x,
+    y,
+    width: 240,
+    height: 130,
+    minimized: false,
+    showTitleBar: true,
+    fontSize: 13,
+    outputOnly: false,
+    source: bindableNames[0] || "",
+    inputRows: 1,
+    inputCols: 1,
+    value: 0,
+    columns: [],
+    xyPairs: [],
+  });
+}
+
 function addButtonWidget(at = null) {
   const id = widgetCounter++;
   const { x, y } = getSmartCanvasInsertionPoint({ width: 190, height: 88, anchor: at });
@@ -644,6 +669,52 @@ function sanitizeSliderWidgetOptions(widget) {
   }
 }
 
+function numericWidgetDimension(value, fallback = 1) {
+  const numeric = Math.floor(Number(value));
+  return Number.isFinite(numeric) ? clamp(numeric, 1, 100) : fallback;
+}
+
+function numericWidgetMatrix(value, rows, cols) {
+  const numberOrZero = (candidate) => Number.isFinite(Number(candidate)) ? Number(candidate) : 0;
+  return Array.from({ length: rows }, (_row, row) => Array.from({ length: cols }, (_col, col) => {
+    if (Array.isArray(value)) {
+      if (Array.isArray(value[row])) {
+        return numberOrZero(value[row][col]);
+      }
+      if (col === 0) {
+        return numberOrZero(value[row]);
+      }
+      return 0;
+    }
+    return row === 0 && col === 0 ? numberOrZero(value) : 0;
+  }));
+}
+
+function numericWidgetValueFromMatrix(matrix, rows, cols) {
+  if (rows === 1 && cols === 1) {
+    return matrix[0][0];
+  }
+  if (cols === 1) {
+    return matrix.map((row) => row[0]);
+  }
+  return matrix;
+}
+
+function normalizeNumericWidgetValue(value, rows, cols) {
+  return numericWidgetValueFromMatrix(numericWidgetMatrix(value, rows, cols), rows, cols);
+}
+
+function sanitizeNumericWidgetOptions(widget) {
+  const allowedNames = new Set(sliderBindableNodeNames(widget.id, widget.source));
+  widget.source = String(widget.source ?? "");
+  if (widget.source && !allowedNames.has(widget.source)) {
+    widget.source = "";
+  }
+  widget.inputRows = numericWidgetDimension(widget.inputRows);
+  widget.inputCols = numericWidgetDimension(widget.inputCols);
+  widget.value = normalizeNumericWidgetValue(widget.value, widget.inputRows, widget.inputCols);
+}
+
 function sanitizeButtonWidgetOptions(widget) {
   const allowedNames = new Set(buttonBindableNodeNames(widget.id, widget.source));
   widget.source = String(widget.source ?? "");
@@ -739,8 +810,28 @@ function applyWidgetDrivenNodeValues() {
       applyButtonWidgetValueToNode(widget);
     } else if (widget.type === "select") {
       applySelectWidgetValueToNode(widget);
+    } else if (widget.type === "numeric") {
+      applyNumericWidgetValueToNode(widget);
     }
   });
+}
+
+function applyNumericWidgetValueToNode(widget) {
+  if (!widget || widget.type !== "numeric") {
+    return;
+  }
+  sanitizeNumericWidgetOptions(widget);
+  if (!widget.source) {
+    return;
+  }
+  const node = getNodeByName(widget.source);
+  if (!canBindSliderToNode(node)) {
+    return;
+  }
+  node.externalValueEnabled = true;
+  node.externalValue = widget.value;
+  node.computedValue = widget.value;
+  node.computedError = "";
 }
 
 function applySliderWidgetValueToNode(widget) {
@@ -1649,6 +1740,9 @@ function widgetDefaultTitle(widget) {
   if (widget.type === "slider") {
     return t("widget.sliderTitle", { id: widget.id });
   }
+  if (widget.type === "numeric") {
+    return t("widget.numericTitle", { id: widget.id });
+  }
   if (widget.type === "select") {
     return t("widget.selectTitle", { id: widget.id });
   }
@@ -1666,7 +1760,7 @@ function widgetDefaultTitle(widget) {
 
 function widgetTitleBindingLabel(widget) {
   const source = String(widget?.source ?? "").trim();
-  if (["slider", "select", "button", "text", "led", "matrix"].includes(widget?.type)) {
+  if (["slider", "numeric", "select", "button", "text", "led", "matrix"].includes(widget?.type)) {
     return source;
   }
   if (widget?.type === "table") {
@@ -2410,6 +2504,8 @@ function refreshRuntimeWidgetContents(excludeWidgetId = null) {
       refreshChartWidgetRuntimeBody(root, widget, nodeMap);
     } else if (widget.type === "slider") {
       refreshSliderWidgetRuntimeBody(root, widget);
+    } else if (widget.type === "numeric") {
+      continue;
     } else if (widget.type === "select") {
       refreshSelectWidgetRuntimeBody(root, widget);
     } else if (widget.type === "button") {
@@ -2496,7 +2592,7 @@ function renderWidgets() {
   };
 
   graph.widgets.forEach((widget) => {
-    if (widget.type !== "table" && widget.type !== "xychart" && widget.type !== "slider" && widget.type !== "matrix" && widget.type !== "button" && widget.type !== "led" && widget.type !== "select" && widget.type !== "text") {
+    if (widget.type !== "table" && widget.type !== "xychart" && widget.type !== "slider" && widget.type !== "numeric" && widget.type !== "matrix" && widget.type !== "button" && widget.type !== "led" && widget.type !== "select" && widget.type !== "text") {
       return;
     }
     if (typeof isDashboardItemVisible === "function" && !isDashboardItemVisible(widget)) {
@@ -2515,6 +2611,8 @@ function renderWidgets() {
       sanitizeButtonWidgetOptions(widget);
     } else if (widget.type === "select") {
       sanitizeSelectWidgetOptions(widget);
+    } else if (widget.type === "numeric") {
+      sanitizeNumericWidgetOptions(widget);
     } else if (widget.type === "text") {
       sanitizeTextWidgetOptions(widget);
     } else if (widget.type === "led") {
@@ -2854,6 +2952,57 @@ function renderWidgets() {
 
       sliderWrap.appendChild(rangeLine);
       body.appendChild(sliderWrap);
+    } else if (widget.type === "numeric") {
+      const numericWrap = document.createElement("div");
+      numericWrap.className = "numeric-widget-wrap";
+      const sourceNode = getNodeByName(widget.source);
+      const lockedForRun = sourceNode?.shape === "diamond" && isExecutionFrozen();
+      const grid = document.createElement("div");
+      grid.className = "numeric-widget-grid";
+      grid.style.gridTemplateColumns = `repeat(${widget.inputCols}, minmax(64px, 1fr))`;
+      const matrix = numericWidgetMatrix(widget.value, widget.inputRows, widget.inputCols);
+      const commit = (refresh = false) => {
+        widget.value = numericWidgetValueFromMatrix(matrix, widget.inputRows, widget.inputCols);
+        applyNumericWidgetValueToNode(widget);
+        if (refresh) {
+          refreshSidebar();
+          scheduleFileStatusRefresh();
+        }
+      };
+      for (let row = 0; row < widget.inputRows; row += 1) {
+        for (let col = 0; col < widget.inputCols; col += 1) {
+          const input = document.createElement("input");
+          input.type = "number";
+          input.step = "any";
+          input.value = String(matrix[row][col]);
+          input.disabled = lockedForRun;
+          input.setAttribute("aria-label", `${row + 1}, ${col + 1}`);
+          input.addEventListener("pointerdown", (evt) => {
+            if (lockedForRun) return;
+            evt.stopPropagation();
+            ui.sliderInteraction = { widgetId: widget.id, mode: "numeric" };
+          });
+          input.addEventListener("focus", () => {
+            if (!lockedForRun) ui.sliderInteraction = { widgetId: widget.id, mode: "numeric" };
+          });
+          input.addEventListener("input", (evt) => {
+            evt.stopPropagation();
+            if (Number.isFinite(Number(input.value))) {
+              matrix[row][col] = Number(input.value);
+              commit(false);
+            }
+          });
+          input.addEventListener("change", () => commit(true));
+          input.addEventListener("blur", () => {
+            if (ui.sliderInteraction?.widgetId === widget.id) ui.sliderInteraction = null;
+            commit(true);
+            renderWidgets();
+          });
+          grid.appendChild(input);
+        }
+      }
+      numericWrap.appendChild(grid);
+      body.appendChild(numericWrap);
     } else if (widget.type === "select") {
       const selectWrap = document.createElement("div");
       selectWrap.className = "select-widget-wrap";
@@ -3280,6 +3429,14 @@ function openBackgroundContextMenu(evt) {
       action: () => {
         runAction(() => addSliderWidget({ x: p.x, y: p.y }));
         setStatusKey("status.widgetSliderCreated");
+      },
+    },
+    {
+      label: t("context.bg.newNumericWidget"),
+      icon: "▦",
+      action: () => {
+        runAction(() => addNumericWidget({ x: p.x, y: p.y }));
+        setStatusKey("status.widgetNumericCreated");
       },
     },
     { separator: true },
@@ -4002,6 +4159,57 @@ function refreshWidgetConfigPanel(widget) {
     rangeRow.appendChild(createCompactField("widget.sliderStep", stepInput));
     rangeRow.appendChild(createCompactField("widget.sliderMax", maxInput));
     sliderSection.appendChild(rangeRow);
+    return;
+  }
+
+  if (widget.type === "numeric") {
+    sanitizeNumericWidgetOptions(widget);
+    const section = createWidgetSection();
+    const sourceLabel = document.createElement("label");
+    sourceLabel.textContent = t("widget.numericSourceLabel");
+    const sourceSelect = document.createElement("select");
+    const choices = ["", ...sliderBindableNodeNames(widget.id, widget.source)];
+    choices.forEach((name) => {
+      const option = document.createElement("option");
+      option.value = name;
+      option.textContent = name || t("widget.noneOption");
+      sourceSelect.appendChild(option);
+    });
+    sourceSelect.value = choices.includes(widget.source) ? widget.source : "";
+    sourceSelect.addEventListener("change", () => runAction(() => {
+      widget.source = sourceSelect.value;
+      sanitizeNumericWidgetOptions(widget);
+    }));
+    section.appendChild(sourceLabel);
+    section.appendChild(sourceSelect);
+    setConfigTooltip(sourceLabel, "tooltip.widget.inputSource");
+    setConfigTooltip(sourceSelect, "tooltip.widget.inputSource");
+
+    const dimensions = document.createElement("div");
+    dimensions.className = "row2";
+    const rowsInput = document.createElement("input");
+    rowsInput.type = "number";
+    rowsInput.min = "1";
+    rowsInput.max = "100";
+    rowsInput.step = "1";
+    rowsInput.value = String(widget.inputRows);
+    const colsInput = document.createElement("input");
+    colsInput.type = "number";
+    colsInput.min = "1";
+    colsInput.max = "100";
+    colsInput.step = "1";
+    colsInput.value = String(widget.inputCols);
+    const updateDimensions = () => runAction(() => {
+      widget.inputRows = numericWidgetDimension(rowsInput.value, widget.inputRows);
+      widget.inputCols = numericWidgetDimension(colsInput.value, widget.inputCols);
+      sanitizeNumericWidgetOptions(widget);
+    });
+    rowsInput.addEventListener("change", updateDimensions);
+    colsInput.addEventListener("change", updateDimensions);
+    dimensions.appendChild(createCompactField("widget.numericRows", rowsInput));
+    dimensions.appendChild(createCompactField("widget.numericCols", colsInput));
+    section.appendChild(dimensions);
+    setConfigTooltip(dimensions, "tooltip.widget.numericDimensions");
     return;
   }
 
@@ -5244,6 +5452,7 @@ globalThis.Widgets = {
   addLedWidget,
   addButtonWidget,
   addSelectWidget,
+  addNumericWidget,
   addTextWidget,
   addTableWidget,
   addMatrixWidget,
@@ -5292,6 +5501,7 @@ globalThis.Widgets = {
   sanitizeWidgetXYPairs,
   sanitizeXYChartOptions,
   sanitizeSliderWidgetOptions,
+  sanitizeNumericWidgetOptions,
   sanitizeButtonWidgetOptions,
   drawXYChart,
   updateXYWidgetsFromComputedValues,

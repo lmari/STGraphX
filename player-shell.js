@@ -235,6 +235,33 @@
     return hit ? String(hit.label) : "";
   }
 
+  function numericWidgetDimension(value, fallback = 1) {
+    const numeric = Math.floor(Number(value));
+    return Number.isFinite(numeric) ? clamp(numeric, 1, 100) : fallback;
+  }
+
+  function normalizeNumericWidgetValue(value, rows, cols) {
+    const numberOrZero = (candidate) => Number.isFinite(Number(candidate)) ? Number(candidate) : 0;
+    const matrix = Array.from({ length: rows }, (_row, row) => Array.from({ length: cols }, (_col, col) => {
+      if (Array.isArray(value)) {
+        if (Array.isArray(value[row])) return numberOrZero(value[row][col]);
+        if (col === 0) return numberOrZero(value[row]);
+        return 0;
+      }
+      return row === 0 && col === 0 ? numberOrZero(value) : 0;
+    }));
+    if (rows === 1 && cols === 1) return matrix[0][0];
+    if (cols === 1) return matrix.map((row) => row[0]);
+    return matrix;
+  }
+
+  function numericWidgetMatrix(value, rows, cols) {
+    const normalized = normalizeNumericWidgetValue(value, rows, cols);
+    if (rows === 1 && cols === 1) return [[normalized]];
+    if (cols === 1) return normalized.map((value) => [value]);
+    return normalized;
+  }
+
   function sanitizeWidgetList(widgets = []) {
     const parseNullablePositiveInt = (value) => {
       if (value === null || value === undefined || value === "") {
@@ -282,7 +309,11 @@
       min: Number.isFinite(Number(widget?.min)) ? Number(widget.min) : 0,
       max: Number.isFinite(Number(widget?.max)) ? Number(widget.max) : 100,
       step: Number.isFinite(Number(widget?.step)) ? Number(widget.step) : 1,
-      value: widget?.type === "button"
+      inputRows: widget?.type === "numeric" ? numericWidgetDimension(widget?.inputRows) : null,
+      inputCols: widget?.type === "numeric" ? numericWidgetDimension(widget?.inputCols) : null,
+      value: widget?.type === "numeric"
+        ? normalizeNumericWidgetValue(widget?.value, numericWidgetDimension(widget?.inputRows), numericWidgetDimension(widget?.inputCols))
+        : widget?.type === "button"
         ? Boolean(widget?.value)
         : (Number.isFinite(Number(widget?.value)) ? Number(widget.value) : 0),
       options: Array.isArray(widget?.options)
@@ -447,7 +478,7 @@
     if (title) {
       return title;
     }
-    if (widget.type === "slider" || widget.type === "button" || widget.type === "select") {
+    if (widget.type === "slider" || widget.type === "numeric" || widget.type === "button" || widget.type === "select") {
       return widget.source || t("text.unnamed");
     }
     if (widget.type === "text" || widget.type === "led" || widget.type === "matrix") {
@@ -460,6 +491,7 @@
       text: t("menu.insert.textWidget"),
       led: t("menu.insert.ledWidget"),
       slider: t("menu.insert.sliderWidget"),
+      numeric: t("menu.insert.numericWidget"),
       button: t("menu.insert.buttonWidget"),
       select: t("menu.insert.selectWidget"),
     }[widget.type] || widget.type;
@@ -1166,6 +1198,25 @@
             box-sizing: border-box;
             font: inherit;
           }
+          .numeric-widget-wrap {
+            height: 100%;
+            min-width: 0;
+          }
+          .numeric-widget-grid {
+            display: grid;
+            gap: 4px;
+            max-height: 100%;
+            overflow: auto;
+            align-content: start;
+          }
+          .numeric-widget-grid input {
+            box-sizing: border-box;
+            min-width: 0;
+            width: 100%;
+            padding: 4px 6px;
+            font: inherit;
+            text-align: right;
+          }
           .select-widget-wrap,
           .button-widget-wrap,
           .text-widget-wrap {
@@ -1745,6 +1796,8 @@
         }
         if (widget.type === "slider" || widget.type === "select") {
           this._state.inputValues.set(widget.source, Number(widget.value));
+        } else if (widget.type === "numeric") {
+          this._state.inputValues.set(widget.source, normalizeNumericWidgetValue(widget.value, widget.inputRows, widget.inputCols));
         } else if (widget.type === "button") {
           this._state.inputValues.set(widget.source, widget.value ? 1 : 0);
         }
@@ -2755,6 +2808,47 @@
         rangeLine.appendChild(number);
         rangeLine.appendChild(maxLabel);
         wrap.appendChild(rangeLine);
+        body.appendChild(wrap);
+        return;
+      }
+      if (widget.type === "numeric") {
+        const wrap = document.createElement("div");
+        wrap.className = "numeric-widget-wrap";
+        const grid = document.createElement("div");
+        grid.className = "numeric-widget-grid";
+        grid.style.gridTemplateColumns = `repeat(${widget.inputCols}, minmax(64px, 1fr))`;
+        const matrix = numericWidgetMatrix(this._state.inputValues.get(widget.source) ?? widget.value, widget.inputRows, widget.inputCols);
+        const commit = (refresh = false) => {
+          widget.value = widget.inputCols === 1
+            ? (widget.inputRows === 1 ? matrix[0][0] : matrix.map((row) => row[0]))
+            : matrix;
+          this._state.inputValues.set(widget.source, normalizeNumericWidgetValue(widget.value, widget.inputRows, widget.inputCols));
+          if (refresh) this.queuePreviewRefresh("input");
+        };
+        for (let row = 0; row < widget.inputRows; row += 1) {
+          for (let col = 0; col < widget.inputCols; col += 1) {
+            const input = document.createElement("input");
+            input.type = "number";
+            input.step = "any";
+            input.value = String(matrix[row][col]);
+            input.addEventListener("pointerdown", () => { this._activeInputWidgetId = widget.id; });
+            input.addEventListener("focus", () => { this._activeInputWidgetId = widget.id; });
+            input.addEventListener("input", () => {
+              if (Number.isFinite(Number(input.value))) {
+                matrix[row][col] = Number(input.value);
+                commit(false);
+              }
+            });
+            input.addEventListener("change", () => commit(true));
+            input.addEventListener("blur", () => {
+              if (this._activeInputWidgetId === widget.id) this._activeInputWidgetId = null;
+              commit(true);
+              this.renderAll();
+            });
+            grid.appendChild(input);
+          }
+        }
+        wrap.appendChild(grid);
         body.appendChild(wrap);
         return;
       }

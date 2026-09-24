@@ -729,6 +729,7 @@ Quindi l'uso diretto via `file:` può risultare limitato o non funzionare, a sec
 Al momento il player supporta:
 
 * `slider`
+* `numeric`
 * `button`
 * `select`
 * `text`
@@ -738,6 +739,8 @@ Al momento il player supporta:
 * `xychart`
 
 I widget di input aggiornano la preview del modello direttamente nel player.
+
+Il widget `numeric` usa `inputRows` e `inputCols` per definire il valore inserito: `1 x 1` produce uno scalare, `n x 1` un vettore e `n x m` una matrice.
 
 Durante l'esecuzione temporizzata i widget di input vengono bloccati.
 

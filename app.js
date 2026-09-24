@@ -37,6 +37,7 @@ const addTextItem = document.getElementById("addTextItem");
 const addButtonWidgetItem = document.getElementById("addButtonWidgetItem");
 const addSelectWidgetItem = document.getElementById("addSelectWidgetItem");
 const addSliderWidgetItem = document.getElementById("addSliderWidgetItem");
+const addNumericWidgetItem = document.getElementById("addNumericWidgetItem");
 const addLedWidgetItem = document.getElementById("addLedWidgetItem");
 const addTextWidgetItem = document.getElementById("addTextWidgetItem");
 const addMatrixWidgetItem = document.getElementById("addMatrixWidgetItem");
@@ -318,6 +319,7 @@ const {
   addSelectWidget,
   addTextWidget,
   addSliderWidget,
+  addNumericWidget,
   addMatrixWidget,
   addTableWidget,
   addXYChartWidget,
@@ -1496,6 +1498,8 @@ function widgetMinDimensions(widget) {
       return { width: 120, height: 82 };
     case "slider":
       return { width: 220, height: 82 };
+    case "numeric":
+      return { width: 160, height: 100 };
     case "text":
       return { width: 120, height: 82 };
     case "matrix":
@@ -2809,6 +2813,8 @@ function widgetDisplayName(widget) {
         ? t("panel.widgetMatrix")
         : widget.type === "slider"
           ? t("panel.widgetSlider")
+          : widget.type === "numeric"
+            ? t("panel.widgetNumeric")
           : widget.type === "button"
             ? t("panel.widgetButton")
             : widget.type === "select"
@@ -6464,7 +6470,7 @@ function propagateNodeRenameInExpressions(oldName, newName) {
         }));
       }
     }
-    if ((widget.type === "slider" || widget.type === "button" || widget.type === "select") && widget.source === oldName) {
+    if ((widget.type === "slider" || widget.type === "numeric" || widget.type === "button" || widget.type === "select") && widget.source === oldName) {
       widget.source = newName;
     }
   });
@@ -6500,7 +6506,7 @@ function removeNodeFromInputWidgetBindings(nodeName) {
     return;
   }
   graph.widgets.forEach((widget) => {
-    if ((widget.type === "slider" || widget.type === "button" || widget.type === "select") && widget.source === nodeName) {
+    if ((widget.type === "slider" || widget.type === "numeric" || widget.type === "button" || widget.type === "select") && widget.source === nodeName) {
       widget.source = "";
     }
   });
@@ -6952,8 +6958,12 @@ function hasSelectBinding(node) {
   return Boolean(node && graph.widgets.some((widget) => widget.type === "select" && widget.source === node.name));
 }
 
+function hasNumericBinding(node) {
+  return Boolean(node && graph.widgets.some((widget) => widget.type === "numeric" && widget.source === node.name));
+}
+
 function hasInputWidgetBinding(node) {
-  return hasSliderBinding(node) || hasButtonBinding(node) || hasSelectBinding(node);
+  return hasSliderBinding(node) || hasNumericBinding(node) || hasButtonBinding(node) || hasSelectBinding(node);
 }
 
 function isWidgetControlledExpressionNode(node) {
@@ -6977,7 +6987,7 @@ function inputWidgetBoundNodeNameSet(excludeWidgetId = null) {
     if (!widget || (excludeWidgetId != null && Number(widget.id) === Number(excludeWidgetId))) {
       return;
     }
-    if (widget.type !== "slider" && widget.type !== "button" && widget.type !== "select") {
+    if (widget.type !== "slider" && widget.type !== "numeric" && widget.type !== "button" && widget.type !== "select") {
       return;
     }
     const source = String(widget.source ?? "").trim();
@@ -7928,9 +7938,13 @@ function exportGraphData() {
       min: Number.isFinite(Number(w.min)) ? Number(w.min) : 0,
       max: Number.isFinite(Number(w.max)) ? Number(w.max) : 100,
       step: Number.isFinite(Number(w.step)) ? Number(w.step) : 1,
-      value: w.type === "button"
-        ? Boolean(w.initialValue ?? w.value)
-        : (Number.isFinite(Number(w.value)) ? Number(w.value) : 0),
+      inputRows: w.type === "numeric" ? w.inputRows : undefined,
+      inputCols: w.type === "numeric" ? w.inputCols : undefined,
+      value: w.type === "numeric"
+        ? deepClone(w.value)
+        : w.type === "button"
+          ? Boolean(w.initialValue ?? w.value)
+          : (Number.isFinite(Number(w.value)) ? Number(w.value) : 0),
       initialValue: w.type === "button" ? Boolean(w.initialValue ?? w.value) : undefined,
       falseLabel: String(w.falseLabel ?? ""),
       trueLabel: String(w.trueLabel ?? ""),
@@ -8144,7 +8158,7 @@ function applyGraphData(data) {
     : [];
   graph.widgets = Array.isArray(data.widgets)
     ? data.widgets
-      .filter((w) => Number.isInteger(w.id) && (w.type === "table" || w.type === "xychart" || w.type === "slider" || w.type === "matrix" || w.type === "button" || w.type === "led" || w.type === "select" || w.type === "text"))
+      .filter((w) => Number.isInteger(w.id) && (w.type === "table" || w.type === "xychart" || w.type === "slider" || w.type === "numeric" || w.type === "matrix" || w.type === "button" || w.type === "led" || w.type === "select" || w.type === "text"))
       .map((w) => ({
         id: w.id,
         type: w.type,
@@ -8195,7 +8209,11 @@ function applyGraphData(data) {
         min: Number.isFinite(Number(w.min)) ? Number(w.min) : 0,
         max: Number.isFinite(Number(w.max)) ? Number(w.max) : 100,
         step: Number.isFinite(Number(w.step)) ? Number(w.step) : 1,
-        value: w.type === "button"
+        inputRows: w.type === "numeric" ? w.inputRows : undefined,
+        inputCols: w.type === "numeric" ? w.inputCols : undefined,
+        value: w.type === "numeric"
+          ? deepClone(w.value)
+          : w.type === "button"
           ? (w.initialValue === true || w.initialValue === "true" || w.initialValue === 1 || w.initialValue === "1"
             || ((w.initialValue == null) && (w.value === true || w.value === "true" || w.value === 1 || w.value === "1")))
           : (Number.isFinite(Number(w.value)) ? Number(w.value) : 0),
@@ -8524,6 +8542,7 @@ function updateEditingLockUi() {
     addButtonWidgetItem,
     addSelectWidgetItem,
     addSliderWidgetItem,
+    addNumericWidgetItem,
     addLedWidgetItem,
     addTextWidgetItem,
     addMatrixWidgetItem,
@@ -9123,6 +9142,8 @@ function refreshSidebar() {
         ? t("panel.widgetChart")
         : widget.type === "slider"
           ? t("panel.widgetSlider")
+          : widget.type === "numeric"
+            ? t("panel.widgetNumeric")
           : widget.type === "select"
             ? t("panel.widgetSelect")
             : widget.type === "text"
@@ -10697,49 +10718,15 @@ function importGraphData(data) {
   const maxTextItemId = textItems.reduce((max, item) => Math.max(max, item.id), 0);
   const widgets = Array.isArray(data.widgets)
     ? data.widgets
-      .filter((w) => Number.isInteger(w.id) && (w.type === "table" || w.type === "xychart" || w.type === "slider" || w.type === "matrix" || w.type === "button" || w.type === "led" || w.type === "select" || w.type === "text"))
+      .filter((w) => Number.isInteger(w.id) && (w.type === "table" || w.type === "xychart" || w.type === "slider" || w.type === "numeric" || w.type === "matrix" || w.type === "button" || w.type === "led" || w.type === "select" || w.type === "text"))
       .map((w) => ({
         id: w.id,
-        type: w.type === "xychart"
-          ? "xychart"
-          : (w.type === "slider"
-            ? "slider"
-            : (w.type === "matrix"
-              ? "matrix"
-              : (w.type === "button"
-                ? "button"
-                : (w.type === "led"
-                  ? "led"
-                  : (w.type === "select" ? "select" : (w.type === "text" ? "text" : "table")))))),
+        type: w.type,
         customTitle: String(w.customTitle ?? ""),
         x: Number.isFinite(Number(w.x)) ? Number(w.x) : 40,
         y: Number.isFinite(Number(w.y)) ? Number(w.y) : 40,
-        width: clamp(Number(w.width) || 320, widgetMinDimensions({
-          type: w.type === "xychart"
-            ? "xychart"
-            : (w.type === "slider"
-              ? "slider"
-              : (w.type === "matrix"
-                ? "matrix"
-                : (w.type === "button"
-                  ? "button"
-                  : (w.type === "led"
-                    ? "led"
-                    : (w.type === "select" ? "select" : (w.type === "text" ? "text" : "table"))))))
-        }).width, 1200),
-        height: clamp(Number(w.height) || 160, widgetMinDimensions({
-          type: w.type === "xychart"
-            ? "xychart"
-            : (w.type === "slider"
-              ? "slider"
-              : (w.type === "matrix"
-                ? "matrix"
-                : (w.type === "button"
-                  ? "button"
-                  : (w.type === "led"
-                    ? "led"
-                    : (w.type === "select" ? "select" : (w.type === "text" ? "text" : "table"))))))
-        }).height, 900),
+        width: clamp(Number(w.width) || 320, widgetMinDimensions(w).width, 1200),
+        height: clamp(Number(w.height) || 160, widgetMinDimensions(w).height, 900),
         dashboardPageId: normalizeDashboardPageId(w.dashboardPageId),
         minimized: Boolean(w.minimized),
         showTitleBar: w.showTitleBar !== false,
@@ -10782,7 +10769,11 @@ function importGraphData(data) {
         min: Number.isFinite(Number(w.min)) ? Number(w.min) : 0,
         max: Number.isFinite(Number(w.max)) ? Number(w.max) : 100,
         step: Number.isFinite(Number(w.step)) ? Number(w.step) : 1,
-        value: w.type === "button"
+        inputRows: w.type === "numeric" ? w.inputRows : undefined,
+        inputCols: w.type === "numeric" ? w.inputCols : undefined,
+        value: w.type === "numeric"
+          ? deepClone(w.value)
+          : w.type === "button"
           ? (w.initialValue === true || w.initialValue === "true" || w.initialValue === 1 || w.initialValue === "1"
             || ((w.initialValue == null) && (w.value === true || w.value === "true" || w.value === 1 || w.value === "1")))
           : (Number.isFinite(Number(w.value)) ? Number(w.value) : 0),
@@ -12895,6 +12886,13 @@ addSliderWidgetItem.addEventListener("click", () => {
     addSliderWidget();
   });
   setStatusKey("status.widgetSliderCreated");
+});
+
+addNumericWidgetItem?.addEventListener("click", () => {
+  runAction(() => {
+    addNumericWidget();
+  });
+  setStatusKey("status.widgetNumericCreated");
 });
 
 addMatrixWidgetItem.addEventListener("click", () => {

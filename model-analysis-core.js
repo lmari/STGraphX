@@ -621,7 +621,7 @@
 
       graph.widgets.forEach((widget) => {
         const widgetName = widgetDisplayName(widget);
-        if (widget.type === "slider" || widget.type === "button" || widget.type === "select") {
+        if (widget.type === "slider" || widget.type === "numeric" || widget.type === "button" || widget.type === "select") {
           if (!widget.source) {
             pushAnalysisIssue(issues, "warning", "analysis.issue.widgetNoSource", { name: widgetName }, { type: "widget", id: widget.id, name: widgetName });
             return;

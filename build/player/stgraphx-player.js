@@ -1,6 +1,6 @@
 /*!
  * STGraphX Embedded Player Bundle
- * Generated: 2026-09-23T11:56:10.339Z
+ * Generated: 2026-09-24T09:25:06.830Z
  */
 
 /* --- i18n-inline.js --- */
@@ -13,7 +13,7 @@
 
 window.STGraphXAppMeta = {
   author: "Luca Mari",
-  releaseDate: "2026.09.22",
+  releaseDate: "2026.09.23",
   license: "MPL-2.0",
   copyright: "Copyright (c) 2026 Luca Mari",
 };
@@ -81,6 +81,7 @@ window.STGraphXI18nBundles = {
     "confirm.selectModelFolder": "Il modello usa sottomodelli. Vuoi selezionare la cartella del modello per consentirne il caricamento automatico?",
     "context.bg.insertTitle": "Inserisci",
     "context.bg.newButtonWidget": "Pulsante",
+    "context.bg.newNumericWidget": "Input numerico",
     "context.bg.newDiamond": "Parametro",
     "context.bg.newEllipse": "Variabile algebrica",
     "context.bg.newLedWidget": "LED",
@@ -144,6 +145,7 @@ window.STGraphXI18nBundles = {
     "menu.insert.group.outputWidgets": "Widget di output",
     "menu.insert.ledWidget": "LED",
     "menu.insert.matrixWidget": "Matrice",
+    "menu.insert.numericWidget": "Input numerico",
     "menu.insert.rect": "Variabile di stato",
     "menu.insert.selectWidget": "Selettore",
     "menu.insert.sliderWidget": "Slider",
@@ -241,6 +243,7 @@ window.STGraphXI18nBundles = {
     "panel.widgetChart": "Grafico x-y",
     "panel.widgetLed": "LED",
     "panel.widgetMatrix": "Matrice",
+    "panel.widgetNumeric": "Input numerico",
     "panel.widgetSelect": "Selettore",
     "panel.widgetSlider": "Slider",
     "panel.widgetTable": "Tabella",
@@ -738,6 +741,10 @@ window.STGraphXI18nBundles = {
     "widget.sliderSourceLabel": "Nodo",
     "widget.sliderStep": "Passo",
     "widget.sliderTitle": "Slider {id}",
+    "widget.numericCols": "Colonne",
+    "widget.numericRows": "Righe",
+    "widget.numericSourceLabel": "Nodo",
+    "widget.numericTitle": "Input numerico {id}",
     "widget.tableAlign": "Allineamento",
     "widget.tableAlign.center": "Centro",
     "widget.tableAlign.left": "Sinistra",
@@ -840,6 +847,7 @@ window.STGraphXI18nBundles = {
     "status.widgetDeleted": "Widget eliminato.",
     "status.widgetLedCreated": "Widget LED creato.",
     "status.widgetMatrixCreated": "Widget matrice creato.",
+    "status.widgetNumericCreated": "Widget input numerico creato.",
     "status.widgetMinimized": "Widget minimizzato.",
     "status.widgetMoved": "Widget spostato.",
     "status.widgetResized": "Widget ridimensionato.",
@@ -898,6 +906,7 @@ window.STGraphXI18nBundles = {
     "tooltip.menu.insert.ellipse": "Inserisce una nuova variabile algebrica.",
     "tooltip.menu.insert.led": "Inserisce un widget LED per visualizzare un valore booleano.",
     "tooltip.menu.insert.matrix": "Inserisce un widget per visualizzare una matrice.",
+    "tooltip.menu.insert.numeric": "Inserisce un widget per immettere uno scalare, un vettore o una matrice numerici.",
     "tooltip.menu.insert.rect": "Inserisce una nuova variabile di stato.",
     "tooltip.menu.insert.select": "Inserisce un widget selettore per guidare input e parametri con etichette testuali.",
     "tooltip.menu.insert.slider": "Inserisce un widget slider per guidare input e parametri.",
@@ -976,6 +985,7 @@ window.STGraphXI18nBundles = {
     "tooltip.widget.expandNonScalarValues": "Mostra vettori e matrici distribuendone i valori in celle separate. Alternativo alla serie storica.",
     "tooltip.widget.fontSize": "Dimensione del testo visualizzato dal widget, in pixel.",
     "tooltip.widget.inputSource": "Nodo di input controllato da questo widget. Un nodo puo essere associato a un solo widget di input.",
+    "tooltip.widget.numericDimensions": "Numero di righe e colonne del valore: 1 x 1 produce uno scalare, n x 1 un vettore, n x m una matrice.",
     "tooltip.widget.legendPosition": "Posizione della legenda del grafico, oppure nessuna legenda.",
     "tooltip.widget.lineColor": "Colore usato per disegnare la linea della serie.",
     "tooltip.widget.lineStyle": "Tipo di tratto della linea; scegli 'No linea' per visualizzare solo i punti.",
@@ -1249,6 +1259,7 @@ window.STGraphXI18nBundles = {
     "confirm.selectModelFolder": "This model uses submodels. Do you want to select the model folder so they can be loaded automatically?",
     "context.bg.insertTitle": "Insert",
     "context.bg.newButtonWidget": "Button",
+    "context.bg.newNumericWidget": "Numeric input",
     "context.bg.newDiamond": "Parameter",
     "context.bg.newEllipse": "Algebraic variable",
     "context.bg.newLedWidget": "LED",
@@ -1312,6 +1323,7 @@ window.STGraphXI18nBundles = {
     "menu.insert.group.outputWidgets": "Output widgets",
     "menu.insert.ledWidget": "LED",
     "menu.insert.matrixWidget": "Matrix",
+    "menu.insert.numericWidget": "Numeric input",
     "menu.insert.rect": "State variable",
     "menu.insert.selectWidget": "Selector",
     "menu.insert.sliderWidget": "Slider",
@@ -1409,6 +1421,7 @@ window.STGraphXI18nBundles = {
     "panel.widgetChart": "X-Y chart",
     "panel.widgetLed": "LED",
     "panel.widgetMatrix": "Matrix",
+    "panel.widgetNumeric": "Numeric input",
     "panel.widgetSelect": "Selector",
     "panel.widgetSlider": "Slider",
     "panel.widgetTable": "Table",
@@ -1906,6 +1919,10 @@ window.STGraphXI18nBundles = {
     "widget.sliderSourceLabel": "Node",
     "widget.sliderStep": "Step",
     "widget.sliderTitle": "Slider {id}",
+    "widget.numericCols": "Columns",
+    "widget.numericRows": "Rows",
+    "widget.numericSourceLabel": "Node",
+    "widget.numericTitle": "Numeric input {id}",
     "widget.tableAlign": "Alignment",
     "widget.tableAlign.center": "Center",
     "widget.tableAlign.left": "Left",
@@ -2008,6 +2025,7 @@ window.STGraphXI18nBundles = {
     "status.widgetDeleted": "Widget deleted.",
     "status.widgetLedCreated": "LED widget created.",
     "status.widgetMatrixCreated": "Matrix widget created.",
+    "status.widgetNumericCreated": "Numeric input widget created.",
     "status.widgetMinimized": "Widget minimized.",
     "status.widgetMoved": "Widget moved.",
     "status.widgetResized": "Widget resized.",
@@ -2066,6 +2084,7 @@ window.STGraphXI18nBundles = {
     "tooltip.menu.insert.ellipse": "Inserts a new algebraic variable.",
     "tooltip.menu.insert.led": "Inserts an LED widget to display a boolean value.",
     "tooltip.menu.insert.matrix": "Inserts a widget to display a matrix.",
+    "tooltip.menu.insert.numeric": "Inserts a widget for entering a numeric scalar, vector, or matrix.",
     "tooltip.menu.insert.rect": "Inserts a new state variable.",
     "tooltip.menu.insert.select": "Inserts a selector widget to drive inputs and parameters with textual labels.",
     "tooltip.menu.insert.slider": "Inserts a slider widget to drive inputs and parameters.",
@@ -2144,6 +2163,7 @@ window.STGraphXI18nBundles = {
     "tooltip.widget.expandNonScalarValues": "Shows vectors and matrices in separate cells. Alternative to history series.",
     "tooltip.widget.fontSize": "Size of the text displayed by the widget, in pixels.",
     "tooltip.widget.inputSource": "Input node controlled by this widget. A node can be associated with one input widget only.",
+    "tooltip.widget.numericDimensions": "Number of rows and columns: 1 x 1 produces a scalar, n x 1 a vector, n x m a matrix.",
     "tooltip.widget.legendPosition": "Chart legend position, or no legend.",
     "tooltip.widget.lineColor": "Color used to draw the series line.",
     "tooltip.widget.lineStyle": "Line pattern; select 'No line' to show points only.",
@@ -10498,6 +10518,33 @@ window.STGraphXI18nBundles = {
     return hit ? String(hit.label) : "";
   }
 
+  function numericWidgetDimension(value, fallback = 1) {
+    const numeric = Math.floor(Number(value));
+    return Number.isFinite(numeric) ? clamp(numeric, 1, 100) : fallback;
+  }
+
+  function normalizeNumericWidgetValue(value, rows, cols) {
+    const numberOrZero = (candidate) => Number.isFinite(Number(candidate)) ? Number(candidate) : 0;
+    const matrix = Array.from({ length: rows }, (_row, row) => Array.from({ length: cols }, (_col, col) => {
+      if (Array.isArray(value)) {
+        if (Array.isArray(value[row])) return numberOrZero(value[row][col]);
+        if (col === 0) return numberOrZero(value[row]);
+        return 0;
+      }
+      return row === 0 && col === 0 ? numberOrZero(value) : 0;
+    }));
+    if (rows === 1 && cols === 1) return matrix[0][0];
+    if (cols === 1) return matrix.map((row) => row[0]);
+    return matrix;
+  }
+
+  function numericWidgetMatrix(value, rows, cols) {
+    const normalized = normalizeNumericWidgetValue(value, rows, cols);
+    if (rows === 1 && cols === 1) return [[normalized]];
+    if (cols === 1) return normalized.map((value) => [value]);
+    return normalized;
+  }
+
   function sanitizeWidgetList(widgets = []) {
     const parseNullablePositiveInt = (value) => {
       if (value === null || value === undefined || value === "") {
@@ -10545,7 +10592,11 @@ window.STGraphXI18nBundles = {
       min: Number.isFinite(Number(widget?.min)) ? Number(widget.min) : 0,
       max: Number.isFinite(Number(widget?.max)) ? Number(widget.max) : 100,
       step: Number.isFinite(Number(widget?.step)) ? Number(widget.step) : 1,
-      value: widget?.type === "button"
+      inputRows: widget?.type === "numeric" ? numericWidgetDimension(widget?.inputRows) : null,
+      inputCols: widget?.type === "numeric" ? numericWidgetDimension(widget?.inputCols) : null,
+      value: widget?.type === "numeric"
+        ? normalizeNumericWidgetValue(widget?.value, numericWidgetDimension(widget?.inputRows), numericWidgetDimension(widget?.inputCols))
+        : widget?.type === "button"
         ? Boolean(widget?.value)
         : (Number.isFinite(Number(widget?.value)) ? Number(widget.value) : 0),
       options: Array.isArray(widget?.options)
@@ -10710,7 +10761,7 @@ window.STGraphXI18nBundles = {
     if (title) {
       return title;
     }
-    if (widget.type === "slider" || widget.type === "button" || widget.type === "select") {
+    if (widget.type === "slider" || widget.type === "numeric" || widget.type === "button" || widget.type === "select") {
       return widget.source || t("text.unnamed");
     }
     if (widget.type === "text" || widget.type === "led" || widget.type === "matrix") {
@@ -10723,6 +10774,7 @@ window.STGraphXI18nBundles = {
       text: t("menu.insert.textWidget"),
       led: t("menu.insert.ledWidget"),
       slider: t("menu.insert.sliderWidget"),
+      numeric: t("menu.insert.numericWidget"),
       button: t("menu.insert.buttonWidget"),
       select: t("menu.insert.selectWidget"),
     }[widget.type] || widget.type;
@@ -11429,6 +11481,25 @@ window.STGraphXI18nBundles = {
             box-sizing: border-box;
             font: inherit;
           }
+          .numeric-widget-wrap {
+            height: 100%;
+            min-width: 0;
+          }
+          .numeric-widget-grid {
+            display: grid;
+            gap: 4px;
+            max-height: 100%;
+            overflow: auto;
+            align-content: start;
+          }
+          .numeric-widget-grid input {
+            box-sizing: border-box;
+            min-width: 0;
+            width: 100%;
+            padding: 4px 6px;
+            font: inherit;
+            text-align: right;
+          }
           .select-widget-wrap,
           .button-widget-wrap,
           .text-widget-wrap {
@@ -12008,6 +12079,8 @@ window.STGraphXI18nBundles = {
         }
         if (widget.type === "slider" || widget.type === "select") {
           this._state.inputValues.set(widget.source, Number(widget.value));
+        } else if (widget.type === "numeric") {
+          this._state.inputValues.set(widget.source, normalizeNumericWidgetValue(widget.value, widget.inputRows, widget.inputCols));
         } else if (widget.type === "button") {
           this._state.inputValues.set(widget.source, widget.value ? 1 : 0);
         }
@@ -13018,6 +13091,47 @@ window.STGraphXI18nBundles = {
         rangeLine.appendChild(number);
         rangeLine.appendChild(maxLabel);
         wrap.appendChild(rangeLine);
+        body.appendChild(wrap);
+        return;
+      }
+      if (widget.type === "numeric") {
+        const wrap = document.createElement("div");
+        wrap.className = "numeric-widget-wrap";
+        const grid = document.createElement("div");
+        grid.className = "numeric-widget-grid";
+        grid.style.gridTemplateColumns = `repeat(${widget.inputCols}, minmax(64px, 1fr))`;
+        const matrix = numericWidgetMatrix(this._state.inputValues.get(widget.source) ?? widget.value, widget.inputRows, widget.inputCols);
+        const commit = (refresh = false) => {
+          widget.value = widget.inputCols === 1
+            ? (widget.inputRows === 1 ? matrix[0][0] : matrix.map((row) => row[0]))
+            : matrix;
+          this._state.inputValues.set(widget.source, normalizeNumericWidgetValue(widget.value, widget.inputRows, widget.inputCols));
+          if (refresh) this.queuePreviewRefresh("input");
+        };
+        for (let row = 0; row < widget.inputRows; row += 1) {
+          for (let col = 0; col < widget.inputCols; col += 1) {
+            const input = document.createElement("input");
+            input.type = "number";
+            input.step = "any";
+            input.value = String(matrix[row][col]);
+            input.addEventListener("pointerdown", () => { this._activeInputWidgetId = widget.id; });
+            input.addEventListener("focus", () => { this._activeInputWidgetId = widget.id; });
+            input.addEventListener("input", () => {
+              if (Number.isFinite(Number(input.value))) {
+                matrix[row][col] = Number(input.value);
+                commit(false);
+              }
+            });
+            input.addEventListener("change", () => commit(true));
+            input.addEventListener("blur", () => {
+              if (this._activeInputWidgetId === widget.id) this._activeInputWidgetId = null;
+              commit(true);
+              this.renderAll();
+            });
+            grid.appendChild(input);
+          }
+        }
+        wrap.appendChild(grid);
         body.appendChild(wrap);
         return;
       }
