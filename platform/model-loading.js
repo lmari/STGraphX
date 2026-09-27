@@ -37,6 +37,9 @@
     const resolveRecentModelDirectoryHandle = typeof options.resolveRecentModelDirectoryHandle === "function"
       ? options.resolveRecentModelDirectoryHandle
       : async () => null;
+    const resolveRecentModelSnapshot = typeof options.resolveRecentModelSnapshot === "function"
+      ? options.resolveRecentModelSnapshot
+      : async () => "";
     const supportsOpenFilePicker = typeof options.supportsOpenFilePicker === "function"
       ? options.supportsOpenFilePicker
       : () => false;
@@ -93,6 +96,7 @@
         rootEntry.name || (handle && handle.name) || (file && file.name) || "graph.json",
         recentFileReference,
         directoryHandle,
+        text,
       );
       await preloadSubmodelsAfterLoad();
       const selectedDirectoryHandle = await maybeSelectModelDirectoryForSubmodels(rootData);
@@ -100,6 +104,7 @@
         rootEntry.name || (handle && handle.name) || (file && file.name) || "graph.json",
         recentFileReference,
         selectedDirectoryHandle || directoryHandle,
+        text,
       );
       await preloadSubmodelsAfterLoad();
       return true;
@@ -133,6 +138,18 @@
           } catch (_err) {
             // A moved or revoked file can be relinked through the picker below.
             rootEntry = null;
+          }
+        }
+        if (!rootEntry) {
+          const snapshot = await resolveRecentModelSnapshot(entry);
+          if (snapshot) {
+            rootEntry = await prepareSelectedJsonEntries([{
+              name: String(entry?.name || "model.json"),
+              text: async () => snapshot,
+            }]);
+            if (rootEntry && directoryHandle) {
+              rootEntry.directoryHandle = directoryHandle;
+            }
           }
         }
         let relinked = false;

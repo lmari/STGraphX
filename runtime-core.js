@@ -84,8 +84,10 @@
             submodelError: "",
             computedValue: null,
             computedError: "",
+            computedErrorMessage: "",
             pendingStateValue: null,
             pendingStateError: "",
+            pendingStateErrorMessage: "",
             externalValueEnabled: false,
             externalValue: null,
             properties: Array.isArray(n.properties)
@@ -133,6 +135,7 @@
           decimals: execCfg.decimals,
           integrator: execCfg.integrator,
           strictDefinitions: execCfg.strictDefinitions,
+          stopOnRuntimeError: execCfg.stopOnRuntimeError,
           currentTime: null,
         },
         __directoryPath: String(options.directoryPath ?? ""),
@@ -879,6 +882,16 @@
       let errorCount = 0;
       let firstErrorNode = null;
       let firstErrorReason = null;
+      let firstErrorMessage = "";
+
+      const recordFirstError = (node, reason, message) => {
+        // Prefer the originating formula failure to propagated dependency errors.
+        if (!firstErrorNode || (firstErrorReason === "dependency" && reason !== "dependency")) {
+          firstErrorNode = node.name;
+          firstErrorReason = reason;
+          firstErrorMessage = String(message ?? "");
+        }
+      };
 
       evalResults.algebraic.forEach((entry) => {
         const node = getModelNodeById(model, entry.id);
@@ -888,15 +901,14 @@
         if (entry.result.ok) {
           node.computedValue = entry.result.value;
           node.computedError = "";
+          node.computedErrorMessage = "";
           successCount += 1;
         } else {
           node.computedValue = null;
           node.computedError = entry.result.reason || "runtime";
+          node.computedErrorMessage = String(entry.result.message ?? "");
           errorCount += 1;
-          if (!firstErrorNode) {
-            firstErrorNode = node.name;
-            firstErrorReason = node.computedError;
-          }
+          recordFirstError(node, node.computedError, node.computedErrorMessage);
         }
       });
 
@@ -911,19 +923,18 @@
         if (result.ok) {
           node.pendingStateValue = result.value;
           node.pendingStateError = "";
+          node.pendingStateErrorMessage = "";
           successCount += 1;
         } else {
           node.pendingStateValue = null;
           node.pendingStateError = result.reason || "runtime";
+          node.pendingStateErrorMessage = String(result.message ?? "");
           errorCount += 1;
-          if (!firstErrorNode) {
-            firstErrorNode = node.name;
-            firstErrorReason = node.pendingStateError;
-          }
+          recordFirstError(node, node.pendingStateError, node.pendingStateErrorMessage);
         }
       });
 
-      return { successCount, errorCount, firstErrorNode, firstErrorReason };
+      return { successCount, errorCount, firstErrorNode, firstErrorReason, firstErrorMessage };
     }
 
     return {

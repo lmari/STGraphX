@@ -635,17 +635,6 @@
     _seedDefaultInputValues() {
       this._inputValues.clear();
       const nodeMap = buildNodeMap(this._runtimeModel);
-      for (const node of this._runtimeModel?.nodes || []) {
-        if (!isExternallySettableNode(node)) {
-          continue;
-        }
-        if (node.shape === "diamond") {
-          const numeric = Number(node.computedValue);
-          if (Number.isFinite(numeric)) {
-            this._inputValues.set(node.name, numeric);
-          }
-        }
-      }
       const rawWidgets = Array.isArray(this._rawModel?.widgets) ? this._rawModel.widgets : [];
       rawWidgets.forEach((widget) => {
         if (!widget?.source) {

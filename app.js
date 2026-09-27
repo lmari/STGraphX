@@ -63,6 +63,7 @@ const topRunStepBtn = document.getElementById("topRunStepBtn");
 const topRunTimedBtn = document.getElementById("topRunTimedBtn");
 const topRunResetBtn = document.getElementById("topRunResetBtn");
 const runStrictDefinitionsInput = document.getElementById("runStrictDefinitionsInput");
+const runStopOnRuntimeErrorInput = document.getElementById("runStopOnRuntimeErrorInput");
 const selectAllBtn = document.getElementById("selectAllBtn");
 const cutBtn = document.getElementById("cutBtn");
 const copyBtn = document.getElementById("copyBtn");
@@ -532,6 +533,7 @@ const modelLoadingHelpers = globalThis.STGraphXModelLoading?.createModelLoadingH
   prepareSelectedJsonEntries,
   resolveRecentModelHandle,
   resolveRecentModelDirectoryHandle,
+  resolveRecentModelSnapshot,
   supportsOpenFilePicker,
   showOpenFilePickerCompat,
   pickSubmodelFilesWithInput,
@@ -753,19 +755,30 @@ function parseModelClipboardPayload(raw) {
   try {
     const parsed = JSON.parse(text.slice(MODEL_CLIPBOARD_PREFIX.length));
     const payload = parsed?.payload;
-    if (
-      parsed?.type !== "stgraphx-model-clipboard"
-      || parsed?.version !== 1
-      || !payload
-      || !Array.isArray(payload.nodes)
-      || !Array.isArray(payload.edges)
-    ) {
+    if (!isValidModelClipboardPayload(parsed, payload)) {
       return null;
     }
     return payload;
   } catch {
     return null;
   }
+}
+
+function isValidModelClipboardPayload(parsed, payload) {
+  if (
+    parsed?.type !== "stgraphx-model-clipboard"
+    || parsed?.version !== 1
+    || !payload
+    || !Array.isArray(payload.nodes)
+    || !Array.isArray(payload.edges)
+  ) {
+    return false;
+  }
+  // Text items were added after the first clipboard format. Keep existing
+  // node-only clipboard data valid while allowing a text-only selection.
+  return !payload.textItems || Array.isArray(payload.textItems)
+    ? payload.nodes.length > 0 || (payload.textItems?.length || 0) > 0
+    : false;
 }
 
 function persistSharedModelClipboard(raw) {
@@ -806,7 +819,7 @@ async function syncClipboardFromSharedSource() {
     return true;
   }
   const payload = parseModelClipboardPayload(raw);
-  if (!payload || !Array.isArray(payload.nodes) || payload.nodes.length === 0) {
+  if (!isValidModelClipboardPayload({ type: "stgraphx-model-clipboard", version: 1 }, payload)) {
     return false;
   }
   clipboard.data = deepClone(payload);
@@ -897,6 +910,7 @@ const graph = {
     decimals: 3,
     integrator: "euler",
     strictDefinitions: false,
+    stopOnRuntimeError: false,
     currentTime: null,
   },
 };
@@ -6401,7 +6415,9 @@ function updateFileStatusLabel(dirty = dirtySinceLastSave) {
   const key = dirty ? "file.status.dirty" : "file.status.clean";
   fileStatusText.textContent = t(key, { name: displayFileName() });
   if (saveJsonBtn) {
-    saveJsonBtn.disabled = !dirty;
+    // Saving is harmless for a clean model and must remain available when a
+    // browser delays the dirty-state refresh after an edit.
+    saveJsonBtn.disabled = false;
   }
   const activeTab = currentWorkspaceTab();
   if (activeTab?.state?.context) {
@@ -7466,6 +7482,9 @@ function updateModelRunButtons() {
   if (runStrictDefinitionsInput) {
     runStrictDefinitionsInput.checked = Boolean(graph.execution.strictDefinitions);
   }
+  if (runStopOnRuntimeErrorInput) {
+    runStopOnRuntimeErrorInput.checked = Boolean(graph.execution.stopOnRuntimeError);
+  }
   if (strictDefinitionsInput) {
     strictDefinitionsInput.checked = Boolean(graph.execution.strictDefinitions);
   }
@@ -7829,6 +7848,7 @@ function exportGraphData() {
       decimals: clampDisplayDecimals(graph.execution.decimals),
       integrator: String(graph.execution.integrator ?? "euler"),
       strictDefinitions: Boolean(graph.execution.strictDefinitions),
+      stopOnRuntimeError: Boolean(graph.execution.stopOnRuntimeError),
     },
     nodes: graph.nodes.map((n) => {
       normalizeNodeDescriptionProperty(n);
@@ -8086,6 +8106,7 @@ function applyGraphData(data) {
     decimals: execCfg.decimals,
     integrator: execCfg.integrator,
     strictDefinitions: execCfg.strictDefinitions,
+    stopOnRuntimeError: execCfg.stopOnRuntimeError,
     currentTime: null,
   };
 
@@ -8628,9 +8649,6 @@ function updateEditingLockUi() {
 }
 
 function collectSelectedForClipboard() {
-  if (ui.selectedNodes.size === 0) {
-    return null;
-  }
   const ids = new Set(ui.selectedNodes);
   const nodes = graph.nodes
     .filter((n) => ids.has(n.id))
@@ -8665,12 +8683,26 @@ function collectSelectedForClipboard() {
       to: e.to,
       controlPoints: (e.controlPoints || []).map((cp) => ({ x: cp.x, y: cp.y })),
     }));
-  return { nodes, edges };
+  const selectedText = ui.selected?.type === "text" ? getTextItemById(ui.selected.id) : null;
+  const textItems = selectedText
+    ? [{
+      id: selectedText.id,
+      x: selectedText.x,
+      y: selectedText.y,
+      width: selectedText.width,
+      height: selectedText.height,
+      fillColor: String(selectedText.fillColor ?? ""),
+      strokeColor: String(selectedText.strokeColor ?? ""),
+      dashboardPageId: normalizeDashboardPageId(selectedText.dashboardPageId),
+      html: String(selectedText.html ?? ""),
+    }]
+    : [];
+  return nodes.length > 0 || textItems.length > 0 ? { nodes, edges, textItems } : null;
 }
 
 function copySelectionToClipboard() {
   const payload = collectSelectedForClipboard();
-  if (!payload || payload.nodes.length === 0) {
+  if (!payload) {
     setStatusKey("status.clipboardNothingToCopy");
     return false;
   }
@@ -8680,7 +8712,9 @@ function copySelectionToClipboard() {
   clipboard.signature = raw;
   persistSharedModelClipboard(raw);
   updateHistoryButtons();
-  setStatusKey("status.clipboardCopied", { count: payload.nodes.length });
+  setStatusKey(payload.textItems?.length ? "status.clipboardCopiedText" : "status.clipboardCopied", {
+    count: payload.nodes.length,
+  });
   return true;
 }
 
@@ -8695,7 +8729,7 @@ function cutSelectionToClipboard() {
 
 async function pasteFromClipboard() {
   await syncClipboardFromSharedSource();
-  if (!clipboard.data || !Array.isArray(clipboard.data.nodes) || clipboard.data.nodes.length === 0) {
+  if (!isValidModelClipboardPayload({ type: "stgraphx-model-clipboard", version: 1 }, clipboard.data)) {
     setStatusKey("status.clipboardEmpty");
     return;
   }
@@ -8708,6 +8742,7 @@ async function pasteFromClipboard() {
   runAction(() => {
     const idMap = new Map();
     const newNodeIds = [];
+    const newTextIds = [];
 
     clipboard.data.nodes.forEach((n) => {
       const newId = nodeCounter++;
@@ -8762,14 +8797,35 @@ async function pasteFromClipboard() {
       });
     });
 
+    (clipboard.data.textItems || []).forEach((item) => {
+      const textItem = {
+        id: textItemCounter++,
+        x: snap(Number(item.x) + offset),
+        y: snap(Number(item.y) + offset),
+        width: Number(item.width),
+        height: Number(item.height),
+        fillColor: normalizeColorString(item.fillColor),
+        strokeColor: normalizeColorString(item.strokeColor),
+        dashboardPageId: normalizeDashboardPageId(item.dashboardPageId),
+        html: String(item.html ?? ""),
+      };
+      sanitizeTextItem(textItem);
+      graph.textItems.push(textItem);
+      newTextIds.push(textItem.id);
+    });
+
     normalizeInputNodeFlags();
-    setNodeSelection(newNodeIds, false);
-    pastedCount = newNodeIds.length;
+    if (newNodeIds.length > 0) {
+      setNodeSelection(newNodeIds, false);
+    } else if (newTextIds.length > 0) {
+      selectTextItem(newTextIds[newTextIds.length - 1]);
+    }
+    pastedCount = newNodeIds.length + newTextIds.length;
   });
 
   clipboard.pasteCount += 1;
   updateHistoryButtons();
-  setStatusKey("status.clipboardPasted", { count: pastedCount });
+  setStatusKey(clipboard.data.textItems?.length ? "status.clipboardPastedText" : "status.clipboardPasted", { count: pastedCount });
 }
 
 function undo() {
@@ -10316,7 +10372,7 @@ function render(options = {}) {
       runtimeValueLabel.textContent = runtimeValue.text;
       const title = document.createElementNS(SVG_NS, "title");
       title.textContent = runtimeValue.error
-        ? String(node.computedError)
+        ? String(node.computedErrorMessage || evalReasonText(node.computedError))
         : summarizeTooltipValue(node.computedValue);
       runtimeValueLabel.appendChild(title);
     }
@@ -10975,8 +11031,8 @@ function renderRecentModelsMenu() {
   });
 }
 
-async function rememberRecentModel(name, fileHandle = null, directoryHandle = currentModelDirectoryHandle) {
-  await recentModelsStore.remember(name, fileHandle, directoryHandle);
+async function rememberRecentModel(name, fileHandle = null, directoryHandle = currentModelDirectoryHandle, modelText = "") {
+  await recentModelsStore.remember(name, fileHandle, directoryHandle, undefined, modelText);
   renderRecentModelsMenu();
 }
 
@@ -10996,6 +11052,10 @@ async function resolveRecentModelDirectoryHandle(entry) {
     return createPseudoDirectoryHandle(handle.files);
   }
   return handle;
+}
+
+async function resolveRecentModelSnapshot(entry) {
+  return recentModelsStore.resolveSnapshot(entry);
 }
 
 async function openPreparedJsonEntry(rootEntry) {
@@ -11422,9 +11482,12 @@ async function exportSimulationCsv() {
 }
 
 async function saveGraphJson(forceSaveAs = false) {
+  // The UI flag is refreshed asynchronously; use the snapshot as the source
+  // of truth so a just-edited browser document can always be saved.
+  const hasPendingChanges = dirtySinceLastSave || hasUnsavedChanges();
   const result = await modelPersistenceHelpers.saveJsonModel({
     forceSaveAs,
-    dirtySinceLastSave,
+    dirtySinceLastSave: hasPendingChanges,
     exportGraphData,
     currentFileHandle,
     currentFileName,
@@ -11509,6 +11572,7 @@ function resetGraphToEmptyModel() {
     decimals: 3,
     integrator: "euler",
     strictDefinitions: false,
+    stopOnRuntimeError: false,
     currentTime: null,
   };
   nodeCounter = 1;
@@ -13207,6 +13271,14 @@ if (strictDefinitionsInput) {
 if (runStrictDefinitionsInput) {
   runStrictDefinitionsInput.addEventListener("change", () => {
     commitStrictDefinitionsToggle(runStrictDefinitionsInput.checked);
+  });
+}
+
+if (runStopOnRuntimeErrorInput) {
+  runStopOnRuntimeErrorInput.addEventListener("change", () => {
+    graph.execution.stopOnRuntimeError = Boolean(runStopOnRuntimeErrorInput.checked);
+    scheduleFileStatusRefresh();
+    render();
   });
 }
 

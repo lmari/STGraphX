@@ -62,6 +62,61 @@ async function run() {
   assert.equal(execution.currentTime, 5, "subsequent timed ticks retain the same step batch size");
   assert.equal(refreshCount, 3, "the visual refresh cadence remains the timer delay");
   controller.stopTimedExecution(false);
+
+  const errorExecution = {
+    t0: 0,
+    dt: 1,
+    t1: 10,
+    delayMs: 1,
+    renderEverySteps: 1,
+    stopOnRuntimeError: true,
+    currentTime: null,
+  };
+  const errorTimedState = {
+    timedRunHandle: null,
+    timedStepRunning: false,
+    timedRunStartedAt: 0,
+    timedStepLastActivityAt: 0,
+  };
+  const errorStatuses = [];
+  const errorController = globalThis.STGraphXRuntimeController.createRuntimeController({
+    session: {
+      hasInitializedStateSnapshot: () => false,
+      clearSubmodelState: () => {},
+      initializeAt: () => {},
+      promotePending: () => {},
+      evaluateAtTime: () => ({
+        successCount: 0,
+        errorCount: 1,
+        firstErrorNode: "occupiedN",
+        firstErrorReason: "runtime",
+        firstErrorMessage: "neighbors expects a matrix",
+      }),
+    },
+    getExecution: () => errorExecution,
+    timedState: errorTimedState,
+    t: (key) => key,
+    enforceStrictDefinitions: () => true,
+    ensureBreakpointReady: () => true,
+    prepareForExecution: async () => true,
+    isExecutionEnded: () => false,
+    refreshRuntimeView: () => {},
+    render: () => {},
+    updateEditingLockUi: () => {},
+    setStatusKey: (key, vars) => errorStatuses.push({ key, vars }),
+    setStatus: () => {},
+    formatNumberValue: (value) => String(value),
+    evaluateBreakpointConditionAtTime: () => ({ hit: false, invalid: false }),
+    clearVisualHistory: () => {},
+    clearSimulationHistory: () => {},
+  });
+  const errorOutcome = await errorController.executeOneStep();
+  assert.equal(errorOutcome.ok, false, "the option stops a step when evaluation fails");
+  assert.equal(errorOutcome.runtimeError, true);
+  assert.deepEqual(errorStatuses.at(-1), {
+    key: "error.evalStepFailed",
+    vars: { node: "occupiedN", reason: "neighbors expects a matrix", time: "0" },
+  });
   console.log("runtime-controller.test.js: ok");
 }
 

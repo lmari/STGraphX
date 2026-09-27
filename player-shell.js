@@ -87,6 +87,42 @@
     return new Map((model?.nodes || []).map((node) => [String(node?.name ?? ""), node]));
   }
 
+  function nodeBoundaryPoint(node, targetX, targetY) {
+    const dx = targetX - node.x;
+    const dy = targetY - node.y;
+    if (dx === 0 && dy === 0) {
+      return { x: node.x, y: node.y };
+    }
+    const halfWidth = (Number(node.width) || 120) / 2;
+    const halfHeight = (Number(node.height) || 70) / 2;
+    let scale;
+    if (node.type === "algebraic") {
+      scale = 1 / (Math.sqrt((dx * dx) / (halfWidth * halfWidth) + (dy * dy) / (halfHeight * halfHeight)) || 1);
+    } else if (node.type === "parameter") {
+      scale = 1 / (Math.abs(dx) / halfWidth + Math.abs(dy) / halfHeight || 1);
+    } else {
+      scale = 1 / (Math.max(Math.abs(dx) / halfWidth, Math.abs(dy) / halfHeight) || 1);
+    }
+    return { x: node.x + dx * scale, y: node.y + dy * scale };
+  }
+
+  function buildSplinePath(points) {
+    if (points.length < 2) return "";
+    if (points.length === 2) return `M ${points[0].x} ${points[0].y} L ${points[1].x} ${points[1].y}`;
+    if (points.length === 3) return `M ${points[0].x} ${points[0].y} Q ${points[1].x} ${points[1].y} ${points[2].x} ${points[2].y}`;
+    let path = `M ${points[0].x} ${points[0].y}`;
+    for (let index = 1; index < points.length - 1; index += 1) {
+      const point = points[index];
+      const next = points[index + 1];
+      if (index < points.length - 2) {
+        path += ` Q ${point.x} ${point.y} ${(point.x + next.x) / 2} ${(point.y + next.y) / 2}`;
+      } else {
+        path += ` Q ${point.x} ${point.y} ${next.x} ${next.y}`;
+      }
+    }
+    return path;
+  }
+
   function collectExpressionIdentifierReferences(expression) {
     const src = String(expression ?? "");
     const refs = new Set();
@@ -182,6 +218,29 @@
     } catch (_err) {
       return String(value);
     }
+  }
+
+  function summarizeNodeRuntimeValue(node, execution, t) {
+    if (node?.computedError) {
+      return { text: t("text.nodeValueError"), error: true };
+    }
+    const value = node?.computedValue;
+    if (value && typeof value === "object" && value.kind === "agentSpace") {
+      return { text: `agentSpace ${value.rowCount}x${value.colCount}`, error: false };
+    }
+    if (Array.isArray(value)) {
+      const isMatrix = value.length > 0 && value.every((row) => Array.isArray(row));
+      const columns = isMatrix ? value[0]?.length ?? 0 : 0;
+      return isMatrix && value.every((row) => row.length === columns)
+        ? { text: `[${value.length},${columns}]`, error: false }
+        : { text: `[${value.length}]`, error: false };
+    }
+    if (value && typeof value === "object") {
+      const keys = Object.keys(value);
+      const visibleKeys = keys.slice(0, 3).join(", ");
+      return { text: keys.length > 3 ? `{${visibleKeys}, ...}` : `{${visibleKeys}}`, error: false };
+    }
+    return { text: formatValue(execution, value), error: false };
   }
 
   function formatTableValue(execution, widget, value) {
@@ -1319,19 +1378,17 @@
             fill: #567086;
             text-anchor: middle;
           }
+          .node-runtime-value {
+            font-size: 10px;
+            fill: #526575;
+            text-anchor: middle;
+            dominant-baseline: middle;
+          }
+          .node-runtime-value-error { fill: #d46312; }
           .node-shape {
-            fill: #fdfefe;
-            stroke: #37506b;
-            stroke-width: 1.4;
-          }
-          .node.output .node-shape {
-            stroke: #0f7a7a;
-          }
-          .node.parameter .node-shape {
-            fill: #fff8e8;
-          }
-          .node.state .node-shape {
-            fill: #f7fbff;
+            fill: var(--node-fill, #fcfdff);
+            stroke: var(--node-stroke, #2f4a62);
+            stroke-width: 2;
           }
           .node.error .node-shape {
             stroke: #c14747;
@@ -1339,8 +1396,8 @@
           }
           .edge {
             fill: none;
-            stroke: #6e8398;
-            stroke-width: 1.6;
+            stroke: #3b4e61;
+            stroke-width: 2;
           }
           .canvas-text {
             font-size: 12px;
@@ -2295,6 +2352,9 @@
       const visibleNodeIds = this.visibleGraphNodeIds();
       const bounds = this.graphBounds();
       const zoom = this._zoom;
+      const runtimeNodes = new Map((this._state.runtimeModel?.nodes || []).map((node) => [node.id, node]));
+      const showRuntimeValues = model.view?.showNodeValues === true
+        && this._state.runtimeModel?.execution?.currentTime != null;
       this.$canvasContent.style.width = `${bounds.width * zoom}px`;
       this.$canvasContent.style.height = `${bounds.height * zoom}px`;
       this.$svg.setAttribute("viewBox", `${bounds.minX} ${bounds.minY} ${bounds.width} ${bounds.height}`);
@@ -2313,7 +2373,7 @@
       marker.setAttribute("orient", "auto-start-reverse");
       const arrowPath = document.createElementNS(SVG_NS, "path");
       arrowPath.setAttribute("d", "M 0 0 L 10 5 L 0 10 z");
-      arrowPath.setAttribute("fill", "#6e8398");
+      arrowPath.setAttribute("fill", "#3b4e61");
       marker.appendChild(arrowPath);
       defs.appendChild(marker);
       this.$svg.appendChild(defs);
@@ -2408,9 +2468,16 @@
         if (!from || !to || !visibleNodeIds.has(from.id) || !visibleNodeIds.has(to.id)) {
           return;
         }
+        const controlPoints = Array.isArray(edge.controlPoints) ? edge.controlPoints : [];
+        const firstTarget = controlPoints[0] || to;
+        const lastTarget = controlPoints[controlPoints.length - 1] || from;
+        const points = [
+          nodeBoundaryPoint(from, firstTarget.x, firstTarget.y),
+          ...controlPoints,
+          nodeBoundaryPoint(to, lastTarget.x, lastTarget.y),
+        ];
         const path = document.createElementNS(SVG_NS, "path");
-        const points = [{ x: from.x, y: from.y }, ...(edge.controlPoints || []), { x: to.x, y: to.y }];
-        path.setAttribute("d", `M ${points.map((pt) => `${pt.x} ${pt.y}`).join(" L ")}`);
+        path.setAttribute("d", buildSplinePath(points));
         path.setAttribute("class", "edge");
         path.setAttribute("marker-end", "url(#player-arrow)");
         this.$svg.appendChild(path);
@@ -2419,6 +2486,12 @@
       (model.nodes || []).filter((node) => visibleNodeIds.has(node.id)).forEach((node) => {
         const g = document.createElementNS(SVG_NS, "g");
         g.setAttribute("class", `node ${node.type || "state"}${node.__runtimeError ? " error" : ""}${node.output ? " output" : ""}`);
+        if (typeof node.fillColor === "string" && node.fillColor.trim()) {
+          g.style.setProperty("--node-fill", node.fillColor);
+        }
+        if (typeof node.strokeColor === "string" && node.strokeColor.trim()) {
+          g.style.setProperty("--node-stroke", node.strokeColor);
+        }
         let shape;
         if (node.type === "algebraic") {
           shape = document.createElementNS(SVG_NS, "ellipse");
@@ -2443,10 +2516,19 @@
         const label = document.createElementNS(SVG_NS, "text");
         label.setAttribute("class", "node-label");
         label.setAttribute("x", node.x);
-        label.setAttribute("y", node.y - 5);
+        label.setAttribute("y", showRuntimeValues ? node.y - 8 : node.y);
         label.textContent = node.name;
         g.appendChild(shape);
         g.appendChild(label);
+        if (showRuntimeValues) {
+          const runtimeValue = summarizeNodeRuntimeValue(runtimeNodes.get(node.id), this._state.runtimeModel.execution, this.t.bind(this));
+          const valueLabel = document.createElementNS(SVG_NS, "text");
+          valueLabel.setAttribute("class", `node-runtime-value${runtimeValue.error ? " node-runtime-value-error" : ""}`);
+          valueLabel.setAttribute("x", node.x);
+          valueLabel.setAttribute("y", node.y + 11);
+          valueLabel.textContent = runtimeValue.text;
+          g.appendChild(valueLabel);
+        }
         this.$svg.appendChild(g);
       });
 

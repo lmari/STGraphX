@@ -1,0 +1,419 @@
+{
+  "version": 1,
+  "modelTitle": "",
+  "localFunctions": [],
+  "view": {
+    "zoom": 0.8,
+    "showGrid": true,
+    "highlightNodeEdges": false,
+    "showNodeValues": true,
+    "gridSize": 20,
+    "tooltipDelayMs": 300,
+    "scrollLeft": 95,
+    "scrollTop": 132
+  },
+  "debug": {
+    "watches": [],
+    "breakpointEnabled": false,
+    "breakpointExpression": ""
+  },
+  "modelProperties": [],
+  "nodeCounter": 14,
+  "edgeCounter": 14,
+  "widgetCounter": 10,
+  "textItemCounter": 4,
+  "presentationGroupCounter": 3,
+  "presentationGroups": [],
+  "dashboard": null,
+  "execution": {
+    "t0": 0,
+    "dt": 0.1,
+    "t1": 50,
+    "delayMs": 1,
+    "renderEverySteps": 1,
+    "decimals": 3,
+    "integrator": "rk4",
+    "strictDefinitions": false
+  },
+  "nodes": [
+    {
+      "id": 1,
+      "name": "a",
+      "output": false,
+      "global": false,
+      "type": "parameter",
+      "x": 0,
+      "y": -60,
+      "width": 120,
+      "height": 70,
+      "fillColor": "",
+      "strokeColor": "",
+      "properties": [
+        {
+          "key": "note formula",
+          "value": ""
+        },
+        {
+          "key": "descrizione",
+          "value": "Tasso di crescita naturale delle prede"
+        }
+      ],
+      "valueExpression": "1.0"
+    },
+    {
+      "id": 2,
+      "name": "b",
+      "output": false,
+      "global": false,
+      "type": "parameter",
+      "x": 0,
+      "y": 60,
+      "width": 120,
+      "height": 70,
+      "fillColor": "",
+      "strokeColor": "",
+      "properties": [
+        {
+          "key": "note formula",
+          "value": ""
+        },
+        {
+          "key": "descrizione",
+          "value": "Tasso di predazione sulle prede"
+        }
+      ],
+      "valueExpression": "-0.01"
+    },
+    {
+      "id": 3,
+      "name": "x",
+      "output": true,
+      "global": false,
+      "type": "state",
+      "x": 160,
+      "y": 0,
+      "width": 120,
+      "height": 70,
+      "fillColor": "",
+      "strokeColor": "",
+      "properties": [
+        {
+          "key": "note formula",
+          "value": ""
+        },
+        {
+          "key": "descrizione",
+          "value": "Popolazione delle prede"
+        }
+      ],
+      "stateTransition": "integral(a*this+b*this*y)",
+      "initialState": "500"
+    },
+    {
+      "id": 4,
+      "name": "c",
+      "output": false,
+      "global": false,
+      "type": "parameter",
+      "x": 560,
+      "y": -60,
+      "width": 120,
+      "height": 70,
+      "fillColor": "",
+      "strokeColor": "",
+      "properties": [
+        {
+          "key": "note formula",
+          "value": ""
+        },
+        {
+          "key": "descrizione",
+          "value": "Tasso di mortalita naturale dei predatori"
+        }
+      ],
+      "valueExpression": "-0.5"
+    },
+    {
+      "id": 5,
+      "name": "y",
+      "output": true,
+      "global": false,
+      "type": "state",
+      "x": 380,
+      "y": 0,
+      "width": 120,
+      "height": 70,
+      "fillColor": "",
+      "strokeColor": "",
+      "properties": [
+        {
+          "key": "note formula",
+          "value": ""
+        },
+        {
+          "key": "descrizione",
+          "value": "Popolazione dei predatori"
+        }
+      ],
+      "stateTransition": "integral(c*this+d*this*x)",
+      "initialState": "100"
+    },
+    {
+      "id": 6,
+      "name": "d",
+      "output": false,
+      "global": false,
+      "type": "parameter",
+      "x": 560,
+      "y": 60,
+      "width": 120,
+      "height": 70,
+      "fillColor": "",
+      "strokeColor": "",
+      "properties": [
+        {
+          "key": "note formula",
+          "value": ""
+        },
+        {
+          "key": "descrizione",
+          "value": "Efficienza con cui i predatori si riproducono grazie alle prede"
+        }
+      ],
+      "valueExpression": "0.004"
+    }
+  ],
+  "edges": [
+    {
+      "id": 1,
+      "from": 1,
+      "to": 3,
+      "controlPoints": []
+    },
+    {
+      "id": 2,
+      "from": 2,
+      "to": 3,
+      "controlPoints": []
+    },
+    {
+      "id": 3,
+      "from": 3,
+      "to": 5,
+      "controlPoints": [
+        {
+          "x": 260,
+          "y": -20
+        }
+      ]
+    },
+    {
+      "id": 4,
+      "from": 5,
+      "to": 3,
+      "controlPoints": [
+        {
+          "x": 260,
+          "y": 20
+        }
+      ]
+    },
+    {
+      "id": 5,
+      "from": 4,
+      "to": 5,
+      "controlPoints": []
+    },
+    {
+      "id": 6,
+      "from": 6,
+      "to": 5,
+      "controlPoints": []
+    }
+  ],
+  "textItems": [
+    {
+      "id": 1,
+      "x": 80,
+      "y": -100,
+      "width": 400,
+      "height": 40,
+      "fillColor": "",
+      "strokeColor": "",
+      "dashboardPageId": null,
+      "html": "Modello predatori-prede secondo Lotka-Volterra"
+    }
+  ],
+  "widgets": [
+    {
+      "id": 1,
+      "type": "xychart",
+      "customTitle": "dinamica nel tempo",
+      "x": -156.7985501949318,
+      "y": 120.10782163742688,
+      "width": 600,
+      "height": 360,
+      "dashboardPageId": null,
+      "minimized": false,
+      "showTitleBar": true,
+      "fontSize": 13,
+      "outputOnly": false,
+      "showHistory": false,
+      "expandNonScalarValues": false,
+      "tableTextAlign": "left",
+      "tableDecimalDigits": 0,
+      "xMin": 0,
+      "xMax": 50,
+      "yMin": 0,
+      "yMax": 0,
+      "showGrid": true,
+      "showAxes": true,
+      "legendPosition": "top-right",
+      "source": "",
+      "showNumericValues": true,
+      "showIndices": true,
+      "autoFitCells": true,
+      "cellSize": 28,
+      "valueMin": "auto",
+      "valueMax": "auto",
+      "displayRows": null,
+      "displayCols": null,
+      "colorScheme": "blue",
+      "viewMode": "grid",
+      "surfaceStyle": "solid",
+      "surfaceAzimuth": 45,
+      "surfaceElevation": 32,
+      "surfaceHeightScale": 1,
+      "min": 0,
+      "max": 100,
+      "step": 1,
+      "value": 0,
+      "falseLabel": "",
+      "trueLabel": "",
+      "options": [],
+      "mappings": [],
+      "columns": [],
+      "xyPairs": [
+        {
+          "xSource": "time",
+          "ySource": "x",
+          "showTimeSeries": true,
+          "showInstantProfile": false,
+          "color": "#0e7ac4",
+          "pointColor": "#0e7ac4",
+          "showLine": true,
+          "lineWidth": 2.2,
+          "lineStyle": "solid",
+          "barMode": "none",
+          "showBars": false,
+          "barColor": "#0e7ac4",
+          "barWidth": 2.2,
+          "pointMode": "none",
+          "pointSize": 2.4
+        },
+        {
+          "xSource": "time",
+          "ySource": "y",
+          "showTimeSeries": true,
+          "showInstantProfile": false,
+          "color": "#e67e22",
+          "pointColor": "#e67e22",
+          "showLine": true,
+          "lineWidth": 2.2,
+          "lineStyle": "solid",
+          "barMode": "none",
+          "showBars": false,
+          "barColor": "#e67e22",
+          "barWidth": 2.2,
+          "pointMode": "none",
+          "pointSize": 2.4
+        }
+      ]
+    },
+    {
+      "id": 3,
+      "type": "xychart",
+      "customTitle": "spazio degli stati",
+      "x": 451.05384990253424,
+      "y": 124.23093323586748,
+      "width": 400,
+      "height": 360,
+      "dashboardPageId": null,
+      "minimized": false,
+      "showTitleBar": true,
+      "fontSize": 13,
+      "outputOnly": false,
+      "showHistory": false,
+      "expandNonScalarValues": false,
+      "tableTextAlign": "left",
+      "tableDecimalDigits": 0,
+      "xMin": 0,
+      "xMax": 0,
+      "yMin": 0,
+      "yMax": 0,
+      "showGrid": true,
+      "showAxes": true,
+      "legendPosition": "top-right",
+      "source": "",
+      "showNumericValues": true,
+      "showIndices": true,
+      "autoFitCells": true,
+      "cellSize": 28,
+      "valueMin": "auto",
+      "valueMax": "auto",
+      "displayRows": null,
+      "displayCols": null,
+      "colorScheme": "blue",
+      "viewMode": "grid",
+      "surfaceStyle": "solid",
+      "surfaceAzimuth": 45,
+      "surfaceElevation": 32,
+      "surfaceHeightScale": 1,
+      "min": 0,
+      "max": 100,
+      "step": 1,
+      "value": 0,
+      "falseLabel": "",
+      "trueLabel": "",
+      "options": [],
+      "mappings": [],
+      "columns": [],
+      "xyPairs": [
+        {
+          "xSource": "x",
+          "ySource": "y",
+          "showTimeSeries": true,
+          "showInstantProfile": false,
+          "color": "#0e7ac4",
+          "pointColor": "#0e7ac4",
+          "showLine": true,
+          "lineWidth": 2.2,
+          "lineStyle": "solid",
+          "barMode": "none",
+          "showBars": false,
+          "barColor": "#0e7ac4",
+          "barWidth": 2.2,
+          "pointMode": "last",
+          "pointSize": 10
+        },
+        {
+          "xSource": "y",
+          "ySource": "x",
+          "showTimeSeries": true,
+          "showInstantProfile": false,
+          "color": "#e67e22",
+          "pointColor": "#e67e22",
+          "showLine": true,
+          "lineWidth": 2.2,
+          "lineStyle": "solid",
+          "barMode": "none",
+          "showBars": false,
+          "barColor": "#e67e22",
+          "barWidth": 2.2,
+          "pointMode": "last",
+          "pointSize": 10
+        }
+      ]
+    }
+  ]
+}

@@ -98,7 +98,7 @@
         directoryHandle = directoryHandle || await deriveDirectoryHandleFromFileHandle(fileHandle) || null;
         await onAfterSave({ fileName, fileHandle, directoryHandle, data });
         markSavedSnapshot();
-        await rememberRecentModel(fileName, fileHandle);
+        await rememberRecentModel(fileName, fileHandle, directoryHandle, json);
         setStatusKey("status.saved");
         return { ok: true, fileHandle, fileName, directoryHandle };
       }
@@ -116,7 +116,7 @@
             directoryHandle = await deriveDirectoryHandleFromFileHandle(fileHandle) || directoryHandle || null;
             await onAfterSave({ fileName, fileHandle, directoryHandle, data });
             markSavedSnapshot();
-            await rememberRecentModel(fileName, fileHandle);
+            await rememberRecentModel(fileName, fileHandle, directoryHandle, json);
             setStatusKey("status.saved");
             return { ok: true, fileHandle, fileName, directoryHandle };
           }
@@ -141,7 +141,7 @@
         await onAfterSave({ fileName, fileHandle: null, directoryHandle, data });
         downloadJsonFile(selectedName, json);
         markSavedSnapshot();
-        await rememberRecentModel(fileName, null);
+        await rememberRecentModel(fileName, null, directoryHandle, json);
         setStatusKey("status.saved");
         return { ok: true, fileHandle: null, fileName, directoryHandle };
       }
@@ -173,7 +173,7 @@
           directoryHandle = await deriveDirectoryHandleFromFileHandle(fileHandle) || directoryHandle || null;
           await onAfterSave({ fileName, fileHandle, directoryHandle, data });
           markSavedSnapshot();
-          await rememberRecentModel(fileName, fileHandle);
+          await rememberRecentModel(fileName, fileHandle, directoryHandle, json);
           setStatusKey("status.savedAs");
           return { ok: true, fileHandle, fileName, directoryHandle };
         }
@@ -197,7 +197,7 @@
       await onAfterSave({ fileName, fileHandle: null, directoryHandle, data });
       downloadJsonFile(fileName, json);
       markSavedSnapshot();
-      await rememberRecentModel(fileName, null);
+      await rememberRecentModel(fileName, null, directoryHandle, json);
       setStatusKey(forceSaveAs ? "status.savedAs" : "status.saved");
       return { ok: true, fileHandle: null, fileName, directoryHandle };
     }

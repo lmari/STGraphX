@@ -46,6 +46,28 @@
         return null;
       }
       if (typeof entry.getFile === "function") {
+        // Chromium restores FileSystemFileHandles from IndexedDB with a
+        // permission state that can be "prompt" after a page reload. Request
+        // read access while this handler still originates from the user's
+        // click, rather than treating the handle as a missing file.
+        if (typeof entry.queryPermission === "function" || typeof entry.requestPermission === "function") {
+          let permission = "granted";
+          try {
+            permission = typeof entry.queryPermission === "function"
+              ? await entry.queryPermission({ mode: "read" })
+              : "prompt";
+            if (permission !== "granted" && typeof entry.requestPermission === "function") {
+              permission = await entry.requestPermission({ mode: "read" });
+            }
+          } catch (_err) {
+            permission = "denied";
+          }
+          if (permission !== "granted") {
+            const error = new Error("File access was not granted");
+            error.name = "NotAllowedError";
+            throw error;
+          }
+        }
         const file = await entry.getFile();
         const directoryHandle = await deriveDirectoryHandleFromFileHandle(entry);
         return {

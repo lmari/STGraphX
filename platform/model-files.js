@@ -124,8 +124,13 @@
       const anchor = document.createElement("a");
       anchor.href = url;
       anchor.download = normalizeJsonFilename(filename);
+      anchor.style.display = "none";
+      document.body.appendChild(anchor);
       anchor.click();
-      URL.revokeObjectURL(url);
+      window.setTimeout(() => {
+        anchor.remove();
+        URL.revokeObjectURL(url);
+      }, 1000);
     }
 
     function downloadTextFile(filename, text, mimeType = "text/plain;charset=utf-8") {
@@ -134,8 +139,13 @@
       const anchor = document.createElement("a");
       anchor.href = url;
       anchor.download = filename;
+      anchor.style.display = "none";
+      document.body.appendChild(anchor);
       anchor.click();
-      URL.revokeObjectURL(url);
+      window.setTimeout(() => {
+        anchor.remove();
+        URL.revokeObjectURL(url);
+      }, 1000);
     }
 
     return {

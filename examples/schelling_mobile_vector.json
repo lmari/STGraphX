@@ -1,0 +1,904 @@
+{
+  "version": 1,
+  "modelTitle": "Modello di segregazione di Schelling con mobilita vettoriale",
+  "localFunctions": [],
+  "view": {
+    "zoom": 0.8,
+    "showGrid": true,
+    "highlightNodeEdges": false,
+    "showNodeValues": false,
+    "gridSize": 20,
+    "tooltipDelayMs": 300,
+    "scrollLeft": 0,
+    "scrollTop": 0
+  },
+  "debug": {
+    "watches": [],
+    "breakpointEnabled": false,
+    "breakpointExpression": ""
+  },
+  "modelProperties": [],
+  "nodeCounter": 21,
+  "edgeCounter": 33,
+  "widgetCounter": 5,
+  "textItemCounter": 1,
+  "presentationGroupCounter": 1,
+  "presentationGroups": [],
+  "dashboard": null,
+  "execution": {
+    "t0": 0,
+    "dt": 1,
+    "t1": 1000,
+    "delayMs": 1,
+    "decimals": 3,
+    "integrator": "euler",
+    "strictDefinitions": false
+  },
+  "nodes": [
+    {
+      "id": 1,
+      "name": "n",
+      "output": false,
+      "global": false,
+      "type": "parameter",
+      "x": 80,
+      "y": 120,
+      "width": 120,
+      "height": 70,
+      "fillColor": "",
+      "strokeColor": "",
+      "properties": [
+        {
+          "key": "note formula",
+          "value": ""
+        },
+        {
+          "key": "descrizione",
+          "value": "Lato della griglia quadrata"
+        }
+      ],
+      "valueExpression": "25"
+    },
+    {
+      "id": 2,
+      "name": "vacancy",
+      "output": false,
+      "global": false,
+      "type": "parameter",
+      "x": 80,
+      "y": 220,
+      "width": 120,
+      "height": 70,
+      "fillColor": "",
+      "strokeColor": "",
+      "properties": [
+        {
+          "key": "note formula",
+          "value": ""
+        },
+        {
+          "key": "descrizione",
+          "value": "Quota iniziale di celle vuote"
+        }
+      ],
+      "valueExpression": "0.4"
+    },
+    {
+      "id": 3,
+      "name": "tau",
+      "output": false,
+      "global": false,
+      "type": "parameter",
+      "x": 80,
+      "y": 320,
+      "width": 120,
+      "height": 70,
+      "fillColor": "",
+      "strokeColor": "",
+      "properties": [
+        {
+          "key": "note formula",
+          "value": ""
+        },
+        {
+          "key": "descrizione",
+          "value": "Soglia minima di vicini simili"
+        }
+      ],
+      "valueExpression": "0.5"
+    },
+    {
+      "id": 4,
+      "name": "moversPerStep",
+      "output": false,
+      "global": false,
+      "type": "parameter",
+      "x": 80,
+      "y": 420,
+      "width": 155,
+      "height": 70,
+      "fillColor": "",
+      "strokeColor": "",
+      "properties": [
+        {
+          "key": "note formula",
+          "value": ""
+        },
+        {
+          "key": "descrizione",
+          "value": "Numero massimo di agenti mossi simultaneamente a ogni passo"
+        }
+      ],
+      "valueExpression": "5"
+    },
+    {
+      "id": 5,
+      "name": "space",
+      "output": true,
+      "global": false,
+      "type": "state",
+      "x": 390,
+      "y": 210,
+      "width": 180,
+      "height": 86,
+      "fillColor": "",
+      "strokeColor": "",
+      "properties": [
+        {
+          "key": "note formula",
+          "value": ""
+        },
+        {
+          "key": "descrizione",
+          "value": "Spazio: 0 = vuoto, 1 = tipo A, 2 = tipo B"
+        }
+      ],
+      "stateTransition": "spaceNext",
+      "initialState": "array(n,n, if(rand() < vacancy, 0, if(rand() < 0.5, 1, 2)))"
+    },
+    {
+      "id": 6,
+      "name": "occupiedN",
+      "output": false,
+      "global": false,
+      "type": "algebraic",
+      "x": 660,
+      "y": 100,
+      "width": 170,
+      "height": 76,
+      "fillColor": "",
+      "strokeColor": "",
+      "properties": [
+        {
+          "key": "note formula",
+          "value": ""
+        },
+        {
+          "key": "descrizione",
+          "value": "Numero di vicini occupati"
+        }
+      ],
+      "valueExpression": "array(size(space,0),size(space,1), count($value != 0, neighbors(space, $i0, $i1, true, true)))",
+      "input": false
+    },
+    {
+      "id": 7,
+      "name": "sameN",
+      "output": false,
+      "global": false,
+      "type": "algebraic",
+      "x": 660,
+      "y": 205,
+      "width": 170,
+      "height": 76,
+      "fillColor": "",
+      "strokeColor": "",
+      "properties": [
+        {
+          "key": "note formula",
+          "value": ""
+        },
+        {
+          "key": "descrizione",
+          "value": "Numero di vicini dello stesso tipo"
+        }
+      ],
+      "valueExpression": "array(size(space,0),size(space,1), if(space[$i0,$i1] == 0, 0, count($value == space[$i0,$i1], neighbors(space, $i0, $i1, true, true))))",
+      "input": false
+    },
+    {
+      "id": 8,
+      "name": "similarity",
+      "output": false,
+      "global": false,
+      "type": "algebraic",
+      "x": 660,
+      "y": 310,
+      "width": 170,
+      "height": 76,
+      "fillColor": "",
+      "strokeColor": "",
+      "properties": [
+        {
+          "key": "note formula",
+          "value": ""
+        },
+        {
+          "key": "descrizione",
+          "value": "Quota di vicini simili"
+        }
+      ],
+      "valueExpression": "array(size(space,0),size(space,1), if(space[$i0,$i1] == 0 or occupiedN[$i0,$i1] == 0, 1, sameN[$i0,$i1] / occupiedN[$i0,$i1]))",
+      "input": false
+    },
+    {
+      "id": 9,
+      "name": "unhappyCoords",
+      "output": false,
+      "global": false,
+      "type": "algebraic",
+      "x": 950,
+      "y": 110,
+      "width": 190,
+      "height": 86,
+      "fillColor": "",
+      "strokeColor": "",
+      "properties": [
+        {
+          "key": "note formula",
+          "value": ""
+        },
+        {
+          "key": "descrizione",
+          "value": "Coordinate degli agenti insoddisfatti"
+        }
+      ],
+      "valueExpression": "filter(similarity[$value] < tau, coords(space), \"rows\")",
+      "input": false
+    },
+    {
+      "id": 10,
+      "name": "emptyCoords",
+      "output": false,
+      "global": false,
+      "type": "algebraic",
+      "x": 950,
+      "y": 220,
+      "width": 170,
+      "height": 86,
+      "fillColor": "",
+      "strokeColor": "",
+      "properties": [
+        {
+          "key": "note formula",
+          "value": ""
+        },
+        {
+          "key": "descrizione",
+          "value": "Coordinate delle celle vuote"
+        }
+      ],
+      "valueExpression": "coords(space, 0)",
+      "input": false
+    },
+    {
+      "id": 11,
+      "name": "moveCount",
+      "output": false,
+      "global": false,
+      "type": "algebraic",
+      "x": 950,
+      "y": 340,
+      "width": 175,
+      "height": 76,
+      "fillColor": "",
+      "strokeColor": "",
+      "properties": [
+        {
+          "key": "note formula",
+          "value": ""
+        },
+        {
+          "key": "descrizione",
+          "value": "Numero effettivo di movimenti nel passo"
+        }
+      ],
+      "valueExpression": "min(moversPerStep, size(unhappyCoords,0), size(emptyCoords,0))",
+      "input": false
+    },
+    {
+      "id": 12,
+      "name": "moveFrom",
+      "output": false,
+      "global": false,
+      "type": "algebraic",
+      "x": 1230,
+      "y": 120,
+      "width": 190,
+      "height": 86,
+      "fillColor": "",
+      "strokeColor": "",
+      "properties": [
+        {
+          "key": "note formula",
+          "value": ""
+        },
+        {
+          "key": "descrizione",
+          "value": "Coordinate delle partenze, estratte senza ripetizioni"
+        }
+      ],
+      "valueExpression": "shuffle(unhappyCoords)[range(moveCount)]",
+      "input": false
+    },
+    {
+      "id": 13,
+      "name": "moveTo",
+      "output": false,
+      "global": false,
+      "type": "algebraic",
+      "x": 1230,
+      "y": 235,
+      "width": 190,
+      "height": 86,
+      "fillColor": "",
+      "strokeColor": "",
+      "properties": [
+        {
+          "key": "note formula",
+          "value": ""
+        },
+        {
+          "key": "descrizione",
+          "value": "Coordinate delle destinazioni, estratte senza ripetizioni"
+        }
+      ],
+      "valueExpression": "shuffle(emptyCoords)[range(moveCount)]",
+      "input": false
+    },
+    {
+      "id": 14,
+      "name": "moveValues",
+      "output": false,
+      "global": false,
+      "type": "algebraic",
+      "x": 1230,
+      "y": 355,
+      "width": 175,
+      "height": 76,
+      "fillColor": "",
+      "strokeColor": "",
+      "properties": [
+        {
+          "key": "note formula",
+          "value": ""
+        },
+        {
+          "key": "descrizione",
+          "value": "Tipi degli agenti che si spostano"
+        }
+      ],
+      "valueExpression": "space[moveFrom]",
+      "input": false
+    },
+    {
+      "id": 15,
+      "name": "movedIn",
+      "output": false,
+      "global": false,
+      "type": "algebraic",
+      "x": 1490,
+      "y": 160,
+      "width": 190,
+      "height": 86,
+      "fillColor": "",
+      "strokeColor": "",
+      "properties": [
+        {
+          "key": "note formula",
+          "value": ""
+        },
+        {
+          "key": "descrizione",
+          "value": "Matrice sparsa dei tipi collocati nelle destinazioni"
+        }
+      ],
+      "valueExpression": "if(moveCount == 0, array(n,n,0), grid(col(moveTo,0), col(moveTo,1), [n,n], \"error\", moveValues))",
+      "input": false
+    },
+    {
+      "id": 16,
+      "name": "movedOut",
+      "output": false,
+      "global": false,
+      "type": "algebraic",
+      "x": 1490,
+      "y": 285,
+      "width": 190,
+      "height": 86,
+      "fillColor": "",
+      "strokeColor": "",
+      "properties": [
+        {
+          "key": "note formula",
+          "value": ""
+        },
+        {
+          "key": "descrizione",
+          "value": "Matrice sparsa delle celle lasciate libere"
+        }
+      ],
+      "valueExpression": "if(moveCount == 0, array(n,n,0), grid(col(moveFrom,0), col(moveFrom,1), [n,n]))",
+      "input": false
+    },
+    {
+      "id": 17,
+      "name": "spaceNext",
+      "output": false,
+      "global": false,
+      "type": "algebraic",
+      "x": 1490,
+      "y": 410,
+      "width": 205,
+      "height": 86,
+      "fillColor": "",
+      "strokeColor": "",
+      "properties": [
+        {
+          "key": "note formula",
+          "value": ""
+        },
+        {
+          "key": "descrizione",
+          "value": "Spazio dopo l'aggiornamento vettoriale simultaneo dei movimenti"
+        }
+      ],
+      "valueExpression": "if(movedIn != 0, movedIn, if(movedOut != 0, 0, space))",
+      "input": false
+    },
+    {
+      "id": 18,
+      "name": "A",
+      "output": true,
+      "global": false,
+      "type": "algebraic",
+      "x": 1770,
+      "y": 130,
+      "width": 130,
+      "height": 76,
+      "fillColor": "",
+      "strokeColor": "",
+      "properties": [
+        {
+          "key": "note formula",
+          "value": ""
+        },
+        {
+          "key": "descrizione",
+          "value": "Numero di agenti di tipo A"
+        }
+      ],
+      "valueExpression": "count($value == 1, space)",
+      "input": false
+    },
+    {
+      "id": 19,
+      "name": "B",
+      "output": true,
+      "global": false,
+      "type": "algebraic",
+      "x": 1770,
+      "y": 240,
+      "width": 130,
+      "height": 76,
+      "fillColor": "",
+      "strokeColor": "",
+      "properties": [
+        {
+          "key": "note formula",
+          "value": ""
+        },
+        {
+          "key": "descrizione",
+          "value": "Numero di agenti di tipo B"
+        }
+      ],
+      "valueExpression": "count($value == 2, space)",
+      "input": false
+    },
+    {
+      "id": 20,
+      "name": "unhappy",
+      "output": true,
+      "global": false,
+      "type": "algebraic",
+      "x": 1770,
+      "y": 350,
+      "width": 150,
+      "height": 76,
+      "fillColor": "",
+      "strokeColor": "",
+      "properties": [
+        {
+          "key": "note formula",
+          "value": ""
+        },
+        {
+          "key": "descrizione",
+          "value": "Numero di agenti insoddisfatti"
+        }
+      ],
+      "valueExpression": "size(unhappyCoords,0)",
+      "input": false
+    }
+  ],
+  "edges": [
+    {
+      "id": 1,
+      "from": 1,
+      "to": 5,
+      "controlPoints": []
+    },
+    {
+      "id": 2,
+      "from": 2,
+      "to": 5,
+      "controlPoints": []
+    },
+    {
+      "id": 3,
+      "from": 17,
+      "to": 5,
+      "controlPoints": []
+    },
+    {
+      "id": 4,
+      "from": 5,
+      "to": 6,
+      "controlPoints": []
+    },
+    {
+      "id": 5,
+      "from": 5,
+      "to": 7,
+      "controlPoints": []
+    },
+    {
+      "id": 6,
+      "from": 5,
+      "to": 8,
+      "controlPoints": []
+    },
+    {
+      "id": 7,
+      "from": 6,
+      "to": 8,
+      "controlPoints": []
+    },
+    {
+      "id": 8,
+      "from": 7,
+      "to": 8,
+      "controlPoints": []
+    },
+    {
+      "id": 9,
+      "from": 3,
+      "to": 9,
+      "controlPoints": []
+    },
+    {
+      "id": 10,
+      "from": 8,
+      "to": 9,
+      "controlPoints": []
+    },
+    {
+      "id": 11,
+      "from": 5,
+      "to": 9,
+      "controlPoints": []
+    },
+    {
+      "id": 12,
+      "from": 5,
+      "to": 10,
+      "controlPoints": []
+    },
+    {
+      "id": 13,
+      "from": 4,
+      "to": 11,
+      "controlPoints": []
+    },
+    {
+      "id": 14,
+      "from": 9,
+      "to": 11,
+      "controlPoints": []
+    },
+    {
+      "id": 15,
+      "from": 10,
+      "to": 11,
+      "controlPoints": []
+    },
+    {
+      "id": 16,
+      "from": 9,
+      "to": 12,
+      "controlPoints": []
+    },
+    {
+      "id": 17,
+      "from": 11,
+      "to": 12,
+      "controlPoints": []
+    },
+    {
+      "id": 18,
+      "from": 10,
+      "to": 13,
+      "controlPoints": []
+    },
+    {
+      "id": 19,
+      "from": 11,
+      "to": 13,
+      "controlPoints": []
+    },
+    {
+      "id": 20,
+      "from": 5,
+      "to": 14,
+      "controlPoints": []
+    },
+    {
+      "id": 21,
+      "from": 12,
+      "to": 14,
+      "controlPoints": []
+    },
+    {
+      "id": 22,
+      "from": 13,
+      "to": 15,
+      "controlPoints": []
+    },
+    {
+      "id": 23,
+      "from": 14,
+      "to": 15,
+      "controlPoints": []
+    },
+    {
+      "id": 24,
+      "from": 1,
+      "to": 15,
+      "controlPoints": []
+    },
+    {
+      "id": 25,
+      "from": 12,
+      "to": 16,
+      "controlPoints": []
+    },
+    {
+      "id": 26,
+      "from": 1,
+      "to": 16,
+      "controlPoints": []
+    },
+    {
+      "id": 27,
+      "from": 15,
+      "to": 17,
+      "controlPoints": []
+    },
+    {
+      "id": 28,
+      "from": 16,
+      "to": 17,
+      "controlPoints": []
+    },
+    {
+      "id": 29,
+      "from": 5,
+      "to": 17,
+      "controlPoints": []
+    },
+    {
+      "id": 30,
+      "from": 5,
+      "to": 18,
+      "controlPoints": []
+    },
+    {
+      "id": 31,
+      "from": 5,
+      "to": 19,
+      "controlPoints": []
+    },
+    {
+      "id": 32,
+      "from": 9,
+      "to": 20,
+      "controlPoints": []
+    },
+    {
+      "id": 33,
+      "from": 11,
+      "to": 15
+    },
+    {
+      "id": 34,
+      "from": 11,
+      "to": 16
+    }
+  ],
+  "textItems": [],
+  "widgets": [
+    {
+      "id": 1,
+      "type": "matrix",
+      "customTitle": "Spazio",
+      "x": 1665,
+      "y": 42,
+      "width": 520,
+      "height": 540,
+      "minimized": false,
+      "outputOnly": true,
+      "showHistory": false,
+      "xMin": 0,
+      "xMax": 0,
+      "yMin": 0,
+      "yMax": 0,
+      "showGrid": true,
+      "legendPosition": "top-right",
+      "source": "space",
+      "showNumericValues": false,
+      "showIndices": false,
+      "autoFitCells": true,
+      "cellSize": 12,
+      "colorScheme": "heat",
+      "min": 0,
+      "max": 100,
+      "step": 1,
+      "value": 0,
+      "columns": [],
+      "xyPairs": []
+    },
+    {
+      "id": 2,
+      "type": "xychart",
+      "customTitle": "Conteggi e insoddisfatti",
+      "x": 1665,
+      "y": 610,
+      "width": 525,
+      "height": 332,
+      "minimized": false,
+      "outputOnly": false,
+      "showHistory": false,
+      "xMin": 0,
+      "xMax": 0,
+      "yMin": 0,
+      "yMax": 0,
+      "showGrid": true,
+      "legendPosition": "top-right",
+      "source": "",
+      "showNumericValues": true,
+      "showIndices": true,
+      "autoFitCells": true,
+      "cellSize": 28,
+      "colorScheme": "blue",
+      "min": 0,
+      "max": 100,
+      "step": 1,
+      "value": 0,
+      "columns": [],
+      "xyPairs": [
+        {
+          "xSource": "time",
+          "ySource": "A",
+          "showTimeSeries": true,
+          "showInstantProfile": false,
+          "color": "#1f77b4",
+          "showLine": true,
+          "lineWidth": 2.2,
+          "lineStyle": "solid",
+          "pointMode": "none",
+          "pointSize": 2.4
+        },
+        {
+          "xSource": "time",
+          "ySource": "B",
+          "showTimeSeries": true,
+          "showInstantProfile": false,
+          "color": "#d62728",
+          "showLine": true,
+          "lineWidth": 2.2,
+          "lineStyle": "solid",
+          "pointMode": "none",
+          "pointSize": 2.4
+        },
+        {
+          "xSource": "time",
+          "ySource": "unhappy",
+          "showTimeSeries": true,
+          "showInstantProfile": false,
+          "color": "#2ca02c",
+          "showLine": true,
+          "lineWidth": 2.2,
+          "lineStyle": "dashed",
+          "pointMode": "none",
+          "pointSize": 2.4
+        }
+      ]
+    },
+    {
+      "id": 3,
+      "type": "table",
+      "customTitle": "Valori correnti",
+      "x": 260,
+      "y": 680,
+      "width": 495.109375,
+      "height": 136.2421875,
+      "minimized": false,
+      "outputOnly": false,
+      "showHistory": false,
+      "xMin": 0,
+      "xMax": 0,
+      "yMin": 0,
+      "yMax": 0,
+      "showGrid": true,
+      "legendPosition": "top-right",
+      "source": "",
+      "showNumericValues": true,
+      "showIndices": true,
+      "autoFitCells": true,
+      "cellSize": 28,
+      "colorScheme": "blue",
+      "min": 0,
+      "max": 100,
+      "step": 1,
+      "value": 0,
+      "columns": [
+        "time",
+        "A",
+        "B",
+        "unhappy"
+      ],
+      "xyPairs": []
+    },
+    {
+      "id": 4,
+      "type": "slider",
+      "customTitle": "Agenti mossi per passo",
+      "x": 240,
+      "y": 545,
+      "width": 400,
+      "height": 120,
+      "minimized": false,
+      "outputOnly": false,
+      "showHistory": false,
+      "xMin": 0,
+      "xMax": 0,
+      "yMin": 0,
+      "yMax": 0,
+      "showGrid": true,
+      "legendPosition": "top-right",
+      "source": "moversPerStep",
+      "showNumericValues": true,
+      "showIndices": true,
+      "autoFitCells": true,
+      "cellSize": 28,
+      "colorScheme": "blue",
+      "min": 0,
+      "max": 25,
+      "step": 1,
+      "value": 5,
+      "columns": [],
+      "xyPairs": []
+    }
+  ]
+}

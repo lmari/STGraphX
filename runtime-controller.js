@@ -105,6 +105,10 @@
       return Number.isFinite(value) && value >= 1 ? Math.round(value) : 1;
     }
 
+    function stopOnEvaluationError(execution) {
+      return Boolean(execution?.stopOnRuntimeError);
+    }
+
     function refreshAfterStep(force = false) {
       refreshRuntimeView?.({ force });
       return true;
@@ -203,7 +207,7 @@
       } else if (stepResult.errorCount > 0) {
         setStatusKey?.("error.evalStepFailed", {
           node: stepResult.firstErrorNode,
-          reason: evalReasonText?.(stepResult.firstErrorReason),
+          reason: stepResult.firstErrorMessage || evalReasonText?.(stepResult.firstErrorReason),
           time: formatNumberValue?.(Number(nextTime)),
         });
       } else if (completed) {
@@ -215,7 +219,12 @@
       if (refreshView) {
         refreshAfterStep(stepResult.errorCount > 0 || completed);
       }
-      return { ok: true, breakpointHit: false, completed };
+      return {
+        ok: stepResult.errorCount === 0 || !stopOnEvaluationError(execution),
+        breakpointHit: false,
+        completed,
+        runtimeError: stepResult.errorCount > 0,
+      };
     }
 
     async function executeAll() {
@@ -275,6 +284,7 @@
       let totalErrorCount = 0;
       let firstErrorNode = null;
       let firstErrorReason = null;
+      let firstErrorMessage = "";
       let firstErrorTime = null;
       let lastTime = timeValues[timeValues.length - 1];
       let breakpointHit = false;
@@ -290,9 +300,13 @@
         if (!firstErrorNode && stepResult.firstErrorNode) {
           firstErrorNode = stepResult.firstErrorNode;
           firstErrorReason = stepResult.firstErrorReason;
+          firstErrorMessage = stepResult.firstErrorMessage || "";
           firstErrorTime = timeValue;
         }
         lastTime = timeValue;
+        if (stepResult.errorCount > 0 && stopOnEvaluationError(execution)) {
+          break;
+        }
         const breakpointResult = evaluateBreakpointConditionAtTime?.(timeValue) || { hit: false, invalid: false };
         if (breakpointResult.invalid) {
           refreshRuntimeView?.();
@@ -323,7 +337,7 @@
         setStatusKey?.("error.evalFailedDetailedTime", {
           node: firstErrorNode,
           count: totalErrorCount,
-          reason: evalReasonText?.(firstErrorReason),
+          reason: firstErrorMessage || evalReasonText?.(firstErrorReason),
           time: formatNumberValue?.(Number(firstErrorTime)),
         });
       } else {
@@ -422,7 +436,7 @@
           }
           if (!outcome || !outcome.ok) {
             stopTimedExecution(false, outcome?.completed ? "completed" : "stopped");
-            if (!outcome?.completed && !(hasStrictExecutionBlock?.())) {
+            if (!outcome?.completed && !outcome?.runtimeError && !(hasStrictExecutionBlock?.())) {
               setStatusKey?.("status.timedStopped");
             }
           } else if (outcome.completed) {

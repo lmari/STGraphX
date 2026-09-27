@@ -18,6 +18,7 @@
       path: String(entry?.path || "").trim(),
       handleId: String(entry?.handleId || "").trim(),
       directoryHandleId: String(entry?.directoryHandleId || "").trim(),
+      snapshotId: String(entry?.snapshotId || "").trim(),
       handle: entry?.handle || null,
       directoryHandle: entry?.directoryHandle || null,
     };
@@ -91,6 +92,7 @@
             path: String(entry.path || ""),
             handleId: String(entry.handleId || ""),
             directoryHandleId: String(entry.directoryHandleId || ""),
+            snapshotId: String(entry.snapshotId || ""),
           }));
         storage?.setItem?.(storageKey, JSON.stringify(payload));
       } catch (_err) {
@@ -154,10 +156,13 @@
       if (entryToRemove?.directoryHandleId) {
         persistentHandleStore?.remove?.(entryToRemove.directoryHandleId).catch?.(() => {});
       }
+      if (entryToRemove?.snapshotId) {
+        persistentHandleStore?.remove?.(entryToRemove.snapshotId).catch?.(() => {});
+      }
       return snapshot();
     }
 
-    async function remember(name, fileHandle = null, directoryHandle = null, storage = globalThis.localStorage) {
+    async function remember(name, fileHandle = null, directoryHandle = null, storage = globalThis.localStorage, modelText = "") {
       // Compatibility with the former remember(name, handle, storage) API.
       if (directoryHandle && typeof directoryHandle.getItem === "function" && typeof directoryHandle.setItem === "function") {
         storage = directoryHandle;
@@ -185,49 +190,76 @@
         }
         return !path && !entry.path && trimmedName && entry.name === trimmedName;
       });
+      let replaced = null;
+      let preserveFileReference = false;
       if (dedupeIndex >= 0) {
-        const [replaced] = entries.splice(dedupeIndex, 1);
-        if (replaced?.handleId) {
+        [replaced] = entries.splice(dedupeIndex, 1);
+        // A browser download has no writable file handle. It must still
+        // refresh the cached JSON while retaining the file reference already
+        // known for this recent model.
+        preserveFileReference = !path && !handle && Boolean(replaced);
+        if (!preserveFileReference && replaced?.handleId) {
           persistentHandleStore?.remove?.(replaced.handleId).catch?.(() => {});
         }
-        if (replaced?.directoryHandleId) {
+        if (!preserveFileReference && replaced?.directoryHandleId) {
           persistentHandleStore?.remove?.(replaced.directoryHandleId).catch?.(() => {});
         }
+        if (replaced?.snapshotId) {
+          persistentHandleStore?.remove?.(replaced.snapshotId).catch?.(() => {});
+        }
       }
-      let handleId = "";
-      let directoryHandleId = "";
-      if (!path && handle && persistentHandleStore) {
+      const effectivePath = preserveFileReference ? String(replaced?.path || "") : path;
+      const effectiveHandle = preserveFileReference ? replaced?.handle || null : handle;
+      const effectiveDirectoryHandle = preserveFileReference && !directoryHandle
+        ? replaced?.directoryHandle || null
+        : directoryHandle || null;
+      let handleId = preserveFileReference ? String(replaced?.handleId || "") : "";
+      let directoryHandleId = preserveFileReference && !directoryHandle
+        ? String(replaced?.directoryHandleId || "")
+        : "";
+      let snapshotId = "";
+      if (!effectivePath && effectiveHandle && persistentHandleStore && !handleId) {
         handleId = `recent-${Date.now()}-${Math.random().toString(36).slice(2)}`;
         try {
-          await persistentHandleStore.put(handleId, handle);
+          await persistentHandleStore.put(handleId, effectiveHandle);
         } catch (_err) {
           handleId = "";
         }
       }
-      if (!path && directoryHandle && persistentHandleStore) {
+      if (!effectivePath && effectiveDirectoryHandle && persistentHandleStore && !directoryHandleId) {
         directoryHandleId = `recent-directory-${Date.now()}-${Math.random().toString(36).slice(2)}`;
         try {
           // Legacy webkitdirectory handles contain methods and cannot be
           // structured-cloned. Persist their selected File objects instead.
-          const directoryValue = Array.isArray(directoryHandle.files)
+          const directoryValue = Array.isArray(effectiveDirectoryHandle.files)
             ? {
               kind: "pseudo-directory",
-              name: String(directoryHandle.name || ""),
-              files: directoryHandle.files,
+              name: String(effectiveDirectoryHandle.name || ""),
+              files: effectiveDirectoryHandle.files,
             }
-            : directoryHandle;
+            : effectiveDirectoryHandle;
           await persistentHandleStore.put(directoryHandleId, directoryValue);
         } catch (_err) {
           directoryHandleId = "";
         }
       }
+      const snapshotText = typeof modelText === "string" ? modelText : "";
+      if (snapshotText && persistentHandleStore) {
+        snapshotId = `recent-model-${Date.now()}-${Math.random().toString(36).slice(2)}`;
+        try {
+          await persistentHandleStore.put(snapshotId, snapshotText);
+        } catch (_err) {
+          snapshotId = "";
+        }
+      }
       entries.unshift({
-        name: trimmedName || path || String(unnamedLabel()),
-        path,
+        name: trimmedName || effectivePath || String(unnamedLabel()),
+        path: effectivePath,
         handleId,
         directoryHandleId,
-        handle,
-        directoryHandle: directoryHandle || null,
+        snapshotId,
+        handle: effectiveHandle,
+        directoryHandle: effectiveDirectoryHandle,
       });
       trimEntries();
       saveToStorage(storage);
@@ -275,6 +307,18 @@
       return null;
     }
 
+    async function resolveSnapshot(entry) {
+      if (!entry?.snapshotId || !persistentHandleStore) {
+        return "";
+      }
+      try {
+        const text = await persistentHandleStore.get(entry.snapshotId);
+        return typeof text === "string" ? text : "";
+      } catch (_err) {
+        return "";
+      }
+    }
+
     return {
       clear,
       entries: snapshot,
@@ -283,6 +327,7 @@
       remove,
       resolveDirectoryHandle,
       resolveHandle,
+      resolveSnapshot,
       saveToStorage,
     };
   }

@@ -1,0 +1,1103 @@
+{
+  "version": 1,
+  "modelTitle": "Modello di segregazione di Schelling con mobilita vettoriale",
+  "localFunctions": [],
+  "view": {
+    "zoom": 0.8,
+    "showGrid": true,
+    "highlightNodeEdges": false,
+    "showNodeValues": false,
+    "gridSize": 20,
+    "tooltipDelayMs": 300,
+    "scrollLeft": 0,
+    "scrollTop": 101
+  },
+  "debug": {
+    "watches": [],
+    "breakpointEnabled": false,
+    "breakpointExpression": ""
+  },
+  "modelProperties": [],
+  "nodeCounter": 39,
+  "edgeCounter": 52,
+  "widgetCounter": 25,
+  "textItemCounter": 20,
+  "presentationGroupCounter": 19,
+  "presentationGroups": [],
+  "dashboard": null,
+  "execution": {
+    "t0": 0,
+    "dt": 1,
+    "t1": 1000,
+    "delayMs": 1,
+    "renderEverySteps": 1,
+    "decimals": 3,
+    "integrator": "euler",
+    "strictDefinitions": false,
+    "stopOnRuntimeError": true
+  },
+  "nodes": [
+    {
+      "id": 1,
+      "name": "n",
+      "output": false,
+      "global": true,
+      "type": "parameter",
+      "x": 100,
+      "y": 80,
+      "width": 120,
+      "height": 70,
+      "fillColor": "",
+      "strokeColor": "",
+      "properties": [
+        {
+          "key": "note formula",
+          "value": ""
+        },
+        {
+          "key": "descrizione",
+          "value": "Lato della griglia quadrata"
+        }
+      ],
+      "valueExpression": "25"
+    },
+    {
+      "id": 2,
+      "name": "vacancy",
+      "output": false,
+      "global": false,
+      "type": "parameter",
+      "x": 120,
+      "y": 160,
+      "width": 120,
+      "height": 70,
+      "fillColor": "#fff7d8",
+      "strokeColor": "",
+      "properties": [
+        {
+          "key": "note formula",
+          "value": ""
+        },
+        {
+          "key": "descrizione",
+          "value": "Quota iniziale di celle vuote"
+        }
+      ],
+      "valueExpression": "0.4"
+    },
+    {
+      "id": 3,
+      "name": "tau",
+      "output": false,
+      "global": false,
+      "type": "parameter",
+      "x": 440,
+      "y": 420,
+      "width": 120,
+      "height": 70,
+      "fillColor": "#fff7d8",
+      "strokeColor": "",
+      "properties": [
+        {
+          "key": "note formula",
+          "value": ""
+        },
+        {
+          "key": "descrizione",
+          "value": "Soglia minima di vicini simili"
+        }
+      ],
+      "valueExpression": "0.5"
+    },
+    {
+      "id": 4,
+      "name": "moversPerStep",
+      "output": false,
+      "global": false,
+      "type": "parameter",
+      "x": 1000,
+      "y": 340,
+      "width": 155,
+      "height": 70,
+      "fillColor": "#fff7d8",
+      "strokeColor": "",
+      "properties": [
+        {
+          "key": "note formula",
+          "value": ""
+        },
+        {
+          "key": "descrizione",
+          "value": "Numero massimo di agenti mossi simultaneamente a ogni passo"
+        }
+      ],
+      "valueExpression": "5"
+    },
+    {
+      "id": 5,
+      "name": "space",
+      "output": true,
+      "global": false,
+      "type": "state",
+      "x": 280,
+      "y": 220,
+      "width": 120,
+      "height": 60,
+      "fillColor": "",
+      "strokeColor": "",
+      "properties": [
+        {
+          "key": "note formula",
+          "value": ""
+        },
+        {
+          "key": "descrizione",
+          "value": "Spazio: 0 = vuoto, 1 = tipo A, 2 = tipo B"
+        }
+      ],
+      "stateTransition": "spaceNext",
+      "initialState": "array(n,n, if(rand() < vacancy, 0, if(rand() < 0.5, 1, 2)))"
+    },
+    {
+      "id": 6,
+      "name": "occupiedN",
+      "output": false,
+      "global": false,
+      "type": "algebraic",
+      "x": 280,
+      "y": 420,
+      "width": 120,
+      "height": 60,
+      "fillColor": "",
+      "strokeColor": "",
+      "properties": [
+        {
+          "key": "note formula",
+          "value": ""
+        },
+        {
+          "key": "descrizione",
+          "value": "Numero di vicini occupati"
+        }
+      ],
+      "input": false,
+      "valueExpression": "array(size(space,0),size(space,1), count($value != 0, neighbors(space, $i0, $i1, true, true)))"
+    },
+    {
+      "id": 7,
+      "name": "sameN",
+      "output": false,
+      "global": false,
+      "type": "algebraic",
+      "x": 360,
+      "y": 320,
+      "width": 120,
+      "height": 60,
+      "fillColor": "",
+      "strokeColor": "",
+      "properties": [
+        {
+          "key": "note formula",
+          "value": ""
+        },
+        {
+          "key": "descrizione",
+          "value": "Numero di vicini dello stesso tipo"
+        }
+      ],
+      "input": false,
+      "valueExpression": "array(size(space,0),size(space,1), if(space[$i0,$i1] == 0, 0, count($value == space[$i0,$i1], neighbors(space, $i0, $i1, true, true))))"
+    },
+    {
+      "id": 8,
+      "name": "similarity",
+      "output": false,
+      "global": false,
+      "type": "algebraic",
+      "x": 560,
+      "y": 320,
+      "width": 120,
+      "height": 60,
+      "fillColor": "",
+      "strokeColor": "",
+      "properties": [
+        {
+          "key": "note formula",
+          "value": ""
+        },
+        {
+          "key": "descrizione",
+          "value": "Quota di vicini simili"
+        }
+      ],
+      "input": false,
+      "valueExpression": "array(size(space,0),size(space,1), if(space[$i0,$i1] == 0 or occupiedN[$i0,$i1] == 0, 1, sameN[$i0,$i1] / occupiedN[$i0,$i1]))"
+    },
+    {
+      "id": 9,
+      "name": "unhappyCoords",
+      "output": false,
+      "global": false,
+      "type": "algebraic",
+      "x": 620,
+      "y": 420,
+      "width": 140,
+      "height": 60,
+      "fillColor": "",
+      "strokeColor": "",
+      "properties": [
+        {
+          "key": "note formula",
+          "value": ""
+        },
+        {
+          "key": "descrizione",
+          "value": "Coordinate degli agenti insoddisfatti"
+        }
+      ],
+      "input": false,
+      "valueExpression": "filter(similarity[$value] < tau, coords(space), \"rows\")"
+    },
+    {
+      "id": 10,
+      "name": "emptyCoords",
+      "output": false,
+      "global": false,
+      "type": "algebraic",
+      "x": 600,
+      "y": 220,
+      "width": 140,
+      "height": 60,
+      "fillColor": "",
+      "strokeColor": "",
+      "properties": [
+        {
+          "key": "note formula",
+          "value": ""
+        },
+        {
+          "key": "descrizione",
+          "value": "Coordinate delle celle vuote"
+        }
+      ],
+      "input": false,
+      "valueExpression": "coords(space, 0)"
+    },
+    {
+      "id": 11,
+      "name": "moveCount",
+      "output": false,
+      "global": false,
+      "type": "algebraic",
+      "x": 820,
+      "y": 340,
+      "width": 120,
+      "height": 60,
+      "fillColor": "",
+      "strokeColor": "",
+      "properties": [
+        {
+          "key": "note formula",
+          "value": ""
+        },
+        {
+          "key": "descrizione",
+          "value": "Numero effettivo di movimenti nel passo"
+        }
+      ],
+      "input": false,
+      "valueExpression": "min(moversPerStep, size(unhappyCoords,0), size(emptyCoords,0))"
+    },
+    {
+      "id": 12,
+      "name": "moveFrom",
+      "output": false,
+      "global": false,
+      "type": "algebraic",
+      "x": 880,
+      "y": 140,
+      "width": 120,
+      "height": 60,
+      "fillColor": "",
+      "strokeColor": "",
+      "properties": [
+        {
+          "key": "note formula",
+          "value": ""
+        },
+        {
+          "key": "descrizione",
+          "value": "Coordinate delle partenze, estratte senza ripetizioni"
+        }
+      ],
+      "input": false,
+      "valueExpression": "if(moveCount == 0, [], shuffle(unhappyCoords)[range(moveCount), :])"
+    },
+    {
+      "id": 13,
+      "name": "moveTo",
+      "output": false,
+      "global": false,
+      "type": "algebraic",
+      "x": 980,
+      "y": 220,
+      "width": 120,
+      "height": 60,
+      "fillColor": "",
+      "strokeColor": "",
+      "properties": [
+        {
+          "key": "note formula",
+          "value": ""
+        },
+        {
+          "key": "descrizione",
+          "value": "Coordinate delle destinazioni, estratte senza ripetizioni"
+        }
+      ],
+      "input": false,
+      "valueExpression": "if(moveCount == 0, [], shuffle(emptyCoords)[range(moveCount), :])"
+    },
+    {
+      "id": 14,
+      "name": "moveValues",
+      "output": false,
+      "global": false,
+      "type": "algebraic",
+      "x": 500,
+      "y": 100,
+      "width": 120,
+      "height": 60,
+      "fillColor": "",
+      "strokeColor": "",
+      "properties": [
+        {
+          "key": "note formula",
+          "value": ""
+        },
+        {
+          "key": "descrizione",
+          "value": "Tipi degli agenti che si spostano"
+        }
+      ],
+      "input": false,
+      "valueExpression": "if(moveCount == 0, [], space[moveFrom])"
+    },
+    {
+      "id": 15,
+      "name": "movedIn",
+      "output": false,
+      "global": false,
+      "type": "algebraic",
+      "x": 720,
+      "y": 180,
+      "width": 120,
+      "height": 60,
+      "fillColor": "",
+      "strokeColor": "",
+      "properties": [
+        {
+          "key": "note formula",
+          "value": ""
+        },
+        {
+          "key": "descrizione",
+          "value": "Matrice sparsa dei tipi collocati nelle destinazioni"
+        }
+      ],
+      "input": false,
+      "valueExpression": "if(moveCount == 0, array(n,n,0), grid(col(moveTo,0), col(moveTo,1), [n,n], \"error\", moveValues))"
+    },
+    {
+      "id": 16,
+      "name": "movedOut",
+      "output": false,
+      "global": false,
+      "type": "algebraic",
+      "x": 780,
+      "y": 80,
+      "width": 120,
+      "height": 60,
+      "fillColor": "",
+      "strokeColor": "",
+      "properties": [
+        {
+          "key": "note formula",
+          "value": ""
+        },
+        {
+          "key": "descrizione",
+          "value": "Matrice sparsa delle celle lasciate libere"
+        }
+      ],
+      "input": false,
+      "valueExpression": "if(moveCount == 0, array(n,n,0), grid(col(moveFrom,0), col(moveFrom,1), [n,n]))"
+    },
+    {
+      "id": 17,
+      "name": "spaceNext",
+      "output": false,
+      "global": false,
+      "type": "algebraic",
+      "x": 460,
+      "y": 180,
+      "width": 120,
+      "height": 60,
+      "fillColor": "",
+      "strokeColor": "",
+      "properties": [
+        {
+          "key": "note formula",
+          "value": ""
+        },
+        {
+          "key": "descrizione",
+          "value": "Spazio dopo l'aggiornamento vettoriale simultaneo dei movimenti"
+        }
+      ],
+      "input": false,
+      "valueExpression": "if(movedIn != 0, movedIn, if(movedOut != 0, 0, space))"
+    },
+    {
+      "id": 18,
+      "name": "A",
+      "output": true,
+      "global": false,
+      "type": "algebraic",
+      "x": 220,
+      "y": 100,
+      "width": 100,
+      "height": 60,
+      "fillColor": "#dff6ec",
+      "strokeColor": "",
+      "properties": [
+        {
+          "key": "note formula",
+          "value": ""
+        },
+        {
+          "key": "descrizione",
+          "value": "Numero di agenti di tipo A"
+        }
+      ],
+      "input": false,
+      "valueExpression": "count($value == 1, space)"
+    },
+    {
+      "id": 19,
+      "name": "B",
+      "output": true,
+      "global": false,
+      "type": "algebraic",
+      "x": 340,
+      "y": 100,
+      "width": 100,
+      "height": 60,
+      "fillColor": "#dff6ec",
+      "strokeColor": "",
+      "properties": [
+        {
+          "key": "note formula",
+          "value": ""
+        },
+        {
+          "key": "descrizione",
+          "value": "Numero di agenti di tipo B"
+        }
+      ],
+      "input": false,
+      "valueExpression": "count($value == 2, space)"
+    },
+    {
+      "id": 20,
+      "name": "unhappy",
+      "output": true,
+      "global": false,
+      "type": "algebraic",
+      "x": 820,
+      "y": 420,
+      "width": 120,
+      "height": 60,
+      "fillColor": "#dff6ec",
+      "strokeColor": "",
+      "properties": [
+        {
+          "key": "note formula",
+          "value": ""
+        },
+        {
+          "key": "descrizione",
+          "value": "Numero di agenti insoddisfatti"
+        }
+      ],
+      "input": false,
+      "valueExpression": "size(unhappyCoords,0)"
+    }
+  ],
+  "edges": [
+    {
+      "id": 2,
+      "from": 2,
+      "to": 5,
+      "controlPoints": []
+    },
+    {
+      "id": 3,
+      "from": 17,
+      "to": 5,
+      "controlPoints": []
+    },
+    {
+      "id": 4,
+      "from": 5,
+      "to": 6,
+      "controlPoints": []
+    },
+    {
+      "id": 5,
+      "from": 5,
+      "to": 7,
+      "controlPoints": []
+    },
+    {
+      "id": 6,
+      "from": 5,
+      "to": 8,
+      "controlPoints": []
+    },
+    {
+      "id": 7,
+      "from": 6,
+      "to": 8,
+      "controlPoints": []
+    },
+    {
+      "id": 8,
+      "from": 7,
+      "to": 8,
+      "controlPoints": []
+    },
+    {
+      "id": 9,
+      "from": 3,
+      "to": 9,
+      "controlPoints": []
+    },
+    {
+      "id": 10,
+      "from": 8,
+      "to": 9,
+      "controlPoints": []
+    },
+    {
+      "id": 11,
+      "from": 5,
+      "to": 9,
+      "controlPoints": []
+    },
+    {
+      "id": 12,
+      "from": 5,
+      "to": 10,
+      "controlPoints": []
+    },
+    {
+      "id": 13,
+      "from": 4,
+      "to": 11,
+      "controlPoints": []
+    },
+    {
+      "id": 14,
+      "from": 9,
+      "to": 11,
+      "controlPoints": []
+    },
+    {
+      "id": 15,
+      "from": 10,
+      "to": 11,
+      "controlPoints": []
+    },
+    {
+      "id": 16,
+      "from": 9,
+      "to": 12,
+      "controlPoints": []
+    },
+    {
+      "id": 17,
+      "from": 11,
+      "to": 12,
+      "controlPoints": []
+    },
+    {
+      "id": 18,
+      "from": 10,
+      "to": 13,
+      "controlPoints": []
+    },
+    {
+      "id": 19,
+      "from": 11,
+      "to": 13,
+      "controlPoints": []
+    },
+    {
+      "id": 20,
+      "from": 5,
+      "to": 14,
+      "controlPoints": []
+    },
+    {
+      "id": 21,
+      "from": 12,
+      "to": 14,
+      "controlPoints": []
+    },
+    {
+      "id": 22,
+      "from": 13,
+      "to": 15,
+      "controlPoints": []
+    },
+    {
+      "id": 23,
+      "from": 14,
+      "to": 15,
+      "controlPoints": []
+    },
+    {
+      "id": 25,
+      "from": 12,
+      "to": 16,
+      "controlPoints": []
+    },
+    {
+      "id": 27,
+      "from": 15,
+      "to": 17,
+      "controlPoints": []
+    },
+    {
+      "id": 28,
+      "from": 16,
+      "to": 17,
+      "controlPoints": []
+    },
+    {
+      "id": 29,
+      "from": 5,
+      "to": 17,
+      "controlPoints": []
+    },
+    {
+      "id": 30,
+      "from": 5,
+      "to": 18,
+      "controlPoints": []
+    },
+    {
+      "id": 31,
+      "from": 5,
+      "to": 19,
+      "controlPoints": []
+    },
+    {
+      "id": 32,
+      "from": 9,
+      "to": 20,
+      "controlPoints": []
+    },
+    {
+      "id": 33,
+      "from": 11,
+      "to": 15,
+      "controlPoints": []
+    },
+    {
+      "id": 34,
+      "from": 11,
+      "to": 16,
+      "controlPoints": []
+    },
+    {
+      "id": 35,
+      "from": 11,
+      "to": 14,
+      "controlPoints": []
+    }
+  ],
+  "textItems": [
+    {
+      "id": 5,
+      "x": 280,
+      "y": 20,
+      "width": 340,
+      "height": 40,
+      "fillColor": "",
+      "strokeColor": "",
+      "dashboardPageId": null,
+      "html": "Modello di segregazione secondo Shelling"
+    }
+  ],
+  "widgets": [
+    {
+      "id": 1,
+      "type": "matrix",
+      "customTitle": "Spazio",
+      "x": 380,
+      "y": 460,
+      "width": 520,
+      "height": 540,
+      "dashboardPageId": null,
+      "minimized": false,
+      "showTitleBar": true,
+      "fontSize": 13,
+      "outputOnly": true,
+      "showHistory": false,
+      "expandNonScalarValues": false,
+      "tableTextAlign": "left",
+      "tableDecimalDigits": 0,
+      "xMin": 0,
+      "xMax": 0,
+      "yMin": 0,
+      "yMax": 0,
+      "showGrid": true,
+      "showAxes": true,
+      "legendPosition": "top-right",
+      "source": "space",
+      "showNumericValues": false,
+      "showIndices": false,
+      "autoFitCells": true,
+      "cellSize": 12,
+      "valueMin": "auto",
+      "valueMax": "auto",
+      "displayRows": null,
+      "displayCols": null,
+      "colorScheme": "diverging",
+      "viewMode": "grid",
+      "surfaceStyle": "solid",
+      "surfaceAzimuth": 45,
+      "surfaceElevation": 32,
+      "surfaceHeightScale": 1,
+      "min": 0,
+      "max": 100,
+      "step": 1,
+      "value": 0,
+      "falseLabel": "",
+      "trueLabel": "",
+      "options": [],
+      "mappings": [],
+      "columns": [],
+      "xyPairs": []
+    },
+    {
+      "id": 2,
+      "type": "xychart",
+      "customTitle": "Conteggi e insoddisfatti",
+      "x": -140,
+      "y": 580,
+      "width": 500,
+      "height": 320,
+      "dashboardPageId": null,
+      "minimized": false,
+      "showTitleBar": true,
+      "fontSize": 13,
+      "outputOnly": false,
+      "showHistory": false,
+      "expandNonScalarValues": false,
+      "tableTextAlign": "left",
+      "tableDecimalDigits": 0,
+      "xMin": 0,
+      "xMax": 0,
+      "yMin": 0,
+      "yMax": 0,
+      "showGrid": true,
+      "showAxes": true,
+      "legendPosition": "bottom-left",
+      "source": "",
+      "showNumericValues": true,
+      "showIndices": true,
+      "autoFitCells": true,
+      "cellSize": 28,
+      "valueMin": "auto",
+      "valueMax": "auto",
+      "displayRows": null,
+      "displayCols": null,
+      "colorScheme": "blue",
+      "viewMode": "grid",
+      "surfaceStyle": "solid",
+      "surfaceAzimuth": 45,
+      "surfaceElevation": 32,
+      "surfaceHeightScale": 1,
+      "min": 0,
+      "max": 100,
+      "step": 1,
+      "value": 0,
+      "falseLabel": "",
+      "trueLabel": "",
+      "options": [],
+      "mappings": [],
+      "columns": [],
+      "xyPairs": [
+        {
+          "xSource": "time",
+          "ySource": "A",
+          "showTimeSeries": true,
+          "showInstantProfile": false,
+          "color": "#1f77b4",
+          "pointColor": "#1f77b4",
+          "showLine": true,
+          "lineWidth": 2.2,
+          "lineStyle": "solid",
+          "barMode": "none",
+          "showBars": false,
+          "barColor": "#1f77b4",
+          "barWidth": 2.2,
+          "pointMode": "none",
+          "pointSize": 2.4
+        },
+        {
+          "xSource": "time",
+          "ySource": "B",
+          "showTimeSeries": true,
+          "showInstantProfile": false,
+          "color": "#d62728",
+          "pointColor": "#d62728",
+          "showLine": true,
+          "lineWidth": 2.2,
+          "lineStyle": "solid",
+          "barMode": "none",
+          "showBars": false,
+          "barColor": "#d62728",
+          "barWidth": 2.2,
+          "pointMode": "none",
+          "pointSize": 2.4
+        },
+        {
+          "xSource": "time",
+          "ySource": "unhappy",
+          "showTimeSeries": true,
+          "showInstantProfile": false,
+          "color": "#2ca02c",
+          "pointColor": "#2ca02c",
+          "showLine": true,
+          "lineWidth": 2.2,
+          "lineStyle": "dashed",
+          "barMode": "none",
+          "showBars": false,
+          "barColor": "#2ca02c",
+          "barWidth": 2.2,
+          "pointMode": "none",
+          "pointSize": 2.4
+        }
+      ]
+    },
+    {
+      "id": 3,
+      "type": "table",
+      "customTitle": "Valori correnti",
+      "x": -140,
+      "y": 460,
+      "width": 500,
+      "height": 120,
+      "dashboardPageId": null,
+      "minimized": false,
+      "showTitleBar": true,
+      "fontSize": 20,
+      "outputOnly": false,
+      "showHistory": false,
+      "expandNonScalarValues": false,
+      "tableTextAlign": "center",
+      "tableDecimalDigits": 0,
+      "xMin": 0,
+      "xMax": 0,
+      "yMin": 0,
+      "yMax": 0,
+      "showGrid": true,
+      "showAxes": true,
+      "legendPosition": "top-right",
+      "source": "",
+      "showNumericValues": true,
+      "showIndices": true,
+      "autoFitCells": true,
+      "cellSize": 28,
+      "valueMin": "auto",
+      "valueMax": "auto",
+      "displayRows": null,
+      "displayCols": null,
+      "colorScheme": "blue",
+      "viewMode": "grid",
+      "surfaceStyle": "solid",
+      "surfaceAzimuth": 45,
+      "surfaceElevation": 32,
+      "surfaceHeightScale": 1,
+      "min": 0,
+      "max": 100,
+      "step": 1,
+      "value": 0,
+      "falseLabel": "",
+      "trueLabel": "",
+      "options": [],
+      "mappings": [],
+      "columns": [
+        "time",
+        "A",
+        "B",
+        "unhappy"
+      ],
+      "xyPairs": []
+    },
+    {
+      "id": 4,
+      "type": "slider",
+      "customTitle": "Numero di agenti spostati per passo",
+      "x": -140,
+      "y": 200,
+      "width": 320,
+      "height": 82,
+      "dashboardPageId": null,
+      "minimized": false,
+      "showTitleBar": true,
+      "fontSize": 13,
+      "outputOnly": false,
+      "showHistory": false,
+      "expandNonScalarValues": false,
+      "tableTextAlign": "left",
+      "tableDecimalDigits": 0,
+      "xMin": 0,
+      "xMax": 0,
+      "yMin": 0,
+      "yMax": 0,
+      "showGrid": true,
+      "showAxes": true,
+      "legendPosition": "top-right",
+      "source": "moversPerStep",
+      "showNumericValues": true,
+      "showIndices": true,
+      "autoFitCells": true,
+      "cellSize": 28,
+      "valueMin": "auto",
+      "valueMax": "auto",
+      "displayRows": null,
+      "displayCols": null,
+      "colorScheme": "blue",
+      "viewMode": "grid",
+      "surfaceStyle": "solid",
+      "surfaceAzimuth": 45,
+      "surfaceElevation": 32,
+      "surfaceHeightScale": 1,
+      "min": 0,
+      "max": 25,
+      "step": 1,
+      "value": 10,
+      "falseLabel": "",
+      "trueLabel": "",
+      "options": [],
+      "mappings": [],
+      "columns": [],
+      "xyPairs": []
+    },
+    {
+      "id": 16,
+      "type": "slider",
+      "customTitle": "Frazione accettabile di vicini simili",
+      "x": -140,
+      "y": 280,
+      "width": 320,
+      "height": 82,
+      "dashboardPageId": null,
+      "minimized": false,
+      "showTitleBar": true,
+      "fontSize": 13,
+      "outputOnly": false,
+      "showHistory": false,
+      "expandNonScalarValues": false,
+      "tableTextAlign": "left",
+      "tableDecimalDigits": 0,
+      "xMin": "auto",
+      "xMax": "auto",
+      "yMin": "auto",
+      "yMax": "auto",
+      "showGrid": true,
+      "showAxes": true,
+      "legendPosition": "top-right",
+      "source": "tau",
+      "showNumericValues": true,
+      "showIndices": true,
+      "autoFitCells": true,
+      "cellSize": 28,
+      "valueMin": "auto",
+      "valueMax": "auto",
+      "displayRows": null,
+      "displayCols": null,
+      "colorScheme": "blue",
+      "viewMode": "grid",
+      "surfaceStyle": "solid",
+      "surfaceAzimuth": 45,
+      "surfaceElevation": 32,
+      "surfaceHeightScale": 1,
+      "min": 0.1,
+      "max": 1,
+      "step": 0.1,
+      "value": 0.8,
+      "falseLabel": "",
+      "trueLabel": "",
+      "options": [],
+      "mappings": [],
+      "columns": [],
+      "xyPairs": []
+    },
+    {
+      "id": 18,
+      "type": "slider",
+      "customTitle": "",
+      "x": -140,
+      "y": 360,
+      "width": 320,
+      "height": 82,
+      "dashboardPageId": null,
+      "minimized": false,
+      "showTitleBar": true,
+      "fontSize": 13,
+      "outputOnly": false,
+      "showHistory": false,
+      "expandNonScalarValues": false,
+      "tableTextAlign": "left",
+      "tableDecimalDigits": 0,
+      "xMin": "auto",
+      "xMax": "auto",
+      "yMin": "auto",
+      "yMax": "auto",
+      "showGrid": true,
+      "showAxes": true,
+      "legendPosition": "top-right",
+      "source": "vacancy",
+      "showNumericValues": true,
+      "showIndices": true,
+      "autoFitCells": true,
+      "cellSize": 28,
+      "valueMin": "auto",
+      "valueMax": "auto",
+      "displayRows": null,
+      "displayCols": null,
+      "colorScheme": "blue",
+      "viewMode": "grid",
+      "surfaceStyle": "solid",
+      "surfaceAzimuth": 45,
+      "surfaceElevation": 32,
+      "surfaceHeightScale": 1,
+      "min": 0.1,
+      "max": 0.9,
+      "step": 0.1,
+      "value": 0.3,
+      "falseLabel": "",
+      "trueLabel": "",
+      "options": [],
+      "mappings": [],
+      "columns": [],
+      "xyPairs": []
+    }
+  ]
+}

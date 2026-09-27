@@ -32,6 +32,7 @@
       const decimals = Number(raw?.decimals);
       const integrator = String(raw?.integrator ?? "euler").toLowerCase();
       const strictDefinitions = Boolean(raw?.strictDefinitions);
+      const stopOnRuntimeError = Boolean(raw?.stopOnRuntimeError);
       const currentTime = raw?.currentTime;
       return {
         t0: Number.isFinite(t0) ? t0 : 0,
@@ -44,6 +45,7 @@
         decimals: Number.isFinite(decimals) ? clampDisplayDecimals(decimals) : 3,
         integrator: integrator === "rk4" ? "rk4" : "euler",
         strictDefinitions,
+        stopOnRuntimeError,
         currentTime: Number.isFinite(Number(currentTime)) ? Number(currentTime) : null,
       };
     }

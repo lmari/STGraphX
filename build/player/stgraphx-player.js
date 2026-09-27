@@ -1,6 +1,6 @@
 /*!
  * STGraphX Embedded Player Bundle
- * Generated: 2026-09-24T09:25:06.830Z
+ * Generated: 2026-09-27T11:46:30.216Z
  */
 
 /* --- i18n-inline.js --- */
@@ -13,7 +13,7 @@
 
 window.STGraphXAppMeta = {
   author: "Luca Mari",
-  releaseDate: "2026.09.23",
+  releaseDate: "2026.09.24",
   license: "MPL-2.0",
   copyright: "Copyright (c) 2026 Luca Mari",
 };
@@ -160,6 +160,7 @@ window.STGraphXI18nBundles = {
     "menu.run.reset": "Reset",
     "menu.run.step": "Un passo",
     "menu.run.strictDefinitions": "Definizioni rigorose",
+    "menu.run.stopOnRuntimeError": "Arresta al primo errore",
     "menu.run.timedToggle": "Temporizzato",
     "menu.run.watch": "Watch / breakpoint",
     "menu.time": "t = {time}",
@@ -772,10 +773,12 @@ window.STGraphXI18nBundles = {
     "status.breakpointHit": "Breakpoint raggiunto a t = {time}.",
     "status.cancelOp": "Operazione in corso annullata.",
     "status.clipboardCopied": "Copiati {count} nodi nella clipboard.",
+    "status.clipboardCopiedText": "Oggetto di testo copiato nella clipboard.",
     "status.clipboardCut": "Selezione tagliata.",
-    "status.clipboardEmpty": "Clipboard vuota.",
-    "status.clipboardNothingToCopy": "Nessun nodo selezionato da copiare.",
+    "status.clipboardEmpty": "Clipboard vuota o senza oggetti STGraphX.",
+    "status.clipboardNothingToCopy": "Nessun oggetto selezionato da copiare.",
     "status.clipboardPasted": "Incollati {count} nodi.",
+    "status.clipboardPastedText": "Oggetto di testo incollato.",
     "status.clipboardTextCopied": "Testo copiato nella clipboard.",
     "status.cpAdded": "Punto di controllo aggiunto.",
     "status.cpCleared": "Punti di controllo rimossi.",
@@ -944,6 +947,7 @@ window.STGraphXI18nBundles = {
     "tooltip.model.localFunctions": "Apre l'editor delle funzioni locali, riusabili dalle espressioni dei nodi del modello.",
     "tooltip.model.renderEverySteps": "Durante l'esecuzione temporizzata ridisegna canvas e widget ogni N passi. Il calcolo e le serie storiche restano completi a ogni passo.",
     "tooltip.model.strictDefinitions": "Se attivo, i nodi non definiti correttamente vengono evidenziati e bloccano l'esecuzione.",
+    "tooltip.menu.run.stopOnRuntimeError": "Interrompe l'esecuzione al primo errore prodotto dalla valutazione di un nodo, mostrando nodo, tempo e dettaglio tecnico.",
     "tooltip.model.t0": "Istante iniziale dell'esecuzione.",
     "tooltip.model.t1": "Istante finale dell'esecuzione.",
     "tooltip.model.title": "Titolo descrittivo del modello, salvato nel file JSON.",
@@ -1338,6 +1342,7 @@ window.STGraphXI18nBundles = {
     "menu.run.reset": "Reset",
     "menu.run.step": "One step",
     "menu.run.strictDefinitions": "Strict definitions",
+    "menu.run.stopOnRuntimeError": "Stop on first error",
     "menu.run.timedToggle": "Timed",
     "menu.run.watch": "Watch / breakpoint",
     "menu.time": "t = {time}",
@@ -1950,10 +1955,12 @@ window.STGraphXI18nBundles = {
     "status.breakpointHit": "Breakpoint hit at t = {time}.",
     "status.cancelOp": "Current operation canceled.",
     "status.clipboardCopied": "Copied {count} nodes to clipboard.",
+    "status.clipboardCopiedText": "Text item copied to clipboard.",
     "status.clipboardCut": "Selection cut.",
-    "status.clipboardEmpty": "Clipboard is empty.",
-    "status.clipboardNothingToCopy": "No selected nodes to copy.",
+    "status.clipboardEmpty": "Clipboard is empty or has no STGraphX objects.",
+    "status.clipboardNothingToCopy": "No selected object to copy.",
     "status.clipboardPasted": "Pasted {count} nodes.",
+    "status.clipboardPastedText": "Text item pasted.",
     "status.clipboardTextCopied": "Text copied to clipboard.",
     "status.cpAdded": "Control point added.",
     "status.cpCleared": "Control points removed.",
@@ -2122,6 +2129,7 @@ window.STGraphXI18nBundles = {
     "tooltip.model.localFunctions": "Opens the editor for local functions reusable by the model node expressions.",
     "tooltip.model.renderEverySteps": "During timed execution, redraws the canvas and widgets every N steps. Computation and time histories remain complete at every step.",
     "tooltip.model.strictDefinitions": "When enabled, incorrectly defined nodes are highlighted and block execution.",
+    "tooltip.menu.run.stopOnRuntimeError": "Stops execution at the first node-evaluation error and shows the node, time, and technical detail.",
     "tooltip.model.t0": "Initial execution time.",
     "tooltip.model.t1": "Final execution time.",
     "tooltip.model.title": "Descriptive model title, saved in the JSON file.",
@@ -7389,6 +7397,7 @@ window.STGraphXI18nBundles = {
       const decimals = Number(raw?.decimals);
       const integrator = String(raw?.integrator ?? "euler").toLowerCase();
       const strictDefinitions = Boolean(raw?.strictDefinitions);
+      const stopOnRuntimeError = Boolean(raw?.stopOnRuntimeError);
       const currentTime = raw?.currentTime;
       return {
         t0: Number.isFinite(t0) ? t0 : 0,
@@ -7401,6 +7410,7 @@ window.STGraphXI18nBundles = {
         decimals: Number.isFinite(decimals) ? clampDisplayDecimals(decimals) : 3,
         integrator: integrator === "rk4" ? "rk4" : "euler",
         strictDefinitions,
+        stopOnRuntimeError,
         currentTime: Number.isFinite(Number(currentTime)) ? Number(currentTime) : null,
       };
     }
@@ -7737,8 +7747,10 @@ window.STGraphXI18nBundles = {
             submodelError: "",
             computedValue: null,
             computedError: "",
+            computedErrorMessage: "",
             pendingStateValue: null,
             pendingStateError: "",
+            pendingStateErrorMessage: "",
             externalValueEnabled: false,
             externalValue: null,
             properties: Array.isArray(n.properties)
@@ -7786,6 +7798,7 @@ window.STGraphXI18nBundles = {
           decimals: execCfg.decimals,
           integrator: execCfg.integrator,
           strictDefinitions: execCfg.strictDefinitions,
+          stopOnRuntimeError: execCfg.stopOnRuntimeError,
           currentTime: null,
         },
         __directoryPath: String(options.directoryPath ?? ""),
@@ -8532,6 +8545,16 @@ window.STGraphXI18nBundles = {
       let errorCount = 0;
       let firstErrorNode = null;
       let firstErrorReason = null;
+      let firstErrorMessage = "";
+
+      const recordFirstError = (node, reason, message) => {
+        // Prefer the originating formula failure to propagated dependency errors.
+        if (!firstErrorNode || (firstErrorReason === "dependency" && reason !== "dependency")) {
+          firstErrorNode = node.name;
+          firstErrorReason = reason;
+          firstErrorMessage = String(message ?? "");
+        }
+      };
 
       evalResults.algebraic.forEach((entry) => {
         const node = getModelNodeById(model, entry.id);
@@ -8541,15 +8564,14 @@ window.STGraphXI18nBundles = {
         if (entry.result.ok) {
           node.computedValue = entry.result.value;
           node.computedError = "";
+          node.computedErrorMessage = "";
           successCount += 1;
         } else {
           node.computedValue = null;
           node.computedError = entry.result.reason || "runtime";
+          node.computedErrorMessage = String(entry.result.message ?? "");
           errorCount += 1;
-          if (!firstErrorNode) {
-            firstErrorNode = node.name;
-            firstErrorReason = node.computedError;
-          }
+          recordFirstError(node, node.computedError, node.computedErrorMessage);
         }
       });
 
@@ -8564,19 +8586,18 @@ window.STGraphXI18nBundles = {
         if (result.ok) {
           node.pendingStateValue = result.value;
           node.pendingStateError = "";
+          node.pendingStateErrorMessage = "";
           successCount += 1;
         } else {
           node.pendingStateValue = null;
           node.pendingStateError = result.reason || "runtime";
+          node.pendingStateErrorMessage = String(result.message ?? "");
           errorCount += 1;
-          if (!firstErrorNode) {
-            firstErrorNode = node.name;
-            firstErrorReason = node.pendingStateError;
-          }
+          recordFirstError(node, node.pendingStateError, node.pendingStateErrorMessage);
         }
       });
 
-      return { successCount, errorCount, firstErrorNode, firstErrorReason };
+      return { successCount, errorCount, firstErrorNode, firstErrorReason, firstErrorMessage };
     }
 
     return {
@@ -8968,6 +8989,10 @@ window.STGraphXI18nBundles = {
       return Number.isFinite(value) && value >= 1 ? Math.round(value) : 1;
     }
 
+    function stopOnEvaluationError(execution) {
+      return Boolean(execution?.stopOnRuntimeError);
+    }
+
     function refreshAfterStep(force = false) {
       refreshRuntimeView?.({ force });
       return true;
@@ -9066,7 +9091,7 @@ window.STGraphXI18nBundles = {
       } else if (stepResult.errorCount > 0) {
         setStatusKey?.("error.evalStepFailed", {
           node: stepResult.firstErrorNode,
-          reason: evalReasonText?.(stepResult.firstErrorReason),
+          reason: stepResult.firstErrorMessage || evalReasonText?.(stepResult.firstErrorReason),
           time: formatNumberValue?.(Number(nextTime)),
         });
       } else if (completed) {
@@ -9078,7 +9103,12 @@ window.STGraphXI18nBundles = {
       if (refreshView) {
         refreshAfterStep(stepResult.errorCount > 0 || completed);
       }
-      return { ok: true, breakpointHit: false, completed };
+      return {
+        ok: stepResult.errorCount === 0 || !stopOnEvaluationError(execution),
+        breakpointHit: false,
+        completed,
+        runtimeError: stepResult.errorCount > 0,
+      };
     }
 
     async function executeAll() {
@@ -9138,6 +9168,7 @@ window.STGraphXI18nBundles = {
       let totalErrorCount = 0;
       let firstErrorNode = null;
       let firstErrorReason = null;
+      let firstErrorMessage = "";
       let firstErrorTime = null;
       let lastTime = timeValues[timeValues.length - 1];
       let breakpointHit = false;
@@ -9153,9 +9184,13 @@ window.STGraphXI18nBundles = {
         if (!firstErrorNode && stepResult.firstErrorNode) {
           firstErrorNode = stepResult.firstErrorNode;
           firstErrorReason = stepResult.firstErrorReason;
+          firstErrorMessage = stepResult.firstErrorMessage || "";
           firstErrorTime = timeValue;
         }
         lastTime = timeValue;
+        if (stepResult.errorCount > 0 && stopOnEvaluationError(execution)) {
+          break;
+        }
         const breakpointResult = evaluateBreakpointConditionAtTime?.(timeValue) || { hit: false, invalid: false };
         if (breakpointResult.invalid) {
           refreshRuntimeView?.();
@@ -9186,7 +9221,7 @@ window.STGraphXI18nBundles = {
         setStatusKey?.("error.evalFailedDetailedTime", {
           node: firstErrorNode,
           count: totalErrorCount,
-          reason: evalReasonText?.(firstErrorReason),
+          reason: firstErrorMessage || evalReasonText?.(firstErrorReason),
           time: formatNumberValue?.(Number(firstErrorTime)),
         });
       } else {
@@ -9285,7 +9320,7 @@ window.STGraphXI18nBundles = {
           }
           if (!outcome || !outcome.ok) {
             stopTimedExecution(false, outcome?.completed ? "completed" : "stopped");
-            if (!outcome?.completed && !(hasStrictExecutionBlock?.())) {
+            if (!outcome?.completed && !outcome?.runtimeError && !(hasStrictExecutionBlock?.())) {
               setStatusKey?.("status.timedStopped");
             }
           } else if (outcome.completed) {
@@ -9967,17 +10002,6 @@ window.STGraphXI18nBundles = {
     _seedDefaultInputValues() {
       this._inputValues.clear();
       const nodeMap = buildNodeMap(this._runtimeModel);
-      for (const node of this._runtimeModel?.nodes || []) {
-        if (!isExternallySettableNode(node)) {
-          continue;
-        }
-        if (node.shape === "diamond") {
-          const numeric = Number(node.computedValue);
-          if (Number.isFinite(numeric)) {
-            this._inputValues.set(node.name, numeric);
-          }
-        }
-      }
       const rawWidgets = Array.isArray(this._rawModel?.widgets) ? this._rawModel.widgets : [];
       rawWidgets.forEach((widget) => {
         if (!widget?.source) {
@@ -10370,6 +10394,42 @@ window.STGraphXI18nBundles = {
     return new Map((model?.nodes || []).map((node) => [String(node?.name ?? ""), node]));
   }
 
+  function nodeBoundaryPoint(node, targetX, targetY) {
+    const dx = targetX - node.x;
+    const dy = targetY - node.y;
+    if (dx === 0 && dy === 0) {
+      return { x: node.x, y: node.y };
+    }
+    const halfWidth = (Number(node.width) || 120) / 2;
+    const halfHeight = (Number(node.height) || 70) / 2;
+    let scale;
+    if (node.type === "algebraic") {
+      scale = 1 / (Math.sqrt((dx * dx) / (halfWidth * halfWidth) + (dy * dy) / (halfHeight * halfHeight)) || 1);
+    } else if (node.type === "parameter") {
+      scale = 1 / (Math.abs(dx) / halfWidth + Math.abs(dy) / halfHeight || 1);
+    } else {
+      scale = 1 / (Math.max(Math.abs(dx) / halfWidth, Math.abs(dy) / halfHeight) || 1);
+    }
+    return { x: node.x + dx * scale, y: node.y + dy * scale };
+  }
+
+  function buildSplinePath(points) {
+    if (points.length < 2) return "";
+    if (points.length === 2) return `M ${points[0].x} ${points[0].y} L ${points[1].x} ${points[1].y}`;
+    if (points.length === 3) return `M ${points[0].x} ${points[0].y} Q ${points[1].x} ${points[1].y} ${points[2].x} ${points[2].y}`;
+    let path = `M ${points[0].x} ${points[0].y}`;
+    for (let index = 1; index < points.length - 1; index += 1) {
+      const point = points[index];
+      const next = points[index + 1];
+      if (index < points.length - 2) {
+        path += ` Q ${point.x} ${point.y} ${(point.x + next.x) / 2} ${(point.y + next.y) / 2}`;
+      } else {
+        path += ` Q ${point.x} ${point.y} ${next.x} ${next.y}`;
+      }
+    }
+    return path;
+  }
+
   function collectExpressionIdentifierReferences(expression) {
     const src = String(expression ?? "");
     const refs = new Set();
@@ -10465,6 +10525,29 @@ window.STGraphXI18nBundles = {
     } catch (_err) {
       return String(value);
     }
+  }
+
+  function summarizeNodeRuntimeValue(node, execution, t) {
+    if (node?.computedError) {
+      return { text: t("text.nodeValueError"), error: true };
+    }
+    const value = node?.computedValue;
+    if (value && typeof value === "object" && value.kind === "agentSpace") {
+      return { text: `agentSpace ${value.rowCount}x${value.colCount}`, error: false };
+    }
+    if (Array.isArray(value)) {
+      const isMatrix = value.length > 0 && value.every((row) => Array.isArray(row));
+      const columns = isMatrix ? value[0]?.length ?? 0 : 0;
+      return isMatrix && value.every((row) => row.length === columns)
+        ? { text: `[${value.length},${columns}]`, error: false }
+        : { text: `[${value.length}]`, error: false };
+    }
+    if (value && typeof value === "object") {
+      const keys = Object.keys(value);
+      const visibleKeys = keys.slice(0, 3).join(", ");
+      return { text: keys.length > 3 ? `{${visibleKeys}, ...}` : `{${visibleKeys}}`, error: false };
+    }
+    return { text: formatValue(execution, value), error: false };
   }
 
   function formatTableValue(execution, widget, value) {
@@ -11602,19 +11685,17 @@ window.STGraphXI18nBundles = {
             fill: #567086;
             text-anchor: middle;
           }
+          .node-runtime-value {
+            font-size: 10px;
+            fill: #526575;
+            text-anchor: middle;
+            dominant-baseline: middle;
+          }
+          .node-runtime-value-error { fill: #d46312; }
           .node-shape {
-            fill: #fdfefe;
-            stroke: #37506b;
-            stroke-width: 1.4;
-          }
-          .node.output .node-shape {
-            stroke: #0f7a7a;
-          }
-          .node.parameter .node-shape {
-            fill: #fff8e8;
-          }
-          .node.state .node-shape {
-            fill: #f7fbff;
+            fill: var(--node-fill, #fcfdff);
+            stroke: var(--node-stroke, #2f4a62);
+            stroke-width: 2;
           }
           .node.error .node-shape {
             stroke: #c14747;
@@ -11622,8 +11703,8 @@ window.STGraphXI18nBundles = {
           }
           .edge {
             fill: none;
-            stroke: #6e8398;
-            stroke-width: 1.6;
+            stroke: #3b4e61;
+            stroke-width: 2;
           }
           .canvas-text {
             font-size: 12px;
@@ -12578,6 +12659,9 @@ window.STGraphXI18nBundles = {
       const visibleNodeIds = this.visibleGraphNodeIds();
       const bounds = this.graphBounds();
       const zoom = this._zoom;
+      const runtimeNodes = new Map((this._state.runtimeModel?.nodes || []).map((node) => [node.id, node]));
+      const showRuntimeValues = model.view?.showNodeValues === true
+        && this._state.runtimeModel?.execution?.currentTime != null;
       this.$canvasContent.style.width = `${bounds.width * zoom}px`;
       this.$canvasContent.style.height = `${bounds.height * zoom}px`;
       this.$svg.setAttribute("viewBox", `${bounds.minX} ${bounds.minY} ${bounds.width} ${bounds.height}`);
@@ -12596,7 +12680,7 @@ window.STGraphXI18nBundles = {
       marker.setAttribute("orient", "auto-start-reverse");
       const arrowPath = document.createElementNS(SVG_NS, "path");
       arrowPath.setAttribute("d", "M 0 0 L 10 5 L 0 10 z");
-      arrowPath.setAttribute("fill", "#6e8398");
+      arrowPath.setAttribute("fill", "#3b4e61");
       marker.appendChild(arrowPath);
       defs.appendChild(marker);
       this.$svg.appendChild(defs);
@@ -12691,9 +12775,16 @@ window.STGraphXI18nBundles = {
         if (!from || !to || !visibleNodeIds.has(from.id) || !visibleNodeIds.has(to.id)) {
           return;
         }
+        const controlPoints = Array.isArray(edge.controlPoints) ? edge.controlPoints : [];
+        const firstTarget = controlPoints[0] || to;
+        const lastTarget = controlPoints[controlPoints.length - 1] || from;
+        const points = [
+          nodeBoundaryPoint(from, firstTarget.x, firstTarget.y),
+          ...controlPoints,
+          nodeBoundaryPoint(to, lastTarget.x, lastTarget.y),
+        ];
         const path = document.createElementNS(SVG_NS, "path");
-        const points = [{ x: from.x, y: from.y }, ...(edge.controlPoints || []), { x: to.x, y: to.y }];
-        path.setAttribute("d", `M ${points.map((pt) => `${pt.x} ${pt.y}`).join(" L ")}`);
+        path.setAttribute("d", buildSplinePath(points));
         path.setAttribute("class", "edge");
         path.setAttribute("marker-end", "url(#player-arrow)");
         this.$svg.appendChild(path);
@@ -12702,6 +12793,12 @@ window.STGraphXI18nBundles = {
       (model.nodes || []).filter((node) => visibleNodeIds.has(node.id)).forEach((node) => {
         const g = document.createElementNS(SVG_NS, "g");
         g.setAttribute("class", `node ${node.type || "state"}${node.__runtimeError ? " error" : ""}${node.output ? " output" : ""}`);
+        if (typeof node.fillColor === "string" && node.fillColor.trim()) {
+          g.style.setProperty("--node-fill", node.fillColor);
+        }
+        if (typeof node.strokeColor === "string" && node.strokeColor.trim()) {
+          g.style.setProperty("--node-stroke", node.strokeColor);
+        }
         let shape;
         if (node.type === "algebraic") {
           shape = document.createElementNS(SVG_NS, "ellipse");
@@ -12726,10 +12823,19 @@ window.STGraphXI18nBundles = {
         const label = document.createElementNS(SVG_NS, "text");
         label.setAttribute("class", "node-label");
         label.setAttribute("x", node.x);
-        label.setAttribute("y", node.y - 5);
+        label.setAttribute("y", showRuntimeValues ? node.y - 8 : node.y);
         label.textContent = node.name;
         g.appendChild(shape);
         g.appendChild(label);
+        if (showRuntimeValues) {
+          const runtimeValue = summarizeNodeRuntimeValue(runtimeNodes.get(node.id), this._state.runtimeModel.execution, this.t.bind(this));
+          const valueLabel = document.createElementNS(SVG_NS, "text");
+          valueLabel.setAttribute("class", `node-runtime-value${runtimeValue.error ? " node-runtime-value-error" : ""}`);
+          valueLabel.setAttribute("x", node.x);
+          valueLabel.setAttribute("y", node.y + 11);
+          valueLabel.textContent = runtimeValue.text;
+          g.appendChild(valueLabel);
+        }
         this.$svg.appendChild(g);
       });
 

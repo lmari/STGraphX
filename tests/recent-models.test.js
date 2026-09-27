@@ -51,10 +51,11 @@ async function run() {
     getHandlePath: async () => "",
     persistentHandleStore,
   });
-  await browserStore.remember("web-model.json", browserHandle, browserDirectoryHandle, browserStorage);
+  await browserStore.remember("web-model.json", browserHandle, browserDirectoryHandle, browserStorage, "{\"nodes\":[]}");
   const browserPersisted = JSON.parse(browserStorage.getItem("recent-browser-test"));
   assert.ok(browserPersisted[0].handleId, "browser entries retain an IndexedDB handle reference");
   assert.ok(browserPersisted[0].directoryHandleId, "browser entries retain an IndexedDB directory reference");
+  assert.ok(browserPersisted[0].snapshotId, "browser entries retain a JSON snapshot fallback");
 
   const browserRestored = createRecentModelsStore({
     storageKey: "recent-browser-test",
@@ -65,6 +66,12 @@ async function run() {
   const browserEntry = browserRestored.entries()[0];
   assert.equal(await browserRestored.resolveHandle(browserEntry), browserHandle);
   assert.equal(await browserRestored.resolveDirectoryHandle(browserEntry), browserDirectoryHandle);
+  assert.equal(await browserRestored.resolveSnapshot(browserEntry), "{\"nodes\":[]}");
+
+  await browserRestored.remember("web-model.json", null, null, browserStorage, "{\"nodes\":[1]}");
+  const refreshedEntry = browserRestored.entries()[0];
+  assert.equal(await browserRestored.resolveHandle(refreshedEntry), browserHandle, "a snapshot refresh retains the file handle");
+  assert.equal(await browserRestored.resolveSnapshot(refreshedEntry), "{\"nodes\":[1]}");
 
   // Firefox and other browsers without File System Access only expose a File
   // from the input picker. It is still structured-cloneable in IndexedDB and

@@ -27,6 +27,7 @@ async function runExample(fileName, expectedOutputs) {
 (async () => {
   await runExample("daisyworld_abm.json", ["daisies", "occupancy", "population", "neighborCounts"]);
   await runExample("abm_spatial_swarm.json", ["swarm", "occupancy", "neighborCounts", "focusNeighbors"]);
+  await runExample("schelling_mobile_vector.json", ["space", "A", "B", "unhappy"]);
   console.log("abm-examples.test.js: ok");
 })().catch((error) => {
   console.error(error.stack || error);

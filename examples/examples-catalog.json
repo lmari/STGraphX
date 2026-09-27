@@ -96,6 +96,14 @@
           }
         },
         {
+          "file": "schelling_mobile_vector.json",
+          "label": { "it": "Schelling mobile vettoriale", "en": "Vectorized mobile Schelling" },
+          "summary": {
+            "it": "Variante compatta: seleziona e sposta simultaneamente più agenti con operazioni su matrici, senza catene di nodi ripetuti.",
+            "en": "Compact variant: selects and moves several agents simultaneously with matrix operations, without repeated node chains."
+          }
+        },
+        {
           "file": "sir_abm.json",
           "label": "SIR ABM",
           "summary": {
