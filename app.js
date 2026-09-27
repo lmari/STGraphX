@@ -14419,7 +14419,13 @@ window.addEventListener("scroll", hideAppTooltip, true);
 window.addEventListener("resize", hideAppTooltip);
 
 modelTitleInput.addEventListener("input", () => {
-  graph.modelTitle = modelTitleInput.value;
+  const nextTitle = String(modelTitleInput.value ?? "");
+  if (graph.modelTitle === nextTitle) {
+    return;
+  }
+  graph.modelTitle = nextTitle;
+  dirtySinceLastSave = hasUnsavedChanges();
+  updateFileStatusLabel(dirtySinceLastSave);
 });
 
 addModelPropBtn.addEventListener("click", () => {

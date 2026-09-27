@@ -1933,6 +1933,35 @@
         ? this.t("action.timedStart")
         : this.t("action.timedStop");
       this.applyViewOptions();
+      this.syncParameterInputLocks();
+    }
+
+    isExecutionFrozen() {
+      if (this._timedState.timedRunHandle != null || this._timedState.timedStepRunning) {
+        return true;
+      }
+      const execution = this._state.runtimeModel?.execution;
+      if (execution?.currentTime == null) {
+        return false;
+      }
+      const t0 = Number(execution.t0);
+      const dt = Number(execution.dt);
+      const t1 = Number(execution.t1);
+      if (!Number.isFinite(t0) || !Number.isFinite(dt) || !Number.isFinite(t1) || dt === 0) {
+        return false;
+      }
+      return isTimeWithinBounds(Number(execution.currentTime) + dt, t0, dt, t1);
+    }
+
+    isParameterInputLocked(source) {
+      const node = nodeByName(this._state.runtimeModel, source);
+      return node?.shape === "diamond" && this.isExecutionFrozen();
+    }
+
+    syncParameterInputLocks() {
+      (this.shadowRoot?.querySelectorAll?.("[data-stgraphx-input-source]") || []).forEach((control) => {
+        control.disabled = this.isParameterInputLocked(control.dataset.stgraphxInputSource);
+      });
     }
 
     setBusy(busy) {
@@ -2844,6 +2873,9 @@
         number.step = String(widget.step);
         number.value = range.value;
         number.className = "slider-widget-number";
+        const lockedForRun = this.isParameterInputLocked(widget.source);
+        range.dataset.stgraphxInputSource = widget.source;
+        number.dataset.stgraphxInputSource = widget.source;
         const commit = (nextValue) => {
           const numeric = Number(nextValue);
           this._state.inputValues.set(widget.source, numeric);
@@ -2855,8 +2887,8 @@
           commit(nextValue);
           this.queuePreviewRefresh("input");
         };
-        range.disabled = false;
-        number.disabled = false;
+        range.disabled = lockedForRun;
+        number.disabled = lockedForRun;
         range.addEventListener("pointerdown", () => {
           this._activeInputWidgetId = widget.id;
         });
@@ -2900,6 +2932,7 @@
         grid.className = "numeric-widget-grid";
         grid.style.gridTemplateColumns = `repeat(${widget.inputCols}, minmax(64px, 1fr))`;
         const matrix = numericWidgetMatrix(this._state.inputValues.get(widget.source) ?? widget.value, widget.inputRows, widget.inputCols);
+        const lockedForRun = this.isParameterInputLocked(widget.source);
         const commit = (refresh = false) => {
           widget.value = widget.inputCols === 1
             ? (widget.inputRows === 1 ? matrix[0][0] : matrix.map((row) => row[0]))
@@ -2913,6 +2946,8 @@
             input.type = "number";
             input.step = "any";
             input.value = String(matrix[row][col]);
+            input.dataset.stgraphxInputSource = widget.source;
+            input.disabled = lockedForRun;
             input.addEventListener("pointerdown", () => { this._activeInputWidgetId = widget.id; });
             input.addEventListener("focus", () => { this._activeInputWidgetId = widget.id; });
             input.addEventListener("input", () => {
@@ -2942,7 +2977,8 @@
         button.type = "button";
         button.className = `button-widget-toggle${current ? " is-on" : " is-off"}`;
         button.textContent = widgetBinaryStateLabel(widget, current, this.t.bind(this));
-        button.disabled = false;
+        button.dataset.stgraphxInputSource = widget.source;
+        button.disabled = this.isParameterInputLocked(widget.source);
         button.addEventListener("click", () => {
           const next = current ? 0 : 1;
           this._state.inputValues.set(widget.source, next);
@@ -2969,7 +3005,8 @@
           select.appendChild(opt);
         });
         select.value = String(current);
-        select.disabled = false;
+        select.dataset.stgraphxInputSource = widget.source;
+        select.disabled = this.isParameterInputLocked(widget.source);
         select.addEventListener("pointerdown", () => {
           this._activeInputWidgetId = widget.id;
         });

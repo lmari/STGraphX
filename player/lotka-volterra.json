@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "modelTitle": "",
+  "modelTitle": "Modello predatori-prede di Lotka-Volterra",
   "localFunctions": [],
   "view": {
     "zoom": 0.8,
@@ -9,8 +9,8 @@
     "showNodeValues": true,
     "gridSize": 20,
     "tooltipDelayMs": 300,
-    "scrollLeft": 95,
-    "scrollTop": 132
+    "scrollLeft": 0,
+    "scrollTop": 117
   },
   "debug": {
     "watches": [],
@@ -18,11 +18,11 @@
     "breakpointExpression": ""
   },
   "modelProperties": [],
-  "nodeCounter": 14,
-  "edgeCounter": 14,
-  "widgetCounter": 10,
-  "textItemCounter": 4,
-  "presentationGroupCounter": 3,
+  "nodeCounter": 16,
+  "edgeCounter": 16,
+  "widgetCounter": 12,
+  "textItemCounter": 6,
+  "presentationGroupCounter": 5,
   "presentationGroups": [],
   "dashboard": null,
   "execution": {
@@ -33,7 +33,8 @@
     "renderEverySteps": 1,
     "decimals": 3,
     "integrator": "rk4",
-    "strictDefinitions": false
+    "strictDefinitions": false,
+    "stopOnRuntimeError": false
   },
   "nodes": [
     {
@@ -234,14 +235,14 @@
   "textItems": [
     {
       "id": 1,
-      "x": 80,
+      "x": 60,
       "y": -100,
-      "width": 400,
+      "width": 440,
       "height": 40,
       "fillColor": "",
       "strokeColor": "",
       "dashboardPageId": null,
-      "html": "Modello predatori-prede secondo Lotka-Volterra"
+      "html": "<h3>Modello predatori-prede di Lotka-Volterra</h3>"
     }
   ],
   "widgets": [
