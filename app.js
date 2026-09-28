@@ -261,8 +261,12 @@ const watchDebuggerSummary = document.getElementById("watchDebuggerSummary");
 const watchAddSelectedBtn = document.getElementById("watchAddSelectedBtn");
 const watchBreakpointEnabledInput = document.getElementById("watchBreakpointEnabledInput");
 const watchBreakpointInput = document.getElementById("watchBreakpointInput");
+const watchBreakpointMessageInput = document.getElementById("watchBreakpointMessageInput");
 const watchBreakpointStatus = document.getElementById("watchBreakpointStatus");
 const watchDebuggerList = document.getElementById("watchDebuggerList");
+const semanticBreakpointModal = document.getElementById("semanticBreakpointModal");
+const semanticBreakpointMessage = document.getElementById("semanticBreakpointMessage");
+const semanticBreakpointDismissBtn = document.getElementById("semanticBreakpointDismissBtn");
 const localFunctionsModal = document.getElementById("localFunctionsModal");
 const localFunctionsCloseBtn = document.getElementById("localFunctionsCloseBtn");
 const localFunctionsCancelBtn = document.getElementById("localFunctionsCancelBtn");
@@ -441,6 +445,24 @@ function normalizeTableColumnName(column) {
     }
   }
   return String(column ?? "");
+}
+
+function normalizeTableColumnFormats(formats) {
+  if (!formats || typeof formats !== "object" || Array.isArray(formats)) {
+    return {};
+  }
+  return Object.fromEntries(Object.entries(formats)
+    .filter(([name]) => String(name).trim())
+    .map(([name, format]) => [String(name), {
+      align: ["left", "center", "right"].includes(String(format?.align ?? ""))
+        ? String(format.align)
+        : "left",
+      decimalDigits: format?.decimalDigits != null && Number.isInteger(Number(format.decimalDigits))
+        && Number(format.decimalDigits) >= 0
+        && Number(format.decimalDigits) <= 12
+        ? Number(format.decimalDigits)
+        : null,
+    }]));
 }
 
 const graphFunctionHelpers = globalThis.GraphFunctions?.helpers || {};
@@ -897,6 +919,7 @@ const graph = {
     watches: [],
     breakpointEnabled: false,
     breakpointExpression: "",
+    breakpointMessage: "",
   },
   __simulationHistory: [],
   __directoryPath: "",
@@ -1101,6 +1124,7 @@ const watchDebuggerUiHelpers = globalThis.STGraphXWatchDebuggerUi?.createWatchDe
   watchDebuggerSummary,
   watchBreakpointEnabledInput,
   watchBreakpointInput,
+  watchBreakpointMessageInput,
   watchBreakpointStatus,
   watchAddSelectedBtn,
   watchDebuggerList,
@@ -4136,6 +4160,30 @@ function ensureBreakpointReadyForExecution() {
   return true;
 }
 
+function commitFocusedBreakpointFields() {
+  const expressionIsFocused = document.activeElement === watchBreakpointInput;
+  const messageIsFocused = document.activeElement === watchBreakpointMessageInput;
+  if (!expressionIsFocused && !messageIsFocused) {
+    return;
+  }
+  const expression = expressionIsFocused
+    ? String(watchBreakpointInput.value ?? "")
+    : String(ensureDebugConfig(graph).breakpointExpression ?? "");
+  const message = messageIsFocused
+    ? String(watchBreakpointMessageInput.value ?? "")
+    : String(ensureDebugConfig(graph).breakpointMessage ?? "");
+  const debug = ensureDebugConfig(graph);
+  if (debug.breakpointExpression === expression && debug.breakpointMessage === message) {
+    return;
+  }
+  commitDebugConfigChange(() => {
+    const nextDebug = ensureDebugConfig(graph);
+    nextDebug.breakpointExpression = expression;
+    nextDebug.breakpointMessage = message;
+    ui.breakpointLastResult = null;
+  });
+}
+
 function renderWatchDebugger() {
   return watchDebuggerUiHelpers.renderWatchDebugger();
 }
@@ -4146,6 +4194,19 @@ function openWatchDebugger() {
 
 function closeWatchDebugger() {
   return watchDebuggerUiHelpers.closeWatchDebugger();
+}
+
+function openSemanticBreakpointMessage(message) {
+  if (!semanticBreakpointModal || !semanticBreakpointMessage) {
+    return;
+  }
+  semanticBreakpointMessage.textContent = String(message ?? "").trim();
+  semanticBreakpointModal.classList.remove("hidden");
+  semanticBreakpointDismissBtn?.focus();
+}
+
+function closeSemanticBreakpointMessage() {
+  semanticBreakpointModal?.classList.add("hidden");
 }
 
 function modelAnalysisCheckEntries() {
@@ -7815,6 +7876,7 @@ function exportGraphData() {
       watches: sanitizeDebugConfig(graph).watches.slice(),
       breakpointEnabled: Boolean(ensureDebugConfig(graph).breakpointEnabled),
       breakpointExpression: String(ensureDebugConfig(graph).breakpointExpression ?? ""),
+      breakpointMessage: String(ensureDebugConfig(graph).breakpointMessage ?? ""),
     },
     modelProperties: graph.properties.map((p) => ({ key: String(p.key), value: String(p.value) })),
     nodeCounter,
@@ -7929,6 +7991,7 @@ function exportGraphData() {
       tableDecimalDigits: Number.isInteger(Number(w.tableDecimalDigits)) && Number(w.tableDecimalDigits) >= 0 && Number(w.tableDecimalDigits) <= 12
         ? Number(w.tableDecimalDigits)
         : null,
+      tableColumnFormats: normalizeTableColumnFormats(w.tableColumnFormats),
       xMin: serializeAutoNullableNumber(w.xMin),
       xMax: serializeAutoNullableNumber(w.xMax),
       yMin: serializeAutoNullableNumber(w.yMin),
@@ -7947,7 +8010,7 @@ function exportGraphData() {
       valueMax: serializeAutoNullableNumber(w.valueMax),
       displayRows: Number.isInteger(Number(w.displayRows)) && Number(w.displayRows) > 0 ? Number(w.displayRows) : null,
       displayCols: Number.isInteger(Number(w.displayCols)) && Number(w.displayCols) > 0 ? Number(w.displayCols) : null,
-      colorScheme: ["blue", "heat", "grayscale", "diverging", "none"].includes(String(w.colorScheme ?? ""))
+      colorScheme: ["blue", "heat", "grayscale", "diverging", "viridis", "plasma", "terrain", "categorical", "none"].includes(String(w.colorScheme ?? ""))
         ? String(w.colorScheme)
         : "blue",
       viewMode: ["grid", "surface"].includes(String(w.viewMode ?? "")) ? String(w.viewMode) : "grid",
@@ -8096,6 +8159,7 @@ function applyGraphData(data) {
     watches: Array.isArray(data?.debug?.watches) ? data.debug.watches.map((name) => String(name ?? "")) : [],
     breakpointEnabled: Boolean(data?.debug?.breakpointEnabled),
     breakpointExpression: String(data?.debug?.breakpointExpression ?? ""),
+    breakpointMessage: String(data?.debug?.breakpointMessage ?? ""),
   };
   graph.execution = {
     t0: execCfg.t0,
@@ -8201,6 +8265,7 @@ function applyGraphData(data) {
         tableDecimalDigits: Number.isInteger(Number(w.tableDecimalDigits)) && Number(w.tableDecimalDigits) >= 0 && Number(w.tableDecimalDigits) <= 12
           ? Number(w.tableDecimalDigits)
           : null,
+        tableColumnFormats: normalizeTableColumnFormats(w.tableColumnFormats),
         xMin: parseAutoNullableNumber(w.xMin),
         xMax: parseAutoNullableNumber(w.xMax),
         yMin: parseAutoNullableNumber(w.yMin),
@@ -8219,7 +8284,7 @@ function applyGraphData(data) {
         valueMax: parseAutoNullableNumber(w.valueMax),
         displayRows: Number.isInteger(Number(w.displayRows)) && Number(w.displayRows) > 0 ? Number(w.displayRows) : null,
         displayCols: Number.isInteger(Number(w.displayCols)) && Number(w.displayCols) > 0 ? Number(w.displayCols) : null,
-        colorScheme: ["blue", "heat", "grayscale", "diverging", "none"].includes(String(w.colorScheme ?? ""))
+        colorScheme: ["blue", "heat", "grayscale", "diverging", "viridis", "plasma", "terrain", "categorical", "none"].includes(String(w.colorScheme ?? ""))
           ? String(w.colorScheme)
           : "blue",
         viewMode: ["grid", "surface"].includes(String(w.viewMode ?? "")) ? String(w.viewMode) : "grid",
@@ -10796,6 +10861,7 @@ function importGraphData(data) {
         tableDecimalDigits: Number.isInteger(Number(w.tableDecimalDigits)) && Number(w.tableDecimalDigits) >= 0 && Number(w.tableDecimalDigits) <= 12
           ? Number(w.tableDecimalDigits)
           : null,
+        tableColumnFormats: normalizeTableColumnFormats(w.tableColumnFormats),
         xMin: parseAutoNullableNumber(w.xMin),
         xMax: parseAutoNullableNumber(w.xMax),
         yMin: parseAutoNullableNumber(w.yMin),
@@ -10814,7 +10880,7 @@ function importGraphData(data) {
         valueMax: parseAutoNullableNumber(w.valueMax),
         displayRows: Number.isInteger(Number(w.displayRows)) && Number(w.displayRows) > 0 ? Number(w.displayRows) : null,
         displayCols: Number.isInteger(Number(w.displayCols)) && Number(w.displayCols) > 0 ? Number(w.displayCols) : null,
-        colorScheme: ["blue", "heat", "grayscale", "diverging", "none"].includes(String(w.colorScheme ?? ""))
+        colorScheme: ["blue", "heat", "grayscale", "diverging", "viridis", "plasma", "terrain", "categorical", "none"].includes(String(w.colorScheme ?? ""))
           ? String(w.colorScheme)
           : "blue",
         viewMode: ["grid", "surface"].includes(String(w.viewMode ?? "")) ? String(w.viewMode) : "grid",
@@ -10926,6 +10992,7 @@ function importGraphData(data) {
       watches: Array.isArray(data?.debug?.watches) ? data.debug.watches.map((name) => String(name ?? "")) : [],
       breakpointEnabled: Boolean(data?.debug?.breakpointEnabled),
       breakpointExpression: String(data?.debug?.breakpointExpression ?? ""),
+      breakpointMessage: String(data?.debug?.breakpointMessage ?? ""),
     },
     nodeCounter: Math.max(Number(data.nodeCounter) || 0, maxNodeId) + 1,
     edgeCounter: Math.max(Number(data.edgeCounter) || 0, maxEdgeId) + 1,
@@ -11482,6 +11549,8 @@ async function exportSimulationCsv() {
 }
 
 async function saveGraphJson(forceSaveAs = false) {
+  // Ctrl/Cmd+S does not blur an active Watch field, so persist its text first.
+  commitFocusedBreakpointFields();
   // The UI flag is refreshed asynchronously; use the snapshot as the source
   // of truth so a just-edited browser document can always be saved.
   const hasPendingChanges = dirtySinceLastSave || hasUnsavedChanges();
@@ -11557,6 +11626,7 @@ function resetGraphToEmptyModel() {
     watches: [],
     breakpointEnabled: false,
     breakpointExpression: "",
+    breakpointMessage: "",
   };
   graph.__directoryPath = "";
   graph.__readDataCache = Object.create(null);
@@ -11748,6 +11818,7 @@ const runtimeController = globalThis.STGraphXRuntimeController?.createRuntimeCon
     return result;
   },
   openWatchDebugger: () => openWatchDebugger(),
+  openSemanticBreakpointMessage: (message) => openSemanticBreakpointMessage(message),
   clearVisualHistory: () => {
     clearAllXYChartPoints();
     clearAllTableWidgetRows();
@@ -14220,6 +14291,16 @@ if (watchDebuggerModal) {
     }
   });
 }
+if (semanticBreakpointDismissBtn) {
+  semanticBreakpointDismissBtn.addEventListener("click", closeSemanticBreakpointMessage);
+}
+if (semanticBreakpointModal) {
+  semanticBreakpointModal.addEventListener("pointerdown", (evt) => {
+    if (evt.target === semanticBreakpointModal) {
+      closeSemanticBreakpointMessage();
+    }
+  });
+}
 if (watchAddSelectedBtn) {
   watchAddSelectedBtn.addEventListener("click", () => {
     const node = selectedWatchableNode();
@@ -14266,6 +14347,23 @@ if (watchBreakpointInput) {
       evt.preventDefault();
       commitWatchBreakpointExpression();
       watchBreakpointInput.blur();
+    }
+  });
+}
+if (watchBreakpointMessageInput) {
+  const commitWatchBreakpointMessage = () => {
+    commitDebugConfigChange(() => {
+      ensureDebugConfig(graph).breakpointMessage = String(watchBreakpointMessageInput.value ?? "");
+    });
+    renderWatchDebugger();
+  };
+  watchBreakpointMessageInput.addEventListener("change", commitWatchBreakpointMessage);
+  watchBreakpointMessageInput.addEventListener("blur", commitWatchBreakpointMessage);
+  watchBreakpointMessageInput.addEventListener("keydown", (evt) => {
+    if (evt.key === "Enter") {
+      evt.preventDefault();
+      commitWatchBreakpointMessage();
+      watchBreakpointMessageInput.blur();
     }
   });
 }

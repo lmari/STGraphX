@@ -1,6 +1,6 @@
 /*!
  * STGraphX Embedded Player Bundle
- * Generated: 2026-09-27T12:06:44.072Z
+ * Generated: 2026-09-28T18:52:24.013Z
  */
 
 /* --- i18n-inline.js --- */
@@ -13,7 +13,7 @@
 
 window.STGraphXAppMeta = {
   author: "Luca Mari",
-  releaseDate: "2026.09.27",
+  releaseDate: "2026.09.28",
   license: "MPL-2.0",
   copyright: "Copyright (c) 2026 Luca Mari",
 };
@@ -679,10 +679,14 @@ window.STGraphXI18nBundles = {
     "widget.matrixAutoFitCells": "Adatta automaticamente le celle",
     "widget.matrixCellSize": "Dim. cella",
     "widget.matrixColorScheme.blue": "Blu",
+    "widget.matrixColorScheme.categorical": "Categorie",
     "widget.matrixColorScheme.diverging": "Divergente",
     "widget.matrixColorScheme.grayscale": "Scala di grigi",
     "widget.matrixColorScheme.heat": "Caldo",
     "widget.matrixColorScheme.none": "Nessuno",
+    "widget.matrixColorScheme.plasma": "Plasma",
+    "widget.matrixColorScheme.terrain": "Terreno",
+    "widget.matrixColorScheme.viridis": "Viridis",
     "widget.matrixColorSchemeLabel": "Colori",
     "widget.matrixDisplayCols": "Colonne vis.",
     "widget.matrixDisplayRows": "Righe vis.",
@@ -753,6 +757,7 @@ window.STGraphXI18nBundles = {
     "widget.tableDecimals": "Decimali",
     "widget.tableDecimalsModel": "Modello",
     "widget.tableFontSize": "Font valori",
+    "widget.tableNode": "Nodo",
     "widget.tableNodes": "Nodi",
     "widget.tableTitle": "Tabella {id}",
     "widget.textMappings": "Mappature testo",
@@ -825,6 +830,8 @@ window.STGraphXI18nBundles = {
     "status.saveCanceled": "Salvataggio annullato.",
     "status.saved": "Grafo salvato in JSON.",
     "status.savedAs": "Grafo salvato con nome.",
+    "status.savedBrowserDownload": "Modello esportato come download del browser.",
+    "status.savedFirefoxDownload": "Modello esportato come download di Firefox. Per scegliere la cartella, attiva in Firefox l'opzione «Chiedi sempre dove salvare i file».",
     "status.selectionCleared": "Selezione annullata.",
     "status.snapOff": "Snap-to-grid disattivato.",
     "status.snapOn": "Snap-to-grid attivo.",
@@ -998,7 +1005,7 @@ window.STGraphXI18nBundles = {
     "tooltip.widget.mappingValue": "Valore del nodo a cui associare il testo.",
     "tooltip.widget.matrixAutoFitCells": "Adatta automaticamente la dimensione delle celle allo spazio disponibile.",
     "tooltip.widget.matrixCellSize": "Dimensione delle celle della griglia, in pixel, quando l'adattamento automatico e disattivato.",
-    "tooltip.widget.matrixColorScheme": "Scala di colori usata per rappresentare i valori della matrice o della superficie.",
+    "tooltip.widget.matrixColorScheme": "Scala di colori usata per rappresentare i valori della matrice o della superficie. 'Categorie' assegna un colore distinto a ogni valore intero.",
     "tooltip.widget.matrixDisplayCols": "Numero massimo di colonne visibili. Lascia vuoto per mostrarle tutte.",
     "tooltip.widget.matrixDisplayRows": "Numero massimo di righe visibili. Lascia vuoto per mostrarle tutte.",
     "tooltip.widget.matrixShowIndices": "Visualizza gli indici di righe e colonne nella griglia.",
@@ -1138,6 +1145,7 @@ window.STGraphXI18nBundles = {
     "watch.breakpointEmpty": "Inserisci una condizione di breakpoint.",
     "watch.breakpointEnabled": "Abilita breakpoint",
     "watch.breakpointExpr": "Condizione di breakpoint",
+    "watch.breakpointMessage": "Messaggio al breakpoint",
     "watch.breakpointHit": "Breakpoint raggiunto a t = {time}.",
     "watch.current": "Valore attuale",
     "watch.empty": "Nessun nodo osservato.",
@@ -1861,10 +1869,14 @@ window.STGraphXI18nBundles = {
     "widget.matrixAutoFitCells": "Auto-fit cells",
     "widget.matrixCellSize": "Cell size",
     "widget.matrixColorScheme.blue": "Blue",
+    "widget.matrixColorScheme.categorical": "Categories",
     "widget.matrixColorScheme.diverging": "Diverging",
     "widget.matrixColorScheme.grayscale": "Grayscale",
     "widget.matrixColorScheme.heat": "Heat",
     "widget.matrixColorScheme.none": "None",
+    "widget.matrixColorScheme.plasma": "Plasma",
+    "widget.matrixColorScheme.terrain": "Terrain",
+    "widget.matrixColorScheme.viridis": "Viridis",
     "widget.matrixColorSchemeLabel": "Colors",
     "widget.matrixDisplayCols": "Cols shown",
     "widget.matrixDisplayRows": "Rows shown",
@@ -1935,6 +1947,7 @@ window.STGraphXI18nBundles = {
     "widget.tableDecimals": "Decimals",
     "widget.tableDecimalsModel": "Model",
     "widget.tableFontSize": "Value font",
+    "widget.tableNode": "Node",
     "widget.tableNodes": "Nodes",
     "widget.tableTitle": "Table {id}",
     "widget.textMappings": "Text mappings",
@@ -2007,6 +2020,8 @@ window.STGraphXI18nBundles = {
     "status.saveCanceled": "Save canceled.",
     "status.saved": "Graph saved as JSON.",
     "status.savedAs": "Graph saved as selected file.",
+    "status.savedBrowserDownload": "Model exported as a browser download.",
+    "status.savedFirefoxDownload": "Model exported as a Firefox download. To choose the folder, enable Firefox's “Always ask you where to save files” setting.",
     "status.selectionCleared": "Selection cleared.",
     "status.snapOff": "Snap-to-grid disabled.",
     "status.snapOn": "Snap-to-grid enabled.",
@@ -2180,7 +2195,7 @@ window.STGraphXI18nBundles = {
     "tooltip.widget.mappingValue": "Node value to associate with the text.",
     "tooltip.widget.matrixAutoFitCells": "Automatically fits cell size to the available space.",
     "tooltip.widget.matrixCellSize": "Grid cell size, in pixels, when automatic fitting is disabled.",
-    "tooltip.widget.matrixColorScheme": "Color scale used to represent matrix or surface values.",
+    "tooltip.widget.matrixColorScheme": "Color scale used to represent matrix or surface values. 'Categories' assigns a distinct color to each integer value.",
     "tooltip.widget.matrixDisplayCols": "Maximum number of visible columns. Leave blank to show all of them.",
     "tooltip.widget.matrixDisplayRows": "Maximum number of visible rows. Leave blank to show all of them.",
     "tooltip.widget.matrixShowIndices": "Shows row and column indices in the grid.",
@@ -2320,6 +2335,7 @@ window.STGraphXI18nBundles = {
     "watch.breakpointEmpty": "Enter a breakpoint condition.",
     "watch.breakpointEnabled": "Enable breakpoint",
     "watch.breakpointExpr": "Breakpoint condition",
+    "watch.breakpointMessage": "Breakpoint message",
     "watch.breakpointHit": "Breakpoint hit at t = {time}.",
     "watch.current": "Current value",
     "watch.empty": "No watched nodes.",
@@ -2415,6 +2431,9 @@ window.STGraphXI18nBundles = {
     "$j",
     "$value",
   ]);
+  // Expression evaluation treats arrays as immutable values. Cache validated matrix
+  // shapes so neighbors() can be used efficiently inside array() expressions.
+  const RECTANGULAR_SCALAR_MATRIX_CACHE = new WeakMap();
 
   function cloneAgentSchema(fieldNames) {
     return Array.isArray(fieldNames) ? fieldNames.slice() : null;
@@ -3973,14 +3992,23 @@ window.STGraphXI18nBundles = {
   }
 
   function neighborsOfCell(matrixValue, rowValue, colValue, includeDiagonals = true, toroidal = false) {
-    if (!Array.isArray(matrixValue) || !matrixValue.every((row) => Array.isArray(row))) {
+    if (!Array.isArray(matrixValue)) {
       throw new Error("neighbors expects a matrix");
     }
-    const rowCount = matrixValue.length;
-    const colCount = rowCount > 0 ? matrixValue[0].length : 0;
-    if (!matrixValue.every((row) => row.length === colCount && row.every((item) => !Array.isArray(item)))) {
-      throw new Error("neighbors expects a rectangular matrix");
+    let dimensions = RECTANGULAR_SCALAR_MATRIX_CACHE.get(matrixValue);
+    if (!dimensions) {
+      if (!matrixValue.every((row) => Array.isArray(row))) {
+        throw new Error("neighbors expects a matrix");
+      }
+      const rowCount = matrixValue.length;
+      const colCount = rowCount > 0 ? matrixValue[0].length : 0;
+      if (!matrixValue.every((row) => row.length === colCount && row.every((item) => !Array.isArray(item)))) {
+        throw new Error("neighbors expects a rectangular matrix");
+      }
+      dimensions = { rowCount, colCount };
+      RECTANGULAR_SCALAR_MATRIX_CACHE.set(matrixValue, dimensions);
     }
+    const { rowCount, colCount } = dimensions;
     const row = normalizeIndex(Number(rowValue), rowCount, "neighbors");
     const col = normalizeIndex(Number(colValue), colCount, "neighbors");
     const diagonalMode = parseBooleanOption(includeDiagonals, true, "neighbors", "diagonals");
@@ -4078,10 +4106,19 @@ window.STGraphXI18nBundles = {
     if (!args.every((arg) => !Array.isArray(arg) || sameArrayShape(ref, arg))) {
       throw new Error("function arguments must have matching shapes");
     }
-    return ref.map((_, idx) => mapFunctionArgs(
-      args.map((arg) => (Array.isArray(arg) ? arg[idx] : arg)),
-      scalarFn,
-    ));
+    // Shape compatibility has been established for the complete inputs above.
+    // Rechecking it at every recursive level turns matrix operations into an
+    // unnecessarily super-linear operation.
+    const apply = (values) => {
+      const nestedRef = values.find((value) => Array.isArray(value));
+      if (!nestedRef) {
+        return scalarFn(...values);
+      }
+      return nestedRef.map((_, index) => apply(
+        values.map((value) => (Array.isArray(value) ? value[index] : value)),
+      ));
+    };
+    return apply(args);
   }
 
   function vectorizeFunction(fn) {
@@ -5383,12 +5420,10 @@ window.STGraphXI18nBundles = {
     }, value);
   }
 
-  function conditionalScopeAtPath(scope, shape, path) {
+  function conditionalScopeAtPath(scope, matchingArrays, path) {
     const localScope = { ...scope };
-    Object.entries(localScope).forEach(([name, value]) => {
-      if (Array.isArray(value) && sameArrayShape(value, shape)) {
-        localScope[name] = conditionalPathValue(value, path);
-      }
+    matchingArrays.forEach(([name, value]) => {
+      localScope[name] = conditionalPathValue(value, path);
     });
     return localScope;
   }
@@ -5407,10 +5442,10 @@ window.STGraphXI18nBundles = {
     return selected;
   }
 
-  function evaluateConditionalBranchAtPath(branchNode, scope, hooks, shape, path) {
+  function evaluateConditionalBranchAtPath(branchNode, scope, hooks, shape, matchingArrays, path) {
     const value = evaluateAstNode(
       conditionalLiteralAtPath(branchNode, path),
-      conditionalScopeAtPath(scope, shape, path),
+      conditionalScopeAtPath(scope, matchingArrays, path),
       hooks,
     );
     if (!Array.isArray(value)) {
@@ -5444,19 +5479,24 @@ window.STGraphXI18nBundles = {
     }
 
     const shape = firstArrayCondition.value;
+    // Determine once which context values need scalarization. Repeating this
+    // shape comparison for every cell makes vectorized if() quadratic again.
+    const matchingArrays = Object.entries(scope).filter(([, value]) => (
+      Array.isArray(value) && sameArrayShape(value, shape)
+    ));
     const evaluateAtPath = (path) => {
       for (let index = firstArrayCondition.index; index < node.args.length - 1; index += 2) {
-        const condition = index === firstArrayCondition.index
+          const condition = index === firstArrayCondition.index
           ? firstArrayCondition.value
-          : evaluateConditionalBranchAtPath(node.args[index], scope, hooks, shape, path);
+          : evaluateConditionalBranchAtPath(node.args[index], scope, hooks, shape, matchingArrays, path);
         const conditionValue = Array.isArray(condition)
           ? conditionalPathValue(condition, path)
           : condition;
         if (conditionValue) {
-          return evaluateConditionalBranchAtPath(node.args[index + 1], scope, hooks, shape, path);
+          return evaluateConditionalBranchAtPath(node.args[index + 1], scope, hooks, shape, matchingArrays, path);
         }
       }
-      return evaluateConditionalBranchAtPath(node.args[node.args.length - 1], scope, hooks, shape, path);
+      return evaluateConditionalBranchAtPath(node.args[node.args.length - 1], scope, hooks, shape, matchingArrays, path);
     };
     const buildResult = (value, path = []) => value.map((item, index) => (
       Array.isArray(item) ? buildResult(item, [...path, index]) : evaluateAtPath([...path, index])
@@ -7786,6 +7826,7 @@ window.STGraphXI18nBundles = {
           watches: Array.isArray(data?.debug?.watches) ? data.debug.watches.map((name) => String(name ?? "")) : [],
           breakpointEnabled: Boolean(data?.debug?.breakpointEnabled),
           breakpointExpression: String(data?.debug?.breakpointExpression ?? ""),
+          breakpointMessage: String(data?.debug?.breakpointMessage ?? ""),
         },
         nodes: nodesWithValidNames,
         edges,
@@ -8910,6 +8951,7 @@ window.STGraphXI18nBundles = {
       evalReasonText,
       evaluateBreakpointConditionAtTime,
       openWatchDebugger,
+      openSemanticBreakpointMessage,
       clearVisualHistory,
       clearSimulationHistory,
       onTimedExecutionStarted = null,
@@ -8998,6 +9040,18 @@ window.STGraphXI18nBundles = {
       return true;
     }
 
+    function presentBreakpointHit(result, timeValue) {
+      setStatusKey?.("status.breakpointHit", {
+        time: formatNumberValue?.(Number(timeValue)),
+      });
+      const message = String(result?.message ?? "").trim();
+      if (message) {
+        openSemanticBreakpointMessage?.(message);
+      } else {
+        openWatchDebugger?.();
+      }
+    }
+
     async function ensureExecutionReady() {
       if (!enforceStrictDefinitions?.()) {
         return null;
@@ -9011,7 +9065,7 @@ window.STGraphXI18nBundles = {
       return validateTimeConfig();
     }
 
-    async function executeOneStep(restartIfEnded = true, { refreshView = true } = {}) {
+    async function executeOneStep(restartIfEnded = true, { refreshView = true, notifyBreakpoint = true } = {}) {
       const execution = getExecution();
       const cfg = await ensureExecutionReady();
       if (!cfg) {
@@ -9074,11 +9128,15 @@ window.STGraphXI18nBundles = {
         if (refreshView) {
           refreshAfterStep(true);
         }
-        setStatusKey?.("status.breakpointHit", {
-          time: formatNumberValue?.(Number(nextTime)),
-        });
-        openWatchDebugger?.();
-        return { ok: true, breakpointHit: true, completed: false };
+        if (notifyBreakpoint) {
+          presentBreakpointHit(breakpointResult, nextTime);
+        }
+        return {
+          ok: true,
+          breakpointHit: true,
+          breakpointMessage: String(breakpointResult.message ?? "").trim(),
+          completed: false,
+        };
       }
 
       const completed = hasReachedExecutionEnd(nextTime, cfg);
@@ -9172,6 +9230,7 @@ window.STGraphXI18nBundles = {
       let firstErrorTime = null;
       let lastTime = timeValues[timeValues.length - 1];
       let breakpointHit = false;
+      let breakpointHitResult = null;
 
       for (let idx = 0; idx < timeValues.length; idx += 1) {
         const timeValue = timeValues[idx];
@@ -9191,20 +9250,21 @@ window.STGraphXI18nBundles = {
         if (stepResult.errorCount > 0 && stopOnEvaluationError(execution)) {
           break;
         }
-        const breakpointResult = evaluateBreakpointConditionAtTime?.(timeValue) || { hit: false, invalid: false };
-        if (breakpointResult.invalid) {
+        const stepBreakpointResult = evaluateBreakpointConditionAtTime?.(timeValue) || { hit: false, invalid: false };
+        if (stepBreakpointResult.invalid) {
           refreshRuntimeView?.();
           setStatus?.(
             t("error.breakpointInvalid", {
-              reason: breakpointResult.message || t("error.evalReason.runtime"),
+              reason: stepBreakpointResult.message || t("error.evalReason.runtime"),
             }),
             true,
           );
           openWatchDebugger?.();
           return;
         }
-        if (breakpointResult.hit) {
+        if (stepBreakpointResult.hit) {
           breakpointHit = true;
+          breakpointHitResult = stepBreakpointResult;
           break;
         }
       }
@@ -9213,10 +9273,7 @@ window.STGraphXI18nBundles = {
       refreshRuntimeView?.();
 
       if (breakpointHit) {
-        setStatusKey?.("status.breakpointHit", {
-          time: formatNumberValue?.(Number(lastTime)),
-        });
-        openWatchDebugger?.();
+        presentBreakpointHit(breakpointHitResult, lastTime);
       } else if (firstErrorNode) {
         setStatusKey?.("error.evalFailedDetailedTime", {
           node: firstErrorNode,
@@ -9306,7 +9363,7 @@ window.STGraphXI18nBundles = {
           const stepsPerRefresh = visualRefreshInterval(execution);
           let outcome = null;
           for (let step = 0; step < stepsPerRefresh; step += 1) {
-            outcome = await executeOneStep(false, { refreshView: false });
+            outcome = await executeOneStep(false, { refreshView: false, notifyBreakpoint: false });
             if (!outcome?.ok || outcome.completed || outcome.breakpointHit) {
               break;
             }
@@ -9327,10 +9384,7 @@ window.STGraphXI18nBundles = {
             stopTimedExecution(false, "completed");
           } else if (outcome.breakpointHit) {
             stopTimedExecution(false, "breakpoint");
-            setStatusKey?.("status.breakpointHit", {
-              time: formatNumberValue?.(Number(execution.currentTime)),
-            });
-            openWatchDebugger?.();
+            presentBreakpointHit({ message: outcome.breakpointMessage }, execution.currentTime);
           }
         } catch (err) {
           stopTimedExecution(false, "error");
@@ -9362,6 +9416,186 @@ window.STGraphXI18nBundles = {
     createRuntimeController,
   };
 })(globalThis);
+
+
+/* --- watch-debugger-core.js --- */
+/*
+ * This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at https://mozilla.org/MPL/2.0/.
+ * Copyright (c) 2026 Luca Mari
+ */
+
+(function initWatchDebuggerCoreModule(globalScope, factory) {
+  if (typeof module === "object" && module.exports) {
+    module.exports = factory();
+    return;
+  }
+  globalScope.STGraphXWatchDebuggerCore = factory();
+})(typeof globalThis !== "undefined" ? globalThis : this, function createWatchDebuggerCoreExports() {
+  function createWatchDebuggerCoreHelpers(options = {}) {
+    const t = typeof options.t === "function" ? options.t : (key) => key;
+    const getGraph = typeof options.getGraph === "function" ? options.getGraph : () => ({ nodes: [], debug: {} });
+    const getNodeByName = typeof options.getNodeByName === "function" ? options.getNodeByName : () => null;
+    const isStateNode = typeof options.isStateNode === "function" ? options.isStateNode : () => false;
+    const buildExecutionGlobals = typeof options.buildExecutionGlobals === "function" ? options.buildExecutionGlobals : () => ({});
+    const localFunctionsForSemantics = typeof options.localFunctionsForSemantics === "function"
+      ? options.localFunctionsForSemantics
+      : () => [];
+    const semantics = options.semantics || null;
+    const localizeExpressionErrorMessage = typeof options.localizeExpressionErrorMessage === "function"
+      ? options.localizeExpressionErrorMessage
+      : (message) => String(message ?? "");
+    const summarizeWatchValue = typeof options.summarizeWatchValue === "function"
+      ? options.summarizeWatchValue
+      : (value) => String(value ?? "");
+
+    function ensureDebugConfig(model = getGraph()) {
+      if (!model.debug || typeof model.debug !== "object") {
+        model.debug = {};
+      }
+      if (!Array.isArray(model.debug.watches)) {
+        model.debug.watches = [];
+      }
+      model.debug.breakpointEnabled = Boolean(model.debug.breakpointEnabled);
+      model.debug.breakpointExpression = String(model.debug.breakpointExpression ?? "");
+      model.debug.breakpointMessage = String(model.debug.breakpointMessage ?? "");
+      return model.debug;
+    }
+
+    function sanitizeDebugConfig(model = getGraph()) {
+      const debug = ensureDebugConfig(model);
+      const validNames = new Set((model?.nodes || []).map((node) => String(node?.name ?? "").trim()).filter(Boolean));
+      debug.watches = [...new Set(
+        debug.watches
+          .map((name) => String(name ?? "").trim())
+          .filter((name) => validNames.has(name)),
+      )];
+      debug.breakpointEnabled = Boolean(debug.breakpointEnabled);
+      debug.breakpointExpression = String(debug.breakpointExpression ?? "");
+      debug.breakpointMessage = String(debug.breakpointMessage ?? "");
+      return debug;
+    }
+
+    function captureWatchSnapshot() {
+      try {
+        const debug = sanitizeDebugConfig();
+        const snapshot = new Map();
+        debug.watches.forEach((name) => {
+          const node = getNodeByName(name);
+          if (!node) {
+            return;
+          }
+          snapshot.set(name, {
+            summary: summarizeWatchValue(node.computedValue, node.computedError),
+          });
+        });
+        return snapshot;
+      } catch (_err) {
+        return new Map();
+      }
+    }
+
+    function breakpointAvailableNames() {
+      return [...new Set([
+        "time",
+        "t0",
+        "t1",
+        "dt",
+        ...(getGraph()?.nodes || []).map((node) => String(node?.name ?? "")).filter(Boolean),
+      ])];
+    }
+
+    function validateBreakpointExpressionText(source = "") {
+      const text = String(source ?? "").trim();
+      if (!text) {
+        return { ok: true, empty: true };
+      }
+      if (!semantics?.validateExpressionSyntax) {
+        return { ok: false, message: "Expression validation is unavailable" };
+      }
+      return semantics.validateExpressionSyntax(text, breakpointAvailableNames(), {
+        localFunctions: localFunctionsForSemantics(getGraph()),
+      });
+    }
+
+    function breakpointResultTruthy(value) {
+      if (typeof value === "number") {
+        return value !== 0;
+      }
+      if (typeof value === "string") {
+        return value.trim().length > 0 && value.trim().toLowerCase() !== "false";
+      }
+      return Boolean(value);
+    }
+
+    function breakpointNodeContextValue(node) {
+      if (!node) {
+        return undefined;
+      }
+      if (isStateNode(node) && node.pendingStateValue !== null && node.pendingStateValue !== undefined) {
+        return node.pendingStateValue;
+      }
+      return node.computedValue;
+    }
+
+    function buildBreakpointContext(timeValue) {
+      const context = buildExecutionGlobals(timeValue);
+      (getGraph()?.nodes || []).forEach((node) => {
+        const value = breakpointNodeContextValue(node);
+        if (value !== undefined && value !== null) {
+          context[node.name] = value;
+        }
+      });
+      return context;
+    }
+
+    function evaluateBreakpointConditionAtTime(timeValue) {
+      const debug = sanitizeDebugConfig();
+      if (!debug.breakpointEnabled) {
+        return { enabled: false, hit: false };
+      }
+      const expression = String(debug.breakpointExpression ?? "").trim();
+      if (!expression) {
+        return { enabled: true, hit: false, invalid: true, message: t("watch.breakpointEmpty") };
+      }
+      if (!semantics?.evaluateValueExpression) {
+        return { enabled: true, hit: false, invalid: true, message: "Expression evaluation is unavailable" };
+      }
+      const result = semantics.evaluateValueExpression(expression, buildBreakpointContext(timeValue), {
+        localFunctions: localFunctionsForSemantics(getGraph()),
+      });
+      if (!result.ok) {
+        return {
+          enabled: true,
+          hit: false,
+          invalid: true,
+          message: localizeExpressionErrorMessage(result.message || result.reason || ""),
+        };
+      }
+      return {
+        enabled: true,
+        hit: breakpointResultTruthy(result.value),
+        value: result.value,
+        expression,
+        message: String(debug.breakpointMessage ?? "").trim(),
+      };
+    }
+
+    return {
+      breakpointAvailableNames,
+      captureWatchSnapshot,
+      ensureDebugConfig,
+      evaluateBreakpointConditionAtTime,
+      sanitizeDebugConfig,
+      validateBreakpointExpressionText,
+    };
+  }
+
+  return {
+    createWatchDebuggerCoreHelpers,
+  };
+});
 
 
 /* --- headless-runtime.js --- */
@@ -10550,12 +10784,46 @@ window.STGraphXI18nBundles = {
     return { text: formatValue(execution, value), error: false };
   }
 
-  function formatTableValue(execution, widget, value) {
-    if (typeof value === "number" && Number.isFinite(value) && widget?.tableDecimalDigits != null) {
-      return value.toFixed(widget.tableDecimalDigits);
+  function nodeTooltipText(node, runtimeNode, execution, t) {
+    const description = (node?.properties || []).find((property) => (
+      ["descrizione", "description"].includes(String(property?.key ?? "").trim().toLowerCase())
+    ))?.value;
+    const prefix = String(description ?? "").trim();
+    if (runtimeNode?.computedError) {
+      const detail = String(runtimeNode.computedErrorMessage ?? "").trim()
+        || t(`error.evalReason.${runtimeNode.computedError || "runtime"}`);
+      return prefix ? `${prefix}: ${detail}` : detail;
+    }
+    if (runtimeNode?.computedValue != null) {
+      const summary = summarizeNodeRuntimeValue(runtimeNode, execution, t).text;
+      return prefix ? `${prefix}: ${summary}` : summary;
+    }
+    return prefix;
+  }
+
+  function tableColumnFormat(widget, columnName) {
+    const format = widget?.tableColumnFormats?.[columnName] || {};
+    const hasDecimalDigits = Object.prototype.hasOwnProperty.call(format, "decimalDigits");
+    return {
+      align: ["left", "center", "right"].includes(String(format.align ?? ""))
+        ? String(format.align)
+        : widget.tableTextAlign,
+      decimalDigits: hasDecimalDigits && format.decimalDigits != null
+        && Number.isInteger(Number(format.decimalDigits))
+        && Number(format.decimalDigits) >= 0
+        && Number(format.decimalDigits) <= 12
+        ? Number(format.decimalDigits)
+        : (hasDecimalDigits ? null : widget.tableDecimalDigits),
+    };
+  }
+
+  function formatTableValue(execution, widget, value, columnName = "") {
+    const { decimalDigits } = tableColumnFormat(widget, columnName);
+    if (typeof value === "number" && Number.isFinite(value) && decimalDigits != null) {
+      return value.toFixed(decimalDigits);
     }
     if (Array.isArray(value)) {
-      return `[${value.map((item) => formatTableValue(execution, widget, item)).join(", ")}]`;
+      return `[${value.map((item) => formatTableValue(execution, widget, item, columnName)).join(", ")}]`;
     }
     return formatValue(execution, value);
   }
@@ -10657,6 +10925,15 @@ window.STGraphXI18nBundles = {
       tableDecimalDigits: Number.isInteger(Number(widget?.tableDecimalDigits)) && Number(widget.tableDecimalDigits) >= 0 && Number(widget.tableDecimalDigits) <= 12
         ? Number(widget.tableDecimalDigits)
         : null,
+      tableColumnFormats: Object.fromEntries(Object.entries(widget?.tableColumnFormats && typeof widget.tableColumnFormats === "object"
+        && !Array.isArray(widget.tableColumnFormats) ? widget.tableColumnFormats : {})
+        .filter(([name]) => String(name).trim())
+        .map(([name, format]) => [String(name), {
+          align: ["left", "center", "right"].includes(String(format?.align ?? "")) ? String(format.align) : "left",
+          decimalDigits: format?.decimalDigits != null && Number.isInteger(Number(format.decimalDigits)) && Number(format.decimalDigits) >= 0 && Number(format.decimalDigits) <= 12
+            ? Number(format.decimalDigits)
+            : null,
+        }])),
       source: String(widget?.source ?? ""),
       showNumericValues: widget?.showNumericValues !== false,
       showIndices: widget?.showIndices !== false,
@@ -10769,6 +11046,16 @@ window.STGraphXI18nBundles = {
   function matrixPaletteColor(scheme, ratio) {
     const clamped = clamp(Number(ratio) || 0, 0, 1);
     const mode = String(scheme || "blue").toLowerCase();
+    const interpolate = (stops) => {
+      const scaled = clamped * (stops.length - 1);
+      const index = Math.min(stops.length - 2, Math.floor(scaled));
+      const local = scaled - index;
+      const parseHex = (hex) => [1, 3, 5].map((offset) => Number.parseInt(hex.slice(offset, offset + 2), 16));
+      const from = parseHex(stops[index]);
+      const to = parseHex(stops[index + 1]);
+      const lerp = (a, b) => Math.round(a + ((b - a) * local));
+      return `rgb(${lerp(from[0], to[0])}, ${lerp(from[1], to[1])}, ${lerp(from[2], to[2])})`;
+    };
     if (mode === "heat") {
       const hue = 44 - (44 * clamped);
       const sat = 90;
@@ -10786,6 +11073,15 @@ window.STGraphXI18nBundles = {
       const light = 96 - (44 * distance);
       return `hsl(${hue} ${sat}% ${light.toFixed(1)}%)`;
     }
+    if (mode === "viridis") {
+      return interpolate(["#440154", "#3b528b", "#21918c", "#5ec962", "#fde725"]);
+    }
+    if (mode === "plasma") {
+      return interpolate(["#0d0887", "#7e03a8", "#cc4778", "#f89540", "#f0f921"]);
+    }
+    if (mode === "terrain") {
+      return interpolate(["#1a9850", "#91cf60", "#fee08b", "#fc8d59", "#8c510a"]);
+    }
     const from = "#edf4fb";
     const to = "#2f7fd6";
     const parseHex = (hex) => [1, 3, 5].map((offset) => Number.parseInt(hex.slice(offset, offset + 2), 16));
@@ -10802,11 +11098,19 @@ window.STGraphXI18nBundles = {
     if (!Number.isFinite(value)) {
       return "rgba(0,0,0,0.04)";
     }
+    if (String(scheme || "").toLowerCase() === "categorical") {
+      const colors = ["#f4f7fa", "#2f7fd6", "#d84a3a", "#2fa36b", "#8c62bd", "#c58b25"];
+      const base = Number.isInteger(minValue) ? minValue : 0;
+      const index = Math.round(value) - base;
+      return colors[((index % colors.length) + colors.length) % colors.length];
+    }
     if (fixedRange && Number.isFinite(minValue) && Number.isFinite(maxValue)) {
       if (maxValue === minValue) {
         return matrixPaletteColor(scheme, 0.55);
       }
-      return matrixPaletteColor(scheme, (value - minValue) / (maxValue - minValue));
+      const range = maxValue - minValue;
+      const discrete = Number.isInteger(value) && Number.isInteger(minValue) && Number.isInteger(maxValue);
+      return matrixPaletteColor(scheme, (value - minValue) / (discrete ? range + 1 : range));
     }
     if (!Number.isFinite(minValue) || !Number.isFinite(maxValue) || maxValue === minValue) {
       return matrixPaletteColor(scheme, 0.55);
@@ -11324,6 +11628,7 @@ window.STGraphXI18nBundles = {
             overflow: hidden;
           }
           .player {
+            position: relative;
             display: grid;
             grid-template-rows: auto 1fr;
             min-height: 420px;
@@ -11743,6 +12048,46 @@ window.STGraphXI18nBundles = {
             color: #70859b;
             font-style: italic;
           }
+          .semantic-breakpoint-overlay {
+            position: absolute;
+            inset: 0;
+            z-index: 20;
+            display: grid;
+            place-items: center;
+            padding: 20px;
+            background: rgba(27, 47, 66, 0.3);
+          }
+          .semantic-breakpoint-overlay[hidden] {
+            display: none;
+          }
+          .semantic-breakpoint-dialog {
+            width: min(100%, 420px);
+            padding: 20px;
+            border: 1px solid #b8c9d8;
+            border-radius: 12px;
+            background: #fff;
+            box-shadow: 0 16px 38px rgba(25, 50, 75, 0.26);
+          }
+          .semantic-breakpoint-message {
+            color: #203040;
+            line-height: 1.4;
+            white-space: pre-wrap;
+            word-break: break-word;
+          }
+          .semantic-breakpoint-actions {
+            display: flex;
+            justify-content: flex-end;
+            margin-top: 16px;
+          }
+          .semantic-breakpoint-actions button {
+            border: 1px solid #b7c7d8;
+            border-radius: 999px;
+            padding: 6px 14px;
+            background: #fff;
+            color: #203040;
+            cursor: pointer;
+            font: inherit;
+          }
         </style>
         <div class="player">
           <div class="toolbar">
@@ -11761,6 +12106,14 @@ window.STGraphXI18nBundles = {
               </div>
             </div>
           </div>
+          <div class="semantic-breakpoint-overlay" data-role="semanticBreakpointOverlay" hidden>
+            <div class="semantic-breakpoint-dialog" role="alertdialog" aria-modal="true" aria-labelledby="semanticBreakpointMessage">
+              <div class="semantic-breakpoint-message" data-role="semanticBreakpointMessage" id="semanticBreakpointMessage"></div>
+              <div class="semantic-breakpoint-actions">
+                <button type="button" data-action="dismissSemanticBreakpoint"></button>
+              </div>
+            </div>
+          </div>
         </div>
       `;
       this.$title = this.shadowRoot.querySelector('[data-role="title"]');
@@ -11773,6 +12126,9 @@ window.STGraphXI18nBundles = {
       this.$step = this.shadowRoot.querySelector('[data-action="step"]');
       this.$timed = this.shadowRoot.querySelector('[data-action="timed"]');
       this.$reset = this.shadowRoot.querySelector('[data-action="reset"]');
+      this.$semanticBreakpointOverlay = this.shadowRoot.querySelector('[data-role="semanticBreakpointOverlay"]');
+      this.$semanticBreakpointMessage = this.shadowRoot.querySelector('[data-role="semanticBreakpointMessage"]');
+      this.$dismissSemanticBreakpoint = this.shadowRoot.querySelector('[data-action="dismissSemanticBreakpoint"]');
       this.refreshStaticTexts();
       this.applyViewOptions();
     }
@@ -11787,6 +12143,7 @@ window.STGraphXI18nBundles = {
         ? this.t("action.timedStart")
         : this.t("action.timedStop");
       this.$reset.textContent = this.t("menu.run.reset");
+      this.$dismissSemanticBreakpoint.textContent = this.t("action.close");
       this.$title.textContent = this._state.rawModel?.modelTitle || "STGraphX";
     }
 
@@ -11803,6 +12160,22 @@ window.STGraphXI18nBundles = {
       this.$reset.addEventListener("click", () => {
         void this.reset();
       });
+      this.$dismissSemanticBreakpoint.addEventListener("click", () => this.closeSemanticBreakpointMessage());
+    }
+
+    openSemanticBreakpointMessage(message) {
+      if (!this.$semanticBreakpointOverlay || !this.$semanticBreakpointMessage) {
+        return;
+      }
+      this.$semanticBreakpointMessage.textContent = String(message ?? "");
+      this.$semanticBreakpointOverlay.hidden = false;
+      this.$dismissSemanticBreakpoint?.focus();
+    }
+
+    closeSemanticBreakpointMessage() {
+      if (this.$semanticBreakpointOverlay) {
+        this.$semanticBreakpointOverlay.hidden = true;
+      }
     }
 
     async reload() {
@@ -12090,6 +12463,20 @@ window.STGraphXI18nBundles = {
         },
       });
 
+      const watchDebuggerCore = global.STGraphXWatchDebuggerCore?.createWatchDebuggerCoreHelpers({
+        t: this.t.bind(this),
+        getGraph: () => runtimeModel,
+        getNodeByName: (name) => nodeByName(runtimeModel, name),
+        isStateNode,
+        buildExecutionGlobals: (timeValue) => this._state.runtimeCore.buildExecutionGlobalsForModel(
+          runtimeModel,
+          runtimeModel.execution,
+          timeValue,
+        ),
+        localFunctionsForSemantics: (model) => Array.isArray(model?.localFunctions) ? model.localFunctions : [],
+        semantics: global.GraphSemantics || globalThis.GraphSemantics,
+      });
+
       const runtimeController = global.STGraphXRuntimeController.createRuntimeController({
         session: runtimeSession,
         getExecution: () => runtimeModel.execution,
@@ -12118,8 +12505,11 @@ window.STGraphXI18nBundles = {
         formatNumberValue: (value) => formatNumberValue(runtimeModel.execution, value),
         formatExecutionDuration: (ms) => formatDuration(runtimeModel.execution, ms),
         evalReasonText: (reason) => this.t(`error.evalReason.${reason || "runtime"}`),
-        evaluateBreakpointConditionAtTime: () => ({ hit: false, invalid: false }),
+        evaluateBreakpointConditionAtTime: (timeValue) => (
+          watchDebuggerCore?.evaluateBreakpointConditionAtTime(timeValue) || { hit: false, invalid: false }
+        ),
         openWatchDebugger: () => {},
+        openSemanticBreakpointMessage: (message) => this.openSemanticBreakpointMessage(message),
         clearVisualHistory: () => this.clearWidgetHistory(),
         clearSimulationHistory: () => this.clearWidgetHistory(),
         onTimedExecutionStarted: ({ delay }) => {
@@ -12822,6 +13212,13 @@ window.STGraphXI18nBundles = {
       (model.nodes || []).filter((node) => visibleNodeIds.has(node.id)).forEach((node) => {
         const g = document.createElementNS(SVG_NS, "g");
         g.setAttribute("class", `node ${node.type || "state"}${node.__runtimeError ? " error" : ""}${node.output ? " output" : ""}`);
+        const tooltipText = nodeTooltipText(node, runtimeNodes.get(node.id), this._state.runtimeModel?.execution, this.t.bind(this));
+        if (tooltipText) {
+          const title = document.createElementNS(SVG_NS, "title");
+          title.textContent = tooltipText;
+          g.appendChild(title);
+          g.setAttribute("aria-label", tooltipText);
+        }
         if (typeof node.fillColor === "string" && node.fillColor.trim()) {
           g.style.setProperty("--node-fill", node.fillColor);
         }
@@ -13063,6 +13460,7 @@ window.STGraphXI18nBundles = {
           const headRow = document.createElement("tr");
           const corner = document.createElement("th");
           corner.textContent = displayedColumns[0];
+          corner.style.textAlign = tableColumnFormat(widget, displayedColumns[0]).align;
           headRow.appendChild(corner);
           for (let column = 0; column < matrixValue[0].length; column += 1) {
             const th = document.createElement("th");
@@ -13079,7 +13477,8 @@ window.STGraphXI18nBundles = {
             tr.appendChild(rowHeader);
             matrixRow.forEach((value) => {
               const td = document.createElement("td");
-              td.textContent = formatTableValue(execution, widget, value);
+              td.style.textAlign = tableColumnFormat(widget, displayedColumns[0]).align;
+              td.textContent = formatTableValue(execution, widget, value, displayedColumns[0]);
               tr.appendChild(td);
             });
             tbody.appendChild(tr);
@@ -13099,7 +13498,7 @@ window.STGraphXI18nBundles = {
         };
         const expandedCells = () => displayedColumns.flatMap((name) => {
           if (name === "time") {
-            return [{ label: "time", value: this.currentDisplayTime() }];
+            return [{ label: "time", source: "time", value: this.currentDisplayTime() }];
           }
           const node = nodeMap.get(name);
           if (!node) {
@@ -13110,6 +13509,7 @@ window.STGraphXI18nBundles = {
           }
           return flattenValues(node.computedValue).map((cell) => ({
             label: `${name}${cell.indexPath.map((index) => `[${index}]`).join("")}`,
+            source: name,
             value: cell.value,
             empty: cell.empty,
           }));
@@ -13120,6 +13520,7 @@ window.STGraphXI18nBundles = {
         (cells || displayedColumns).forEach((entry) => {
           const th = document.createElement("th");
           th.textContent = cells ? entry.label : entry;
+          th.style.textAlign = tableColumnFormat(widget, cells ? entry.source : entry).align;
           headRow.appendChild(th);
         });
         thead.appendChild(headRow);
@@ -13130,16 +13531,18 @@ window.STGraphXI18nBundles = {
           const tr = document.createElement("tr");
           (cells || displayedColumns).forEach((entry) => {
             const td = document.createElement("td");
+            const columnName = cells ? entry.source : entry;
+            td.style.textAlign = tableColumnFormat(widget, columnName).align;
             if (cells) {
               td.textContent = entry.error
                 ? this.t(`error.evalReason.${entry.error || "runtime"}`)
-                : (entry.empty || entry.missing ? "-" : formatTableValue(execution, widget, entry.value));
+                : (entry.empty || entry.missing ? "-" : formatTableValue(execution, widget, entry.value, columnName));
             } else {
               td.textContent = entry === "time"
-                ? formatTableValue(execution, widget, Number(widget.showHistory ? row.time : this.currentDisplayTime()))
+                ? formatTableValue(execution, widget, Number(widget.showHistory ? row.time : this.currentDisplayTime()), columnName)
                 : (widget.showHistory
-                  ? formatTableValue(execution, widget, row.values?.[entry])
-                  : formatTableValue(execution, widget, nodeMap.get(entry)?.computedValue));
+                  ? formatTableValue(execution, widget, row.values?.[entry], columnName)
+                  : formatTableValue(execution, widget, nodeMap.get(entry)?.computedValue, columnName));
             }
             tr.appendChild(td);
           });

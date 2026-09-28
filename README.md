@@ -1,6 +1,6 @@
 # STGraphX: Readme
 
-versione 27 settembre 2026
+versione 28 settembre 2026
 
 Copyright (c) 2026 Luca Mari
 
@@ -94,14 +94,13 @@ Ha un'interfaccia utente responsive, che lo rende utilizzabile anche su tablet.
 * Gestione dei gruppi di visualizzazione di nodi (*)
 * Nel menu File, gestione persistente dei modelli aperti di recente, anche nella versione web
 * Una prima gestione di controllo di correttezza del modello
-* Un primo debugger, con gestione di watch e breakpoint (**)
+* Un primo debugger, con gestione di watch e breakpoint, anche con messaggio semantico (**)
 
 #### Al momento non implementati (rispetto a STGraph)
 
 * Altri widget e altre opzioni per i widget già presenti
 * Altre funzioni
 * Nodi di stato con output
-* Gestione di interrupt
 * Playmode e altre modalità di esecuzione
 * ...
 

@@ -36,6 +36,7 @@ Il player:
 * supporta:
   * sottomodelli;
   * `readData(...)`;
+  * breakpoint definiti nel modello; se il breakpoint ha un messaggio semantico, arresta l'esecuzione e lo mostra in una finestra del player;
   * localizzazione `it`, `en`.
 
 In più è disponibile anche un runtime headless JavaScript, utilizzabile:
@@ -87,6 +88,7 @@ Carica anche:
 <script src="runtime-loader.js"></script>
 <script src="runtime-session.js"></script>
 <script src="runtime-controller.js"></script>
+<script src="watch-debugger-core.js"></script>
 <script src="player-shell.js"></script>
 ```
 

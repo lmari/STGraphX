@@ -38,6 +38,7 @@ async function run() {
   assert.equal(recentCalls, 1, "the selected writable file must be stored among recent models");
 
   let fallbackRecent = null;
+  const fallbackStatuses = [];
   const fallback = await helpers.saveJsonModel({
     dirtySinceLastSave: true,
     currentFileName: "download-only.json",
@@ -47,11 +48,15 @@ async function run() {
     downloadJsonFile: () => {},
     markSavedSnapshot: () => {},
     rememberRecentModel: async (...args) => { fallbackRecent = args; },
+    isFirefoxBrowser: () => true,
+    promptSaveAs: async (name) => name,
+    setStatusKey: (key) => fallbackStatuses.push(key),
   });
   assert.equal(fallback.ok, true);
   assert.equal(fallbackRecent[0], "download-only.json");
   assert.equal(fallbackRecent[1], null);
   assert.equal(fallbackRecent[3], '{\n  "nodes": [\n    1\n  ]\n}');
+  assert.equal(fallbackStatuses.at(-1), "status.savedFirefoxDownload");
   console.log("model-persistence.test.js: ok");
 }
 

@@ -934,12 +934,10 @@
     }, value);
   }
 
-  function conditionalScopeAtPath(scope, shape, path) {
+  function conditionalScopeAtPath(scope, matchingArrays, path) {
     const localScope = { ...scope };
-    Object.entries(localScope).forEach(([name, value]) => {
-      if (Array.isArray(value) && sameArrayShape(value, shape)) {
-        localScope[name] = conditionalPathValue(value, path);
-      }
+    matchingArrays.forEach(([name, value]) => {
+      localScope[name] = conditionalPathValue(value, path);
     });
     return localScope;
   }
@@ -958,10 +956,10 @@
     return selected;
   }
 
-  function evaluateConditionalBranchAtPath(branchNode, scope, hooks, shape, path) {
+  function evaluateConditionalBranchAtPath(branchNode, scope, hooks, shape, matchingArrays, path) {
     const value = evaluateAstNode(
       conditionalLiteralAtPath(branchNode, path),
-      conditionalScopeAtPath(scope, shape, path),
+      conditionalScopeAtPath(scope, matchingArrays, path),
       hooks,
     );
     if (!Array.isArray(value)) {
@@ -995,19 +993,24 @@
     }
 
     const shape = firstArrayCondition.value;
+    // Determine once which context values need scalarization. Repeating this
+    // shape comparison for every cell makes vectorized if() quadratic again.
+    const matchingArrays = Object.entries(scope).filter(([, value]) => (
+      Array.isArray(value) && sameArrayShape(value, shape)
+    ));
     const evaluateAtPath = (path) => {
       for (let index = firstArrayCondition.index; index < node.args.length - 1; index += 2) {
-        const condition = index === firstArrayCondition.index
+          const condition = index === firstArrayCondition.index
           ? firstArrayCondition.value
-          : evaluateConditionalBranchAtPath(node.args[index], scope, hooks, shape, path);
+          : evaluateConditionalBranchAtPath(node.args[index], scope, hooks, shape, matchingArrays, path);
         const conditionValue = Array.isArray(condition)
           ? conditionalPathValue(condition, path)
           : condition;
         if (conditionValue) {
-          return evaluateConditionalBranchAtPath(node.args[index + 1], scope, hooks, shape, path);
+          return evaluateConditionalBranchAtPath(node.args[index + 1], scope, hooks, shape, matchingArrays, path);
         }
       }
-      return evaluateConditionalBranchAtPath(node.args[node.args.length - 1], scope, hooks, shape, path);
+      return evaluateConditionalBranchAtPath(node.args[node.args.length - 1], scope, hooks, shape, matchingArrays, path);
     };
     const buildResult = (value, path = []) => value.map((item, index) => (
       Array.isArray(item) ? buildResult(item, [...path, index]) : evaluateAtPath([...path, index])

@@ -26,6 +26,7 @@
       evalReasonText,
       evaluateBreakpointConditionAtTime,
       openWatchDebugger,
+      openSemanticBreakpointMessage,
       clearVisualHistory,
       clearSimulationHistory,
       onTimedExecutionStarted = null,
@@ -114,6 +115,18 @@
       return true;
     }
 
+    function presentBreakpointHit(result, timeValue) {
+      setStatusKey?.("status.breakpointHit", {
+        time: formatNumberValue?.(Number(timeValue)),
+      });
+      const message = String(result?.message ?? "").trim();
+      if (message) {
+        openSemanticBreakpointMessage?.(message);
+      } else {
+        openWatchDebugger?.();
+      }
+    }
+
     async function ensureExecutionReady() {
       if (!enforceStrictDefinitions?.()) {
         return null;
@@ -127,7 +140,7 @@
       return validateTimeConfig();
     }
 
-    async function executeOneStep(restartIfEnded = true, { refreshView = true } = {}) {
+    async function executeOneStep(restartIfEnded = true, { refreshView = true, notifyBreakpoint = true } = {}) {
       const execution = getExecution();
       const cfg = await ensureExecutionReady();
       if (!cfg) {
@@ -190,11 +203,15 @@
         if (refreshView) {
           refreshAfterStep(true);
         }
-        setStatusKey?.("status.breakpointHit", {
-          time: formatNumberValue?.(Number(nextTime)),
-        });
-        openWatchDebugger?.();
-        return { ok: true, breakpointHit: true, completed: false };
+        if (notifyBreakpoint) {
+          presentBreakpointHit(breakpointResult, nextTime);
+        }
+        return {
+          ok: true,
+          breakpointHit: true,
+          breakpointMessage: String(breakpointResult.message ?? "").trim(),
+          completed: false,
+        };
       }
 
       const completed = hasReachedExecutionEnd(nextTime, cfg);
@@ -288,6 +305,7 @@
       let firstErrorTime = null;
       let lastTime = timeValues[timeValues.length - 1];
       let breakpointHit = false;
+      let breakpointHitResult = null;
 
       for (let idx = 0; idx < timeValues.length; idx += 1) {
         const timeValue = timeValues[idx];
@@ -307,20 +325,21 @@
         if (stepResult.errorCount > 0 && stopOnEvaluationError(execution)) {
           break;
         }
-        const breakpointResult = evaluateBreakpointConditionAtTime?.(timeValue) || { hit: false, invalid: false };
-        if (breakpointResult.invalid) {
+        const stepBreakpointResult = evaluateBreakpointConditionAtTime?.(timeValue) || { hit: false, invalid: false };
+        if (stepBreakpointResult.invalid) {
           refreshRuntimeView?.();
           setStatus?.(
             t("error.breakpointInvalid", {
-              reason: breakpointResult.message || t("error.evalReason.runtime"),
+              reason: stepBreakpointResult.message || t("error.evalReason.runtime"),
             }),
             true,
           );
           openWatchDebugger?.();
           return;
         }
-        if (breakpointResult.hit) {
+        if (stepBreakpointResult.hit) {
           breakpointHit = true;
+          breakpointHitResult = stepBreakpointResult;
           break;
         }
       }
@@ -329,10 +348,7 @@
       refreshRuntimeView?.();
 
       if (breakpointHit) {
-        setStatusKey?.("status.breakpointHit", {
-          time: formatNumberValue?.(Number(lastTime)),
-        });
-        openWatchDebugger?.();
+        presentBreakpointHit(breakpointHitResult, lastTime);
       } else if (firstErrorNode) {
         setStatusKey?.("error.evalFailedDetailedTime", {
           node: firstErrorNode,
@@ -422,7 +438,7 @@
           const stepsPerRefresh = visualRefreshInterval(execution);
           let outcome = null;
           for (let step = 0; step < stepsPerRefresh; step += 1) {
-            outcome = await executeOneStep(false, { refreshView: false });
+            outcome = await executeOneStep(false, { refreshView: false, notifyBreakpoint: false });
             if (!outcome?.ok || outcome.completed || outcome.breakpointHit) {
               break;
             }
@@ -443,10 +459,7 @@
             stopTimedExecution(false, "completed");
           } else if (outcome.breakpointHit) {
             stopTimedExecution(false, "breakpoint");
-            setStatusKey?.("status.breakpointHit", {
-              time: formatNumberValue?.(Number(execution.currentTime)),
-            });
-            openWatchDebugger?.();
+            presentBreakpointHit({ message: outcome.breakpointMessage }, execution.currentTime);
           }
         } catch (err) {
           stopTimedExecution(false, "error");

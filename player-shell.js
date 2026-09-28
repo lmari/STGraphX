@@ -243,12 +243,46 @@
     return { text: formatValue(execution, value), error: false };
   }
 
-  function formatTableValue(execution, widget, value) {
-    if (typeof value === "number" && Number.isFinite(value) && widget?.tableDecimalDigits != null) {
-      return value.toFixed(widget.tableDecimalDigits);
+  function nodeTooltipText(node, runtimeNode, execution, t) {
+    const description = (node?.properties || []).find((property) => (
+      ["descrizione", "description"].includes(String(property?.key ?? "").trim().toLowerCase())
+    ))?.value;
+    const prefix = String(description ?? "").trim();
+    if (runtimeNode?.computedError) {
+      const detail = String(runtimeNode.computedErrorMessage ?? "").trim()
+        || t(`error.evalReason.${runtimeNode.computedError || "runtime"}`);
+      return prefix ? `${prefix}: ${detail}` : detail;
+    }
+    if (runtimeNode?.computedValue != null) {
+      const summary = summarizeNodeRuntimeValue(runtimeNode, execution, t).text;
+      return prefix ? `${prefix}: ${summary}` : summary;
+    }
+    return prefix;
+  }
+
+  function tableColumnFormat(widget, columnName) {
+    const format = widget?.tableColumnFormats?.[columnName] || {};
+    const hasDecimalDigits = Object.prototype.hasOwnProperty.call(format, "decimalDigits");
+    return {
+      align: ["left", "center", "right"].includes(String(format.align ?? ""))
+        ? String(format.align)
+        : widget.tableTextAlign,
+      decimalDigits: hasDecimalDigits && format.decimalDigits != null
+        && Number.isInteger(Number(format.decimalDigits))
+        && Number(format.decimalDigits) >= 0
+        && Number(format.decimalDigits) <= 12
+        ? Number(format.decimalDigits)
+        : (hasDecimalDigits ? null : widget.tableDecimalDigits),
+    };
+  }
+
+  function formatTableValue(execution, widget, value, columnName = "") {
+    const { decimalDigits } = tableColumnFormat(widget, columnName);
+    if (typeof value === "number" && Number.isFinite(value) && decimalDigits != null) {
+      return value.toFixed(decimalDigits);
     }
     if (Array.isArray(value)) {
-      return `[${value.map((item) => formatTableValue(execution, widget, item)).join(", ")}]`;
+      return `[${value.map((item) => formatTableValue(execution, widget, item, columnName)).join(", ")}]`;
     }
     return formatValue(execution, value);
   }
@@ -350,6 +384,15 @@
       tableDecimalDigits: Number.isInteger(Number(widget?.tableDecimalDigits)) && Number(widget.tableDecimalDigits) >= 0 && Number(widget.tableDecimalDigits) <= 12
         ? Number(widget.tableDecimalDigits)
         : null,
+      tableColumnFormats: Object.fromEntries(Object.entries(widget?.tableColumnFormats && typeof widget.tableColumnFormats === "object"
+        && !Array.isArray(widget.tableColumnFormats) ? widget.tableColumnFormats : {})
+        .filter(([name]) => String(name).trim())
+        .map(([name, format]) => [String(name), {
+          align: ["left", "center", "right"].includes(String(format?.align ?? "")) ? String(format.align) : "left",
+          decimalDigits: format?.decimalDigits != null && Number.isInteger(Number(format.decimalDigits)) && Number(format.decimalDigits) >= 0 && Number(format.decimalDigits) <= 12
+            ? Number(format.decimalDigits)
+            : null,
+        }])),
       source: String(widget?.source ?? ""),
       showNumericValues: widget?.showNumericValues !== false,
       showIndices: widget?.showIndices !== false,
@@ -462,6 +505,16 @@
   function matrixPaletteColor(scheme, ratio) {
     const clamped = clamp(Number(ratio) || 0, 0, 1);
     const mode = String(scheme || "blue").toLowerCase();
+    const interpolate = (stops) => {
+      const scaled = clamped * (stops.length - 1);
+      const index = Math.min(stops.length - 2, Math.floor(scaled));
+      const local = scaled - index;
+      const parseHex = (hex) => [1, 3, 5].map((offset) => Number.parseInt(hex.slice(offset, offset + 2), 16));
+      const from = parseHex(stops[index]);
+      const to = parseHex(stops[index + 1]);
+      const lerp = (a, b) => Math.round(a + ((b - a) * local));
+      return `rgb(${lerp(from[0], to[0])}, ${lerp(from[1], to[1])}, ${lerp(from[2], to[2])})`;
+    };
     if (mode === "heat") {
       const hue = 44 - (44 * clamped);
       const sat = 90;
@@ -479,6 +532,15 @@
       const light = 96 - (44 * distance);
       return `hsl(${hue} ${sat}% ${light.toFixed(1)}%)`;
     }
+    if (mode === "viridis") {
+      return interpolate(["#440154", "#3b528b", "#21918c", "#5ec962", "#fde725"]);
+    }
+    if (mode === "plasma") {
+      return interpolate(["#0d0887", "#7e03a8", "#cc4778", "#f89540", "#f0f921"]);
+    }
+    if (mode === "terrain") {
+      return interpolate(["#1a9850", "#91cf60", "#fee08b", "#fc8d59", "#8c510a"]);
+    }
     const from = "#edf4fb";
     const to = "#2f7fd6";
     const parseHex = (hex) => [1, 3, 5].map((offset) => Number.parseInt(hex.slice(offset, offset + 2), 16));
@@ -495,11 +557,19 @@
     if (!Number.isFinite(value)) {
       return "rgba(0,0,0,0.04)";
     }
+    if (String(scheme || "").toLowerCase() === "categorical") {
+      const colors = ["#f4f7fa", "#2f7fd6", "#d84a3a", "#2fa36b", "#8c62bd", "#c58b25"];
+      const base = Number.isInteger(minValue) ? minValue : 0;
+      const index = Math.round(value) - base;
+      return colors[((index % colors.length) + colors.length) % colors.length];
+    }
     if (fixedRange && Number.isFinite(minValue) && Number.isFinite(maxValue)) {
       if (maxValue === minValue) {
         return matrixPaletteColor(scheme, 0.55);
       }
-      return matrixPaletteColor(scheme, (value - minValue) / (maxValue - minValue));
+      const range = maxValue - minValue;
+      const discrete = Number.isInteger(value) && Number.isInteger(minValue) && Number.isInteger(maxValue);
+      return matrixPaletteColor(scheme, (value - minValue) / (discrete ? range + 1 : range));
     }
     if (!Number.isFinite(minValue) || !Number.isFinite(maxValue) || maxValue === minValue) {
       return matrixPaletteColor(scheme, 0.55);
@@ -1017,6 +1087,7 @@
             overflow: hidden;
           }
           .player {
+            position: relative;
             display: grid;
             grid-template-rows: auto 1fr;
             min-height: 420px;
@@ -1436,6 +1507,46 @@
             color: #70859b;
             font-style: italic;
           }
+          .semantic-breakpoint-overlay {
+            position: absolute;
+            inset: 0;
+            z-index: 20;
+            display: grid;
+            place-items: center;
+            padding: 20px;
+            background: rgba(27, 47, 66, 0.3);
+          }
+          .semantic-breakpoint-overlay[hidden] {
+            display: none;
+          }
+          .semantic-breakpoint-dialog {
+            width: min(100%, 420px);
+            padding: 20px;
+            border: 1px solid #b8c9d8;
+            border-radius: 12px;
+            background: #fff;
+            box-shadow: 0 16px 38px rgba(25, 50, 75, 0.26);
+          }
+          .semantic-breakpoint-message {
+            color: #203040;
+            line-height: 1.4;
+            white-space: pre-wrap;
+            word-break: break-word;
+          }
+          .semantic-breakpoint-actions {
+            display: flex;
+            justify-content: flex-end;
+            margin-top: 16px;
+          }
+          .semantic-breakpoint-actions button {
+            border: 1px solid #b7c7d8;
+            border-radius: 999px;
+            padding: 6px 14px;
+            background: #fff;
+            color: #203040;
+            cursor: pointer;
+            font: inherit;
+          }
         </style>
         <div class="player">
           <div class="toolbar">
@@ -1454,6 +1565,14 @@
               </div>
             </div>
           </div>
+          <div class="semantic-breakpoint-overlay" data-role="semanticBreakpointOverlay" hidden>
+            <div class="semantic-breakpoint-dialog" role="alertdialog" aria-modal="true" aria-labelledby="semanticBreakpointMessage">
+              <div class="semantic-breakpoint-message" data-role="semanticBreakpointMessage" id="semanticBreakpointMessage"></div>
+              <div class="semantic-breakpoint-actions">
+                <button type="button" data-action="dismissSemanticBreakpoint"></button>
+              </div>
+            </div>
+          </div>
         </div>
       `;
       this.$title = this.shadowRoot.querySelector('[data-role="title"]');
@@ -1466,6 +1585,9 @@
       this.$step = this.shadowRoot.querySelector('[data-action="step"]');
       this.$timed = this.shadowRoot.querySelector('[data-action="timed"]');
       this.$reset = this.shadowRoot.querySelector('[data-action="reset"]');
+      this.$semanticBreakpointOverlay = this.shadowRoot.querySelector('[data-role="semanticBreakpointOverlay"]');
+      this.$semanticBreakpointMessage = this.shadowRoot.querySelector('[data-role="semanticBreakpointMessage"]');
+      this.$dismissSemanticBreakpoint = this.shadowRoot.querySelector('[data-action="dismissSemanticBreakpoint"]');
       this.refreshStaticTexts();
       this.applyViewOptions();
     }
@@ -1480,6 +1602,7 @@
         ? this.t("action.timedStart")
         : this.t("action.timedStop");
       this.$reset.textContent = this.t("menu.run.reset");
+      this.$dismissSemanticBreakpoint.textContent = this.t("action.close");
       this.$title.textContent = this._state.rawModel?.modelTitle || "STGraphX";
     }
 
@@ -1496,6 +1619,22 @@
       this.$reset.addEventListener("click", () => {
         void this.reset();
       });
+      this.$dismissSemanticBreakpoint.addEventListener("click", () => this.closeSemanticBreakpointMessage());
+    }
+
+    openSemanticBreakpointMessage(message) {
+      if (!this.$semanticBreakpointOverlay || !this.$semanticBreakpointMessage) {
+        return;
+      }
+      this.$semanticBreakpointMessage.textContent = String(message ?? "");
+      this.$semanticBreakpointOverlay.hidden = false;
+      this.$dismissSemanticBreakpoint?.focus();
+    }
+
+    closeSemanticBreakpointMessage() {
+      if (this.$semanticBreakpointOverlay) {
+        this.$semanticBreakpointOverlay.hidden = true;
+      }
     }
 
     async reload() {
@@ -1783,6 +1922,20 @@
         },
       });
 
+      const watchDebuggerCore = global.STGraphXWatchDebuggerCore?.createWatchDebuggerCoreHelpers({
+        t: this.t.bind(this),
+        getGraph: () => runtimeModel,
+        getNodeByName: (name) => nodeByName(runtimeModel, name),
+        isStateNode,
+        buildExecutionGlobals: (timeValue) => this._state.runtimeCore.buildExecutionGlobalsForModel(
+          runtimeModel,
+          runtimeModel.execution,
+          timeValue,
+        ),
+        localFunctionsForSemantics: (model) => Array.isArray(model?.localFunctions) ? model.localFunctions : [],
+        semantics: global.GraphSemantics || globalThis.GraphSemantics,
+      });
+
       const runtimeController = global.STGraphXRuntimeController.createRuntimeController({
         session: runtimeSession,
         getExecution: () => runtimeModel.execution,
@@ -1811,8 +1964,11 @@
         formatNumberValue: (value) => formatNumberValue(runtimeModel.execution, value),
         formatExecutionDuration: (ms) => formatDuration(runtimeModel.execution, ms),
         evalReasonText: (reason) => this.t(`error.evalReason.${reason || "runtime"}`),
-        evaluateBreakpointConditionAtTime: () => ({ hit: false, invalid: false }),
+        evaluateBreakpointConditionAtTime: (timeValue) => (
+          watchDebuggerCore?.evaluateBreakpointConditionAtTime(timeValue) || { hit: false, invalid: false }
+        ),
         openWatchDebugger: () => {},
+        openSemanticBreakpointMessage: (message) => this.openSemanticBreakpointMessage(message),
         clearVisualHistory: () => this.clearWidgetHistory(),
         clearSimulationHistory: () => this.clearWidgetHistory(),
         onTimedExecutionStarted: ({ delay }) => {
@@ -2515,6 +2671,13 @@
       (model.nodes || []).filter((node) => visibleNodeIds.has(node.id)).forEach((node) => {
         const g = document.createElementNS(SVG_NS, "g");
         g.setAttribute("class", `node ${node.type || "state"}${node.__runtimeError ? " error" : ""}${node.output ? " output" : ""}`);
+        const tooltipText = nodeTooltipText(node, runtimeNodes.get(node.id), this._state.runtimeModel?.execution, this.t.bind(this));
+        if (tooltipText) {
+          const title = document.createElementNS(SVG_NS, "title");
+          title.textContent = tooltipText;
+          g.appendChild(title);
+          g.setAttribute("aria-label", tooltipText);
+        }
         if (typeof node.fillColor === "string" && node.fillColor.trim()) {
           g.style.setProperty("--node-fill", node.fillColor);
         }
@@ -2756,6 +2919,7 @@
           const headRow = document.createElement("tr");
           const corner = document.createElement("th");
           corner.textContent = displayedColumns[0];
+          corner.style.textAlign = tableColumnFormat(widget, displayedColumns[0]).align;
           headRow.appendChild(corner);
           for (let column = 0; column < matrixValue[0].length; column += 1) {
             const th = document.createElement("th");
@@ -2772,7 +2936,8 @@
             tr.appendChild(rowHeader);
             matrixRow.forEach((value) => {
               const td = document.createElement("td");
-              td.textContent = formatTableValue(execution, widget, value);
+              td.style.textAlign = tableColumnFormat(widget, displayedColumns[0]).align;
+              td.textContent = formatTableValue(execution, widget, value, displayedColumns[0]);
               tr.appendChild(td);
             });
             tbody.appendChild(tr);
@@ -2792,7 +2957,7 @@
         };
         const expandedCells = () => displayedColumns.flatMap((name) => {
           if (name === "time") {
-            return [{ label: "time", value: this.currentDisplayTime() }];
+            return [{ label: "time", source: "time", value: this.currentDisplayTime() }];
           }
           const node = nodeMap.get(name);
           if (!node) {
@@ -2803,6 +2968,7 @@
           }
           return flattenValues(node.computedValue).map((cell) => ({
             label: `${name}${cell.indexPath.map((index) => `[${index}]`).join("")}`,
+            source: name,
             value: cell.value,
             empty: cell.empty,
           }));
@@ -2813,6 +2979,7 @@
         (cells || displayedColumns).forEach((entry) => {
           const th = document.createElement("th");
           th.textContent = cells ? entry.label : entry;
+          th.style.textAlign = tableColumnFormat(widget, cells ? entry.source : entry).align;
           headRow.appendChild(th);
         });
         thead.appendChild(headRow);
@@ -2823,16 +2990,18 @@
           const tr = document.createElement("tr");
           (cells || displayedColumns).forEach((entry) => {
             const td = document.createElement("td");
+            const columnName = cells ? entry.source : entry;
+            td.style.textAlign = tableColumnFormat(widget, columnName).align;
             if (cells) {
               td.textContent = entry.error
                 ? this.t(`error.evalReason.${entry.error || "runtime"}`)
-                : (entry.empty || entry.missing ? "-" : formatTableValue(execution, widget, entry.value));
+                : (entry.empty || entry.missing ? "-" : formatTableValue(execution, widget, entry.value, columnName));
             } else {
               td.textContent = entry === "time"
-                ? formatTableValue(execution, widget, Number(widget.showHistory ? row.time : this.currentDisplayTime()))
+                ? formatTableValue(execution, widget, Number(widget.showHistory ? row.time : this.currentDisplayTime()), columnName)
                 : (widget.showHistory
-                  ? formatTableValue(execution, widget, row.values?.[entry])
-                  : formatTableValue(execution, widget, nodeMap.get(entry)?.computedValue));
+                  ? formatTableValue(execution, widget, row.values?.[entry], columnName)
+                  : formatTableValue(execution, widget, nodeMap.get(entry)?.computedValue, columnName));
             }
             tr.appendChild(td);
           });

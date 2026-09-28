@@ -622,12 +622,22 @@
             </label>
             <label for="watchBreakpointInput" data-i18n="watch.breakpointExpr"></label>
             <input id="watchBreakpointInput" type="text" spellcheck="false" />
+            <label for="watchBreakpointMessageInput" data-i18n="watch.breakpointMessage"></label>
+            <input id="watchBreakpointMessageInput" type="text" />
             <div id="watchBreakpointStatus" class="expr-status hidden"></div>
           </section>
           <div id="watchDebuggerList" class="watch-debugger-list"></div>
         </div>
         <div class="modal-actions">
           <button id="watchDebuggerDismissBtn" type="button" data-i18n="action.close"></button>
+        </div>
+      </div>
+    </div>
+    <div id="semanticBreakpointModal" class="modal-backdrop hidden">
+      <div class="modal-card semantic-breakpoint-card" role="dialog" aria-modal="true" aria-labelledby="semanticBreakpointMessage">
+        <div id="semanticBreakpointMessage" class="semantic-breakpoint-message"></div>
+        <div class="modal-actions">
+          <button id="semanticBreakpointDismissBtn" type="button" data-i18n="action.close"></button>
         </div>
       </div>
     </div>

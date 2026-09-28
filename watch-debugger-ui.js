@@ -18,11 +18,12 @@
     const watchDebuggerSummary = options.watchDebuggerSummary || null;
     const watchBreakpointEnabledInput = options.watchBreakpointEnabledInput || null;
     const watchBreakpointInput = options.watchBreakpointInput || null;
+    const watchBreakpointMessageInput = options.watchBreakpointMessageInput || null;
     const watchBreakpointStatus = options.watchBreakpointStatus || null;
     const watchAddSelectedBtn = options.watchAddSelectedBtn || null;
     const watchDebuggerList = options.watchDebuggerList || null;
     const isEditingUiLocked = typeof options.isEditingUiLocked === "function" ? options.isEditingUiLocked : () => false;
-    const getDebugConfig = typeof options.getDebugConfig === "function" ? options.getDebugConfig : () => ({ watches: [], breakpointEnabled: false, breakpointExpression: "" });
+    const getDebugConfig = typeof options.getDebugConfig === "function" ? options.getDebugConfig : () => ({ watches: [], breakpointEnabled: false, breakpointExpression: "", breakpointMessage: "" });
     const getSelectedWatchableNode = typeof options.getSelectedWatchableNode === "function" ? options.getSelectedWatchableNode : () => null;
     const validateBreakpointExpressionText = typeof options.validateBreakpointExpressionText === "function"
       ? options.validateBreakpointExpressionText
@@ -78,6 +79,12 @@
       }
       if (watchBreakpointInput) {
         watchBreakpointInput.disabled = isEditingUiLocked();
+      }
+      if (watchBreakpointMessageInput && document.activeElement !== watchBreakpointMessageInput) {
+        watchBreakpointMessageInput.value = String(debug.breakpointMessage ?? "");
+      }
+      if (watchBreakpointMessageInput) {
+        watchBreakpointMessageInput.disabled = isEditingUiLocked();
       }
       watchDebuggerSummary.textContent = t("watch.summary", { count: debug.watches.length });
 

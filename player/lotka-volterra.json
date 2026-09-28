@@ -10,7 +10,7 @@
     "gridSize": 20,
     "tooltipDelayMs": 300,
     "scrollLeft": 0,
-    "scrollTop": 117
+    "scrollTop": 113
   },
   "debug": {
     "watches": [],
@@ -18,11 +18,11 @@
     "breakpointExpression": ""
   },
   "modelProperties": [],
-  "nodeCounter": 16,
-  "edgeCounter": 16,
-  "widgetCounter": 12,
-  "textItemCounter": 6,
-  "presentationGroupCounter": 5,
+  "nodeCounter": 17,
+  "edgeCounter": 17,
+  "widgetCounter": 13,
+  "textItemCounter": 7,
+  "presentationGroupCounter": 6,
   "presentationGroups": [],
   "dashboard": null,
   "execution": {
@@ -232,19 +232,7 @@
       "controlPoints": []
     }
   ],
-  "textItems": [
-    {
-      "id": 1,
-      "x": 60,
-      "y": -100,
-      "width": 440,
-      "height": 40,
-      "fillColor": "",
-      "strokeColor": "",
-      "dashboardPageId": null,
-      "html": "<h3>Modello predatori-prede di Lotka-Volterra</h3>"
-    }
-  ],
+  "textItems": [],
   "widgets": [
     {
       "id": 1,
@@ -263,6 +251,7 @@
       "expandNonScalarValues": false,
       "tableTextAlign": "left",
       "tableDecimalDigits": 0,
+      "tableColumnFormats": {},
       "xMin": 0,
       "xMax": 50,
       "yMin": 0,
@@ -348,6 +337,7 @@
       "expandNonScalarValues": false,
       "tableTextAlign": "left",
       "tableDecimalDigits": 0,
+      "tableColumnFormats": {},
       "xMin": 0,
       "xMax": 0,
       "yMin": 0,
@@ -385,7 +375,7 @@
           "ySource": "y",
           "showTimeSeries": true,
           "showInstantProfile": false,
-          "color": "#0e7ac4",
+          "color": "#187b7c",
           "pointColor": "#0e7ac4",
           "showLine": true,
           "lineWidth": 2.2,
@@ -393,23 +383,6 @@
           "barMode": "none",
           "showBars": false,
           "barColor": "#0e7ac4",
-          "barWidth": 2.2,
-          "pointMode": "last",
-          "pointSize": 10
-        },
-        {
-          "xSource": "y",
-          "ySource": "x",
-          "showTimeSeries": true,
-          "showInstantProfile": false,
-          "color": "#e67e22",
-          "pointColor": "#e67e22",
-          "showLine": true,
-          "lineWidth": 2.2,
-          "lineStyle": "solid",
-          "barMode": "none",
-          "showBars": false,
-          "barColor": "#e67e22",
           "barWidth": 2.2,
           "pointMode": "last",
           "pointSize": 10

@@ -28,9 +28,11 @@ function addTableWidget(at = null) {
     expandNonScalarValues: false,
     tableTextAlign: "left",
     tableDecimalDigits: null,
+    tableColumnFormats: {},
     rows: [],
     columns: [],
   });
+  selectWidget(id);
 }
 
 function addCanvasText(at = null) {
@@ -83,6 +85,7 @@ function addMatrixWidget(at = null) {
     columns: [],
     xyPairs: [],
   });
+  selectWidget(id);
 }
 
 function sortedWidgetNodeNames(nodes) {
@@ -119,6 +122,7 @@ function addLedWidget(at = null) {
     columns: [],
     xyPairs: [],
   });
+  selectWidget(id);
 }
 
 function addSliderWidget(at = null) {
@@ -146,6 +150,7 @@ function addSliderWidget(at = null) {
     columns: [],
     xyPairs: [],
   });
+  selectWidget(id);
 }
 
 function addNumericWidget(at = null) {
@@ -171,6 +176,7 @@ function addNumericWidget(at = null) {
     columns: [],
     xyPairs: [],
   });
+  selectWidget(id);
 }
 
 function addButtonWidget(at = null) {
@@ -198,6 +204,7 @@ function addButtonWidget(at = null) {
     columns: [],
     xyPairs: [],
   });
+  selectWidget(id);
 }
 
 function addSelectWidget(at = null) {
@@ -226,6 +233,7 @@ function addSelectWidget(at = null) {
     columns: [],
     xyPairs: [],
   });
+  selectWidget(id);
 }
 
 function addTextWidget(at = null) {
@@ -250,6 +258,7 @@ function addTextWidget(at = null) {
     columns: [],
     xyPairs: [],
   });
+  selectWidget(id);
 }
 
 function addXYChartWidget(at = null) {
@@ -297,6 +306,7 @@ function addXYChartWidget(at = null) {
     ],
     columns: [],
   });
+  selectWidget(id);
 }
 
 function getNodeByName(name) {
@@ -401,6 +411,26 @@ function sanitizeTableWidgetOptions(widget) {
     && Number(widget.tableDecimalDigits) <= 12
     ? Number(widget.tableDecimalDigits)
     : null;
+  const rawColumnFormats = widget.tableColumnFormats && typeof widget.tableColumnFormats === "object"
+    && !Array.isArray(widget.tableColumnFormats)
+    ? widget.tableColumnFormats
+    : {};
+  const columns = new Set(Array.isArray(widget.columns) ? widget.columns : []);
+  widget.tableColumnFormats = Object.fromEntries(Object.entries(rawColumnFormats)
+    .filter(([name]) => columns.has(name))
+    .map(([name, format]) => {
+      const align = ["left", "center", "right"].includes(String(format?.align ?? ""))
+        ? String(format.align)
+        : widget.tableTextAlign;
+      const hasDecimalDigits = Object.prototype.hasOwnProperty.call(format || {}, "decimalDigits");
+      const decimalDigits = hasDecimalDigits && format?.decimalDigits != null
+        && Number.isInteger(Number(format.decimalDigits))
+        && Number(format.decimalDigits) >= 0
+        && Number(format.decimalDigits) <= 12
+        ? Number(format.decimalDigits)
+        : (hasDecimalDigits ? null : widget.tableDecimalDigits);
+      return [name, { align, decimalDigits }];
+    }));
   if (!Array.isArray(widget.rows)) {
     widget.rows = [];
   }
@@ -424,7 +454,7 @@ function sanitizeMatrixWidgetOptions(widget) {
   widget.showIndices = widget.showIndices !== false;
   widget.autoFitCells = widget.autoFitCells !== false;
   widget.cellSize = Number.isFinite(Number(widget.cellSize)) ? clamp(Number(widget.cellSize), 2, 96) : 28;
-  const allowedPalettes = new Set(["blue", "heat", "grayscale", "diverging", "none"]);
+  const allowedPalettes = new Set(["blue", "heat", "grayscale", "diverging", "viridis", "plasma", "terrain", "categorical", "none"]);
   widget.colorScheme = allowedPalettes.has(String(widget.colorScheme ?? "")) ? String(widget.colorScheme) : "blue";
   widget.viewMode = ["grid", "surface"].includes(String(widget.viewMode ?? "")) ? String(widget.viewMode) : "grid";
   widget.surfaceStyle = ["solid", "wireframe"].includes(String(widget.surfaceStyle ?? ""))
@@ -1803,23 +1833,40 @@ function widgetDisplayedTableColumns(widget, nodeMap = buildNodeNameMap()) {
     : widget.columns.slice();
 }
 
-function formatTableNumber(value, widget) {
-  const numeric = Number(value);
-  if (!Number.isFinite(numeric) || widget.tableDecimalDigits == null) {
-    return formatNumberValue(numeric);
-  }
-  return numeric.toFixed(widget.tableDecimalDigits);
+function tableColumnFormat(widget, columnName) {
+  const format = widget?.tableColumnFormats?.[columnName] || {};
+  const hasDecimalDigits = Object.prototype.hasOwnProperty.call(format, "decimalDigits");
+  return {
+    align: ["left", "center", "right"].includes(String(format.align ?? ""))
+      ? String(format.align)
+      : widget.tableTextAlign,
+    decimalDigits: hasDecimalDigits && format.decimalDigits != null
+      && Number.isInteger(Number(format.decimalDigits))
+      && Number(format.decimalDigits) >= 0
+      && Number(format.decimalDigits) <= 12
+      ? Number(format.decimalDigits)
+      : (hasDecimalDigits ? null : widget.tableDecimalDigits),
+  };
 }
 
-function formatTableValue(value, widget) {
+function formatTableNumber(value, widget, columnName = "") {
+  const numeric = Number(value);
+  const { decimalDigits } = tableColumnFormat(widget, columnName);
+  if (!Number.isFinite(numeric) || decimalDigits == null) {
+    return formatNumberValue(numeric);
+  }
+  return numeric.toFixed(decimalDigits);
+}
+
+function formatTableValue(value, widget, columnName = "") {
   if (value === null || value === undefined) {
     return "-";
   }
   if (typeof value === "number") {
-    return formatTableNumber(value, widget);
+    return formatTableNumber(value, widget, columnName);
   }
   if (Array.isArray(value)) {
-    return `[${value.map((item) => formatTableValue(item, widget)).join(", ")}]`;
+    return `[${value.map((item) => formatTableValue(item, widget, columnName)).join(", ")}]`;
   }
   return formatComputedValue(value);
 }
@@ -1834,11 +1881,12 @@ function buildTableRowElement(displayedCols, entry, widget) {
   const row = document.createElement("tr");
   displayedCols.forEach((colName) => {
     const td = document.createElement("td");
+    td.style.textAlign = tableColumnFormat(widget, colName).align;
     const cell = entry?.values?.[colName];
     if (cell?.error) {
       td.textContent = t("text.valueError", { reason: evalReasonText(cell.error) });
     } else if (Object.prototype.hasOwnProperty.call(entry?.values || {}, colName)) {
-      td.textContent = formatTableValue(cell?.value ?? null, widget);
+      td.textContent = formatTableValue(cell?.value ?? null, widget, colName);
     } else {
       td.textContent = "-";
     }
@@ -1862,7 +1910,7 @@ function expandedTableCells(widget, nodeMap = buildNodeNameMap()) {
   const currentTime = graph.execution.currentTime == null ? graph.execution.t0 : graph.execution.currentTime;
   return displayedCols.flatMap((colName) => {
     if (colName === "time") {
-      return [{ label: "time", value: Number(currentTime) }];
+      return [{ label: "time", source: "time", value: Number(currentTime) }];
     }
     const node = nodeMap.get(colName);
     if (!node) {
@@ -1873,6 +1921,7 @@ function expandedTableCells(widget, nodeMap = buildNodeNameMap()) {
     }
     return flattenTableScalarValues(node.computedValue).map((cell) => ({
       label: `${colName}${cell.indexPath.map((index) => `[${index}]`).join("")}`,
+      source: colName,
       value: cell.value,
       empty: cell.empty,
     }));
@@ -1905,6 +1954,7 @@ function renderExpandedTableWidgetBody(body, widget, nodeMap = buildNodeNameMap(
     const headRow = document.createElement("tr");
     const corner = document.createElement("th");
     corner.textContent = expandedMatrix.name;
+    corner.style.textAlign = tableColumnFormat(widget, expandedMatrix.name).align;
     headRow.appendChild(corner);
     for (let column = 0; column < expandedMatrix.columnCount; column += 1) {
       const th = document.createElement("th");
@@ -1921,7 +1971,8 @@ function renderExpandedTableWidgetBody(body, widget, nodeMap = buildNodeNameMap(
       row.appendChild(rowHeader);
       for (let column = 0; column < expandedMatrix.columnCount; column += 1) {
         const td = document.createElement("td");
-        td.textContent = formatTableValue(matrixRow[column], widget);
+        td.style.textAlign = tableColumnFormat(widget, expandedMatrix.name).align;
+        td.textContent = formatTableValue(matrixRow[column], widget, expandedMatrix.name);
         row.appendChild(td);
       }
       tbody.appendChild(row);
@@ -1954,12 +2005,13 @@ function renderExpandedTableWidgetBody(body, widget, nodeMap = buildNodeNameMap(
   const row = document.createElement("tr");
   cells.forEach((cell) => {
     const td = document.createElement("td");
+    td.style.textAlign = tableColumnFormat(widget, cell.source || cell.label).align;
     if (cell.error) {
       td.textContent = t("text.valueError", { reason: evalReasonText(cell.error) });
     } else if (cell.empty || cell.missing) {
       td.textContent = "-";
     } else {
-      td.textContent = formatTableValue(cell.value, widget);
+      td.textContent = formatTableValue(cell.value, widget, cell.source || cell.label);
     }
     row.appendChild(td);
   });
@@ -1970,6 +2022,16 @@ function renderExpandedTableWidgetBody(body, widget, nodeMap = buildNodeNameMap(
 
 function matrixPaletteColor(scheme, ratio) {
   const tValue = clamp(Number(ratio) || 0, 0, 1);
+  const interpolate = (stops) => {
+    const scaled = tValue * (stops.length - 1);
+    const index = Math.min(stops.length - 2, Math.floor(scaled));
+    const local = scaled - index;
+    const parse = (hex) => [1, 3, 5].map((offset) => Number.parseInt(hex.slice(offset, offset + 2), 16));
+    const from = parse(stops[index]);
+    const to = parse(stops[index + 1]);
+    const mix = (start, end) => Math.round(start + ((end - start) * local));
+    return `rgb(${mix(from[0], to[0])}, ${mix(from[1], to[1])}, ${mix(from[2], to[2])})`;
+  };
   if (scheme === "heat") {
     const hue = 44 - (44 * tValue);
     const sat = 90;
@@ -1987,12 +2049,27 @@ function matrixPaletteColor(scheme, ratio) {
     const light = 96 - (44 * distance);
     return `hsl(${hue} ${sat}% ${light.toFixed(1)}%)`;
   }
+  if (scheme === "viridis") {
+    return interpolate(["#440154", "#3b528b", "#21918c", "#5ec962", "#fde725"]);
+  }
+  if (scheme === "plasma") {
+    return interpolate(["#0d0887", "#7e03a8", "#cc4778", "#f89540", "#f0f921"]);
+  }
+  if (scheme === "terrain") {
+    return interpolate(["#1a9850", "#91cf60", "#fee08b", "#fc8d59", "#8c510a"]);
+  }
   return `hsl(204 76% ${94 - (38 * tValue)}%)`;
 }
 
 function matrixCellBackgroundColor(value, minValue, maxValue, scheme, fixedRange = false) {
   if (scheme === "none" || !isFiniteScalar(value)) {
     return "";
+  }
+  if (scheme === "categorical") {
+    const colors = ["#f4f7fa", "#2f7fd6", "#d84a3a", "#2fa36b", "#8c62bd", "#c58b25"];
+    const base = Number.isInteger(minValue) ? minValue : 0;
+    const index = Math.round(value) - base;
+    return colors[((index % colors.length) + colors.length) % colors.length];
   }
   const range = maxValue - minValue;
   if (range > 0) {
@@ -2209,6 +2286,7 @@ function renderTableWidgetBody(body, widget, nodeMap = buildNodeNameMap()) {
   displayedCols.forEach((colName) => {
     const th = document.createElement("th");
     th.textContent = colName || t("widget.columnEmpty");
+    th.style.textAlign = tableColumnFormat(widget, colName).align;
     headRow.appendChild(th);
   });
   thead.appendChild(headRow);
@@ -2226,9 +2304,10 @@ function renderTableWidgetBody(body, widget, nodeMap = buildNodeNameMap()) {
     const row = document.createElement("tr");
     displayedCols.forEach((colName) => {
       const td = document.createElement("td");
+      td.style.textAlign = tableColumnFormat(widget, colName).align;
       if (colName === "time") {
         const tVal = graph.execution.currentTime == null ? graph.execution.t0 : graph.execution.currentTime;
-        td.textContent = formatTableNumber(Number(tVal), widget);
+        td.textContent = formatTableNumber(Number(tVal), widget, colName);
       } else {
         const node = nodeMap.get(colName);
         if (!node) {
@@ -2236,7 +2315,7 @@ function renderTableWidgetBody(body, widget, nodeMap = buildNodeNameMap()) {
         } else if (node.computedError) {
           td.textContent = t("text.valueError", { reason: evalReasonText(node.computedError) });
         } else {
-          td.textContent = formatTableValue(node.computedValue, widget);
+          td.textContent = formatTableValue(node.computedValue, widget, colName);
         }
       }
       row.appendChild(td);
@@ -4502,7 +4581,7 @@ function refreshWidgetConfigPanel(widget) {
     });
 
     const colorSelect = document.createElement("select");
-    ["blue", "heat", "grayscale", "diverging", "none"].forEach((scheme) => {
+    ["blue", "viridis", "plasma", "heat", "terrain", "grayscale", "diverging", "categorical", "none"].forEach((scheme) => {
       const opt = document.createElement("option");
       opt.value = scheme;
       opt.textContent = t(`widget.matrixColorScheme.${scheme}`);
@@ -4797,14 +4876,16 @@ function refreshWidgetConfigPanel(widget) {
     sanitizeWidgetColumns(widget);
     sanitizeTableWidgetOptions(widget);
     const tableSection = createWidgetSection();
-    appendWidgetSectionTitle(tableSection, "widget.tableNodes");
     const list = document.createElement("div");
     list.className = "props-list";
     const tableChoices = ["time", ...nodeNames];
     widget.columns.forEach((colName, idx) => {
-      const row = document.createElement("div");
-      row.className = "prop-row";
-      row.style.gridTemplateColumns = "1fr auto auto auto";
+      const columnEntry = document.createElement("div");
+      columnEntry.className = "props-list";
+      columnEntry.style.gap = "3px";
+      const sourceRow = document.createElement("div");
+      sourceRow.className = "prop-row";
+      sourceRow.style.gridTemplateColumns = "minmax(0, 1fr) auto auto auto";
       const sel = document.createElement("select");
       tableChoices.forEach((name) => {
         const opt = document.createElement("option");
@@ -4816,7 +4897,53 @@ function refreshWidgetConfigPanel(widget) {
       setConfigTooltip(sel, "tooltip.widget.tableColumn");
       sel.addEventListener("change", () => {
         runAction(() => {
+          const previousName = widget.columns[idx];
           widget.columns[idx] = sel.value;
+          if (previousName !== sel.value) {
+            delete widget.tableColumnFormats[previousName];
+          }
+          sanitizeTableWidgetOptions(widget);
+        });
+      });
+      const columnFormat = tableColumnFormat(widget, colName);
+      const alignInput = document.createElement("select");
+      ["left", "center", "right"].forEach((value) => {
+        const option = document.createElement("option");
+        option.value = value;
+        option.textContent = t(`widget.tableAlign.${value}`);
+        alignInput.appendChild(option);
+      });
+      alignInput.value = columnFormat.align;
+      setConfigTooltip(alignInput, "tooltip.widget.tableAlign");
+      alignInput.addEventListener("change", () => {
+        runAction(() => {
+          widget.tableColumnFormats[colName] = {
+            ...tableColumnFormat(widget, colName),
+            align: alignInput.value,
+          };
+          sanitizeTableWidgetOptions(widget);
+        });
+      });
+      const decimalsInput = document.createElement("select");
+      const autoOption = document.createElement("option");
+      autoOption.value = "";
+      autoOption.textContent = t("widget.tableDecimalsModel");
+      decimalsInput.appendChild(autoOption);
+      for (let digits = 0; digits <= 12; digits += 1) {
+        const option = document.createElement("option");
+        option.value = String(digits);
+        option.textContent = String(digits);
+        decimalsInput.appendChild(option);
+      }
+      decimalsInput.value = columnFormat.decimalDigits == null ? "" : String(columnFormat.decimalDigits);
+      setConfigTooltip(decimalsInput, "tooltip.widget.tableDecimals");
+      decimalsInput.addEventListener("change", () => {
+        runAction(() => {
+          widget.tableColumnFormats[colName] = {
+            ...tableColumnFormat(widget, colName),
+            decimalDigits: decimalsInput.value === "" ? null : Number(decimalsInput.value),
+          };
+          sanitizeTableWidgetOptions(widget);
         });
       });
       const del = document.createElement("button");
@@ -4860,11 +4987,19 @@ function refreshWidgetConfigPanel(widget) {
           widget.columns[idx] = tmp;
         });
       });
-      row.appendChild(sel);
-      row.appendChild(upBtn);
-      row.appendChild(downBtn);
-      row.appendChild(del);
-      list.appendChild(row);
+      sourceRow.appendChild(sel);
+      sourceRow.appendChild(upBtn);
+      sourceRow.appendChild(downBtn);
+      sourceRow.appendChild(del);
+      const sourceField = createCompactField("widget.tableNode", sel, "tooltip.widget.tableColumn");
+      sourceRow.replaceChildren(sourceField, upBtn, downBtn, del);
+      const formatRow = document.createElement("div");
+      formatRow.className = "row2-exec table-display-options";
+      formatRow.appendChild(createCompactField("widget.tableAlign", alignInput, "tooltip.widget.tableAlign"));
+      formatRow.appendChild(createCompactField("widget.tableDecimals", decimalsInput, "tooltip.widget.tableDecimals"));
+      columnEntry.appendChild(sourceRow);
+      columnEntry.appendChild(formatRow);
+      list.appendChild(columnEntry);
     });
     const add = document.createElement("button");
     add.type = "button";
@@ -4874,6 +5009,8 @@ function refreshWidgetConfigPanel(widget) {
     add.addEventListener("click", () => {
       runAction(() => {
         widget.columns.push("time");
+        widget.tableColumnFormats.time = tableColumnFormat(widget, "time");
+        sanitizeTableWidgetOptions(widget);
       });
     });
     tableSection.appendChild(list);
@@ -4925,43 +5062,6 @@ function refreshWidgetConfigPanel(widget) {
     tableModeSection.appendChild(modeLabel);
     tableModeSection.appendChild(expandLabel);
 
-    const displayRow = document.createElement("div");
-    displayRow.className = "row2-exec table-display-options";
-    const alignInput = document.createElement("select");
-    ["left", "center", "right"].forEach((value) => {
-      const option = document.createElement("option");
-      option.value = value;
-      option.textContent = t(`widget.tableAlign.${value}`);
-      alignInput.appendChild(option);
-    });
-    alignInput.value = widget.tableTextAlign;
-    alignInput.addEventListener("change", () => {
-      runAction(() => {
-        widget.tableTextAlign = alignInput.value;
-        sanitizeTableWidgetOptions(widget);
-      });
-    });
-    const decimalsInput = document.createElement("select");
-    const autoOption = document.createElement("option");
-    autoOption.value = "";
-    autoOption.textContent = t("widget.tableDecimalsModel");
-    decimalsInput.appendChild(autoOption);
-    for (let digits = 0; digits <= 12; digits += 1) {
-      const option = document.createElement("option");
-      option.value = String(digits);
-      option.textContent = String(digits);
-      decimalsInput.appendChild(option);
-    }
-    decimalsInput.value = widget.tableDecimalDigits == null ? "" : String(widget.tableDecimalDigits);
-    decimalsInput.addEventListener("change", () => {
-      runAction(() => {
-        widget.tableDecimalDigits = decimalsInput.value === "" ? null : Number(decimalsInput.value);
-        sanitizeTableWidgetOptions(widget);
-      });
-    });
-    displayRow.appendChild(createCompactField("widget.tableAlign", alignInput));
-    displayRow.appendChild(createCompactField("widget.tableDecimals", decimalsInput));
-    tableModeSection.appendChild(displayRow);
     return;
   }
 

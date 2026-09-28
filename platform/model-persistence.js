@@ -71,6 +71,9 @@
       const setStatusKey = typeof options.setStatusKey === "function"
         ? options.setStatusKey
         : () => {};
+      const downloadStatusKey = () => (isFirefoxBrowser()
+        ? "status.savedFirefoxDownload"
+        : "status.savedBrowserDownload");
 
       if (!forceSaveAs && !dirtySinceLastSave) {
         setStatusKey("status.alreadySaved");
@@ -142,7 +145,7 @@
         downloadJsonFile(selectedName, json);
         markSavedSnapshot();
         await rememberRecentModel(fileName, null, directoryHandle, json);
-        setStatusKey("status.saved");
+        setStatusKey(downloadStatusKey());
         return { ok: true, fileHandle: null, fileName, directoryHandle };
       }
 
@@ -198,7 +201,7 @@
       downloadJsonFile(fileName, json);
       markSavedSnapshot();
       await rememberRecentModel(fileName, null, directoryHandle, json);
-      setStatusKey(forceSaveAs ? "status.savedAs" : "status.saved");
+      setStatusKey(downloadStatusKey());
       return { ok: true, fileHandle: null, fileName, directoryHandle };
     }
 

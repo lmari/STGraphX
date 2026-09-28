@@ -117,6 +117,48 @@ async function run() {
     key: "error.evalStepFailed",
     vars: { node: "occupiedN", reason: "neighbors expects a matrix", time: "0" },
   });
+
+  let semanticMessage = "";
+  let watchOpened = false;
+  const semanticExecution = {
+    t0: 0,
+    dt: 1,
+    t1: 10,
+    delayMs: 1,
+    renderEverySteps: 1,
+    currentTime: null,
+  };
+  const semanticController = globalThis.STGraphXRuntimeController.createRuntimeController({
+    session: {
+      hasInitializedStateSnapshot: () => false,
+      clearSubmodelState: () => {},
+      initializeAt: () => {},
+      promotePending: () => {},
+      evaluateAtTime: () => ({ successCount: 1, errorCount: 0 }),
+    },
+    getExecution: () => semanticExecution,
+    timedState: { timedRunHandle: null, timedStepRunning: false },
+    t: (key) => key,
+    enforceStrictDefinitions: () => true,
+    ensureBreakpointReady: () => true,
+    prepareForExecution: async () => true,
+    isExecutionEnded: () => false,
+    refreshRuntimeView: () => {},
+    render: () => {},
+    updateEditingLockUi: () => {},
+    setStatusKey: () => {},
+    setStatus: () => {},
+    formatNumberValue: (value) => String(value),
+    evaluateBreakpointConditionAtTime: () => ({ hit: true, message: "all agents are satisfied" }),
+    openWatchDebugger: () => { watchOpened = true; },
+    openSemanticBreakpointMessage: (message) => { semanticMessage = message; },
+    clearVisualHistory: () => {},
+    clearSimulationHistory: () => {},
+  });
+  const semanticOutcome = await semanticController.executeOneStep();
+  assert.equal(semanticOutcome.breakpointHit, true);
+  assert.equal(semanticMessage, "all agents are satisfied");
+  assert.equal(watchOpened, false, "a semantic message replaces the generic Watch window");
   console.log("runtime-controller.test.js: ok");
 }
 

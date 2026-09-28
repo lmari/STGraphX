@@ -38,6 +38,7 @@
       }
       model.debug.breakpointEnabled = Boolean(model.debug.breakpointEnabled);
       model.debug.breakpointExpression = String(model.debug.breakpointExpression ?? "");
+      model.debug.breakpointMessage = String(model.debug.breakpointMessage ?? "");
       return model.debug;
     }
 
@@ -51,6 +52,7 @@
       )];
       debug.breakpointEnabled = Boolean(debug.breakpointEnabled);
       debug.breakpointExpression = String(debug.breakpointExpression ?? "");
+      debug.breakpointMessage = String(debug.breakpointMessage ?? "");
       return debug;
     }
 
@@ -150,7 +152,13 @@
           message: localizeExpressionErrorMessage(result.message || result.reason || ""),
         };
       }
-      return { enabled: true, hit: breakpointResultTruthy(result.value), value: result.value, expression };
+      return {
+        enabled: true,
+        hit: breakpointResultTruthy(result.value),
+        value: result.value,
+        expression,
+        message: String(debug.breakpointMessage ?? "").trim(),
+      };
     }
 
     return {

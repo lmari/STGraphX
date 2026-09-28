@@ -2091,6 +2091,20 @@ button:disabled {
   overflow: hidden;
 }
 
+.semantic-breakpoint-card {
+  width: min(440px, calc(100vw - 40px));
+  padding: 24px;
+  text-align: center;
+}
+
+.semantic-breakpoint-message {
+  color: #203549;
+  font-size: 1.12rem;
+  line-height: 1.45;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
 .local-functions-card {
   width: min(980px, calc(100vw - 40px));
   height: min(78vh, 760px);

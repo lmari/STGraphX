@@ -38,6 +38,14 @@ assert.deepEqual(
   context.window.GraphSemantics.evaluateValueExpression("if([[1,0],[0,1]], [[1,missingValue],[missingValue,4]], [[missingValue,2],[3,missingValue]])").value,
   [[1, 2], [3, 4]],
 );
+assert.deepEqual(
+  context.window.GraphSemantics.evaluateValueExpression("if(mask, left, right)", {
+    mask: [[1, 0], [0, 1]],
+    left: [[10, 11], [12, 13]],
+    right: [[20, 21], [22, 23]],
+  }).value,
+  [[10, 21], [22, 13]],
+);
 assert.equal(context.window.GraphSemantics.evaluateValueExpression("if(1, 2)").ok, false);
 assert.ok(Math.abs(scope.bernoulli([0.3], 1, 0) - 0.3) < 1e-12);
 assert.ok(Math.abs(scope.bernoulli([0.3], 0, 1) - 0.7) < 1e-12);

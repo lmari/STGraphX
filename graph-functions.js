@@ -26,6 +26,9 @@
     "$j",
     "$value",
   ]);
+  // Expression evaluation treats arrays as immutable values. Cache validated matrix
+  // shapes so neighbors() can be used efficiently inside array() expressions.
+  const RECTANGULAR_SCALAR_MATRIX_CACHE = new WeakMap();
 
   function cloneAgentSchema(fieldNames) {
     return Array.isArray(fieldNames) ? fieldNames.slice() : null;
@@ -1584,14 +1587,23 @@
   }
 
   function neighborsOfCell(matrixValue, rowValue, colValue, includeDiagonals = true, toroidal = false) {
-    if (!Array.isArray(matrixValue) || !matrixValue.every((row) => Array.isArray(row))) {
+    if (!Array.isArray(matrixValue)) {
       throw new Error("neighbors expects a matrix");
     }
-    const rowCount = matrixValue.length;
-    const colCount = rowCount > 0 ? matrixValue[0].length : 0;
-    if (!matrixValue.every((row) => row.length === colCount && row.every((item) => !Array.isArray(item)))) {
-      throw new Error("neighbors expects a rectangular matrix");
+    let dimensions = RECTANGULAR_SCALAR_MATRIX_CACHE.get(matrixValue);
+    if (!dimensions) {
+      if (!matrixValue.every((row) => Array.isArray(row))) {
+        throw new Error("neighbors expects a matrix");
+      }
+      const rowCount = matrixValue.length;
+      const colCount = rowCount > 0 ? matrixValue[0].length : 0;
+      if (!matrixValue.every((row) => row.length === colCount && row.every((item) => !Array.isArray(item)))) {
+        throw new Error("neighbors expects a rectangular matrix");
+      }
+      dimensions = { rowCount, colCount };
+      RECTANGULAR_SCALAR_MATRIX_CACHE.set(matrixValue, dimensions);
     }
+    const { rowCount, colCount } = dimensions;
     const row = normalizeIndex(Number(rowValue), rowCount, "neighbors");
     const col = normalizeIndex(Number(colValue), colCount, "neighbors");
     const diagonalMode = parseBooleanOption(includeDiagonals, true, "neighbors", "diagonals");
@@ -1689,10 +1701,19 @@
     if (!args.every((arg) => !Array.isArray(arg) || sameArrayShape(ref, arg))) {
       throw new Error("function arguments must have matching shapes");
     }
-    return ref.map((_, idx) => mapFunctionArgs(
-      args.map((arg) => (Array.isArray(arg) ? arg[idx] : arg)),
-      scalarFn,
-    ));
+    // Shape compatibility has been established for the complete inputs above.
+    // Rechecking it at every recursive level turns matrix operations into an
+    // unnecessarily super-linear operation.
+    const apply = (values) => {
+      const nestedRef = values.find((value) => Array.isArray(value));
+      if (!nestedRef) {
+        return scalarFn(...values);
+      }
+      return nestedRef.map((_, index) => apply(
+        values.map((value) => (Array.isArray(value) ? value[index] : value)),
+      ));
+    };
+    return apply(args);
   }
 
   function vectorizeFunction(fn) {

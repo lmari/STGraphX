@@ -123,6 +123,7 @@
           watches: Array.isArray(data?.debug?.watches) ? data.debug.watches.map((name) => String(name ?? "")) : [],
           breakpointEnabled: Boolean(data?.debug?.breakpointEnabled),
           breakpointExpression: String(data?.debug?.breakpointExpression ?? ""),
+          breakpointMessage: String(data?.debug?.breakpointMessage ?? ""),
         },
         nodes: nodesWithValidNames,
         edges,

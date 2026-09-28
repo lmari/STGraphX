@@ -21,6 +21,7 @@ const bundleFiles = [
   "runtime-loader.js",
   "runtime-session.js",
   "runtime-controller.js",
+  "watch-debugger-core.js",
   "headless-runtime.js",
   "player-shell.js",
 ];
