@@ -439,6 +439,7 @@
         isSubmodelNode,
         normalizeSubmodelPath: this._shared.normalizeSubmodelPath,
         normalizeReadDataPath: this._shared.normalizeReadDataPath,
+        normalizeEdgeInfluence: this._shared.normalizeEdgeInfluence,
         parseModelPropertyStoredValue: this._shared.parseModelPropertyStoredValue,
         serializeModelPropertyStoredValue: this._shared.serializeModelPropertyStoredValue,
         parseNodePropertyStoredValue: this._shared.parseNodePropertyStoredValue,

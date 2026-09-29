@@ -1,6 +1,6 @@
 # STGraphX: Readme
 
-versione 28 settembre 2026
+versione 29 settembre 2026
 
 Copyright (c) 2026 Luca Mari
 
@@ -92,6 +92,7 @@ Ha un'interfaccia utente responsive, che lo rende utilizzabile anche su tablet.
 * Caricamento e salvataggio di modelli in file JSON (*)
 * Una funzione per la generazione dei contenuti noti della 8-upla del modello attivo (*)
 * Gestione dei gruppi di visualizzazione di nodi (*)
+* Gestione dell'etichettatura per segno delle frecce e dell'identificazione dei cicli con il loro segno (*)
 * Nel menu File, gestione persistente dei modelli aperti di recente, anche nella versione web
 * Una prima gestione di controllo di correttezza del modello
 * Un primo debugger, con gestione di watch e breakpoint, anche con messaggio semantico (**)

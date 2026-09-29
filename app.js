@@ -276,6 +276,14 @@ const localFunctionsList = document.getElementById("localFunctionsList");
 const localFunctionsStatus = document.getElementById("localFunctionsStatus");
 const managePresentationGroupsItem = document.getElementById("managePresentationGroupsItem");
 const manageDashboardItem = document.getElementById("manageDashboardItem");
+const feedbackLoopsItem = document.getElementById("feedbackLoopsItem");
+const feedbackLoopsModal = document.getElementById("feedbackLoopsModal");
+const feedbackLoopsCloseBtn = document.getElementById("feedbackLoopsCloseBtn");
+const feedbackLoopsDismissBtn = document.getElementById("feedbackLoopsDismissBtn");
+const feedbackLoopsShowFocusBtn = document.getElementById("feedbackLoopsShowFocusBtn");
+const feedbackLoopsClearFocusBtn = document.getElementById("feedbackLoopsClearFocusBtn");
+const feedbackLoopsSummary = document.getElementById("feedbackLoopsSummary");
+const feedbackLoopsContent = document.getElementById("feedbackLoopsContent");
 const presentationGroupsModal = document.getElementById("presentationGroupsModal");
 const presentationGroupsCloseBtn = document.getElementById("presentationGroupsCloseBtn");
 const presentationGroupsDismissBtn = document.getElementById("presentationGroupsDismissBtn");
@@ -356,6 +364,7 @@ const {
   openNodeContextMenu,
   openTextContextMenu,
   openEdgeContextMenu,
+  openControlPointContextMenu,
   marqueeRect,
   nodesInRect,
   normalizeNodeDescriptionProperty,
@@ -943,6 +952,7 @@ const ui = {
   selectedNodes: new Set(),
   selectedControlPoint: null,
   lastControlPointTap: null,
+  lastEdgeTap: null,
   drag: null,
   resize: null,
   edgeCreate: null,
@@ -995,6 +1005,8 @@ const ui = {
   expressionEditorPendingSelectionAction: null,
   expressionPreviewInitCache: null,
   analysisFocus: null,
+  feedbackLoopSelection: null,
+  feedbackLoopFocus: null,
   watchPreviousSnapshot: new Map(),
   breakpointLastResult: null,
   localFunctionsEditor: null,
@@ -2897,6 +2909,14 @@ if (!modelAnalysisCoreHelpers) {
   throw new Error("STGraphX model analysis core helpers are unavailable");
 }
 
+const feedbackLoopCoreHelpers = globalThis.STGraphXFeedbackLoopCore?.createFeedbackLoopCoreHelpers({
+  getGraph: () => graph,
+});
+
+if (!feedbackLoopCoreHelpers) {
+  throw new Error("STGraphX feedback loop helpers are unavailable");
+}
+
 const watchDebuggerCoreHelpers = globalThis.STGraphXWatchDebuggerCore?.createWatchDebuggerCoreHelpers({
   t,
   getGraph: () => graph,
@@ -2952,6 +2972,105 @@ function setAnalysisFocus(target) {
       render();
     }
   }, 1850);
+}
+
+function isFeedbackLoopFocusActive(targetType, targetId) {
+  const focus = ui.feedbackLoopFocus;
+  if (!focus) {
+    return false;
+  }
+  return targetType === "node" ? focus.nodeIds.has(targetId) : focus.edgeIds.has(targetId);
+}
+
+function clearFeedbackLoopFocus() {
+  ui.feedbackLoopFocus = null;
+  renderFeedbackLoops();
+  render();
+}
+
+function selectFeedbackLoop(loop) {
+  ui.feedbackLoopSelection = {
+    nodeIds: [...loop.nodeIds],
+    edgeIds: [...loop.edgeIds],
+  };
+  renderFeedbackLoops();
+}
+
+function showFeedbackLoopFocus() {
+  const loop = ui.feedbackLoopSelection;
+  if (!loop) {
+    return;
+  }
+  ui.feedbackLoopFocus = {
+    nodeIds: new Set(loop.nodeIds),
+    edgeIds: new Set(loop.edgeIds),
+  };
+  setNodeSelection(loop.nodeIds);
+  renderFeedbackLoops();
+  render();
+}
+
+function renderFeedbackLoops() {
+  if (!feedbackLoopsSummary || !feedbackLoopsContent) {
+    return;
+  }
+  const { loops, truncated } = feedbackLoopCoreHelpers.findFeedbackLoops();
+  feedbackLoopsSummary.textContent = truncated
+    ? t("feedbackLoops.summaryTruncated", { count: loops.length })
+    : t("feedbackLoops.summary", { count: loops.length });
+  feedbackLoopsContent.innerHTML = "";
+  if (feedbackLoopsShowFocusBtn) {
+    feedbackLoopsShowFocusBtn.disabled = !ui.feedbackLoopSelection;
+  }
+  if (!loops.length) {
+    const empty = document.createElement("div");
+    empty.className = "feedback-loops-empty";
+    empty.textContent = t("feedbackLoops.empty");
+    feedbackLoopsContent.appendChild(empty);
+    return;
+  }
+  const selectPrompt = document.createElement("div");
+  selectPrompt.className = "feedback-loops-select-prompt";
+  selectPrompt.textContent = t("feedbackLoops.selectPrompt");
+  feedbackLoopsContent.appendChild(selectPrompt);
+  loops.forEach((loop) => {
+    const item = document.createElement("label");
+    item.className = `feedback-loop-item ${loop.sign}`;
+    const active = ui.feedbackLoopSelection
+      && loop.nodeIds.length === ui.feedbackLoopSelection.nodeIds.length
+      && loop.edgeIds.length === ui.feedbackLoopSelection.edgeIds.length
+      && loop.nodeIds.every((id) => ui.feedbackLoopSelection.nodeIds.includes(id))
+      && loop.edgeIds.every((id) => ui.feedbackLoopSelection.edgeIds.includes(id));
+    item.classList.toggle("active", Boolean(active));
+    const input = document.createElement("input");
+    input.type = "radio";
+    input.name = "feedbackLoopSelection";
+    input.checked = Boolean(active);
+    input.addEventListener("change", () => selectFeedbackLoop(loop));
+    const details = document.createElement("div");
+    details.className = "feedback-loop-details";
+    const path = document.createElement("div");
+    path.className = "feedback-loop-path";
+    path.textContent = [...loop.nodeNames, loop.nodeNames[0]].join(" → ");
+    const sign = document.createElement("div");
+    sign.className = "feedback-loop-sign";
+    sign.textContent = t(`feedbackLoops.${loop.sign}`);
+    details.append(path, sign);
+    item.append(input, details);
+    feedbackLoopsContent.appendChild(item);
+  });
+}
+
+function openFeedbackLoops() {
+  if (!feedbackLoopsModal) {
+    return;
+  }
+  renderFeedbackLoops();
+  feedbackLoopsModal.classList.remove("hidden");
+}
+
+function closeFeedbackLoops() {
+  feedbackLoopsModal?.classList.add("hidden");
 }
 
 function analyzeModelStaticIssues() {
@@ -4436,13 +4555,14 @@ function expressionCatalogForEditor() {
             : [];
           outputs.forEach((outputName) => {
             const qualifiedName = `${depNode.name}.${outputName}`;
+            const outputDescription = String(
+              depNode.interfaceCache?.outputDetails?.[outputName]?.description ?? "",
+            ).trim();
             pushEntry(qualifiedName, {
               kind: "variable",
               linkedNode: true,
               signature: qualifiedName,
-              description: nodeDescription
-                ? `${nodeDescription} · ${t("text.submodelOutputEntry", { node: depNode.name, output: outputName })}`
-                : t("text.submodelOutputEntry", { node: depNode.name, output: outputName }),
+              description: outputDescription || t("text.submodelOutputEntry", { node: depNode.name, output: outputName }),
               insertText: qualifiedName,
               cursorOffset: qualifiedName.length,
             });
@@ -4789,10 +4909,12 @@ function setExpressionHelp(entry = null) {
   title.textContent = `${entry.name} (${kindLabel})`;
   expressionHelp.append(title);
 
-  if (entry.signature) {
+  const signatureText = String(entry.signature ?? "").trim();
+  const entryName = String(entry.name ?? "").trim();
+  if (signatureText && signatureText !== entryName) {
     const signature = document.createElement("code");
     signature.className = "expression-help-signature";
-    signature.textContent = entry.signature;
+    signature.textContent = signatureText;
     expressionHelp.append(signature);
   }
   if (bodyText) {
@@ -6509,6 +6631,10 @@ function normalizeExecutionConfig(raw) {
   return runtimeShared.normalizeExecutionConfig(raw);
 }
 
+function normalizeEdgeInfluence(value) {
+  return runtimeShared.normalizeEdgeInfluence(value);
+}
+
 function propagateNodeRenameInExpressions(oldName, newName) {
   if (!oldName || !newName || oldName === newName) {
     return;
@@ -6586,6 +6712,23 @@ function removeNodeFromInputWidgetBindings(nodeName) {
     if ((widget.type === "slider" || widget.type === "numeric" || widget.type === "button" || widget.type === "select") && widget.source === nodeName) {
       widget.source = "";
     }
+  });
+}
+
+function removeNodeFromSubmodelInputBindings(nodeName) {
+  const sourceName = String(nodeName ?? "").trim();
+  if (!sourceName) {
+    return;
+  }
+  graph.nodes.forEach((node) => {
+    if (!isSubmodelNode(node) || !node.inputBindings || typeof node.inputBindings !== "object") {
+      return;
+    }
+    Object.entries(node.inputBindings).forEach(([inputName, binding]) => {
+      if (String(binding ?? "").trim() === sourceName) {
+        delete node.inputBindings[inputName];
+      }
+    });
   });
 }
 
@@ -6888,7 +7031,7 @@ function sanitizeAllEdgesForNode(nodeId) {
 }
 
 function emptySubmodelInterfaceCache() {
-  return { inputs: [], outputs: [], inputDetails: {} };
+  return { inputs: [], outputs: [], inputDetails: {}, outputDetails: {} };
 }
 
 function normalizeSubmodelInterfaceCache(cache) {
@@ -6896,6 +7039,7 @@ function normalizeSubmodelInterfaceCache(cache) {
   const inputs = Array.isArray(source.inputs) ? source.inputs.map((value) => String(value)) : [];
   const outputs = Array.isArray(source.outputs) ? source.outputs.map((value) => String(value)) : [];
   const inputDetails = {};
+  const outputDetails = {};
   if (source.inputDetails && typeof source.inputDetails === "object") {
     Object.entries(source.inputDetails).forEach(([name, detail]) => {
       const key = String(name ?? "").trim();
@@ -6907,7 +7051,18 @@ function normalizeSubmodelInterfaceCache(cache) {
       };
     });
   }
-  return { inputs, outputs, inputDetails };
+  if (source.outputDetails && typeof source.outputDetails === "object") {
+    Object.entries(source.outputDetails).forEach(([name, detail]) => {
+      const key = String(name ?? "").trim();
+      if (!key) {
+        return;
+      }
+      outputDetails[key] = {
+        description: String(detail?.description ?? "").trim(),
+      };
+    });
+  }
+  return { inputs, outputs, inputDetails, outputDetails };
 }
 
 function submodelInputHelpText(node, inputName) {
@@ -6916,6 +7071,116 @@ function submodelInputHelpText(node, inputName) {
     return "";
   }
   return String(node?.interfaceCache?.inputDetails?.[key]?.description ?? "").trim();
+}
+
+function createSubmodelInterfaceProxyNode({ baseName, expression, x, y, description }) {
+  const node = {
+    id: nodeCounter++,
+    name: semantics.makeUniqueName(graph.nodes, baseName, null, "n"),
+    input: false,
+    output: false,
+    global: false,
+    shape: "ellipse",
+    x: snap(x),
+    y: snap(y),
+    width: 120,
+    height: 70,
+    fillColor: "",
+    strokeColor: "",
+    valueExpression: expression,
+    initialStateExpression: "",
+    modelPath: "",
+    inputBindings: {},
+    interfaceCache: emptySubmodelInterfaceCache(),
+    submodelError: "",
+    computedValue: null,
+    computedError: "",
+    pendingStateValue: null,
+    pendingStateError: "",
+    properties: [],
+  };
+  const descriptionProperty = normalizeNodeDescriptionProperty(node);
+  if (descriptionProperty) {
+    descriptionProperty.value = String(description ?? "").trim();
+  }
+  normalizeNodeFormulaNotesProperty(node);
+  sanitizeNodeVisualOptions(node);
+  graph.nodes.push(node);
+  return node;
+}
+
+async function createSubmodelInterfaceNodes(node) {
+  const submodelNode = getNodeById(node?.id);
+  if (!submodelNode || !isSubmodelNode(submodelNode)) {
+    return;
+  }
+
+  const hasInterface = Array.isArray(submodelNode.interfaceCache?.inputs)
+    && Array.isArray(submodelNode.interfaceCache?.outputs)
+    && (submodelNode.interfaceCache.inputs.length > 0 || submodelNode.interfaceCache.outputs.length > 0);
+  if (!hasInterface && String(submodelNode.modelPath ?? "").trim()) {
+    await refreshSubmodelInterface(submodelNode, false);
+  }
+
+  const inputs = Array.isArray(submodelNode.interfaceCache?.inputs)
+    ? submodelNode.interfaceCache.inputs.map((value) => String(value).trim()).filter(Boolean)
+    : [];
+  const outputs = Array.isArray(submodelNode.interfaceCache?.outputs)
+    ? submodelNode.interfaceCache.outputs.map((value) => String(value).trim()).filter(Boolean)
+    : [];
+  if (!inputs.length && !outputs.length) {
+    setStatusKey("error.submodelInterfaceUnavailable");
+    return;
+  }
+
+  const createdNodeIds = [];
+  runAction(() => {
+    if (!submodelNode.inputBindings || typeof submodelNode.inputBindings !== "object") {
+      submodelNode.inputBindings = {};
+    }
+    const spacing = 88;
+    const inputStartY = submodelNode.y - ((inputs.length - 1) * spacing) / 2;
+    inputs.forEach((inputName, index) => {
+      if (String(submodelNode.inputBindings[inputName] ?? "").trim()) {
+        return;
+      }
+      const proxy = createSubmodelInterfaceProxyNode({
+        baseName: `${submodelNode.name}_${inputName}`,
+        expression: "0",
+        x: submodelNode.x - 220,
+        y: inputStartY + index * spacing,
+        description: submodelInputHelpText(submodelNode, inputName),
+      });
+      addEdge(proxy.id, submodelNode.id);
+      submodelNode.inputBindings[inputName] = proxy.name;
+      createdNodeIds.push(proxy.id);
+    });
+
+    const outputStartY = submodelNode.y - ((outputs.length - 1) * spacing) / 2;
+    outputs.forEach((outputName, index) => {
+      const expression = `${submodelNode.name}.${outputName}`;
+      const existing = graph.nodes.some((candidate) => candidate.id !== submodelNode.id
+        && String(candidate.valueExpression ?? "").trim() === expression
+        && graph.edges.some((edge) => edge.from === submodelNode.id && edge.to === candidate.id));
+      if (existing) {
+        return;
+      }
+      const proxy = createSubmodelInterfaceProxyNode({
+        baseName: `${submodelNode.name}_${outputName}`,
+        expression,
+        x: submodelNode.x + 220,
+        y: outputStartY + index * spacing,
+        description: String(submodelNode.interfaceCache?.outputDetails?.[outputName]?.description ?? "").trim(),
+      });
+      addEdge(submodelNode.id, proxy.id);
+      createdNodeIds.push(proxy.id);
+    });
+    if (createdNodeIds.length) {
+      setNodeSelection(createdNodeIds);
+    }
+  });
+  recalculateAfterNodeDefinitionChange();
+  setStatusKey("status.submodelInterfaceNodesCreated", { count: createdNodeIds.length });
 }
 
 function getSubmodelBindingSourceChoices(node) {
@@ -7957,6 +8222,7 @@ function exportGraphData() {
       id: e.id,
       from: e.from,
       to: e.to,
+      influence: normalizeEdgeInfluence(e.influence),
       controlPoints: (e.controlPoints || []).map((cp) => ({ x: cp.x, y: cp.y })),
     })),
     textItems: graph.textItems.map((item) => ({
@@ -8140,6 +8406,8 @@ function hasUnsavedChanges() {
 }
 
 function applyGraphData(data) {
+  ui.feedbackLoopSelection = null;
+  ui.feedbackLoopFocus = null;
   stopTimedExecution(false);
   clearRuntimeSubmodelState();
   ui.submodelsPrepared = false;
@@ -8222,6 +8490,7 @@ function applyGraphData(data) {
     id: e.id,
     from: e.from,
     to: e.to,
+    influence: normalizeEdgeInfluence(e.influence),
     controlPoints: (e.controlPoints || []).map((cp) => ({ x: cp.x, y: cp.y })),
   }));
   graph.textItems = Array.isArray(data.textItems)
@@ -8746,6 +9015,7 @@ function collectSelectedForClipboard() {
     .map((e) => ({
       from: e.from,
       to: e.to,
+      influence: normalizeEdgeInfluence(e.influence),
       controlPoints: (e.controlPoints || []).map((cp) => ({ x: cp.x, y: cp.y })),
     }));
   const selectedText = ui.selected?.type === "text" ? getTextItemById(ui.selected.id) : null;
@@ -8855,6 +9125,7 @@ async function pasteFromClipboard() {
         id: edgeCounter++,
         from,
         to,
+        influence: normalizeEdgeInfluence(e.influence),
         controlPoints: (e.controlPoints || []).map((cp) => ({
           x: snap(cp.x + offset),
           y: snap(cp.y + offset),
@@ -9008,6 +9279,54 @@ function buildEdgeGeometry(edge) {
   const path = buildSplinePath(points);
 
   return { path, points };
+}
+
+function edgeInfluenceSymbol(value) {
+  return ({ positive: "+", negative: "−", unknown: "?" })[normalizeEdgeInfluence(value)] || "";
+}
+
+function edgeInfluenceLabelPosition(points) {
+  if (points.length < 2) {
+    return null;
+  }
+  const samples = [points[0]];
+  const addQuadraticSamples = (from, control, to) => {
+    for (let step = 1; step <= 12; step += 1) {
+      const ratio = step / 12;
+      const inverse = 1 - ratio;
+      samples.push({
+        x: inverse * inverse * from.x + 2 * inverse * ratio * control.x + ratio * ratio * to.x,
+        y: inverse * inverse * from.y + 2 * inverse * ratio * control.y + ratio * ratio * to.y,
+      });
+    }
+  };
+  if (points.length === 2) {
+    samples.push(points[1]);
+  } else {
+    let from = points[0];
+    for (let index = 1; index < points.length - 1; index += 1) {
+      const control = points[index];
+      const to = index < points.length - 2
+        ? { x: (control.x + points[index + 1].x) / 2, y: (control.y + points[index + 1].y) / 2 }
+        : points[index + 1];
+      addQuadraticSamples(from, control, to);
+      from = to;
+    }
+  }
+  const lengths = samples.slice(1).map((point, index) => Math.hypot(point.x - samples[index].x, point.y - samples[index].y));
+  const total = lengths.reduce((sum, length) => sum + length, 0);
+  let remaining = total / 2;
+  for (let index = 0; index < lengths.length; index += 1) {
+    if (remaining <= lengths[index]) {
+      const ratio = lengths[index] ? remaining / lengths[index] : 0;
+      return {
+        x: samples[index].x + (samples[index + 1].x - samples[index].x) * ratio,
+        y: samples[index].y + (samples[index + 1].y - samples[index].y) * ratio,
+      };
+    }
+    remaining -= lengths[index];
+  }
+  return samples[samples.length - 1];
 }
 
 function rectangleOverlapArea(left, right, gap = 0) {
@@ -9197,6 +9516,7 @@ function addEdge(fromId, toId) {
     id: edgeCounter++,
     from: fromId,
     to: toId,
+    influence: "none",
     controlPoints: [],
   };
   graph.edges.push(edge);
@@ -9239,6 +9559,30 @@ function refreshSidebar() {
     const summary = document.createElement("div");
     summary.textContent = `${from?.name || edge.from} -> ${to?.name || edge.to}`;
     edgeInfo.appendChild(summary);
+
+    const influenceRow = document.createElement("div");
+    influenceRow.className = "panel-section compact-panel-section";
+    const influenceLabel = document.createElement("label");
+    influenceLabel.textContent = t("label.edgeInfluence");
+    const influenceInput = document.createElement("select");
+    influenceInput.setAttribute("aria-label", influenceLabel.textContent);
+    ["none", "positive", "negative", "unknown"].forEach((value) => {
+      const option = document.createElement("option");
+      option.value = value;
+      option.textContent = t(`edge.influence.${value}`);
+      influenceInput.appendChild(option);
+    });
+    influenceInput.value = normalizeEdgeInfluence(edge.influence);
+    influenceInput.addEventListener("change", () => {
+      runAction(() => {
+        const target = getEdgeById(edgeId);
+        if (target) {
+          target.influence = normalizeEdgeInfluence(influenceInput.value);
+        }
+      });
+    });
+    influenceRow.append(influenceLabel, influenceInput);
+    edgeInfo.appendChild(influenceRow);
 
     return;
   }
@@ -10037,6 +10381,9 @@ function render(options = {}) {
     if (isAnalysisFocusActive("edge", edge.id)) {
       g.classList.add("analysis-focus");
     }
+    if (isFeedbackLoopFocusActive("edge", edge.id)) {
+      g.classList.add("feedback-loop-focus");
+    }
     if (isBothHighlight) {
       g.classList.add("related-both");
     } else if (isIncomingHighlight) {
@@ -10084,28 +10431,49 @@ function render(options = {}) {
       }
       evt.stopPropagation();
       const p = pointGetter(evt);
+      const now = Date.now();
+      const previousTap = ui.lastEdgeTap;
+      const isDoubleTap = previousTap
+        && previousTap.edgeId === edge.id
+        && now - previousTap.time < 320
+        && Math.hypot(previousTap.x - p.x, previousTap.y - p.y) < 16;
+      if (isDoubleTap && !isEditingUiLocked()) {
+        ui.lastEdgeTap = null;
+        runAction(() => {
+          addControlPointAt(edge, p);
+        });
+        setStatusKey("status.cpAdded");
+        return;
+      }
+      ui.lastEdgeTap = { edgeId: edge.id, x: p.x, y: p.y, time: now };
       if (!isSelected) {
         selectEdge(edge.id);
         render();
-        return;
       }
-      if (isEditingUiLocked()) {
-        return;
-      }
-
-      runAction(() => {
-        addControlPointAt(edge, p);
-      });
-      setStatusKey("status.cpAdded");
     };
 
     path.addEventListener("pointerdown", (evt) => onEdgeHitDown(evt, svgPoint));
-    path.addEventListener("mousedown", (evt) => onEdgeHitDown(evt, (e) => svgPointFromClient(e.clientX, e.clientY)));
     hit.addEventListener("pointerdown", (evt) => onEdgeHitDown(evt, svgPoint));
-    hit.addEventListener("mousedown", (evt) => onEdgeHitDown(evt, (e) => svgPointFromClient(e.clientX, e.clientY)));
 
     g.appendChild(path);
     g.appendChild(hit);
+
+    const influenceSymbol = edgeInfluenceSymbol(edge.influence);
+    if (influenceSymbol) {
+      const position = edgeInfluenceLabelPosition(geom.points);
+      if (position) {
+        const label = document.createElementNS(SVG_NS, "text");
+        label.classList.add("edge-influence-label");
+        label.setAttribute("x", position.x);
+        label.setAttribute("y", position.y);
+        if (normalizeEdgeInfluence(edge.influence) === "negative") {
+          label.setAttribute("textLength", "24");
+          label.setAttribute("lengthAdjust", "spacingAndGlyphs");
+        }
+        label.textContent = influenceSymbol;
+        g.appendChild(label);
+      }
+    }
 
     if (isSelected) {
       edge.controlPoints.forEach((cp, idx) => {
@@ -10121,6 +10489,18 @@ function render(options = {}) {
         cpCircle.setAttribute("cx", cp.x);
         cpCircle.setAttribute("cy", cp.y);
         cpCircle.setAttribute("r", isCompactTabletLayout() ? "10" : "7");
+
+        cpCircle.addEventListener("contextmenu", (evt) => {
+          evt.preventDefault();
+          evt.stopPropagation();
+          if (isEditingUiLocked()) {
+            return;
+          }
+          selectEdge(edge.id);
+          ui.selectedControlPoint = { edgeId: edge.id, index: idx };
+          render();
+          openControlPointContextMenu(evt, edge.id, idx);
+        });
 
         cpCircle.addEventListener("pointerdown", (evt) => {
           if (isTabletCanvasPanMode()) {
@@ -10232,6 +10612,9 @@ function render(options = {}) {
     }
     if (isAnalysisFocusActive("node", node.id)) {
       g.classList.add("analysis-focus");
+    }
+    if (isFeedbackLoopFocusActive("node", node.id)) {
+      g.classList.add("feedback-loop-focus");
     }
     if (graph.execution.strictDefinitions && !validateNodeDefinition(node).ok) {
       g.classList.add("invalid-definition");
@@ -10809,6 +11192,7 @@ function importGraphData(data) {
       id: e.id,
       from: e.from,
       to: e.to,
+      influence: normalizeEdgeInfluence(e.influence),
       controlPoints: Array.isArray(e.controlPoints)
         ? e.controlPoints.filter(isValidPoint).map((cp) => ({ x: cp.x, y: cp.y }))
         : [],
@@ -11734,6 +12118,7 @@ const runtimeCore = globalThis.STGraphXRuntimeCore?.createRuntimeCore({
   isSubmodelNode,
   normalizeSubmodelPath,
   normalizeReadDataPath,
+  normalizeEdgeInfluence,
   parseModelPropertyStoredValue,
   serializeModelPropertyStoredValue,
   parseNodePropertyStoredValue,
@@ -13074,6 +13459,12 @@ if (zoomRangeInput) {
 if (managePresentationGroupsItem) {
   managePresentationGroupsItem.addEventListener("click", openPresentationGroupsEditor);
 }
+if (feedbackLoopsItem) {
+  feedbackLoopsItem.addEventListener("click", () => {
+    closeTopMenus();
+    openFeedbackLoops();
+  });
+}
 if (viewOptionsItem) {
   viewOptionsItem.addEventListener("click", openViewOptions);
 }
@@ -14184,6 +14575,7 @@ bindModalDragHandle(functionsHelpModal, ".functions-help-card");
 bindModalDragHandle(examplesHelpModal, ".examples-help-card");
 bindModalDragHandle(aboutAppModal, ".about-app-card");
 bindModalDragHandle(modelAnalysisModal, ".model-analysis-card");
+bindModalDragHandle(feedbackLoopsModal, ".feedback-loops-card");
 bindModalDragHandle(eightTupleModal, ".eight-tuple-card");
 bindModalDragHandle(watchDebuggerModal, ".watch-debugger-card");
 bindModalDragHandle(localFunctionsModal, ".local-functions-card");
@@ -14277,6 +14669,18 @@ if (modelAnalysisChecksCloseBtn) {
 }
 if (modelAnalysisChecksDismissBtn) {
   modelAnalysisChecksDismissBtn.addEventListener("click", closeModelAnalysisChecksHelp);
+}
+if (feedbackLoopsCloseBtn) {
+  feedbackLoopsCloseBtn.addEventListener("click", closeFeedbackLoops);
+}
+if (feedbackLoopsDismissBtn) {
+  feedbackLoopsDismissBtn.addEventListener("click", closeFeedbackLoops);
+}
+if (feedbackLoopsShowFocusBtn) {
+  feedbackLoopsShowFocusBtn.addEventListener("click", showFeedbackLoopFocus);
+}
+if (feedbackLoopsClearFocusBtn) {
+  feedbackLoopsClearFocusBtn.addEventListener("click", clearFeedbackLoopFocus);
 }
 if (watchDebuggerCloseBtn) {
   watchDebuggerCloseBtn.addEventListener("click", closeWatchDebugger);
@@ -14416,6 +14820,13 @@ if (modelAnalysisChecksModal) {
   modelAnalysisChecksModal.addEventListener("pointerdown", (evt) => {
     if (evt.target === modelAnalysisChecksModal) {
       closeModelAnalysisChecksHelp();
+    }
+  });
+}
+if (feedbackLoopsModal) {
+  feedbackLoopsModal.addEventListener("pointerdown", (evt) => {
+    if (evt.target === feedbackLoopsModal) {
+      closeFeedbackLoops();
     }
   });
 }

@@ -114,6 +114,20 @@
       return parts.join("/");
     }
 
+    function normalizeEdgeInfluence(value) {
+      const normalized = String(value ?? "").trim().toLowerCase();
+      if (normalized === "positive" || normalized === "+") {
+        return "positive";
+      }
+      if (normalized === "negative" || normalized === "-") {
+        return "negative";
+      }
+      if (normalized === "unknown" || normalized === "?") {
+        return "unknown";
+      }
+      return "none";
+    }
+
     function serializeNodeType(shape) {
       if (shape === "ellipse") {
         return "algebraic";
@@ -276,6 +290,7 @@
       sanitizeLocalFunctionDefinition,
       normalizeSubmodelPath,
       normalizeReadDataPath,
+      normalizeEdgeInfluence,
       serializeNodeType,
       deserializeNodeType,
       parseModelPropertyStoredValue: parseStoredPropertyValue,

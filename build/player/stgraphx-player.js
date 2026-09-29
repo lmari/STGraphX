@@ -1,6 +1,6 @@
 /*!
  * STGraphX Embedded Player Bundle
- * Generated: 2026-09-28T18:52:24.013Z
+ * Generated: 2026-09-29T17:40:30.228Z
  */
 
 /* --- i18n-inline.js --- */
@@ -97,6 +97,7 @@ window.STGraphXI18nBundles = {
     "context.edge.addCp": "Aggiungi punto controllo qui",
     "context.edge.clearCp": "Rimuovi tutti i punti controllo",
     "context.edge.delete": "Elimina freccia",
+    "context.edge.removeCp": "Elimina punto controllo",
     "context.node.addProp": "Aggiungi proprietà",
     "context.node.delete": "Elimina nodo",
     "context.node.newLinked": "Nuovo nodo collegato",
@@ -203,6 +204,7 @@ window.STGraphXI18nBundles = {
     "label.behaviorFunction": "Comportamento",
     "label.decimals": "Cifre decimali max",
     "label.description": "Descrizione",
+    "label.edgeInfluence": "Segno della relazione",
     "label.formulaNotes": "Note formula",
     "label.global": "globale",
     "label.height": "Altezza",
@@ -236,6 +238,10 @@ window.STGraphXI18nBundles = {
     "node.widgetControlled": "Nodo controllato da un widget di input.",
     "panel.edge": "Freccia",
     "panel.model": "Modello",
+    "edge.influence.none": "Nessun segno",
+    "edge.influence.positive": "Positivo (+)",
+    "edge.influence.negative": "Negativo (-)",
+    "edge.influence.unknown": "Non determinato (?)",
     "panel.node": "Nodo",
     "panel.propertiesList": "Proprietà",
     "panel.text": "Testo",
@@ -769,7 +775,7 @@ window.STGraphXI18nBundles = {
     "widget.ySeriesLabel": "Serie asse Y",
 
     // Text and feedback
-    "hint.edge.1": "Clic sulla linea selezionata: aggiungi punto controllo.",
+    "hint.edge.1": "Doppio clic sulla linea: aggiungi punto controllo.",
     "hint.edge.2": "Drag punto: sposta.",
     "hint.edge.3": "Doppio click punto: rimuovi.",
     "hint.edge.4": "Trascina dal centro di un nodo a un altro nodo per creare frecce.",
@@ -1287,6 +1293,7 @@ window.STGraphXI18nBundles = {
     "context.edge.addCp": "Add control point here",
     "context.edge.clearCp": "Remove all control points",
     "context.edge.delete": "Delete edge",
+    "context.edge.removeCp": "Delete control point",
     "context.node.addProp": "Add property",
     "context.node.delete": "Delete node",
     "context.node.newLinked": "New linked node",
@@ -1393,6 +1400,7 @@ window.STGraphXI18nBundles = {
     "label.behaviorFunction": "Behavior",
     "label.decimals": "Max decimal digits",
     "label.description": "Description",
+    "label.edgeInfluence": "Relationship sign",
     "label.formulaNotes": "Formula notes",
     "label.global": "global",
     "label.height": "Height",
@@ -1426,6 +1434,10 @@ window.STGraphXI18nBundles = {
     "node.widgetControlled": "Node controlled by an input widget.",
     "panel.edge": "Edge",
     "panel.model": "Model",
+    "edge.influence.none": "No sign",
+    "edge.influence.positive": "Positive (+)",
+    "edge.influence.negative": "Negative (-)",
+    "edge.influence.unknown": "Undetermined (?)",
     "panel.node": "Node",
     "panel.propertiesList": "Properties",
     "panel.text": "Text",
@@ -1959,7 +1971,7 @@ window.STGraphXI18nBundles = {
     "widget.ySeriesLabel": "Y axis series",
 
     // Text and feedback
-    "hint.edge.1": "Click selected edge line: add control point.",
+    "hint.edge.1": "Double-click edge line: add control point.",
     "hint.edge.2": "Drag point: move it.",
     "hint.edge.3": "Double-click point: remove it.",
     "hint.edge.4": "Drag from the center of a node to another node to create edges.",
@@ -7519,6 +7531,20 @@ window.STGraphXI18nBundles = {
       return parts.join("/");
     }
 
+    function normalizeEdgeInfluence(value) {
+      const normalized = String(value ?? "").trim().toLowerCase();
+      if (normalized === "positive" || normalized === "+") {
+        return "positive";
+      }
+      if (normalized === "negative" || normalized === "-") {
+        return "negative";
+      }
+      if (normalized === "unknown" || normalized === "?") {
+        return "unknown";
+      }
+      return "none";
+    }
+
     function serializeNodeType(shape) {
       if (shape === "ellipse") {
         return "algebraic";
@@ -7681,6 +7707,7 @@ window.STGraphXI18nBundles = {
       sanitizeLocalFunctionDefinition,
       normalizeSubmodelPath,
       normalizeReadDataPath,
+      normalizeEdgeInfluence,
       serializeNodeType,
       deserializeNodeType,
       parseModelPropertyStoredValue: parseStoredPropertyValue,
@@ -7728,6 +7755,7 @@ window.STGraphXI18nBundles = {
       isSubmodelNode,
       normalizeSubmodelPath,
       normalizeReadDataPath,
+      normalizeEdgeInfluence,
       parseModelPropertyStoredValue,
       serializeModelPropertyStoredValue,
       parseNodePropertyStoredValue,
@@ -7809,6 +7837,7 @@ window.STGraphXI18nBundles = {
           id: e.id,
           from: e.from,
           to: e.to,
+          influence: normalizeEdgeInfluence(e.influence),
           controlPoints: Array.isArray(e.controlPoints)
             ? e.controlPoints.filter((cp) => Number.isFinite(cp?.x) && Number.isFinite(cp?.y)).map((cp) => ({ x: cp.x, y: cp.y }))
             : [],
@@ -10040,6 +10069,7 @@ window.STGraphXI18nBundles = {
         isSubmodelNode,
         normalizeSubmodelPath: this._shared.normalizeSubmodelPath,
         normalizeReadDataPath: this._shared.normalizeReadDataPath,
+        normalizeEdgeInfluence: this._shared.normalizeEdgeInfluence,
         parseModelPropertyStoredValue: this._shared.parseModelPropertyStoredValue,
         serializeModelPropertyStoredValue: this._shared.serializeModelPropertyStoredValue,
         parseNodePropertyStoredValue: this._shared.parseNodePropertyStoredValue,
@@ -10662,6 +10692,51 @@ window.STGraphXI18nBundles = {
       }
     }
     return path;
+  }
+
+  function edgeInfluenceSymbol(value) {
+    return ({ positive: "+", negative: "−", unknown: "?" })[String(value ?? "").trim().toLowerCase()] || "";
+  }
+
+  function edgeInfluenceLabelPosition(points) {
+    if (points.length < 2) return null;
+    const samples = [points[0]];
+    const addQuadraticSamples = (from, control, to) => {
+      for (let step = 1; step <= 12; step += 1) {
+        const ratio = step / 12;
+        const inverse = 1 - ratio;
+        samples.push({
+          x: inverse * inverse * from.x + 2 * inverse * ratio * control.x + ratio * ratio * to.x,
+          y: inverse * inverse * from.y + 2 * inverse * ratio * control.y + ratio * ratio * to.y,
+        });
+      }
+    };
+    if (points.length === 2) {
+      samples.push(points[1]);
+    } else {
+      let from = points[0];
+      for (let index = 1; index < points.length - 1; index += 1) {
+        const control = points[index];
+        const to = index < points.length - 2
+          ? { x: (control.x + points[index + 1].x) / 2, y: (control.y + points[index + 1].y) / 2 }
+          : points[index + 1];
+        addQuadraticSamples(from, control, to);
+        from = to;
+      }
+    }
+    const lengths = samples.slice(1).map((point, index) => Math.hypot(point.x - samples[index].x, point.y - samples[index].y));
+    let remaining = lengths.reduce((sum, length) => sum + length, 0) / 2;
+    for (let index = 0; index < lengths.length; index += 1) {
+      if (remaining <= lengths[index]) {
+        const ratio = lengths[index] ? remaining / lengths[index] : 0;
+        return {
+          x: samples[index].x + (samples[index + 1].x - samples[index].x) * ratio,
+          y: samples[index].y + (samples[index + 1].y - samples[index].y) * ratio,
+        };
+      }
+      remaining -= lengths[index];
+    }
+    return samples[samples.length - 1];
   }
 
   function collectExpressionIdentifierReferences(expression) {
@@ -12011,6 +12086,18 @@ window.STGraphXI18nBundles = {
             stroke: #3b4e61;
             stroke-width: 2;
           }
+          .edge-influence-label {
+            fill: #263f54;
+            font-size: 25px;
+            font-weight: 700;
+            text-anchor: middle;
+            dominant-baseline: central;
+            paint-order: stroke;
+            stroke: #fff;
+            stroke-width: 5px;
+            stroke-linejoin: round;
+            pointer-events: none;
+          }
           .canvas-text {
             font-size: 12px;
             fill: #42596f;
@@ -12263,6 +12350,7 @@ window.STGraphXI18nBundles = {
         isSubmodelNode,
         normalizeSubmodelPath: runtimeShared.normalizeSubmodelPath,
         normalizeReadDataPath: runtimeShared.normalizeReadDataPath,
+        normalizeEdgeInfluence: runtimeShared.normalizeEdgeInfluence,
         parseModelPropertyStoredValue: runtimeShared.parseModelPropertyStoredValue,
         serializeModelPropertyStoredValue: runtimeShared.serializeModelPropertyStoredValue,
         parseNodePropertyStoredValue: runtimeShared.parseNodePropertyStoredValue,
@@ -12390,6 +12478,10 @@ window.STGraphXI18nBundles = {
       this._state.srcUrl = rootUrl;
       this._state.rawModel = {
         ...root.data,
+        edges: (root.data.edges || []).map((edge) => ({
+          ...edge,
+          influence: runtimeShared.normalizeEdgeInfluence(edge?.influence),
+        })),
         widgets: sanitizeWidgetList(root.data.widgets),
       };
       this._state.runtimeModel = root.runtimeModel;
@@ -13207,6 +13299,22 @@ window.STGraphXI18nBundles = {
         path.setAttribute("class", "edge");
         path.setAttribute("marker-end", "url(#player-arrow)");
         this.$svg.appendChild(path);
+        const influenceSymbol = edgeInfluenceSymbol(edge.influence);
+        if (influenceSymbol) {
+          const position = edgeInfluenceLabelPosition(points);
+          if (position) {
+            const label = document.createElementNS(SVG_NS, "text");
+            label.setAttribute("class", "edge-influence-label");
+            label.setAttribute("x", position.x);
+            label.setAttribute("y", position.y);
+            if (String(edge.influence ?? "").trim().toLowerCase() === "negative") {
+              label.setAttribute("textLength", "24");
+              label.setAttribute("lengthAdjust", "spacingAndGlyphs");
+            }
+            label.textContent = influenceSymbol;
+            this.$svg.appendChild(label);
+          }
+        }
       });
 
       (model.nodes || []).filter((node) => visibleNodeIds.has(node.id)).forEach((node) => {

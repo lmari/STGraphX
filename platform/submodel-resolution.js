@@ -24,7 +24,7 @@
       : () => null;
     const extractSubmodelInterfaceFromData = typeof options.extractSubmodelInterfaceFromData === "function"
       ? options.extractSubmodelInterfaceFromData
-      : () => ({ inputs: [], outputs: [], inputDetails: {} });
+      : () => ({ inputs: [], outputs: [], inputDetails: {}, outputDetails: {} });
     const supportsDirectoryInputSelection = typeof options.supportsDirectoryInputSelection === "function"
       ? options.supportsDirectoryInputSelection
       : () => false;

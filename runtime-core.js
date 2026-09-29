@@ -25,6 +25,7 @@
       isSubmodelNode,
       normalizeSubmodelPath,
       normalizeReadDataPath,
+      normalizeEdgeInfluence,
       parseModelPropertyStoredValue,
       serializeModelPropertyStoredValue,
       parseNodePropertyStoredValue,
@@ -106,6 +107,7 @@
           id: e.id,
           from: e.from,
           to: e.to,
+          influence: normalizeEdgeInfluence(e.influence),
           controlPoints: Array.isArray(e.controlPoints)
             ? e.controlPoints.filter((cp) => Number.isFinite(cp?.x) && Number.isFinite(cp?.y)).map((cp) => ({ x: cp.x, y: cp.y }))
             : [],

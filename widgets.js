@@ -3330,7 +3330,10 @@ function removeSelected() {
       const selectedIds = new Set(ui.selectedNodes);
       graph.nodes
         .filter((n) => selectedIds.has(n.id))
-        .forEach((n) => removeNodeFromInputWidgetBindings(n.name));
+        .forEach((n) => {
+          removeNodeFromInputWidgetBindings(n.name);
+          removeNodeFromSubmodelInputBindings(n.name);
+        });
       graph.nodes = graph.nodes.filter((n) => !selectedIds.has(n.id));
       graph.edges = graph.edges.filter((e) => !selectedIds.has(e.from) && !selectedIds.has(e.to));
       clearAllSelection();
@@ -3613,6 +3616,11 @@ function openNodeContextMenu(evt, node) {
         action: () => {
           void openSubmodelNodeInNewTab(node);
         },
+      }, {
+        label: t("action.createSubmodelInterfaceNodes"),
+        action: () => {
+          void createSubmodelInterfaceNodes(node);
+        },
       }]
       : []),
     {
@@ -3636,6 +3644,7 @@ function openNodeContextMenu(evt, node) {
         }
         runAction(() => {
           removeNodeFromInputWidgetBindings(node.name);
+          removeNodeFromSubmodelInputBindings(node.name);
           graph.nodes = graph.nodes.filter((n) => n.id !== node.id);
           graph.edges = graph.edges.filter((e) => e.from !== node.id && e.to !== node.id);
           clearAllSelection();
@@ -3782,6 +3791,26 @@ function openEdgeContextMenu(evt, edgeId, atPoint) {
           clearAllSelection();
         });
         setStatusKey("status.edgeDeleted");
+      },
+    },
+  ]);
+}
+
+function openControlPointContextMenu(evt, edgeId, cpIndex) {
+  const edge = getEdgeById(edgeId);
+  if (!edge || !edge.controlPoints[cpIndex]) {
+    return;
+  }
+
+  showContextMenu(evt.clientX, evt.clientY, [
+    {
+      label: t("context.edge.removeCp"),
+      action: () => {
+        runAction(() => {
+          removeControlPoint(edgeId, cpIndex);
+          selectEdge(edgeId);
+        });
+        setStatusKey("status.cpRemoved");
       },
     },
   ]);
@@ -5581,6 +5610,7 @@ globalThis.Widgets = {
   openNodeContextMenu,
   openTextContextMenu,
   openEdgeContextMenu,
+  openControlPointContextMenu,
   marqueeRect,
   nodesInRect,
   normalizeNodeDescriptionProperty,

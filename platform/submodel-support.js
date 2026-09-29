@@ -184,6 +184,7 @@
       const inputs = [];
       const outputs = [];
       const inputDetails = {};
+      const outputDetails = {};
       data.nodes.forEach((node) => {
         const nodeType = String(node?.type ?? "");
         const name = String(node?.name ?? "").trim();
@@ -201,12 +202,19 @@
         }
         if (node.output === true) {
           outputs.push(name);
+          const description = Array.isArray(node?.properties)
+            ? String(
+              (node.properties.find((prop) => descriptionPropertyKeys().has(String(prop?.key ?? "").trim().toLowerCase()))?.value) ?? "",
+            ).trim()
+            : "";
+          outputDetails[name] = { description };
         }
       });
       return {
         inputs: [...new Set(inputs)],
         outputs: [...new Set(outputs)],
         inputDetails,
+        outputDetails,
       };
     }
 

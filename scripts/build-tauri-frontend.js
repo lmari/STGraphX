@@ -22,6 +22,7 @@ const files = [
   "help-content.js",
   "model-analysis-core.js",
   "model-analysis-ui.js",
+  "feedback-loop-core.js",
   "watch-debugger-core.js",
   "watch-debugger-ui.js",
   "runtime-shared.js",

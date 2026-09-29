@@ -25,7 +25,7 @@
       : async () => null;
     const loadSubmodelInterfaceByPath = typeof options.loadSubmodelInterfaceByPath === "function"
       ? options.loadSubmodelInterfaceByPath
-      : async () => ({ inputs: [], outputs: [], inputDetails: {} });
+      : async () => ({ inputs: [], outputs: [], inputDetails: {}, outputDetails: {} });
     const resolveSubmodelFileByPath = typeof options.resolveSubmodelFileByPath === "function"
       ? options.resolveSubmodelFileByPath
       : async () => ({ text: "", fileHandle: null, file: null, directoryHandle: null });
@@ -35,7 +35,7 @@
     const getNodeDescription = typeof options.getNodeDescription === "function" ? options.getNodeDescription : () => "";
     const emptySubmodelInterfaceCache = typeof options.emptySubmodelInterfaceCache === "function"
       ? options.emptySubmodelInterfaceCache
-      : () => ({ inputs: [], outputs: [], inputDetails: {} });
+      : () => ({ inputs: [], outputs: [], inputDetails: {}, outputDetails: {} });
     const normalizeSubmodelInterfaceCache = typeof options.normalizeSubmodelInterfaceCache === "function"
       ? options.normalizeSubmodelInterfaceCache
       : (value) => value;
@@ -98,6 +98,11 @@
             inputDetails: Object.fromEntries(
               (template?.nodes || [])
                 .filter((child) => child.shape === "diamond" || child.input)
+                .map((child) => [child.name, { description: getNodeDescription(child) }]),
+            ),
+            outputDetails: Object.fromEntries(
+              (template?.nodes || [])
+                .filter((child) => child.output)
                 .map((child) => [child.name, { description: getNodeDescription(child) }]),
             ),
           };

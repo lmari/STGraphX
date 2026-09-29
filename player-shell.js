@@ -123,6 +123,51 @@
     return path;
   }
 
+  function edgeInfluenceSymbol(value) {
+    return ({ positive: "+", negative: "−", unknown: "?" })[String(value ?? "").trim().toLowerCase()] || "";
+  }
+
+  function edgeInfluenceLabelPosition(points) {
+    if (points.length < 2) return null;
+    const samples = [points[0]];
+    const addQuadraticSamples = (from, control, to) => {
+      for (let step = 1; step <= 12; step += 1) {
+        const ratio = step / 12;
+        const inverse = 1 - ratio;
+        samples.push({
+          x: inverse * inverse * from.x + 2 * inverse * ratio * control.x + ratio * ratio * to.x,
+          y: inverse * inverse * from.y + 2 * inverse * ratio * control.y + ratio * ratio * to.y,
+        });
+      }
+    };
+    if (points.length === 2) {
+      samples.push(points[1]);
+    } else {
+      let from = points[0];
+      for (let index = 1; index < points.length - 1; index += 1) {
+        const control = points[index];
+        const to = index < points.length - 2
+          ? { x: (control.x + points[index + 1].x) / 2, y: (control.y + points[index + 1].y) / 2 }
+          : points[index + 1];
+        addQuadraticSamples(from, control, to);
+        from = to;
+      }
+    }
+    const lengths = samples.slice(1).map((point, index) => Math.hypot(point.x - samples[index].x, point.y - samples[index].y));
+    let remaining = lengths.reduce((sum, length) => sum + length, 0) / 2;
+    for (let index = 0; index < lengths.length; index += 1) {
+      if (remaining <= lengths[index]) {
+        const ratio = lengths[index] ? remaining / lengths[index] : 0;
+        return {
+          x: samples[index].x + (samples[index + 1].x - samples[index].x) * ratio,
+          y: samples[index].y + (samples[index + 1].y - samples[index].y) * ratio,
+        };
+      }
+      remaining -= lengths[index];
+    }
+    return samples[samples.length - 1];
+  }
+
   function collectExpressionIdentifierReferences(expression) {
     const src = String(expression ?? "");
     const refs = new Set();
@@ -1470,6 +1515,18 @@
             stroke: #3b4e61;
             stroke-width: 2;
           }
+          .edge-influence-label {
+            fill: #263f54;
+            font-size: 25px;
+            font-weight: 700;
+            text-anchor: middle;
+            dominant-baseline: central;
+            paint-order: stroke;
+            stroke: #fff;
+            stroke-width: 5px;
+            stroke-linejoin: round;
+            pointer-events: none;
+          }
           .canvas-text {
             font-size: 12px;
             fill: #42596f;
@@ -1722,6 +1779,7 @@
         isSubmodelNode,
         normalizeSubmodelPath: runtimeShared.normalizeSubmodelPath,
         normalizeReadDataPath: runtimeShared.normalizeReadDataPath,
+        normalizeEdgeInfluence: runtimeShared.normalizeEdgeInfluence,
         parseModelPropertyStoredValue: runtimeShared.parseModelPropertyStoredValue,
         serializeModelPropertyStoredValue: runtimeShared.serializeModelPropertyStoredValue,
         parseNodePropertyStoredValue: runtimeShared.parseNodePropertyStoredValue,
@@ -1849,6 +1907,10 @@
       this._state.srcUrl = rootUrl;
       this._state.rawModel = {
         ...root.data,
+        edges: (root.data.edges || []).map((edge) => ({
+          ...edge,
+          influence: runtimeShared.normalizeEdgeInfluence(edge?.influence),
+        })),
         widgets: sanitizeWidgetList(root.data.widgets),
       };
       this._state.runtimeModel = root.runtimeModel;
@@ -2666,6 +2728,22 @@
         path.setAttribute("class", "edge");
         path.setAttribute("marker-end", "url(#player-arrow)");
         this.$svg.appendChild(path);
+        const influenceSymbol = edgeInfluenceSymbol(edge.influence);
+        if (influenceSymbol) {
+          const position = edgeInfluenceLabelPosition(points);
+          if (position) {
+            const label = document.createElementNS(SVG_NS, "text");
+            label.setAttribute("class", "edge-influence-label");
+            label.setAttribute("x", position.x);
+            label.setAttribute("y", position.y);
+            if (String(edge.influence ?? "").trim().toLowerCase() === "negative") {
+              label.setAttribute("textLength", "24");
+              label.setAttribute("lengthAdjust", "spacingAndGlyphs");
+            }
+            label.textContent = influenceSymbol;
+            this.$svg.appendChild(label);
+          }
+        }
       });
 
       (model.nodes || []).filter((node) => visibleNodeIds.has(node.id)).forEach((node) => {

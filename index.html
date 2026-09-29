@@ -96,6 +96,7 @@
             <button id="toggleWidgetsItem" class="menu-command" type="button" data-i18n="menu.view.toggleWidgets" data-title-i18n="tooltip.menu.view.toggleWidgets"></button>
             <button id="manageDashboardItem" class="menu-command" type="button" data-i18n="menu.view.dashboard"></button>
             <button id="managePresentationGroupsItem" class="menu-command" type="button" data-i18n="menu.view.presentationGroups"></button>
+            <button id="feedbackLoopsItem" class="menu-command" type="button" data-i18n="menu.view.feedbackLoops" data-title-i18n="tooltip.menu.view.feedbackLoops"></button>
             <hr class="menu-sep" />
             <button id="viewOptionsItem" class="menu-command" type="button" data-i18n="menu.view.options" data-title-i18n="tooltip.menu.view.options"></button>
           </div>
@@ -604,6 +605,22 @@
         </div>
       </div>
     </div>
+    <div id="feedbackLoopsModal" class="modal-backdrop modal-modeless hidden">
+      <div class="modal-card feedback-loops-card" role="dialog" aria-modal="false" aria-labelledby="feedbackLoopsTitle">
+        <div class="modal-head">
+          <h3 id="feedbackLoopsTitle" data-i18n="feedbackLoops.title"></h3>
+          <button id="feedbackLoopsCloseBtn" class="icon-btn modal-close-btn" type="button" data-i18n-aria-label="aria.close">×</button>
+        </div>
+        <div class="help-intro" data-i18n="feedbackLoops.intro"></div>
+        <div id="feedbackLoopsSummary" class="feedback-loops-summary"></div>
+        <div id="feedbackLoopsContent" class="feedback-loops-content"></div>
+        <div class="modal-actions">
+          <button id="feedbackLoopsShowFocusBtn" type="button" data-i18n="feedbackLoops.showFocus"></button>
+          <button id="feedbackLoopsClearFocusBtn" type="button" data-i18n="feedbackLoops.clearFocus"></button>
+          <button id="feedbackLoopsDismissBtn" type="button" data-i18n="action.close"></button>
+        </div>
+      </div>
+    </div>
     <div id="watchDebuggerModal" class="modal-backdrop modal-modeless hidden">
       <div class="modal-card watch-debugger-card" role="dialog" aria-modal="false" aria-labelledby="watchDebuggerTitle">
         <div class="modal-head">
@@ -809,6 +826,7 @@
     <script src="help-content.js"></script>
     <script src="model-analysis-core.js"></script>
     <script src="model-analysis-ui.js"></script>
+    <script src="feedback-loop-core.js"></script>
     <script src="watch-debugger-core.js"></script>
     <script src="watch-debugger-ui.js"></script>
     <script src="widgets.js"></script>
