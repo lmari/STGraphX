@@ -65,6 +65,8 @@ const topRunResetBtn = document.getElementById("topRunResetBtn");
 const runStrictDefinitionsInput = document.getElementById("runStrictDefinitionsInput");
 const runStopOnRuntimeErrorInput = document.getElementById("runStopOnRuntimeErrorInput");
 const selectAllBtn = document.getElementById("selectAllBtn");
+const renameNodeBtn = document.getElementById("renameNodeBtn");
+const editNodeExpressionBtn = document.getElementById("editNodeExpressionBtn");
 const cutBtn = document.getElementById("cutBtn");
 const copyBtn = document.getElementById("copyBtn");
 const pasteBtn = document.getElementById("pasteBtn");
@@ -396,6 +398,7 @@ const MAX_RECENT_MODELS = 8;
 const SUBMODEL_DEFERRED_RESOLUTION = "__submodel_deferred_resolution__";
 const NODE_FILL_COLOR_PRESETS = [
   { key: "default", value: "" },
+  { key: "transparent", value: "transparent" },
   { key: "blue", value: "#dff2ff" },
   { key: "green", value: "#dff6ec" },
   { key: "yellow", value: "#fff7d8" },
@@ -406,6 +409,18 @@ const NODE_FILL_COLOR_PRESETS = [
 ];
 
 const NODE_STROKE_COLOR_PRESETS = [
+  { key: "default", value: "" },
+  { key: "transparent", value: "transparent" },
+  { key: "blue", value: "#156fb8" },
+  { key: "green", value: "#1f8a5a" },
+  { key: "yellow", value: "#b48710" },
+  { key: "orange", value: "#c56416" },
+  { key: "red", value: "#c43a52" },
+  { key: "violet", value: "#6e49b8" },
+  { key: "gray", value: "#586978" },
+];
+
+const EDGE_COLOR_PRESETS = [
   { key: "default", value: "" },
   { key: "blue", value: "#156fb8" },
   { key: "green", value: "#1f8a5a" },
@@ -1016,7 +1031,6 @@ const ui = {
   tabletCanvasMode: "edit",
   touchViewportGesture: null,
   touchHold: null,
-  lastMenuTouchAt: 0,
 };
 
 const submodelOrchestrationHelpers = globalThis.STGraphXSubmodelOrchestration?.createSubmodelOrchestrationHelpers({
@@ -1213,11 +1227,23 @@ function createArrowMarker(id, color) {
   marker.appendChild(arrowPath);
   defs.appendChild(marker);
 }
+function edgeArrowMarkerId(color) {
+  const normalized = normalizeEdgeColor(color);
+  if (!normalized) {
+    return "arrow";
+  }
+  const id = `arrow-color-${normalized.slice(1).toLowerCase()}`;
+  if (!defs.querySelector(`#${id}`)) {
+    createArrowMarker(id, normalized);
+  }
+  return id;
+}
 createArrowMarker("arrow", "#3b4e61");
 createArrowMarker("arrow-selected", "#0e7ac4");
 createArrowMarker("arrow-incoming", "#d17b16");
 createArrowMarker("arrow-outgoing", "#0d8c8c");
 createArrowMarker("arrow-both", "#8b5fbf");
+createArrowMarker("arrow-feedback-loop", "#8f2d68");
 svg.appendChild(defs);
 
 const edgesLayer = document.createElementNS(SVG_NS, "g");
@@ -1334,7 +1360,8 @@ function deepClone(obj) {
 }
 
 function normalizeColorString(value) {
-  return /^#[0-9a-fA-F]{6}$/.test(String(value ?? "")) ? String(value) : "";
+  const color = String(value ?? "").trim();
+  return color === "transparent" || /^#[0-9a-fA-F]{6}$/.test(color) ? color : "";
 }
 
 function defaultNodeFillColor() {
@@ -5738,6 +5765,31 @@ function openNodePrimaryEditor(node) {
   openExpressionEditor("value");
 }
 
+function renameSelectedNode() {
+  const node = selectedNodeForSidebar();
+  if (!node || isEditingUiLocked()) {
+    return false;
+  }
+  revealSidebarForCompactLayout();
+  refreshSidebar();
+  window.requestAnimationFrame(() => {
+    if (!nodeNameInput.disabled && !nodeNameInput.classList.contains("hidden")) {
+      nodeNameInput.focus();
+      nodeNameInput.select();
+    }
+  });
+  return true;
+}
+
+function editSelectedNodeExpression() {
+  const node = selectedNodeForSidebar();
+  if (!node || isSubmodelNode(node) || isWidgetControlledExpressionNode(node) || isEditingUiLocked()) {
+    return false;
+  }
+  openExpressionEditor("value");
+  return true;
+}
+
 function openCustomExpressionEditor(title, initialValue, onApply) {
   if (!expressionEditorModal || !expressionEditorTextarea || !expressionEditorTitle) {
     return;
@@ -6635,6 +6687,10 @@ function normalizeEdgeInfluence(value) {
   return runtimeShared.normalizeEdgeInfluence(value);
 }
 
+function normalizeEdgeColor(value) {
+  return runtimeShared.normalizeEdgeColor(value);
+}
+
 function propagateNodeRenameInExpressions(oldName, newName) {
   if (!oldName || !newName || oldName === newName) {
     return;
@@ -6729,6 +6785,26 @@ function removeNodeFromSubmodelInputBindings(nodeName) {
         delete node.inputBindings[inputName];
       }
     });
+  });
+}
+
+function removeSubmodelInputBindingsForRemovedEdge(edge) {
+  const sourceNode = getNodeById(edge?.from);
+  const submodelNode = getNodeById(edge?.to);
+  const sourceName = String(sourceNode?.name ?? "").trim();
+  if (!sourceName || !submodelNode || !isSubmodelNode(submodelNode)) {
+    return;
+  }
+  const sourceIsStillConnected = graph.edges.some((candidate) => candidate.id !== edge.id
+    && candidate.from === edge.from
+    && candidate.to === edge.to);
+  if (sourceIsStillConnected || !submodelNode.inputBindings || typeof submodelNode.inputBindings !== "object") {
+    return;
+  }
+  Object.entries(submodelNode.inputBindings).forEach(([inputName, binding]) => {
+    if (String(binding ?? "").trim() === sourceName) {
+      delete submodelNode.inputBindings[inputName];
+    }
   });
 }
 
@@ -7858,7 +7934,8 @@ function applyZoom(nextZoom, anchorClientX = null, anchorClientY = null) {
 }
 
 function handleCompactTouchViewportPointerDown(evt) {
-  if (!isCompactTouchPointerEvent(evt) || !isBackgroundTouchCanvasTarget(evt.target)) {
+  const canStartGesture = isBackgroundTouchCanvasTarget(evt.target) || isTabletCanvasPanMode();
+  if (!isCompactTouchPointerEvent(evt) || !canStartGesture) {
     return;
   }
   const gesture = ensureTouchViewportGesture();
@@ -7958,11 +8035,6 @@ function getMenuUi() {
     menuCommands,
     contextMenu,
     isCompactLayout: isCompactTabletLayout,
-    isCompactTouchPointerEvent,
-    getLastTouchAt: () => ui.lastMenuTouchAt,
-    setLastTouchAt: (value) => {
-      ui.lastMenuTouchAt = value;
-    },
   });
   return menuUi;
 }
@@ -8222,6 +8294,7 @@ function exportGraphData() {
       id: e.id,
       from: e.from,
       to: e.to,
+      color: normalizeEdgeColor(e.color),
       influence: normalizeEdgeInfluence(e.influence),
       controlPoints: (e.controlPoints || []).map((cp) => ({ x: cp.x, y: cp.y })),
     })),
@@ -8490,6 +8563,7 @@ function applyGraphData(data) {
     id: e.id,
     from: e.from,
     to: e.to,
+    color: normalizeEdgeColor(e.color),
     influence: normalizeEdgeInfluence(e.influence),
     controlPoints: (e.controlPoints || []).map((cp) => ({ x: cp.x, y: cp.y })),
   }));
@@ -8754,6 +8828,14 @@ function hasAnySelection() {
 
 function updateEditActionButtons() {
   const frozen = isEditingUiLocked();
+  const selectedNode = selectedNodeForSidebar();
+  const canRenameNode = Boolean(selectedNode && !frozen);
+  const canEditNodeExpression = Boolean(
+    selectedNode
+    && !frozen
+    && !isSubmodelNode(selectedNode)
+    && !isWidgetControlledExpressionNode(selectedNode),
+  );
   if (selectAllBtn) {
     selectAllBtn.disabled = graph.nodes.length === 0;
   }
@@ -8765,6 +8847,12 @@ function updateEditActionButtons() {
   }
   if (deleteBtn) {
     deleteBtn.disabled = frozen || !hasAnySelection();
+  }
+  if (renameNodeBtn) {
+    renameNodeBtn.disabled = !canRenameNode;
+  }
+  if (editNodeExpressionBtn) {
+    editNodeExpressionBtn.disabled = !canEditNodeExpression;
   }
 }
 
@@ -9015,6 +9103,7 @@ function collectSelectedForClipboard() {
     .map((e) => ({
       from: e.from,
       to: e.to,
+      color: normalizeEdgeColor(e.color),
       influence: normalizeEdgeInfluence(e.influence),
       controlPoints: (e.controlPoints || []).map((cp) => ({ x: cp.x, y: cp.y })),
     }));
@@ -9125,6 +9214,7 @@ async function pasteFromClipboard() {
         id: edgeCounter++,
         from,
         to,
+        color: normalizeEdgeColor(e.color),
         influence: normalizeEdgeInfluence(e.influence),
         controlPoints: (e.controlPoints || []).map((cp) => ({
           x: snap(cp.x + offset),
@@ -9516,6 +9606,7 @@ function addEdge(fromId, toId) {
     id: edgeCounter++,
     from: fromId,
     to: toId,
+    color: "",
     influence: "none",
     controlPoints: [],
   };
@@ -9583,6 +9674,30 @@ function refreshSidebar() {
     });
     influenceRow.append(influenceLabel, influenceInput);
     edgeInfo.appendChild(influenceRow);
+
+    const colorRow = document.createElement("div");
+    colorRow.className = "panel-section compact-panel-section";
+    const colorLabel = document.createElement("label");
+    colorLabel.textContent = t("label.edgeColor");
+    const colorInput = document.createElement("select");
+    colorInput.setAttribute("aria-label", colorLabel.textContent);
+    EDGE_COLOR_PRESETS.forEach((preset) => {
+      const option = document.createElement("option");
+      option.value = preset.value;
+      option.textContent = t(`color.${preset.key}`);
+      colorInput.appendChild(option);
+    });
+    colorInput.value = normalizeEdgeColor(edge.color);
+    colorInput.addEventListener("change", () => {
+      runAction(() => {
+        const target = getEdgeById(edgeId);
+        if (target) {
+          target.color = normalizeEdgeColor(colorInput.value);
+        }
+      });
+    });
+    colorRow.append(colorLabel, colorInput);
+    edgeInfo.appendChild(colorRow);
 
     return;
   }
@@ -9972,7 +10087,13 @@ function refreshSidebar() {
     }
 
     if (nodeInputLabel) {
-      nodeInputLabel.classList.add("hidden");
+      const inputTargets = nodes.filter((node) => canMarkNodeAsInput(node));
+      const allOn = inputTargets.length > 0 && inputTargets.every((node) => Boolean(node.input));
+      const allOff = inputTargets.length > 0 && inputTargets.every((node) => !node.input);
+      nodeInputLabel.classList.toggle("hidden", inputTargets.length === 0);
+      nodeInputInput.indeterminate = !(allOn || allOff);
+      nodeInputInput.checked = allOn;
+      nodeInputInput.disabled = inputTargets.length === 0;
     }
     if (nodeGlobalLabel) {
       nodeGlobalLabel.classList.add("hidden");
@@ -9980,8 +10101,6 @@ function refreshSidebar() {
     nodeNameLabel?.classList.add("hidden");
     nodeNameInput?.classList.add("hidden");
     nodeShapeInput?.classList.add("hidden");
-    nodeInputInput.checked = false;
-    nodeInputInput.disabled = true;
     nodeGlobalInput.checked = false;
     nodeGlobalInput.disabled = true;
     nodeValueExprLabel.classList.add("hidden");
@@ -10384,6 +10503,10 @@ function render(options = {}) {
     if (isFeedbackLoopFocusActive("edge", edge.id)) {
       g.classList.add("feedback-loop-focus");
     }
+    const edgeColor = normalizeEdgeColor(edge.color);
+    if (edgeColor) {
+      g.style.setProperty("--edge-stroke", edgeColor);
+    }
     if (isBothHighlight) {
       g.classList.add("related-both");
     } else if (isIncomingHighlight) {
@@ -10403,7 +10526,9 @@ function render(options = {}) {
           ? "arrow-incoming"
           : isOutgoingHighlight
             ? "arrow-outgoing"
-            : "arrow";
+            : isFeedbackLoopFocusActive("edge", edge.id)
+              ? "arrow-feedback-loop"
+              : edgeArrowMarkerId(edgeColor);
     path.setAttribute("marker-end", `url(#${markerId})`);
 
     const hit = document.createElementNS(SVG_NS, "path");
@@ -11192,6 +11317,7 @@ function importGraphData(data) {
       id: e.id,
       from: e.from,
       to: e.to,
+      color: normalizeEdgeColor(e.color),
       influence: normalizeEdgeInfluence(e.influence),
       controlPoints: Array.isArray(e.controlPoints)
         ? e.controlPoints.filter(isValidPoint).map((cp) => ({ x: cp.x, y: cp.y }))
@@ -12118,6 +12244,7 @@ const runtimeCore = globalThis.STGraphXRuntimeCore?.createRuntimeCore({
   isSubmodelNode,
   normalizeSubmodelPath,
   normalizeReadDataPath,
+  normalizeEdgeColor,
   normalizeEdgeInfluence,
   parseModelPropertyStoredValue,
   serializeModelPropertyStoredValue,
@@ -13563,6 +13690,12 @@ redoBtn.addEventListener("click", redo);
 if (selectAllBtn) {
   selectAllBtn.addEventListener("click", selectAllNodes);
 }
+if (renameNodeBtn) {
+  renameNodeBtn.addEventListener("click", renameSelectedNode);
+}
+if (editNodeExpressionBtn) {
+  editNodeExpressionBtn.addEventListener("click", editSelectedNodeExpression);
+}
 deleteBtn.addEventListener("click", removeSelected);
 cutBtn.addEventListener("click", cutSelectionToClipboard);
 copyBtn.addEventListener("click", copySelectionToClipboard);
@@ -13979,26 +14112,22 @@ if (showSubmodelBtn) {
 }
 
 nodeInputInput.addEventListener("change", () => {
-  if (ui.selectedNodes.size !== 1) {
-    return;
-  }
-  const nodeId = [...ui.selectedNodes][0];
-  const node = getNodeById(nodeId);
-  if (!node) {
-    return;
-  }
-  if (!canMarkNodeAsInput(node)) {
+  const nodes = selectedNodesList().filter((node) => canMarkNodeAsInput(node));
+  if (nodes.length === 0) {
     nodeInputInput.checked = false;
     return;
   }
-  const wasInput = Boolean(node.input);
   runAction(() => {
-    node.input = nodeInputInput.checked;
-    if (wasInput && !node.input) {
-      removeNodeFromInputWidgetBindings(node.name);
-    }
+    nodes.forEach((node) => {
+      const wasInput = Boolean(node.input);
+      node.input = nodeInputInput.checked;
+      if (wasInput && !node.input) {
+        removeNodeFromInputWidgetBindings(node.name);
+      }
+    });
   });
   recalculateAfterNodeDefinitionChange();
+  nodeInputInput.indeterminate = false;
 });
 
 nodeGlobalInput.addEventListener("change", () => {
@@ -15148,6 +15277,32 @@ document.addEventListener("keydown", (evt) => {
   if (evt.key === "F1") {
     evt.preventDefault();
     openFunctionsHelp();
+    return;
+  }
+
+  if (
+    evt.key === "F2"
+    && !evt.ctrlKey
+    && !evt.metaKey
+    && !evt.altKey
+    && !isTypingTarget(evt.target)
+  ) {
+    if (renameSelectedNode()) {
+      evt.preventDefault();
+    }
+    return;
+  }
+
+  if (
+    evt.key === "F4"
+    && !evt.ctrlKey
+    && !evt.metaKey
+    && !evt.altKey
+    && !isTypingTarget(evt.target)
+  ) {
+    if (editSelectedNodeExpression()) {
+      evt.preventDefault();
+    }
     return;
   }
 

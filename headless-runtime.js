@@ -439,6 +439,7 @@
         isSubmodelNode,
         normalizeSubmodelPath: this._shared.normalizeSubmodelPath,
         normalizeReadDataPath: this._shared.normalizeReadDataPath,
+        normalizeEdgeColor: this._shared.normalizeEdgeColor,
         normalizeEdgeInfluence: this._shared.normalizeEdgeInfluence,
         parseModelPropertyStoredValue: this._shared.parseModelPropertyStoredValue,
         serializeModelPropertyStoredValue: this._shared.serializeModelPropertyStoredValue,
@@ -446,7 +447,12 @@
         serializeNodePropertyStoredValue: this._shared.serializeNodePropertyStoredValue,
         submodelBindingReferences: (node) => {
           const bindings = node?.inputBindings && typeof node.inputBindings === "object" ? node.inputBindings : {};
-          return new Set(Object.values(bindings).map((value) => String(value ?? "").trim()).filter(Boolean));
+          return new Map(
+            Object.entries(bindings).map(([inputName, expression]) => [
+              String(inputName ?? "").trim(),
+              collectExpressionIdentifierReferences(String(expression ?? "")),
+            ]),
+          );
         },
         applyRuntimeModelInputOverrides: (model, inputValueMap = new Map()) => {
           (model?.nodes || []).forEach((node) => {

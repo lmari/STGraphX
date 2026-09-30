@@ -1844,13 +1844,13 @@ button:disabled {
 
 .edge-line {
   fill: none;
-  stroke: #3b4e61;
+  stroke: var(--edge-stroke, #3b4e61);
   stroke-width: 2;
   transition: stroke 120ms ease, stroke-width 120ms ease, filter 120ms ease;
 }
 
 .edge-influence-label {
-  fill: #263f54;
+  fill: var(--edge-stroke, #263f54);
   font-size: 25px;
   font-weight: 700;
   text-anchor: middle;
@@ -4086,9 +4086,17 @@ body.tablet-sidebar-layout .expression-editor-resize-handle {
   stroke-width: 3;
 }
 
+.edge.selected .edge-influence-label {
+  fill: var(--accent);
+}
+
 .edge.related-incoming .edge-line {
   stroke: #d17b16;
   stroke-width: 2.8;
+}
+
+.edge.related-incoming .edge-influence-label {
+  fill: #d17b16;
 }
 
 .edge.related-outgoing .edge-line {
@@ -4096,9 +4104,17 @@ body.tablet-sidebar-layout .expression-editor-resize-handle {
   stroke-width: 2.8;
 }
 
+.edge.related-outgoing .edge-influence-label {
+  fill: #0d8c8c;
+}
+
 .edge.related-both .edge-line {
   stroke: #8b5fbf;
   stroke-width: 3;
+}
+
+.edge.related-both .edge-influence-label {
+  fill: #8b5fbf;
 }
 
 .edge.analysis-focus .edge-line {
@@ -4110,6 +4126,10 @@ body.tablet-sidebar-layout .expression-editor-resize-handle {
   stroke: #8f2d68;
   stroke-width: 4;
   filter: drop-shadow(0 0 7px rgba(143, 45, 104, 0.32));
+}
+
+.edge.feedback-loop-focus .edge-influence-label {
+  fill: #8f2d68;
 }
 
 .value-widget.analysis-focus {
@@ -4827,6 +4847,7 @@ body.tablet-sidebar-layout .menu-run-btn {
   .menu-command,
   .menu-submenu-toggle,
   .menu-check,
+  .context-menu button,
   .small-btn,
   .icon-btn,
   .button-widget-toggle,
@@ -4852,7 +4873,8 @@ body.tablet-sidebar-layout .menu-run-btn {
 
   body.tablet-canvas-pan #graphViewport,
   body.tablet-canvas-pan #graphCanvas {
-    touch-action: pan-x pan-y;
+    /* Keep pointer events available for the app-managed pan and pinch gestures. */
+    touch-action: none;
   }
 
   body.tablet-canvas-pan .widget-layer {

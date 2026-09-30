@@ -128,6 +128,11 @@
       return "none";
     }
 
+    function normalizeEdgeColor(value) {
+      const color = String(value ?? "").trim();
+      return /^#[0-9a-fA-F]{6}$/.test(color) ? color : "";
+    }
+
     function serializeNodeType(shape) {
       if (shape === "ellipse") {
         return "algebraic";
@@ -290,6 +295,7 @@
       sanitizeLocalFunctionDefinition,
       normalizeSubmodelPath,
       normalizeReadDataPath,
+      normalizeEdgeColor,
       normalizeEdgeInfluence,
       serializeNodeType,
       deserializeNodeType,

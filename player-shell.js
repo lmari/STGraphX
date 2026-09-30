@@ -1512,11 +1512,11 @@
           }
           .edge {
             fill: none;
-            stroke: #3b4e61;
+            stroke: var(--edge-stroke, #3b4e61);
             stroke-width: 2;
           }
           .edge-influence-label {
-            fill: #263f54;
+            fill: var(--edge-stroke, #263f54);
             font-size: 25px;
             font-weight: 700;
             text-anchor: middle;
@@ -1779,6 +1779,7 @@
         isSubmodelNode,
         normalizeSubmodelPath: runtimeShared.normalizeSubmodelPath,
         normalizeReadDataPath: runtimeShared.normalizeReadDataPath,
+        normalizeEdgeColor: runtimeShared.normalizeEdgeColor,
         normalizeEdgeInfluence: runtimeShared.normalizeEdgeInfluence,
         parseModelPropertyStoredValue: runtimeShared.parseModelPropertyStoredValue,
         serializeModelPropertyStoredValue: runtimeShared.serializeModelPropertyStoredValue,
@@ -1786,7 +1787,12 @@
         serializeNodePropertyStoredValue: runtimeShared.serializeNodePropertyStoredValue,
         submodelBindingReferences: (node) => {
           const bindings = node?.inputBindings && typeof node.inputBindings === "object" ? node.inputBindings : {};
-          return new Set(Object.values(bindings).map((value) => String(value ?? "").trim()).filter(Boolean));
+          return new Map(
+            Object.entries(bindings).map(([inputName, expression]) => [
+              String(inputName ?? "").trim(),
+              collectExpressionIdentifierReferences(String(expression ?? "")),
+            ]),
+          );
         },
         applyRuntimeModelInputOverrides: (model, inputValueMap = new Map()) => {
           (model?.nodes || []).forEach((node) => {
@@ -1909,6 +1915,7 @@
         ...root.data,
         edges: (root.data.edges || []).map((edge) => ({
           ...edge,
+          color: runtimeShared.normalizeEdgeColor(edge?.color),
           influence: runtimeShared.normalizeEdgeInfluence(edge?.influence),
         })),
         widgets: sanitizeWidgetList(root.data.widgets),
@@ -2610,19 +2617,33 @@
       this.$svg.innerHTML = "";
 
       const defs = document.createElementNS(SVG_NS, "defs");
-      const marker = document.createElementNS(SVG_NS, "marker");
-      marker.setAttribute("id", "player-arrow");
-      marker.setAttribute("viewBox", "0 0 10 10");
-      marker.setAttribute("refX", "9");
-      marker.setAttribute("refY", "5");
-      marker.setAttribute("markerWidth", "8");
-      marker.setAttribute("markerHeight", "8");
-      marker.setAttribute("orient", "auto-start-reverse");
-      const arrowPath = document.createElementNS(SVG_NS, "path");
-      arrowPath.setAttribute("d", "M 0 0 L 10 5 L 0 10 z");
-      arrowPath.setAttribute("fill", "#3b4e61");
-      marker.appendChild(arrowPath);
-      defs.appendChild(marker);
+      const createArrowMarker = (id, color) => {
+        const marker = document.createElementNS(SVG_NS, "marker");
+        marker.setAttribute("id", id);
+        marker.setAttribute("viewBox", "0 0 10 10");
+        marker.setAttribute("refX", "9");
+        marker.setAttribute("refY", "5");
+        marker.setAttribute("markerWidth", "8");
+        marker.setAttribute("markerHeight", "8");
+        marker.setAttribute("orient", "auto-start-reverse");
+        const arrowPath = document.createElementNS(SVG_NS, "path");
+        arrowPath.setAttribute("d", "M 0 0 L 10 5 L 0 10 z");
+        arrowPath.setAttribute("fill", color);
+        marker.appendChild(arrowPath);
+        defs.appendChild(marker);
+      };
+      createArrowMarker("player-arrow", "#3b4e61");
+      const edgeArrowMarkerId = (color) => {
+        const normalized = /^#[0-9a-fA-F]{6}$/.test(String(color ?? "")) ? String(color) : "";
+        if (!normalized) {
+          return "player-arrow";
+        }
+        const id = `player-arrow-color-${normalized.slice(1).toLowerCase()}`;
+        if (!defs.querySelector(`#${id}`)) {
+          createArrowMarker(id, normalized);
+        }
+        return id;
+      };
       this.$svg.appendChild(defs);
       const dashboardLayer = document.createElementNS(SVG_NS, "g");
 
@@ -2726,7 +2747,11 @@
         const path = document.createElementNS(SVG_NS, "path");
         path.setAttribute("d", buildSplinePath(points));
         path.setAttribute("class", "edge");
-        path.setAttribute("marker-end", "url(#player-arrow)");
+        const edgeColor = /^#[0-9a-fA-F]{6}$/.test(String(edge.color ?? "")) ? String(edge.color) : "";
+        if (edgeColor) {
+          path.style.setProperty("--edge-stroke", edgeColor);
+        }
+        path.setAttribute("marker-end", `url(#${edgeArrowMarkerId(edgeColor)})`);
         this.$svg.appendChild(path);
         const influenceSymbol = edgeInfluenceSymbol(edge.influence);
         if (influenceSymbol) {
@@ -2734,6 +2759,9 @@
           if (position) {
             const label = document.createElementNS(SVG_NS, "text");
             label.setAttribute("class", "edge-influence-label");
+            if (edgeColor) {
+              label.style.setProperty("--edge-stroke", edgeColor);
+            }
             label.setAttribute("x", position.x);
             label.setAttribute("y", position.y);
             if (String(edge.influence ?? "").trim().toLowerCase() === "negative") {

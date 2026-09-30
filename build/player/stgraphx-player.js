@@ -1,6 +1,6 @@
 /*!
  * STGraphX Embedded Player Bundle
- * Generated: 2026-09-29T17:40:30.228Z
+ * Generated: 2026-09-30T12:28:28.586Z
  */
 
 /* --- i18n-inline.js --- */
@@ -13,7 +13,7 @@
 
 window.STGraphXAppMeta = {
   author: "Luca Mari",
-  releaseDate: "2026.09.28",
+  releaseDate: "2026.09.29",
   license: "MPL-2.0",
   copyright: "Copyright (c) 2026 Luca Mari",
 };
@@ -44,6 +44,7 @@ window.STGraphXI18nBundles = {
     "action.editExpression": "Modifica...",
     "action.editLocalFunctions": "Funzioni locali...",
     "action.loadSubmodel": "Carica",
+    "action.createSubmodelInterfaceNodes": "Crea nodi di interfaccia",
     "action.manualStep": "Passo manuale",
     "action.newTab": "+",
     "action.openSubmodel": "Apri sottomodello",
@@ -68,6 +69,7 @@ window.STGraphXI18nBundles = {
     "color.green": "Verde",
     "color.orange": "Arancione",
     "color.red": "Rosso",
+    "color.transparent": "Trasparente",
     "color.violet": "Viola",
     "color.yellow": "Giallo",
 
@@ -168,6 +170,7 @@ window.STGraphXI18nBundles = {
     "menu.view": "Vista",
     "menu.view.dashboard": "Dashboard...",
     "menu.view.fit": "Adatta al contenuto",
+    "menu.view.feedbackLoops": "Cicli di feedback...",
     "menu.view.gridStep": "Passo griglia",
     "menu.view.highlightNodeEdges": "Evidenzia frecce nodo",
     "menu.view.options": "Opzioni visualizzazione...",
@@ -205,6 +208,7 @@ window.STGraphXI18nBundles = {
     "label.decimals": "Cifre decimali max",
     "label.description": "Descrizione",
     "label.edgeInfluence": "Segno della relazione",
+    "label.edgeColor": "Colore",
     "label.formulaNotes": "Note formula",
     "label.global": "globale",
     "label.height": "Altezza",
@@ -844,6 +848,7 @@ window.STGraphXI18nBundles = {
     "status.strictDefinitionsOff": "Controllo rigoroso delle definizioni disattivato.",
     "status.strictDefinitionsOn": "Controllo rigoroso delle definizioni attivato.",
     "status.submodelInterfaceLoaded": "Interfaccia del sottomodello aggiornata: {name}",
+    "status.submodelInterfaceNodesCreated": "Creati {count} nodi di interfaccia del sottomodello.",
     "status.submodelOpened": "Sottomodello aperto: {name}",
     "status.tabClosed": "Scheda chiusa.",
     "status.textCreated": "Testo nel canvas creato.",
@@ -939,6 +944,7 @@ window.STGraphXI18nBundles = {
     "tooltip.menu.run.watch": "Apre lo strumento di watch e breakpoint per il debugging del modello.",
     "tooltip.menu.view": "Controlli di visualizzazione, zoom e griglia.",
     "tooltip.menu.view.fit": "Adatta zoom e vista al contenuto attuale di grafo e widget.",
+    "tooltip.menu.view.feedbackLoops": "Individua i cicli diretti e ne classifica il segno complessivo.",
     "tooltip.menu.view.gridStep": "Imposta la distanza tra le linee della griglia.",
     "tooltip.menu.view.highlightNodeEdges": "Evidenzia con colori diversi le frecce entranti e uscenti del nodo selezionato.",
     "tooltip.menu.view.options": "Apre le preferenze per griglia, valori dei nodi, tooltip e formattazione numerica.",
@@ -1126,6 +1132,17 @@ window.STGraphXI18nBundles = {
     "analysis.target.node": "Nodo {name}",
     "analysis.target.widget": "Widget {name}",
     "analysis.title": "Analizza modello",
+    "feedbackLoops.title": "Cicli di feedback",
+    "feedbackLoops.intro": "Ogni ciclo segue la direzione delle frecce. Il segno complessivo e positivo se contiene un numero pari di relazioni negative, negativo se dispari.",
+    "feedbackLoops.selectPrompt": "Seleziona un ciclo nell'elenco, poi premi Mostra evidenziazione.",
+    "feedbackLoops.summary": "{count} cicli diretti individuati.",
+    "feedbackLoops.summaryTruncated": "Mostrati i primi {count} cicli diretti.",
+    "feedbackLoops.empty": "Non sono presenti cicli diretti nel grafo.",
+    "feedbackLoops.positive": "Feedback positivo (+)",
+    "feedbackLoops.negative": "Feedback negativo (-)",
+    "feedbackLoops.unknown": "Segno non determinato (?)",
+    "feedbackLoops.showFocus": "Mostra evidenziazione",
+    "feedbackLoops.clearFocus": "Rimuovi evidenziazione",
     "eightTuple.copyMarkdown": "Copia Markdown",
     "eightTuple.exportMarkdown": "Esporta Markdown...",
     "eightTuple.intro": "Questa finestra ricostruisce automaticamente, per quanto possibile, la specificazione del modello attivo nella forma 〈T, K, U, Ω, Y, X, φ, η〉. Dove il modello non dichiara esplicitamente un'informazione, il testo lo segnala.",
@@ -1192,6 +1209,7 @@ window.STGraphXI18nBundles = {
     "error.nodeDefinition.missingBehavior": "comportamento mancante",
     "error.nodeDefinition.missingInitialState": "stato iniziale mancante",
     "error.nodeDefinition.missingSubmodelPath": "file del sottomodello mancante",
+    "error.submodelInterfaceUnavailable": "Interfaccia del sottomodello non disponibile.",
     "error.nodeDefinition.missingTransition": "stato prossimo mancante",
     "error.nodeDefinition.missingValue": "valore mancante",
     "error.parameterIncomingEdge": "Un parametro non può avere frecce entranti.",
@@ -1240,6 +1258,7 @@ window.STGraphXI18nBundles = {
     "action.editExpression": "Edit...",
     "action.editLocalFunctions": "Local functions...",
     "action.loadSubmodel": "Load",
+    "action.createSubmodelInterfaceNodes": "Create interface nodes",
     "action.manualStep": "Manual step",
     "action.newTab": "+",
     "action.openSubmodel": "Open submodel",
@@ -1264,6 +1283,7 @@ window.STGraphXI18nBundles = {
     "color.green": "Green",
     "color.orange": "Orange",
     "color.red": "Red",
+    "color.transparent": "Transparent",
     "color.violet": "Violet",
     "color.yellow": "Yellow",
 
@@ -1364,6 +1384,7 @@ window.STGraphXI18nBundles = {
     "menu.view": "View",
     "menu.view.dashboard": "Dashboard...",
     "menu.view.fit": "Fit to content",
+    "menu.view.feedbackLoops": "Feedback loops...",
     "menu.view.gridStep": "Grid step",
     "menu.view.highlightNodeEdges": "Highlight node edges",
     "menu.view.options": "View options...",
@@ -1401,6 +1422,7 @@ window.STGraphXI18nBundles = {
     "label.decimals": "Max decimal digits",
     "label.description": "Description",
     "label.edgeInfluence": "Relationship sign",
+    "label.edgeColor": "Color",
     "label.formulaNotes": "Formula notes",
     "label.global": "global",
     "label.height": "Height",
@@ -2040,6 +2062,7 @@ window.STGraphXI18nBundles = {
     "status.strictDefinitionsOff": "Strict definition checking disabled.",
     "status.strictDefinitionsOn": "Strict definition checking enabled.",
     "status.submodelInterfaceLoaded": "Submodel interface refreshed: {name}",
+    "status.submodelInterfaceNodesCreated": "Created {count} submodel interface nodes.",
     "status.submodelOpened": "Submodel opened: {name}",
     "status.tabClosed": "Tab closed.",
     "status.textCreated": "Canvas text created.",
@@ -2135,6 +2158,7 @@ window.STGraphXI18nBundles = {
     "tooltip.menu.run.watch": "Opens the watch and breakpoint tool for model debugging.",
     "tooltip.menu.view": "View, zoom, and grid controls.",
     "tooltip.menu.view.fit": "Fits zoom and viewport to the current graph and widget content.",
+    "tooltip.menu.view.feedbackLoops": "Finds directed cycles and classifies their overall sign.",
     "tooltip.menu.view.gridStep": "Sets the spacing between grid lines.",
     "tooltip.menu.view.highlightNodeEdges": "Highlights incoming and outgoing edges of the selected node with different colors.",
     "tooltip.menu.view.options": "Opens preferences for the grid, node values, tooltips, and numeric formatting.",
@@ -2322,6 +2346,17 @@ window.STGraphXI18nBundles = {
     "analysis.target.node": "Node {name}",
     "analysis.target.widget": "Widget {name}",
     "analysis.title": "Analyze model",
+    "feedbackLoops.title": "Feedback loops",
+    "feedbackLoops.intro": "Each loop follows the direction of its edges. Its overall sign is positive with an even number of negative relationships, negative with an odd number.",
+    "feedbackLoops.selectPrompt": "Select a loop in the list, then press Show highlight.",
+    "feedbackLoops.summary": "{count} directed loops found.",
+    "feedbackLoops.summaryTruncated": "Showing the first {count} directed loops.",
+    "feedbackLoops.empty": "There are no directed loops in the graph.",
+    "feedbackLoops.positive": "Positive feedback (+)",
+    "feedbackLoops.negative": "Negative feedback (-)",
+    "feedbackLoops.unknown": "Undetermined sign (?)",
+    "feedbackLoops.showFocus": "Show highlight",
+    "feedbackLoops.clearFocus": "Clear highlight",
     "eightTuple.copyMarkdown": "Copy Markdown",
     "eightTuple.exportMarkdown": "Export Markdown...",
     "eightTuple.intro": "This window automatically reconstructs, as far as possible, the specification of the active model in the form 〈T, K, U, Ω, Y, X, φ, η〉. Whenever the model does not explicitly declare a piece of information, the text states that limitation.",
@@ -2388,6 +2423,7 @@ window.STGraphXI18nBundles = {
     "error.nodeDefinition.missingBehavior": "missing behavior",
     "error.nodeDefinition.missingInitialState": "missing initial state",
     "error.nodeDefinition.missingSubmodelPath": "missing submodel file",
+    "error.submodelInterfaceUnavailable": "Submodel interface is unavailable.",
     "error.nodeDefinition.missingTransition": "missing next state",
     "error.nodeDefinition.missingValue": "missing value",
     "error.parameterIncomingEdge": "A parameter cannot have incoming edges.",
@@ -7545,6 +7581,11 @@ window.STGraphXI18nBundles = {
       return "none";
     }
 
+    function normalizeEdgeColor(value) {
+      const color = String(value ?? "").trim();
+      return /^#[0-9a-fA-F]{6}$/.test(color) ? color : "";
+    }
+
     function serializeNodeType(shape) {
       if (shape === "ellipse") {
         return "algebraic";
@@ -7707,6 +7748,7 @@ window.STGraphXI18nBundles = {
       sanitizeLocalFunctionDefinition,
       normalizeSubmodelPath,
       normalizeReadDataPath,
+      normalizeEdgeColor,
       normalizeEdgeInfluence,
       serializeNodeType,
       deserializeNodeType,
@@ -7755,6 +7797,7 @@ window.STGraphXI18nBundles = {
       isSubmodelNode,
       normalizeSubmodelPath,
       normalizeReadDataPath,
+      normalizeEdgeColor: normalizeEdgeColorInput,
       normalizeEdgeInfluence,
       parseModelPropertyStoredValue,
       serializeModelPropertyStoredValue,
@@ -7768,6 +7811,10 @@ window.STGraphXI18nBundles = {
     if (!t || !semantics) {
       throw new Error("STGraphXRuntimeCore requires translation and semantics dependencies");
     }
+
+    const normalizeEdgeColor = typeof normalizeEdgeColorInput === "function"
+      ? normalizeEdgeColorInput
+      : () => "";
 
     function buildRuntimeModelFromData(data, options = {}) {
       if (!data || !Array.isArray(data.nodes) || !Array.isArray(data.edges)) {
@@ -7837,6 +7884,7 @@ window.STGraphXI18nBundles = {
           id: e.id,
           from: e.from,
           to: e.to,
+          color: normalizeEdgeColor(e.color),
           influence: normalizeEdgeInfluence(e.influence),
           controlPoints: Array.isArray(e.controlPoints)
             ? e.controlPoints.filter((cp) => Number.isFinite(cp?.x) && Number.isFinite(cp?.y)).map((cp) => ({ x: cp.x, y: cp.y }))
@@ -8328,8 +8376,13 @@ window.STGraphXI18nBundles = {
         try {
           const effectiveContext = { ...context };
           const bindingRefs = submodelBindingReferences(runtimeNode);
+          const bindingReferenceSets = bindingRefs instanceof Map
+            ? [...bindingRefs.values()]
+            : bindingRefs instanceof Set
+              ? [bindingRefs]
+              : [];
           globalParameterNodesForModel(model, runtimeNode.id).forEach((depNode) => {
-            const used = [...bindingRefs.values()].some((refs) => refs.has(depNode.name));
+            const used = bindingReferenceSets.some((refs) => refs instanceof Set && refs.has(depNode.name));
             if (used && !depNode.computedError) {
               effectiveContext[depNode.name] = depNode.computedValue;
             }
@@ -8360,10 +8413,12 @@ window.STGraphXI18nBundles = {
           );
           childModel.execution.currentTime = timeValue;
           if (childResult.errorCount > 0) {
+            const childNodeName = String(childResult.firstErrorNode || "submodel");
+            const childMessage = String(childResult.firstErrorMessage || "").trim();
             return {
               ok: false,
               reason: childResult.firstErrorReason || "runtime",
-              message: childResult.firstErrorNode || "submodel",
+              message: childMessage ? `${childNodeName}: ${childMessage}` : childNodeName,
             };
           }
           const outputs = {};
@@ -10069,6 +10124,7 @@ window.STGraphXI18nBundles = {
         isSubmodelNode,
         normalizeSubmodelPath: this._shared.normalizeSubmodelPath,
         normalizeReadDataPath: this._shared.normalizeReadDataPath,
+        normalizeEdgeColor: this._shared.normalizeEdgeColor,
         normalizeEdgeInfluence: this._shared.normalizeEdgeInfluence,
         parseModelPropertyStoredValue: this._shared.parseModelPropertyStoredValue,
         serializeModelPropertyStoredValue: this._shared.serializeModelPropertyStoredValue,
@@ -10076,7 +10132,12 @@ window.STGraphXI18nBundles = {
         serializeNodePropertyStoredValue: this._shared.serializeNodePropertyStoredValue,
         submodelBindingReferences: (node) => {
           const bindings = node?.inputBindings && typeof node.inputBindings === "object" ? node.inputBindings : {};
-          return new Set(Object.values(bindings).map((value) => String(value ?? "").trim()).filter(Boolean));
+          return new Map(
+            Object.entries(bindings).map(([inputName, expression]) => [
+              String(inputName ?? "").trim(),
+              collectExpressionIdentifierReferences(String(expression ?? "")),
+            ]),
+          );
         },
         applyRuntimeModelInputOverrides: (model, inputValueMap = new Map()) => {
           (model?.nodes || []).forEach((node) => {
@@ -12083,11 +12144,11 @@ window.STGraphXI18nBundles = {
           }
           .edge {
             fill: none;
-            stroke: #3b4e61;
+            stroke: var(--edge-stroke, #3b4e61);
             stroke-width: 2;
           }
           .edge-influence-label {
-            fill: #263f54;
+            fill: var(--edge-stroke, #263f54);
             font-size: 25px;
             font-weight: 700;
             text-anchor: middle;
@@ -12350,6 +12411,7 @@ window.STGraphXI18nBundles = {
         isSubmodelNode,
         normalizeSubmodelPath: runtimeShared.normalizeSubmodelPath,
         normalizeReadDataPath: runtimeShared.normalizeReadDataPath,
+        normalizeEdgeColor: runtimeShared.normalizeEdgeColor,
         normalizeEdgeInfluence: runtimeShared.normalizeEdgeInfluence,
         parseModelPropertyStoredValue: runtimeShared.parseModelPropertyStoredValue,
         serializeModelPropertyStoredValue: runtimeShared.serializeModelPropertyStoredValue,
@@ -12357,7 +12419,12 @@ window.STGraphXI18nBundles = {
         serializeNodePropertyStoredValue: runtimeShared.serializeNodePropertyStoredValue,
         submodelBindingReferences: (node) => {
           const bindings = node?.inputBindings && typeof node.inputBindings === "object" ? node.inputBindings : {};
-          return new Set(Object.values(bindings).map((value) => String(value ?? "").trim()).filter(Boolean));
+          return new Map(
+            Object.entries(bindings).map(([inputName, expression]) => [
+              String(inputName ?? "").trim(),
+              collectExpressionIdentifierReferences(String(expression ?? "")),
+            ]),
+          );
         },
         applyRuntimeModelInputOverrides: (model, inputValueMap = new Map()) => {
           (model?.nodes || []).forEach((node) => {
@@ -12480,6 +12547,7 @@ window.STGraphXI18nBundles = {
         ...root.data,
         edges: (root.data.edges || []).map((edge) => ({
           ...edge,
+          color: runtimeShared.normalizeEdgeColor(edge?.color),
           influence: runtimeShared.normalizeEdgeInfluence(edge?.influence),
         })),
         widgets: sanitizeWidgetList(root.data.widgets),
@@ -13181,19 +13249,33 @@ window.STGraphXI18nBundles = {
       this.$svg.innerHTML = "";
 
       const defs = document.createElementNS(SVG_NS, "defs");
-      const marker = document.createElementNS(SVG_NS, "marker");
-      marker.setAttribute("id", "player-arrow");
-      marker.setAttribute("viewBox", "0 0 10 10");
-      marker.setAttribute("refX", "9");
-      marker.setAttribute("refY", "5");
-      marker.setAttribute("markerWidth", "8");
-      marker.setAttribute("markerHeight", "8");
-      marker.setAttribute("orient", "auto-start-reverse");
-      const arrowPath = document.createElementNS(SVG_NS, "path");
-      arrowPath.setAttribute("d", "M 0 0 L 10 5 L 0 10 z");
-      arrowPath.setAttribute("fill", "#3b4e61");
-      marker.appendChild(arrowPath);
-      defs.appendChild(marker);
+      const createArrowMarker = (id, color) => {
+        const marker = document.createElementNS(SVG_NS, "marker");
+        marker.setAttribute("id", id);
+        marker.setAttribute("viewBox", "0 0 10 10");
+        marker.setAttribute("refX", "9");
+        marker.setAttribute("refY", "5");
+        marker.setAttribute("markerWidth", "8");
+        marker.setAttribute("markerHeight", "8");
+        marker.setAttribute("orient", "auto-start-reverse");
+        const arrowPath = document.createElementNS(SVG_NS, "path");
+        arrowPath.setAttribute("d", "M 0 0 L 10 5 L 0 10 z");
+        arrowPath.setAttribute("fill", color);
+        marker.appendChild(arrowPath);
+        defs.appendChild(marker);
+      };
+      createArrowMarker("player-arrow", "#3b4e61");
+      const edgeArrowMarkerId = (color) => {
+        const normalized = /^#[0-9a-fA-F]{6}$/.test(String(color ?? "")) ? String(color) : "";
+        if (!normalized) {
+          return "player-arrow";
+        }
+        const id = `player-arrow-color-${normalized.slice(1).toLowerCase()}`;
+        if (!defs.querySelector(`#${id}`)) {
+          createArrowMarker(id, normalized);
+        }
+        return id;
+      };
       this.$svg.appendChild(defs);
       const dashboardLayer = document.createElementNS(SVG_NS, "g");
 
@@ -13297,7 +13379,11 @@ window.STGraphXI18nBundles = {
         const path = document.createElementNS(SVG_NS, "path");
         path.setAttribute("d", buildSplinePath(points));
         path.setAttribute("class", "edge");
-        path.setAttribute("marker-end", "url(#player-arrow)");
+        const edgeColor = /^#[0-9a-fA-F]{6}$/.test(String(edge.color ?? "")) ? String(edge.color) : "";
+        if (edgeColor) {
+          path.style.setProperty("--edge-stroke", edgeColor);
+        }
+        path.setAttribute("marker-end", `url(#${edgeArrowMarkerId(edgeColor)})`);
         this.$svg.appendChild(path);
         const influenceSymbol = edgeInfluenceSymbol(edge.influence);
         if (influenceSymbol) {
@@ -13305,6 +13391,9 @@ window.STGraphXI18nBundles = {
           if (position) {
             const label = document.createElementNS(SVG_NS, "text");
             label.setAttribute("class", "edge-influence-label");
+            if (edgeColor) {
+              label.style.setProperty("--edge-stroke", edgeColor);
+            }
             label.setAttribute("x", position.x);
             label.setAttribute("y", position.y);
             if (String(edge.influence ?? "").trim().toLowerCase() === "negative") {

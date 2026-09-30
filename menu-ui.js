@@ -18,15 +18,42 @@
     const menuCommands = Array.isArray(options.menuCommands) ? options.menuCommands : [];
     const contextMenu = options.contextMenu || null;
     const isCompactLayout = typeof options.isCompactLayout === "function" ? options.isCompactLayout : () => false;
-    const isCompactTouchPointerEvent = typeof options.isCompactTouchPointerEvent === "function"
-      ? options.isCompactTouchPointerEvent
-      : () => false;
-    const getLastTouchAt = typeof options.getLastTouchAt === "function" ? options.getLastTouchAt : () => 0;
-    const setLastTouchAt = typeof options.setLastTouchAt === "function" ? options.setLastTouchAt : () => {};
+    const touchClickSuppressions = new WeakMap();
+
+    function suppressSyntheticClick(element) {
+      if (!element) {
+        return;
+      }
+      const timerId = window.setTimeout(() => {
+        touchClickSuppressions.delete(element);
+      }, 1500);
+      touchClickSuppressions.set(element, timerId);
+    }
+
+    function consumeSyntheticClick(element) {
+      const timerId = touchClickSuppressions.get(element);
+      if (timerId == null) {
+        return false;
+      }
+      window.clearTimeout(timerId);
+      touchClickSuppressions.delete(element);
+      return true;
+    }
+
+    function setTopMenuOpen(root, open) {
+      if (!root) {
+        return;
+      }
+      root.classList.toggle("open", Boolean(open));
+      const title = root.querySelector(".menu-title");
+      const panel = root.querySelector(".menu-panel");
+      title?.setAttribute("aria-expanded", open ? "true" : "false");
+      panel?.setAttribute("aria-hidden", open ? "false" : "true");
+    }
 
     function closeTopMenus() {
       menuRoots.forEach((root) => {
-        root.classList.remove("open");
+        setTopMenuOpen(root, false);
         const panel = root.querySelector(".menu-panel");
         if (panel) {
           panel.style.position = "";
@@ -67,7 +94,7 @@
       const wasOpen = root.classList.contains("open");
       closeTopMenus();
       if (!wasOpen) {
-        root.classList.add("open");
+        setTopMenuOpen(root, true);
         positionCompactTopMenu(root);
       }
     }
@@ -78,6 +105,15 @@
       }
       contextMenu.classList.add("hidden");
       contextMenu.innerHTML = "";
+    }
+
+    function contextMenuTopInset() {
+      if (!isCompactLayout()) {
+        return 8;
+      }
+      const menuBar = menuRoots[0]?.closest(".menu-bar");
+      const menuBarBottom = menuBar ? menuBar.getBoundingClientRect().bottom : 0;
+      return Math.max(8, Math.ceil(menuBarBottom) + 8);
     }
 
     function showContextMenu(clientX, clientY, items) {
@@ -124,16 +160,23 @@
         contextMenu.appendChild(button);
       });
 
+      const topInset = contextMenuTopInset();
+      contextMenu.style.maxHeight = `${Math.max(120, window.innerHeight - topInset - 8)}px`;
       contextMenu.classList.remove("hidden");
       const rect = contextMenu.getBoundingClientRect();
       const left = Math.min(clientX, window.innerWidth - rect.width - 8);
-      const top = Math.min(clientY, window.innerHeight - rect.height - 8);
+      const maxTop = Math.max(topInset, window.innerHeight - rect.height - 8);
+      const top = Math.min(Math.max(clientY, topInset), maxTop);
       contextMenu.style.left = `${Math.max(8, left)}px`;
-      contextMenu.style.top = `${Math.max(8, top)}px`;
+      contextMenu.style.top = `${top}px`;
     }
 
     function bindInteractions(recentModelsMenuBtn = null) {
       menuTitles.forEach((title) => {
+        title.setAttribute("aria-haspopup", "menu");
+        title.setAttribute("aria-expanded", "false");
+        const panel = title.closest(".menu-root")?.querySelector(".menu-panel");
+        panel?.setAttribute("aria-hidden", "true");
         const openCompactMenu = (event) => {
           if (!isCompactLayout()) {
             return;
@@ -147,18 +190,21 @@
           }
         };
         title.addEventListener("touchstart", (event) => {
-          setLastTouchAt(Date.now());
+          suppressSyntheticClick(title);
           openCompactMenu(event);
         }, { passive: false });
         title.addEventListener("pointerdown", (event) => {
-          if (!isCompactLayout() || (event.pointerType === "touch" && (Date.now() - getLastTouchAt()) < 700)) {
+          if (!isCompactLayout() || event.pointerType === "touch") {
             return;
           }
+          suppressSyntheticClick(title);
           openCompactMenu(event);
         });
         title.addEventListener("click", (event) => {
           if (isCompactLayout()) {
-            if ((Date.now() - getLastTouchAt()) < 700) {
+            if (consumeSyntheticClick(title)) {
+              event.preventDefault();
+              event.stopPropagation();
               return;
             }
             openCompactMenu(event);
@@ -208,17 +254,16 @@
         submenu.classList.toggle("open", willOpen);
       };
       recentModelsMenuBtn.addEventListener("touchstart", (event) => {
-        setLastTouchAt(Date.now());
+        suppressSyntheticClick(recentModelsMenuBtn);
         toggleRecentModelsSubmenu(event);
       }, { passive: false });
-      recentModelsMenuBtn.addEventListener("pointerdown", (event) => {
-        if (!isCompactTouchPointerEvent(event) || (Date.now() - getLastTouchAt()) < 700) {
+      recentModelsMenuBtn.addEventListener("click", (event) => {
+        if (!isCompactLayout()) {
           return;
         }
-        toggleRecentModelsSubmenu(event);
-      });
-      recentModelsMenuBtn.addEventListener("click", (event) => {
-        if (!isCompactLayout() || (Date.now() - getLastTouchAt()) < 700) {
+        if (consumeSyntheticClick(recentModelsMenuBtn)) {
+          event.preventDefault();
+          event.stopPropagation();
           return;
         }
         toggleRecentModelsSubmenu(event);

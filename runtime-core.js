@@ -25,6 +25,7 @@
       isSubmodelNode,
       normalizeSubmodelPath,
       normalizeReadDataPath,
+      normalizeEdgeColor: normalizeEdgeColorInput,
       normalizeEdgeInfluence,
       parseModelPropertyStoredValue,
       serializeModelPropertyStoredValue,
@@ -38,6 +39,10 @@
     if (!t || !semantics) {
       throw new Error("STGraphXRuntimeCore requires translation and semantics dependencies");
     }
+
+    const normalizeEdgeColor = typeof normalizeEdgeColorInput === "function"
+      ? normalizeEdgeColorInput
+      : () => "";
 
     function buildRuntimeModelFromData(data, options = {}) {
       if (!data || !Array.isArray(data.nodes) || !Array.isArray(data.edges)) {
@@ -107,6 +112,7 @@
           id: e.id,
           from: e.from,
           to: e.to,
+          color: normalizeEdgeColor(e.color),
           influence: normalizeEdgeInfluence(e.influence),
           controlPoints: Array.isArray(e.controlPoints)
             ? e.controlPoints.filter((cp) => Number.isFinite(cp?.x) && Number.isFinite(cp?.y)).map((cp) => ({ x: cp.x, y: cp.y }))
@@ -598,8 +604,13 @@
         try {
           const effectiveContext = { ...context };
           const bindingRefs = submodelBindingReferences(runtimeNode);
+          const bindingReferenceSets = bindingRefs instanceof Map
+            ? [...bindingRefs.values()]
+            : bindingRefs instanceof Set
+              ? [bindingRefs]
+              : [];
           globalParameterNodesForModel(model, runtimeNode.id).forEach((depNode) => {
-            const used = [...bindingRefs.values()].some((refs) => refs.has(depNode.name));
+            const used = bindingReferenceSets.some((refs) => refs instanceof Set && refs.has(depNode.name));
             if (used && !depNode.computedError) {
               effectiveContext[depNode.name] = depNode.computedValue;
             }
@@ -630,10 +641,12 @@
           );
           childModel.execution.currentTime = timeValue;
           if (childResult.errorCount > 0) {
+            const childNodeName = String(childResult.firstErrorNode || "submodel");
+            const childMessage = String(childResult.firstErrorMessage || "").trim();
             return {
               ok: false,
               reason: childResult.firstErrorReason || "runtime",
-              message: childResult.firstErrorNode || "submodel",
+              message: childMessage ? `${childNodeName}: ${childMessage}` : childNodeName,
             };
           }
           const outputs = {};

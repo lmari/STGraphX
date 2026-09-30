@@ -3344,6 +3344,10 @@ function removeSelected() {
 
   if (ui.selected?.type === "edge") {
     runAction(() => {
+      const edge = getEdgeById(ui.selected.id);
+      if (edge) {
+        removeSubmodelInputBindingsForRemovedEdge(edge);
+      }
       graph.edges = graph.edges.filter((e) => e.id !== ui.selected.id);
       clearAllSelection();
       setStatusKey("status.edgeDeleted");
@@ -3787,6 +3791,7 @@ function openEdgeContextMenu(evt, edgeId, atPoint) {
       label: t("context.edge.delete"),
       action: () => {
         runAction(() => {
+          removeSubmodelInputBindingsForRemovedEdge(edge);
           graph.edges = graph.edges.filter((e) => e.id !== edgeId);
           clearAllSelection();
         });
