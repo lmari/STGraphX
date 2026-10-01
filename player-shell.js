@@ -8,6 +8,28 @@
 (function initPlayerShell(global) {
   const SVG_NS = "http://www.w3.org/2000/svg";
   const PLAYER_LANGS = new Set(["it", "en"]);
+  const SUBMODEL_LIBRARY_ICONS = Object.freeze({
+    module: "◆",
+    layers: "▤",
+    network: "⌘",
+    grid: "▦",
+    process: "◈",
+  });
+
+  function normalizeSubmodelIcon(icon) {
+    if (!icon || typeof icon !== "object") {
+      return null;
+    }
+    const type = String(icon.type ?? "").trim();
+    const value = String(icon.value ?? "").trim();
+    if (type === "library" && Object.prototype.hasOwnProperty.call(SUBMODEL_LIBRARY_ICONS, value)) {
+      return { type, value };
+    }
+    if (type === "image" && /^data:image\/(?:png|jpeg|gif|webp|svg\+xml);base64,[a-z0-9+/=]+$/i.test(value)) {
+      return { type, value };
+    }
+    return null;
+  }
 
   function fillTemplate(template, vars = {}) {
     return String(template).replace(/\{([a-zA-Z0-9_]+)\}/g, (_match, name) => (
@@ -292,7 +314,11 @@
     const description = (node?.properties || []).find((property) => (
       ["descrizione", "description"].includes(String(property?.key ?? "").trim().toLowerCase())
     ))?.value;
-    const prefix = String(description ?? "").trim();
+    const submodelTitle = String(node?.interfaceCache?.modelTitle ?? "").trim();
+    const prefix = [
+      submodelTitle ? t("text.submodelTooltipTitle", { title: submodelTitle }) : "",
+      String(description ?? "").trim(),
+    ].filter(Boolean).join(" | ");
     if (runtimeNode?.computedError) {
       const detail = String(runtimeNode.computedErrorMessage ?? "").trim()
         || t(`error.evalReason.${runtimeNode.computedError || "runtime"}`);
@@ -1464,6 +1490,19 @@
             text-anchor: middle;
             dominant-baseline: middle;
             font-weight: 700;
+          }
+          .node-submodel-icon-glyph {
+            fill: #28516f;
+            font-size: 30px;
+            font-weight: 700;
+            text-anchor: middle;
+            dominant-baseline: middle;
+            pointer-events: none;
+            user-select: none;
+          }
+          .node-submodel-icon-image {
+            pointer-events: none;
+            user-select: none;
           }
           .presentation-group-frame {
             fill: rgba(31, 122, 82, 0.035);
@@ -2776,7 +2815,8 @@
 
       (model.nodes || []).filter((node) => visibleNodeIds.has(node.id)).forEach((node) => {
         const g = document.createElementNS(SVG_NS, "g");
-        g.setAttribute("class", `node ${node.type || "state"}${node.__runtimeError ? " error" : ""}${node.output ? " output" : ""}`);
+        const submodelIcon = node.type === "submodel" ? normalizeSubmodelIcon(node.submodelIcon) : null;
+        g.setAttribute("class", `node ${node.type || "state"}${node.__runtimeError ? " error" : ""}${node.output ? " output" : ""}${submodelIcon ? " submodel-icon-node" : ""}`);
         const tooltipText = nodeTooltipText(node, runtimeNodes.get(node.id), this._state.runtimeModel?.execution, this.t.bind(this));
         if (tooltipText) {
           const title = document.createElementNS(SVG_NS, "title");
@@ -2814,16 +2854,37 @@
         const label = document.createElementNS(SVG_NS, "text");
         label.setAttribute("class", "node-label");
         label.setAttribute("x", node.x);
-        label.setAttribute("y", showRuntimeValues ? node.y - 8 : node.y);
+        label.setAttribute("y", submodelIcon
+          ? node.y + (node.height || 70) / 2 + 14
+          : (showRuntimeValues ? node.y - 8 : node.y));
         label.textContent = node.name;
         g.appendChild(shape);
+        if (submodelIcon?.type === "library") {
+          const icon = document.createElementNS(SVG_NS, "text");
+          icon.setAttribute("class", "node-submodel-icon-glyph");
+          icon.setAttribute("x", node.x);
+          icon.setAttribute("y", node.y);
+          icon.textContent = SUBMODEL_LIBRARY_ICONS[submodelIcon.value];
+          g.appendChild(icon);
+        } else if (submodelIcon?.type === "image") {
+          const iconSize = Math.max(20, Math.min((node.width || 120) - 18, (node.height || 70) - 18));
+          const icon = document.createElementNS(SVG_NS, "image");
+          icon.setAttribute("class", "node-submodel-icon-image");
+          icon.setAttribute("x", String(node.x - iconSize / 2));
+          icon.setAttribute("y", String(node.y - iconSize / 2));
+          icon.setAttribute("width", String(iconSize));
+          icon.setAttribute("height", String(iconSize));
+          icon.setAttribute("preserveAspectRatio", "xMidYMid meet");
+          icon.setAttribute("href", submodelIcon.value);
+          g.appendChild(icon);
+        }
         g.appendChild(label);
         if (showRuntimeValues) {
           const runtimeValue = summarizeNodeRuntimeValue(runtimeNodes.get(node.id), this._state.runtimeModel.execution, this.t.bind(this));
           const valueLabel = document.createElementNS(SVG_NS, "text");
           valueLabel.setAttribute("class", `node-runtime-value${runtimeValue.error ? " node-runtime-value-error" : ""}`);
           valueLabel.setAttribute("x", node.x);
-          valueLabel.setAttribute("y", node.y + 11);
+          valueLabel.setAttribute("y", submodelIcon ? node.y + (node.height || 70) / 2 + 29 : node.y + 11);
           valueLabel.textContent = runtimeValue.text;
           g.appendChild(valueLabel);
         }

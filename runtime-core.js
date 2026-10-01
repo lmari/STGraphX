@@ -74,6 +74,9 @@
               ? String(n.initialState ?? "")
               : "",
             modelPath: shape === "submodel" ? String(n.modelPath ?? "") : "",
+            submodelIcon: shape === "submodel" && n.submodelIcon && typeof n.submodelIcon === "object"
+              ? { type: String(n.submodelIcon.type ?? ""), value: String(n.submodelIcon.value ?? "") }
+              : null,
             inputBindings: shape === "submodel" && n.inputBindings && typeof n.inputBindings === "object"
               ? Object.fromEntries(
                 Object.entries(n.inputBindings)
@@ -83,6 +86,7 @@
               : {},
             interfaceCache: shape === "submodel" && n.interfaceCache && typeof n.interfaceCache === "object"
               ? {
+                modelTitle: String(n.interfaceCache.modelTitle ?? ""),
                 inputs: Array.isArray(n.interfaceCache.inputs) ? n.interfaceCache.inputs.map((value) => String(value)) : [],
                 outputs: Array.isArray(n.interfaceCache.outputs) ? n.interfaceCache.outputs.map((value) => String(value)) : [],
               }
@@ -567,22 +571,53 @@
 
     function buildSubmodelInputOverrides(model, node, parentContext) {
       const overrides = new Map();
+      let hasUndefinedValue = false;
 
       Object.entries(node.inputBindings || {}).forEach(([inputName, expr]) => {
         const name = String(inputName || "").trim();
         if (!name) {
           return;
         }
-        const result = semantics.evaluateValueExpression(String(expr ?? ""), parentContext, {
+        const expression = String(expr ?? "");
+        const references = semantics.collectIdentifierReferences(expression);
+        const referencesUndefinedValue = [...references].some((reference) =>
+          Object.prototype.hasOwnProperty.call(parentContext, reference)
+          && (parentContext[reference] === null || parentContext[reference] === undefined));
+        if (referencesUndefinedValue) {
+          hasUndefinedValue = true;
+          return;
+        }
+        const result = semantics.evaluateValueExpression(expression, parentContext, {
           localFunctions: localFunctionsForSemantics(model),
         });
         if (!result.ok) {
           throw new Error(result.message || result.reason || "runtime");
         }
+        if (result.value === null || result.value === undefined) {
+          hasUndefinedValue = true;
+          return;
+        }
         overrides.set(name, result.value);
       });
 
-      return overrides;
+      return { overrides, hasUndefinedValue };
+    }
+
+    function submodelHasUnboundEmptyInput(model) {
+      return (model?.nodes || []).some((node) =>
+        node?.input
+        && !node.externalValueEnabled
+        && !String(node.valueExpression ?? "").trim());
+    }
+
+    function undefinedSubmodelOutputValue(model) {
+      const outputs = {};
+      (model?.nodes || []).forEach((node) => {
+        if (node?.output) {
+          outputs[node.name] = null;
+        }
+      });
+      return { ok: true, kind: "object", value: outputs };
     }
 
     function createSubmodelNodeEvaluator(model, timeValue, env, options = {}) {
@@ -615,13 +650,16 @@
               effectiveContext[depNode.name] = depNode.computedValue;
             }
           });
-          const inputOverrides = buildSubmodelInputOverrides(model, runtimeNode, effectiveContext);
+          const inputOverrideResult = buildSubmodelInputOverrides(model, runtimeNode, effectiveContext);
           const runtimeChildModel = ensureSubmodelRuntimeModel(runtimeNode);
           if (!runtimeChildModel) {
             return { ok: false, reason: "runtime", message: "submodel is not loaded" };
           }
           const childModel = applyResults ? runtimeChildModel : cloneRuntimeModel(runtimeChildModel);
-          applyRuntimeModelInputOverrides(childModel, inputOverrides);
+          applyRuntimeModelInputOverrides(childModel, inputOverrideResult.overrides);
+          if (inputOverrideResult.hasUndefinedValue || submodelHasUnboundEmptyInput(childModel)) {
+            return undefinedSubmodelOutputValue(childModel);
+          }
           let childResult;
           if (childModel.execution.currentTime == null || childModel.execution.currentTime !== timeValue) {
             if (childModel.execution.currentTime == null) {

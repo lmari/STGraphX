@@ -211,6 +211,7 @@
         }
       });
       return {
+        modelTitle: String(data?.modelTitle ?? "").trim(),
         inputs: [...new Set(inputs)],
         outputs: [...new Set(outputs)],
         inputDetails,

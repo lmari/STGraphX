@@ -138,6 +138,10 @@ const nodeModelPathInput = document.getElementById("nodeModelPathInput");
 const submodelActionRow = document.getElementById("submodelActionRow");
 const loadSubmodelBtn = document.getElementById("loadSubmodelBtn");
 const showSubmodelBtn = document.getElementById("showSubmodelBtn");
+const submodelIconSection = document.getElementById("submodelIconSection");
+const submodelIconSelect = document.getElementById("submodelIconSelect");
+const chooseSubmodelIconBtn = document.getElementById("chooseSubmodelIconBtn");
+const clearSubmodelIconBtn = document.getElementById("clearSubmodelIconBtn");
 const nodeSubmodelInfo = document.getElementById("nodeSubmodelInfo");
 const nodeSubmodelBindings = document.getElementById("nodeSubmodelBindings");
 const nodeInitialStateLabel = document.getElementById("nodeInitialStateLabel");
@@ -7107,7 +7111,7 @@ function sanitizeAllEdgesForNode(nodeId) {
 }
 
 function emptySubmodelInterfaceCache() {
-  return { inputs: [], outputs: [], inputDetails: {}, outputDetails: {} };
+  return { modelTitle: "", inputs: [], outputs: [], inputDetails: {}, outputDetails: {} };
 }
 
 function normalizeSubmodelInterfaceCache(cache) {
@@ -7138,7 +7142,93 @@ function normalizeSubmodelInterfaceCache(cache) {
       };
     });
   }
-  return { inputs, outputs, inputDetails, outputDetails };
+  return {
+    modelTitle: String(source.modelTitle ?? "").trim(),
+    inputs,
+    outputs,
+    inputDetails,
+    outputDetails,
+  };
+}
+
+const SUBMODEL_LIBRARY_ICONS = Object.freeze({
+  module: "◆",
+  layers: "▤",
+  network: "⌘",
+  grid: "▦",
+  process: "◈",
+});
+const MAX_SUBMODEL_ICON_DATA_URL_LENGTH = 1_500_000;
+
+function normalizeSubmodelIcon(icon) {
+  if (!icon || typeof icon !== "object") {
+    return null;
+  }
+  const type = String(icon.type ?? "").trim();
+  const value = String(icon.value ?? "").trim();
+  if (type === "library" && Object.prototype.hasOwnProperty.call(SUBMODEL_LIBRARY_ICONS, value)) {
+    return { type, value };
+  }
+  if (
+    type === "image"
+    && value.length <= MAX_SUBMODEL_ICON_DATA_URL_LENGTH
+    && /^data:image\/(?:png|jpeg|gif|webp|svg\+xml);base64,[a-z0-9+/=]+$/i.test(value)
+  ) {
+    return { type, value };
+  }
+  return null;
+}
+
+function submodelIconSelectValue(node) {
+  const icon = normalizeSubmodelIcon(node?.submodelIcon);
+  if (!icon) {
+    return "";
+  }
+  return icon.type === "image" ? "image" : icon.value;
+}
+
+function readImageFileAsDataUrl(file) {
+  return new Promise((resolve, reject) => {
+    if (!file || typeof FileReader === "undefined") {
+      reject(new Error(t("error.submodelIconRead")));
+      return;
+    }
+    const reader = new FileReader();
+    reader.onerror = () => reject(new Error(t("error.submodelIconRead")));
+    reader.onload = () => {
+      const icon = normalizeSubmodelIcon({ type: "image", value: String(reader.result ?? "") });
+      if (!icon) {
+        reject(new Error(t("error.submodelIconInvalid")));
+        return;
+      }
+      resolve(icon);
+    };
+    reader.readAsDataURL(file);
+  });
+}
+
+function chooseSubmodelIconFile() {
+  return new Promise((resolve) => {
+    const input = document.createElement("input");
+    let settled = false;
+    const finish = (file = null) => {
+      if (settled) {
+        return;
+      }
+      settled = true;
+      window.removeEventListener("focus", onWindowFocus);
+      resolve(file);
+    };
+    const onWindowFocus = () => {
+      window.setTimeout(() => finish(input.files?.[0] || null), 150);
+    };
+    input.type = "file";
+    input.accept = "image/png,image/jpeg,image/gif,image/webp,image/svg+xml";
+    input.addEventListener("change", () => finish(input.files?.[0] || null), { once: true });
+    input.addEventListener("cancel", () => finish(null), { once: true });
+    window.addEventListener("focus", onWindowFocus, { once: true });
+    input.click();
+  });
 }
 
 function submodelInputHelpText(node, inputName) {
@@ -8277,6 +8367,7 @@ function exportGraphData() {
         out.initialState = String(n.initialStateExpression ?? "");
       } else if (type === "submodel") {
         out.modelPath = String(n.modelPath ?? "");
+        out.submodelIcon = normalizeSubmodelIcon(n.submodelIcon);
         out.inputBindings = n.inputBindings && typeof n.inputBindings === "object"
           ? Object.fromEntries(
             Object.entries(n.inputBindings)
@@ -8537,6 +8628,7 @@ function applyGraphData(data) {
         ? String(n.initialState ?? "")
         : String(n.initialStateExpression ?? ""),
       modelPath: shape === "submodel" ? String(n.modelPath ?? "") : "",
+      submodelIcon: shape === "submodel" ? normalizeSubmodelIcon(n.submodelIcon) : null,
       inputBindings: shape === "submodel" && n.inputBindings && typeof n.inputBindings === "object"
         ? Object.fromEntries(
           Object.entries(n.inputBindings)
@@ -9090,6 +9182,7 @@ function collectSelectedForClipboard() {
       valueExpression: n.valueExpression,
       initialStateExpression: n.initialStateExpression,
       modelPath: n.modelPath,
+      submodelIcon: deepClone(normalizeSubmodelIcon(n.submodelIcon)),
       inputBindings: deepClone(n.inputBindings || {}),
       interfaceCache: deepClone(normalizeSubmodelInterfaceCache(n.interfaceCache)),
       computedValue: n.computedValue,
@@ -9187,6 +9280,7 @@ async function pasteFromClipboard() {
         valueExpression: String(n.valueExpression ?? ""),
         initialStateExpression: String(n.initialStateExpression ?? ""),
         modelPath: String(n.modelPath ?? ""),
+        submodelIcon: normalizeSubmodelIcon(n.submodelIcon),
         inputBindings: deepClone(n.inputBindings || {}),
         interfaceCache: deepClone(normalizeSubmodelInterfaceCache(n.interfaceCache)),
         submodelError: "",
@@ -9568,6 +9662,7 @@ function addNode(shape, atPoint = null) {
     valueExpression: "",
     initialStateExpression: "",
     modelPath: "",
+    submodelIcon: null,
     inputBindings: {},
     interfaceCache: emptySubmodelInterfaceCache(),
     submodelError: "",
@@ -9853,6 +9948,23 @@ function refreshSidebar() {
     if (submodelActionRow) {
       submodelActionRow.classList.toggle("hidden", !submodelNode);
     }
+    if (submodelIconSection) {
+      submodelIconSection.classList.toggle("hidden", !submodelNode);
+    }
+    if (submodelIconSelect) {
+      submodelIconSelect.disabled = !submodelNode;
+      if (submodelNode && (!sameSidebarNode || document.activeElement !== submodelIconSelect)) {
+        submodelIconSelect.value = submodelIconSelectValue(node);
+      }
+    }
+    if (chooseSubmodelIconBtn) {
+      chooseSubmodelIconBtn.classList.toggle("hidden", !submodelNode);
+      chooseSubmodelIconBtn.disabled = !submodelNode;
+    }
+    if (clearSubmodelIconBtn) {
+      clearSubmodelIconBtn.classList.toggle("hidden", !submodelNode);
+      clearSubmodelIconBtn.disabled = !submodelNode || !normalizeSubmodelIcon(node.submodelIcon);
+    }
     if (loadSubmodelBtn) {
       loadSubmodelBtn.classList.toggle("hidden", !submodelNode);
       loadSubmodelBtn.disabled = !submodelNode;
@@ -10023,6 +10135,21 @@ function refreshSidebar() {
   if (submodelActionRow) {
     submodelActionRow.classList.add("hidden");
   }
+  if (submodelIconSection) {
+    submodelIconSection.classList.add("hidden");
+  }
+  if (submodelIconSelect) {
+    submodelIconSelect.value = "";
+    submodelIconSelect.disabled = true;
+  }
+  if (chooseSubmodelIconBtn) {
+    chooseSubmodelIconBtn.classList.add("hidden");
+    chooseSubmodelIconBtn.disabled = true;
+  }
+  if (clearSubmodelIconBtn) {
+    clearSubmodelIconBtn.classList.add("hidden");
+    clearSubmodelIconBtn.disabled = true;
+  }
   if (loadSubmodelBtn) {
     loadSubmodelBtn.classList.add("hidden");
     loadSubmodelBtn.disabled = true;
@@ -10120,6 +10247,21 @@ function refreshSidebar() {
     }
     if (submodelActionRow) {
       submodelActionRow.classList.add("hidden");
+    }
+    if (submodelIconSection) {
+      submodelIconSection.classList.add("hidden");
+    }
+    if (submodelIconSelect) {
+      submodelIconSelect.value = "";
+      submodelIconSelect.disabled = true;
+    }
+    if (chooseSubmodelIconBtn) {
+      chooseSubmodelIconBtn.classList.add("hidden");
+      chooseSubmodelIconBtn.disabled = true;
+    }
+    if (clearSubmodelIconBtn) {
+      clearSubmodelIconBtn.classList.add("hidden");
+      clearSubmodelIconBtn.disabled = true;
     }
     if (loadSubmodelBtn) {
       loadSubmodelBtn.classList.add("hidden");
@@ -10732,6 +10874,13 @@ function render(options = {}) {
     if (isGlobalParameterNode(node)) {
       g.classList.add("global-node");
     }
+    const submodelIcon = isSubmodelNode(node) ? normalizeSubmodelIcon(node.submodelIcon) : null;
+    if (submodelIcon) {
+      g.classList.add("submodel-icon-node");
+    }
+    if (isSubmodelNode(node) && node.strokeColor === "transparent") {
+      g.classList.add("submodel-transparent-border");
+    }
     if (nodeHasRuntimeError(node)) {
       g.classList.add("runtime-error");
     }
@@ -10929,8 +11078,32 @@ function render(options = {}) {
     label.classList.add("node-label");
     label.setAttribute("x", node.x);
     const showRuntimeValue = ui.showNodeValues === true && graph.execution.currentTime != null;
-    label.setAttribute("y", showRuntimeValue ? node.y - 8 : node.y);
+    label.setAttribute(
+      "y",
+      submodelIcon
+        ? node.y + node.height / 2 + 14
+        : (showRuntimeValue ? node.y - 8 : node.y),
+    );
     label.textContent = node.name;
+
+    let submodelIconElement = null;
+    if (submodelIcon?.type === "library") {
+      submodelIconElement = document.createElementNS(SVG_NS, "text");
+      submodelIconElement.classList.add("node-submodel-icon-glyph");
+      submodelIconElement.setAttribute("x", node.x);
+      submodelIconElement.setAttribute("y", node.y);
+      submodelIconElement.textContent = SUBMODEL_LIBRARY_ICONS[submodelIcon.value];
+    } else if (submodelIcon?.type === "image") {
+      submodelIconElement = document.createElementNS(SVG_NS, "image");
+      const iconSize = Math.max(20, Math.min(node.width - 18, node.height - 18));
+      submodelIconElement.classList.add("node-submodel-icon-image");
+      submodelIconElement.setAttribute("x", node.x - iconSize / 2);
+      submodelIconElement.setAttribute("y", node.y - iconSize / 2);
+      submodelIconElement.setAttribute("width", iconSize);
+      submodelIconElement.setAttribute("height", iconSize);
+      submodelIconElement.setAttribute("preserveAspectRatio", "xMidYMid meet");
+      submodelIconElement.setAttribute("href", submodelIcon.value);
+    }
 
     let runtimeValueLabel = null;
     if (showRuntimeValue) {
@@ -10941,7 +11114,7 @@ function render(options = {}) {
         runtimeValueLabel.classList.add("node-runtime-value-error");
       }
       runtimeValueLabel.setAttribute("x", node.x);
-      runtimeValueLabel.setAttribute("y", node.y + 11);
+      runtimeValueLabel.setAttribute("y", submodelIcon ? node.y + node.height / 2 + 29 : node.y + 11);
       runtimeValueLabel.textContent = runtimeValue.text;
       const title = document.createElementNS(SVG_NS, "title");
       title.textContent = runtimeValue.error
@@ -11075,6 +11248,9 @@ function render(options = {}) {
     g.appendChild(shapeEl);
     if (submodelInnerShape) {
       g.appendChild(submodelInnerShape);
+    }
+    if (submodelIconElement) {
+      g.appendChild(submodelIconElement);
     }
     g.appendChild(label);
     if (runtimeValueLabel) {
@@ -11277,6 +11453,7 @@ function importGraphData(data) {
           ? String(n.initialState ?? "")
           : "",
         modelPath: shape === "submodel" ? String(n.modelPath ?? "") : "",
+        submodelIcon: shape === "submodel" ? normalizeSubmodelIcon(n.submodelIcon) : null,
         inputBindings: shape === "submodel" && n.inputBindings && typeof n.inputBindings === "object"
           ? Object.fromEntries(
             Object.entries(n.inputBindings)
@@ -14011,6 +14188,7 @@ nodeShapeInput.addEventListener("change", () => {
     }
     if (!isSubmodelNode(node)) {
       node.modelPath = "";
+      node.submodelIcon = null;
       node.inputBindings = {};
       node.interfaceCache = emptySubmodelInterfaceCache();
       node.submodelError = "";
@@ -14063,6 +14241,88 @@ if (nodeModelPathInput) {
       evt.preventDefault();
       nodeModelPathInput.blur();
     }
+  });
+}
+
+if (submodelIconSelect) {
+  submodelIconSelect.addEventListener("change", async () => {
+    if (ui.selectedNodes.size !== 1 || isEditingUiLocked()) {
+      return;
+    }
+    const node = getNodeById([...ui.selectedNodes][0]);
+    if (!node || !isSubmodelNode(node)) {
+      return;
+    }
+    const value = String(submodelIconSelect.value ?? "");
+    if (value === "image") {
+      const previousIcon = normalizeSubmodelIcon(node.submodelIcon);
+      const file = await chooseSubmodelIconFile();
+      if (!file) {
+        submodelIconSelect.value = submodelIconSelectValue({ submodelIcon: previousIcon });
+        return;
+      }
+      try {
+        const icon = await readImageFileAsDataUrl(file);
+        runAction(() => {
+          node.submodelIcon = icon;
+        });
+      } catch (err) {
+        setStatus(String(err?.message || t("error.submodelIconRead")));
+        submodelIconSelect.value = submodelIconSelectValue({ submodelIcon: previousIcon });
+        return;
+      }
+    } else {
+      runAction(() => {
+        node.submodelIcon = value
+          ? normalizeSubmodelIcon({ type: "library", value })
+          : null;
+      });
+    }
+    refreshSidebar();
+    render();
+  });
+}
+
+if (chooseSubmodelIconBtn) {
+  chooseSubmodelIconBtn.addEventListener("click", async () => {
+    if (ui.selectedNodes.size !== 1 || isEditingUiLocked()) {
+      return;
+    }
+    const node = getNodeById([...ui.selectedNodes][0]);
+    if (!node || !isSubmodelNode(node)) {
+      return;
+    }
+    const file = await chooseSubmodelIconFile();
+    if (!file) {
+      return;
+    }
+    try {
+      const icon = await readImageFileAsDataUrl(file);
+      runAction(() => {
+        node.submodelIcon = icon;
+      });
+      refreshSidebar();
+      render();
+    } catch (err) {
+      setStatus(String(err?.message || t("error.submodelIconRead")));
+    }
+  });
+}
+
+if (clearSubmodelIconBtn) {
+  clearSubmodelIconBtn.addEventListener("click", () => {
+    if (ui.selectedNodes.size !== 1 || isEditingUiLocked()) {
+      return;
+    }
+    const node = getNodeById([...ui.selectedNodes][0]);
+    if (!node || !isSubmodelNode(node) || !normalizeSubmodelIcon(node.submodelIcon)) {
+      return;
+    }
+    runAction(() => {
+      node.submodelIcon = null;
+    });
+    refreshSidebar();
+    render();
   });
 }
 

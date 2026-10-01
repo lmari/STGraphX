@@ -290,6 +290,22 @@
                 <button id="loadSubmodelBtn" class="small-btn" type="button" data-i18n="action.loadSubmodel" data-title-i18n="tooltip.node.loadSubmodel"></button>
                 <button id="showSubmodelBtn" class="small-btn" type="button" data-i18n="action.showSubmodel" data-title-i18n="tooltip.node.showSubmodel"></button>
               </div>
+              <div id="submodelIconSection" class="submodel-icon-section hidden">
+                <label for="submodelIconSelect" data-i18n="label.submodelIcon" data-title-i18n="tooltip.node.submodelIcon"></label>
+                <select id="submodelIconSelect" data-title-i18n="tooltip.node.submodelIcon">
+                  <option value="" data-i18n="submodelIcon.none"></option>
+                  <option value="module" data-i18n="submodelIcon.module"></option>
+                  <option value="layers" data-i18n="submodelIcon.layers"></option>
+                  <option value="network" data-i18n="submodelIcon.network"></option>
+                  <option value="grid" data-i18n="submodelIcon.grid"></option>
+                  <option value="process" data-i18n="submodelIcon.process"></option>
+                  <option value="image" data-i18n="submodelIcon.image"></option>
+                </select>
+                <div class="submodel-icon-actions">
+                  <button id="chooseSubmodelIconBtn" class="small-btn" type="button" data-i18n="action.chooseIcon" data-title-i18n="tooltip.node.chooseSubmodelIcon"></button>
+                  <button id="clearSubmodelIconBtn" class="small-btn" type="button" data-i18n="action.removeIcon" data-title-i18n="tooltip.node.clearSubmodelIcon"></button>
+                </div>
+              </div>
               <div id="nodeSubmodelInfo" class="expr-status hidden"></div>
               <div id="nodeSubmodelBindings" class="submodel-bindings hidden"></div>
 

@@ -1,6 +1,6 @@
 /*!
  * STGraphX Embedded Player Bundle
- * Generated: 2026-09-30T12:28:28.586Z
+ * Generated: 2026-10-01T13:19:24.274Z
  */
 
 /* --- i18n-inline.js --- */
@@ -13,7 +13,7 @@
 
 window.STGraphXAppMeta = {
   author: "Luca Mari",
-  releaseDate: "2026.09.29",
+  releaseDate: "2026.10.01",
   license: "MPL-2.0",
   copyright: "Copyright (c) 2026 Luca Mari",
 };
@@ -38,6 +38,7 @@ window.STGraphXI18nBundles = {
     "action.closeWithoutSaving": "No, chiudi senza salvare",
     "action.dontCloseApp": "Non chiudere l'app",
     "action.closeTab": "Chiudi scheda",
+    "action.chooseIcon": "Scegli immagine...",
     "action.copy": "Copia",
     "action.delete": "Elimina",
     "action.discard": "Scarta",
@@ -50,6 +51,7 @@ window.STGraphXI18nBundles = {
     "action.openSubmodel": "Apri sottomodello",
     "action.refreshSubmodel": "Aggiorna interfaccia",
     "action.remove": "Rimuovi",
+    "action.removeIcon": "Rimuovi icona",
     "action.resetExecution": "Reset esecuzione",
     "action.resetNodeColors": "Colori automatici",
     "action.save": "Salva",
@@ -119,8 +121,10 @@ window.STGraphXI18nBundles = {
     "menu.edit.copy": "Copia",
     "menu.edit.cut": "Taglia",
     "menu.edit.delete": "Cancella selezione",
+    "menu.edit.editNodeExpression": "Modifica espressione...",
     "menu.edit.paste": "Incolla",
     "menu.edit.redo": "Redo",
+    "menu.edit.renameNode": "Rinomina nodo",
     "menu.edit.selectAll": "Seleziona tutto",
     "menu.edit.undo": "Undo",
     "menu.file": "File",
@@ -227,6 +231,7 @@ window.STGraphXI18nBundles = {
     "label.strictDefinitions": "Blocca esecuzione con nodi non definiti",
     "label.strictDefinitionsShort": "Definizioni rigorose",
     "label.submodelPath": "File sottomodello",
+    "label.submodelIcon": "Icona",
     "label.textHtml": "Contenuto formattato",
     "label.timeCurrent": "Tempo corrente",
     "label.timeDelayMs": "Ritardo (ms)",
@@ -887,6 +892,7 @@ window.STGraphXI18nBundles = {
     "text.submodelBindingDefault": "Seleziona una variabile connessa oppure lascia vuoto per usare il valore definito nel sottomodello.",
     "text.submodelError": "Errore sottomodello: {reason}",
     "text.submodelInterfaceSummary": "Ingressi: {inputs} | Uscite: {outputs}",
+    "text.submodelTooltipTitle": "Sottomodello: {title}",
     "text.submodelNoInputs": "Nessun input esposto dal sottomodello.",
     "text.submodelOutputEntry": "Uscita del sottomodello {node}: {output}",
     "text.toolbarHeading1": "Titolo 1",
@@ -903,8 +909,10 @@ window.STGraphXI18nBundles = {
     "tooltip.menu.edit.copy": "Copia la selezione nella clipboard interna.",
     "tooltip.menu.edit.cut": "Taglia la selezione e la copia nella clipboard interna.",
     "tooltip.menu.edit.delete": "Cancella l'elemento o i nodi attualmente selezionati.",
+    "tooltip.menu.edit.editNodeExpression": "Apre l'editor dell'espressione del nodo selezionato.",
     "tooltip.menu.edit.paste": "Incolla il contenuto della clipboard interna.",
     "tooltip.menu.edit.redo": "Ripristina l'ultima modifica annullata.",
+    "tooltip.menu.edit.renameNode": "Porta il focus sul nome del nodo selezionato per rinominarlo.",
     "tooltip.menu.edit.selectAll": "Seleziona tutti i nodi del modello.",
     "tooltip.menu.edit.undo": "Annulla l'ultima modifica registrata.",
     "tooltip.menu.file": "Operazioni sul file del modello: nuovo, carica e salva.",
@@ -988,6 +996,18 @@ window.STGraphXI18nBundles = {
     "tooltip.node.showSubmodel": "Mostra il sottomodello già disponibile.",
     "tooltip.node.submodelBinding": "Seleziona quale variabile connessa alimenta questo input del sottomodello. Se vuoto, il sottomodello usa il proprio valore di default.",
     "tooltip.node.submodelPath": "Nome del file JSON del sottomodello, relativo alla cartella del modello corrente.",
+    "tooltip.node.submodelIcon": "Sostituisce l'aspetto del nodo di sottomodello con un'icona, senza modificare il modello incluso.",
+    "tooltip.node.chooseSubmodelIcon": "Sceglie dal file system un'immagine da incorporare nel modello come icona.",
+    "tooltip.node.clearSubmodelIcon": "Ripristina la visualizzazione standard del nodo di sottomodello.",
+    "error.submodelIconRead": "Non è possibile leggere l'immagine selezionata.",
+    "error.submodelIconInvalid": "L'icona deve essere un'immagine PNG, JPEG, GIF, WebP o SVG di dimensioni contenute.",
+    "submodelIcon.none": "Nessuna icona",
+    "submodelIcon.module": "Modulo",
+    "submodelIcon.layers": "Livelli",
+    "submodelIcon.network": "Rete",
+    "submodelIcon.grid": "Griglia",
+    "submodelIcon.process": "Processo",
+    "submodelIcon.image": "Immagine dal file",
     "tooltip.node.type": "Tipo semantico del nodo: stato, algebrico o parametro.",
     "tooltip.tab.new": "Apre una nuova scheda modello.",
     "tooltip.widget.addColumn": "Aggiunge una nuova colonna alla tabella.",
@@ -1252,6 +1272,7 @@ window.STGraphXI18nBundles = {
     "action.closeWithoutSaving": "No, close without saving",
     "action.dontCloseApp": "Do not close the app",
     "action.closeTab": "Close tab",
+    "action.chooseIcon": "Choose image...",
     "action.copy": "Copy",
     "action.delete": "Delete",
     "action.discard": "Discard",
@@ -1264,6 +1285,7 @@ window.STGraphXI18nBundles = {
     "action.openSubmodel": "Open submodel",
     "action.refreshSubmodel": "Refresh interface",
     "action.remove": "Remove",
+    "action.removeIcon": "Remove icon",
     "action.resetExecution": "Reset execution",
     "action.resetNodeColors": "Automatic colors",
     "action.save": "Save",
@@ -1333,8 +1355,10 @@ window.STGraphXI18nBundles = {
     "menu.edit.copy": "Copy",
     "menu.edit.cut": "Cut",
     "menu.edit.delete": "Delete selection",
+    "menu.edit.editNodeExpression": "Edit expression...",
     "menu.edit.paste": "Paste",
     "menu.edit.redo": "Redo",
+    "menu.edit.renameNode": "Rename node",
     "menu.edit.selectAll": "Select all",
     "menu.edit.undo": "Undo",
     "menu.file": "File",
@@ -1441,6 +1465,7 @@ window.STGraphXI18nBundles = {
     "label.strictDefinitions": "Block execution with undefined nodes",
     "label.strictDefinitionsShort": "Strict definitions",
     "label.submodelPath": "Submodel file",
+    "label.submodelIcon": "Icon",
     "label.textHtml": "Formatted content",
     "label.timeCurrent": "Current time",
     "label.timeDelayMs": "Delay (ms)",
@@ -2101,6 +2126,7 @@ window.STGraphXI18nBundles = {
     "text.submodelBindingDefault": "Select a connected variable, or leave it blank to use the value defined inside the submodel.",
     "text.submodelError": "Submodel error: {reason}",
     "text.submodelInterfaceSummary": "Inputs: {inputs} | Outputs: {outputs}",
+    "text.submodelTooltipTitle": "Submodel: {title}",
     "text.submodelNoInputs": "The submodel exposes no inputs.",
     "text.submodelOutputEntry": "Output of submodel {node}: {output}",
     "text.toolbarHeading1": "Heading 1",
@@ -2117,8 +2143,10 @@ window.STGraphXI18nBundles = {
     "tooltip.menu.edit.copy": "Copies the selection to the internal clipboard.",
     "tooltip.menu.edit.cut": "Cuts the selection and copies it to the internal clipboard.",
     "tooltip.menu.edit.delete": "Deletes the currently selected element or nodes.",
+    "tooltip.menu.edit.editNodeExpression": "Opens the expression editor for the selected node.",
     "tooltip.menu.edit.paste": "Pastes the internal clipboard contents.",
     "tooltip.menu.edit.redo": "Restores the last reverted change.",
+    "tooltip.menu.edit.renameNode": "Focuses the selected node name so it can be renamed.",
     "tooltip.menu.edit.selectAll": "Selects all nodes in the model.",
     "tooltip.menu.edit.undo": "Reverts the last recorded change.",
     "tooltip.menu.file": "Model file operations: create, load, and save.",
@@ -2202,6 +2230,18 @@ window.STGraphXI18nBundles = {
     "tooltip.node.showSubmodel": "Shows the submodel once it is available.",
     "tooltip.node.submodelBinding": "Select which connected variable feeds this submodel input. If left blank, the submodel uses its own default value.",
     "tooltip.node.submodelPath": "JSON file name of the submodel, relative to the current model folder.",
+    "tooltip.node.submodelIcon": "Replaces the submodel node appearance with an icon without changing the included model.",
+    "tooltip.node.chooseSubmodelIcon": "Choose an image from the file system and embed it in the model as an icon.",
+    "tooltip.node.clearSubmodelIcon": "Restore the standard submodel node appearance.",
+    "error.submodelIconRead": "The selected image cannot be read.",
+    "error.submodelIconInvalid": "The icon must be a reasonably sized PNG, JPEG, GIF, WebP, or SVG image.",
+    "submodelIcon.none": "No icon",
+    "submodelIcon.module": "Module",
+    "submodelIcon.layers": "Layers",
+    "submodelIcon.network": "Network",
+    "submodelIcon.grid": "Grid",
+    "submodelIcon.process": "Process",
+    "submodelIcon.image": "Image from file",
     "tooltip.node.type": "Semantic node type: state, algebraic, or parameter.",
     "tooltip.tab.new": "Opens a new model tab.",
     "tooltip.widget.addColumn": "Adds a new column to the table.",
@@ -6730,6 +6770,9 @@ window.STGraphXI18nBundles = {
     }
 
     const normalized = coerceBooleanToNumber(raw);
+    if (normalized === null || normalized === undefined) {
+      return { ok: true, kind: "empty", value: null };
+    }
     const validated = validateComputedValue(normalized);
     if (!validated.ok) {
       return { ok: false, reason: "type" };
@@ -7846,6 +7889,9 @@ window.STGraphXI18nBundles = {
               ? String(n.initialState ?? "")
               : "",
             modelPath: shape === "submodel" ? String(n.modelPath ?? "") : "",
+            submodelIcon: shape === "submodel" && n.submodelIcon && typeof n.submodelIcon === "object"
+              ? { type: String(n.submodelIcon.type ?? ""), value: String(n.submodelIcon.value ?? "") }
+              : null,
             inputBindings: shape === "submodel" && n.inputBindings && typeof n.inputBindings === "object"
               ? Object.fromEntries(
                 Object.entries(n.inputBindings)
@@ -7855,6 +7901,7 @@ window.STGraphXI18nBundles = {
               : {},
             interfaceCache: shape === "submodel" && n.interfaceCache && typeof n.interfaceCache === "object"
               ? {
+                modelTitle: String(n.interfaceCache.modelTitle ?? ""),
                 inputs: Array.isArray(n.interfaceCache.inputs) ? n.interfaceCache.inputs.map((value) => String(value)) : [],
                 outputs: Array.isArray(n.interfaceCache.outputs) ? n.interfaceCache.outputs.map((value) => String(value)) : [],
               }
@@ -8339,22 +8386,53 @@ window.STGraphXI18nBundles = {
 
     function buildSubmodelInputOverrides(model, node, parentContext) {
       const overrides = new Map();
+      let hasUndefinedValue = false;
 
       Object.entries(node.inputBindings || {}).forEach(([inputName, expr]) => {
         const name = String(inputName || "").trim();
         if (!name) {
           return;
         }
-        const result = semantics.evaluateValueExpression(String(expr ?? ""), parentContext, {
+        const expression = String(expr ?? "");
+        const references = semantics.collectIdentifierReferences(expression);
+        const referencesUndefinedValue = [...references].some((reference) =>
+          Object.prototype.hasOwnProperty.call(parentContext, reference)
+          && (parentContext[reference] === null || parentContext[reference] === undefined));
+        if (referencesUndefinedValue) {
+          hasUndefinedValue = true;
+          return;
+        }
+        const result = semantics.evaluateValueExpression(expression, parentContext, {
           localFunctions: localFunctionsForSemantics(model),
         });
         if (!result.ok) {
           throw new Error(result.message || result.reason || "runtime");
         }
+        if (result.value === null || result.value === undefined) {
+          hasUndefinedValue = true;
+          return;
+        }
         overrides.set(name, result.value);
       });
 
-      return overrides;
+      return { overrides, hasUndefinedValue };
+    }
+
+    function submodelHasUnboundEmptyInput(model) {
+      return (model?.nodes || []).some((node) =>
+        node?.input
+        && !node.externalValueEnabled
+        && !String(node.valueExpression ?? "").trim());
+    }
+
+    function undefinedSubmodelOutputValue(model) {
+      const outputs = {};
+      (model?.nodes || []).forEach((node) => {
+        if (node?.output) {
+          outputs[node.name] = null;
+        }
+      });
+      return { ok: true, kind: "object", value: outputs };
     }
 
     function createSubmodelNodeEvaluator(model, timeValue, env, options = {}) {
@@ -8387,13 +8465,16 @@ window.STGraphXI18nBundles = {
               effectiveContext[depNode.name] = depNode.computedValue;
             }
           });
-          const inputOverrides = buildSubmodelInputOverrides(model, runtimeNode, effectiveContext);
+          const inputOverrideResult = buildSubmodelInputOverrides(model, runtimeNode, effectiveContext);
           const runtimeChildModel = ensureSubmodelRuntimeModel(runtimeNode);
           if (!runtimeChildModel) {
             return { ok: false, reason: "runtime", message: "submodel is not loaded" };
           }
           const childModel = applyResults ? runtimeChildModel : cloneRuntimeModel(runtimeChildModel);
-          applyRuntimeModelInputOverrides(childModel, inputOverrides);
+          applyRuntimeModelInputOverrides(childModel, inputOverrideResult.overrides);
+          if (inputOverrideResult.hasUndefinedValue || submodelHasUnboundEmptyInput(childModel)) {
+            return undefinedSubmodelOutputValue(childModel);
+          }
           let childResult;
           if (childModel.execution.currentTime == null || childModel.execution.currentTime !== timeValue) {
             if (childModel.execution.currentTime == null) {
@@ -10640,6 +10721,28 @@ window.STGraphXI18nBundles = {
 (function initPlayerShell(global) {
   const SVG_NS = "http://www.w3.org/2000/svg";
   const PLAYER_LANGS = new Set(["it", "en"]);
+  const SUBMODEL_LIBRARY_ICONS = Object.freeze({
+    module: "◆",
+    layers: "▤",
+    network: "⌘",
+    grid: "▦",
+    process: "◈",
+  });
+
+  function normalizeSubmodelIcon(icon) {
+    if (!icon || typeof icon !== "object") {
+      return null;
+    }
+    const type = String(icon.type ?? "").trim();
+    const value = String(icon.value ?? "").trim();
+    if (type === "library" && Object.prototype.hasOwnProperty.call(SUBMODEL_LIBRARY_ICONS, value)) {
+      return { type, value };
+    }
+    if (type === "image" && /^data:image\/(?:png|jpeg|gif|webp|svg\+xml);base64,[a-z0-9+/=]+$/i.test(value)) {
+      return { type, value };
+    }
+    return null;
+  }
 
   function fillTemplate(template, vars = {}) {
     return String(template).replace(/\{([a-zA-Z0-9_]+)\}/g, (_match, name) => (
@@ -10924,7 +11027,11 @@ window.STGraphXI18nBundles = {
     const description = (node?.properties || []).find((property) => (
       ["descrizione", "description"].includes(String(property?.key ?? "").trim().toLowerCase())
     ))?.value;
-    const prefix = String(description ?? "").trim();
+    const submodelTitle = String(node?.interfaceCache?.modelTitle ?? "").trim();
+    const prefix = [
+      submodelTitle ? t("text.submodelTooltipTitle", { title: submodelTitle }) : "",
+      String(description ?? "").trim(),
+    ].filter(Boolean).join(" | ");
     if (runtimeNode?.computedError) {
       const detail = String(runtimeNode.computedErrorMessage ?? "").trim()
         || t(`error.evalReason.${runtimeNode.computedError || "runtime"}`);
@@ -12096,6 +12203,19 @@ window.STGraphXI18nBundles = {
             text-anchor: middle;
             dominant-baseline: middle;
             font-weight: 700;
+          }
+          .node-submodel-icon-glyph {
+            fill: #28516f;
+            font-size: 30px;
+            font-weight: 700;
+            text-anchor: middle;
+            dominant-baseline: middle;
+            pointer-events: none;
+            user-select: none;
+          }
+          .node-submodel-icon-image {
+            pointer-events: none;
+            user-select: none;
           }
           .presentation-group-frame {
             fill: rgba(31, 122, 82, 0.035);
@@ -13408,7 +13528,8 @@ window.STGraphXI18nBundles = {
 
       (model.nodes || []).filter((node) => visibleNodeIds.has(node.id)).forEach((node) => {
         const g = document.createElementNS(SVG_NS, "g");
-        g.setAttribute("class", `node ${node.type || "state"}${node.__runtimeError ? " error" : ""}${node.output ? " output" : ""}`);
+        const submodelIcon = node.type === "submodel" ? normalizeSubmodelIcon(node.submodelIcon) : null;
+        g.setAttribute("class", `node ${node.type || "state"}${node.__runtimeError ? " error" : ""}${node.output ? " output" : ""}${submodelIcon ? " submodel-icon-node" : ""}`);
         const tooltipText = nodeTooltipText(node, runtimeNodes.get(node.id), this._state.runtimeModel?.execution, this.t.bind(this));
         if (tooltipText) {
           const title = document.createElementNS(SVG_NS, "title");
@@ -13446,16 +13567,37 @@ window.STGraphXI18nBundles = {
         const label = document.createElementNS(SVG_NS, "text");
         label.setAttribute("class", "node-label");
         label.setAttribute("x", node.x);
-        label.setAttribute("y", showRuntimeValues ? node.y - 8 : node.y);
+        label.setAttribute("y", submodelIcon
+          ? node.y + (node.height || 70) / 2 + 14
+          : (showRuntimeValues ? node.y - 8 : node.y));
         label.textContent = node.name;
         g.appendChild(shape);
+        if (submodelIcon?.type === "library") {
+          const icon = document.createElementNS(SVG_NS, "text");
+          icon.setAttribute("class", "node-submodel-icon-glyph");
+          icon.setAttribute("x", node.x);
+          icon.setAttribute("y", node.y);
+          icon.textContent = SUBMODEL_LIBRARY_ICONS[submodelIcon.value];
+          g.appendChild(icon);
+        } else if (submodelIcon?.type === "image") {
+          const iconSize = Math.max(20, Math.min((node.width || 120) - 18, (node.height || 70) - 18));
+          const icon = document.createElementNS(SVG_NS, "image");
+          icon.setAttribute("class", "node-submodel-icon-image");
+          icon.setAttribute("x", String(node.x - iconSize / 2));
+          icon.setAttribute("y", String(node.y - iconSize / 2));
+          icon.setAttribute("width", String(iconSize));
+          icon.setAttribute("height", String(iconSize));
+          icon.setAttribute("preserveAspectRatio", "xMidYMid meet");
+          icon.setAttribute("href", submodelIcon.value);
+          g.appendChild(icon);
+        }
         g.appendChild(label);
         if (showRuntimeValues) {
           const runtimeValue = summarizeNodeRuntimeValue(runtimeNodes.get(node.id), this._state.runtimeModel.execution, this.t.bind(this));
           const valueLabel = document.createElementNS(SVG_NS, "text");
           valueLabel.setAttribute("class", `node-runtime-value${runtimeValue.error ? " node-runtime-value-error" : ""}`);
           valueLabel.setAttribute("x", node.x);
-          valueLabel.setAttribute("y", node.y + 11);
+          valueLabel.setAttribute("y", submodelIcon ? node.y + (node.height || 70) / 2 + 29 : node.y + 11);
           valueLabel.textContent = runtimeValue.text;
           g.appendChild(valueLabel);
         }

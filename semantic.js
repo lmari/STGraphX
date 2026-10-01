@@ -2196,6 +2196,9 @@
     }
 
     const normalized = coerceBooleanToNumber(raw);
+    if (normalized === null || normalized === undefined) {
+      return { ok: true, kind: "empty", value: null };
+    }
     const validated = validateComputedValue(normalized);
     if (!validated.ok) {
       return { ok: false, reason: "type" };

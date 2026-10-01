@@ -28,6 +28,22 @@ async function run() {
     [],
     "the submodel binding must not cause a runtime error",
   );
+
+  const undefinedInputRuntime = createHeadlessRuntime({ lang: "en" });
+  await undefinedInputRuntime.load({ src: "tests/x2.json" });
+  const undefinedSource = undefinedInputRuntime._runtimeModel.nodes.find((node) => node.name === "n1");
+  undefinedSource.valueExpression = "";
+  const undefinedOutputs = await undefinedInputRuntime.step();
+  assert.equal(
+    undefinedOutputs.n2,
+    null,
+    "an undefined parent input must propagate an unavailable submodel output",
+  );
+  assert.deepEqual(
+    undefinedInputRuntime._runtimeModel.nodes.filter((node) => node.computedError).map((node) => node.name),
+    [],
+    "an undefined parent input must not turn into a submodel runtime error",
+  );
   console.log("submodel-runtime.test.js: ok");
 }
 

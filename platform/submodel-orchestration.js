@@ -91,6 +91,7 @@
           }
           const template = await loadSubmodelTemplateByPath(normalizedPath, new Set(), orchestrationOptions);
           node.interfaceCache = {
+            modelTitle: String(template?.modelTitle ?? "").trim(),
             inputs: (template?.nodes || [])
               .filter((child) => child.shape === "diamond" || child.input)
               .map((child) => child.name),

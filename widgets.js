@@ -3905,15 +3905,22 @@ function buildNodeTooltipText(node) {
     return { text: "", tone: "" };
   }
   const description = getNodeDescription(node);
+  const submodelTitle = node.shape === "submodel"
+    ? String(node?.interfaceCache?.modelTitle ?? "").trim()
+    : "";
+  const prefix = [
+    submodelTitle ? t("text.submodelTooltipTitle", { title: submodelTitle }) : "",
+    description,
+  ].filter(Boolean).join(" | ");
   if (node.computedValue != null) {
     const valueText = summarizeTooltipValue(node.computedValue);
-    return { text: description ? `${description}: ${valueText}` : valueText, tone: "value" };
+    return { text: prefix ? `${prefix}: ${valueText}` : valueText, tone: "value" };
   }
   if (String(node.computedError || "").trim()) {
     const errorText = localizeExpressionErrorMessage(node.computedError);
-    return { text: description ? `${description}: ${errorText}` : errorText, tone: "error" };
+    return { text: prefix ? `${prefix}: ${errorText}` : errorText, tone: "error" };
   }
-  return { text: description, tone: "" };
+  return { text: prefix, tone: "" };
 }
 
 function canvasTextDisplayHtml(item) {
