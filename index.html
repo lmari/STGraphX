@@ -12,6 +12,7 @@
     <link rel="icon" href="icon.svg" type="image/svg+xml" />
     <title data-i18n="app.title">STGraphX</title>
     <link rel="stylesheet" href="styles.css" />
+    <link rel="stylesheet" href="vendor/katex/katex.min.css" />
   </head>
   <body>
     <div class="app">
@@ -46,7 +47,7 @@
           <div class="menu-panel" id="editMenu">
             <button id="selectAllBtn" class="menu-command" type="button" data-title-i18n="tooltip.menu.edit.selectAll"><span data-i18n="menu.edit.selectAll"></span><span class="menu-shortcut">Ctrl+A</span></button>
             <hr class="menu-sep" />
-            <button id="renameNodeBtn" class="menu-command" type="button" data-title-i18n="tooltip.menu.edit.renameNode"><span data-i18n="menu.edit.renameNode"></span><span class="menu-shortcut">F2</span></button>
+            <button id="renameNodeBtn" class="menu-command" type="button" data-title-i18n="tooltip.menu.edit.renameNode"><span id="renameSelectionLabel" data-i18n="menu.edit.renameNode"></span><span class="menu-shortcut">F2</span></button>
             <button id="editNodeExpressionBtn" class="menu-command" type="button" data-title-i18n="tooltip.menu.edit.editNodeExpression"><span data-i18n="menu.edit.editNodeExpression"></span><span class="menu-shortcut">F4</span></button>
             <hr class="menu-sep" />
             <button id="cutBtn" class="menu-command" type="button" data-title-i18n="tooltip.menu.edit.cut"><span data-i18n="menu.edit.cut"></span><span class="menu-shortcut">Ctrl+X</span></button>
@@ -98,6 +99,7 @@
             <button id="toggleGraphItem" class="menu-command" type="button" data-i18n="menu.view.toggleGraph" data-title-i18n="tooltip.menu.view.toggleGraph"></button>
             <button id="toggleWidgetsItem" class="menu-command" type="button" data-i18n="menu.view.toggleWidgets" data-title-i18n="tooltip.menu.view.toggleWidgets"></button>
             <button id="manageDashboardItem" class="menu-command" type="button" data-i18n="menu.view.dashboard"></button>
+            <button id="modelNotesItem" class="menu-command" type="button" data-i18n="menu.view.modelNotes" data-title-i18n="tooltip.menu.view.modelNotes"></button>
             <button id="managePresentationGroupsItem" class="menu-command" type="button" data-i18n="menu.view.presentationGroups"></button>
             <button id="feedbackLoopsItem" class="menu-command" type="button" data-i18n="menu.view.feedbackLoops" data-title-i18n="tooltip.menu.view.feedbackLoops"></button>
             <hr class="menu-sep" />
@@ -163,6 +165,7 @@
             <div id="widgetLayer" class="widget-layer"></div>
           </div>
         </section>
+        <button id="modelNotesCanvasBtn" class="model-notes-canvas-btn hidden" type="button" data-i18n-aria-label="modelNotes.canvasButton" data-title-i18n="modelNotes.canvasButton">▤</button>
 
         <aside class="sidebar" id="sidebar">
           <div id="tabletSidebarHeader" class="tablet-sidebar-header">
@@ -388,7 +391,7 @@
                   </div>
                 </div>
                 <div class="hint" data-i18n="hint.textFormatting"></div>
-                <label for="textHtmlInput" data-i18n="label.textHtml"></label>
+                <label for="textHtmlInput" data-i18n="label.textMarkdown"></label>
                 <textarea id="textHtmlInput" class="panel-textarea"></textarea>
               </div>
             </div>
@@ -808,11 +811,9 @@
             <button type="button" class="small-btn text-tool-btn" data-text-tool="p">P</button>
             <button type="button" class="small-btn text-tool-btn" data-text-tool="b"><strong>B</strong></button>
             <button type="button" class="small-btn text-tool-btn" data-text-tool="i"><em>I</em></button>
-            <button type="button" class="small-btn text-tool-btn" data-text-tool="u"><u>U</u></button>
+            <button type="button" class="small-btn text-tool-btn" data-text-tool="tex" data-title-i18n="tooltip.text.insertFormula">∑</button>
             <button type="button" class="small-btn text-tool-btn" data-text-tool="ul">UL</button>
             <button type="button" class="small-btn text-tool-btn" data-text-tool="ol">OL</button>
-            <button type="button" class="small-btn text-tool-btn" data-text-tool="li">LI</button>
-            <button type="button" class="small-btn text-tool-btn" data-text-tool="br">BR</button>
             <button type="button" class="small-btn text-tool-btn" data-text-tool="hr">HR</button>
           </div>
           <textarea id="textEditorInput" class="text-editor-textarea"></textarea>
@@ -820,6 +821,14 @@
         <div class="modal-actions">
           <button id="textEditorDismissBtn" type="button" data-i18n="action.close"></button>
         </div>
+      </div>
+    </div>
+    <div id="modelNotesModal" class="modal-backdrop modal-modeless hidden">
+      <div class="modal-card model-notes-card" role="dialog" aria-modal="false" aria-labelledby="modelNotesTitle">
+        <div class="modal-head"><h3 id="modelNotesTitle" data-i18n="modelNotes.title"></h3><button id="modelNotesEditBtn" class="small-btn" type="button" data-i18n="action.edit"></button><button id="modelNotesCloseBtn" class="icon-btn modal-close-btn" type="button" data-i18n-aria-label="aria.close">×</button></div>
+        <section id="modelNotesReadOnly" class="markdown-content model-notes-readonly"></section>
+        <div id="modelNotesEditor" class="model-notes-editor hidden"><div id="modelNotesToolbar" class="text-toolbar"><button type="button" class="small-btn text-tool-btn" data-markdown-tool="h1">H1</button><button type="button" class="small-btn text-tool-btn" data-markdown-tool="h2">H2</button><button type="button" class="small-btn text-tool-btn" data-markdown-tool="h3">H3</button><button type="button" class="small-btn text-tool-btn" data-markdown-tool="b"><strong>B</strong></button><button type="button" class="small-btn text-tool-btn" data-markdown-tool="i"><em>I</em></button><button type="button" class="small-btn text-tool-btn" data-markdown-tool="tex" data-title-i18n="modelNotes.insertFormula">∑</button><button type="button" class="small-btn text-tool-btn" data-markdown-tool="ul">UL</button><button type="button" class="small-btn text-tool-btn" data-markdown-tool="ol">OL</button><button type="button" class="small-btn text-tool-btn" data-markdown-tool="nodeLink" data-title-i18n="modelNotes.insertNodeLink">⌁</button><button type="button" class="small-btn text-tool-btn" data-markdown-tool="hr">HR</button><button id="modelNotesInsertStructureBtn" type="button" class="small-btn" data-i18n="modelNotes.insertStructure"></button></div><div class="model-notes-body"><label class="model-notes-pane"><span data-i18n="modelNotes.markdown"></span><textarea id="modelNotesInput" class="text-editor-textarea"></textarea><span class="hint" data-i18n="modelNotes.nodeReferenceHelp"></span></label><section class="model-notes-pane"><span data-i18n="modelNotes.preview"></span><div id="modelNotesPreview" class="markdown-content model-notes-preview"></div></section></div></div>
+        <div class="modal-actions"><button id="modelNotesDismissBtn" type="button" data-i18n="action.close"></button></div>
       </div>
     </div>
     <div id="expressionEditorSwitchModal" class="modal-backdrop hidden">
@@ -841,6 +850,8 @@
     <script src="graph-functions.js"></script>
     <script src="semantic.js"></script>
     <script src="i18n-inline.js"></script>
+    <script src="vendor/katex/katex.min.js"></script>
+    <script src="markdown-rendering.js"></script>
     <script src="local-functions-core.js"></script>
     <script src="help-content.js"></script>
     <script src="model-analysis-core.js"></script>

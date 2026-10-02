@@ -1,6 +1,6 @@
 # STGraphX: Readme
 
-versione 1 ottobre 2026
+versione 2 ottobre 2026
 
 Copyright (c) 2026 Luca Mari
 
@@ -47,12 +47,12 @@ Ha un'interfaccia utente responsive, che lo rende utilizzabile anche su tablet.
 * Player per esecuzione di modelli in pagine HTML (**)
 * API JavaScript per esecuzione headless via script (**)
 * Menu, menu contestuale e pannello di configurazione aggiornato dinamicamente, con tooltip
-* Interfaccia responsive a tab per più modelli, con gestione contestuale della relazione tra modelli e sottomodelli
+* Interfaccia responsive a tab per più modelli, con gestione contestuale della relazione tra modelli e sottomodelli (*)
 * Gestione dei testi dell'interfaccia utente in italiano e inglese, con scelta via query string nella shell web (`?lang=it|en`) e via parametro `--lang=it|en` nella shell Electron
 * Menu di help
 * Script per generare il manuale di riferimento delle funzioni (**)
 * Script per convertire i file dei modelli dal formato stg di STGraph (**)
-* Una pagina di esempi configurabile via file JSON
+* Una pagina di esempi configurabile via file JSON (*)
 * Licenza MPL-2.0
 
 #### Funzionalità strutturali
@@ -69,6 +69,8 @@ Ha un'interfaccia utente responsive, che lo rende utilizzabile anche su tablet.
 * Definizione della base dei tempi e modalità varie di esecuzione; pannello di configurazione aggiornato dinamicamente
 * Gestione di esecuzione completa, passo-passo, temporizzata, con modello in modalità read-only durante l'esecuzione
 * Gestione opzionale del blocco di esecuzione ed evidenziazione per nodi non definiti (**)
+* Una prima gestione di controllo di correttezza del modello
+* Un primo debugger, con gestione di watch e breakpoint, anche con messaggio semantico (**)
 
 #### Funzionalità del linguaggio
 
@@ -87,15 +89,15 @@ Ha un'interfaccia utente responsive, che lo rende utilizzabile anche su tablet.
 * Visualizzazione alternata per il grafo e i widget
 * Gestione di una dashboard a più pagine per raggruppare widget (**)
 * Enfatizzazione delle frecce sul nodo selezionato
-* Editor per testi con formattazione HTML basilare
+* Editor per testi con formattazione Markdown e LaTeX basilare (**)
+* Apertura dei modelli anche con drag and drop dal file system
 * Una voce di menu per esportare la serie storica dei valori delle variabili di output in un file csv (*)
 * Caricamento e salvataggio di modelli in file JSON (*)
 * Una funzione per la generazione dei contenuti noti della 8-upla del modello attivo (*)
 * Gestione dei gruppi di visualizzazione di nodi (*)
 * Gestione dell'etichettatura per segno delle frecce e dell'identificazione dei cicli con il loro segno (*)
 * Nel menu File, gestione persistente dei modelli aperti di recente, anche nella versione web
-* Una prima gestione di controllo di correttezza del modello
-* Un primo debugger, con gestione di watch e breakpoint, anche con messaggio semantico (**)
+* Gestione di un foglio di appunti per documentare un modello (**)
 
 #### Al momento non implementati (rispetto a STGraph)
 

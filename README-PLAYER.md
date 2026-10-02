@@ -81,6 +81,8 @@ Carica anche:
 
 ```html
 <script src="i18n-inline.js"></script>
+<script src="vendor/katex/katex.min.js"></script>
+<script src="markdown-rendering.js"></script>
 <script src="graph-functions.js"></script>
 <script src="semantic.js"></script>
 <script src="runtime-shared.js"></script>
@@ -91,6 +93,8 @@ Carica anche:
 <script src="watch-debugger-core.js"></script>
 <script src="player-shell.js"></script>
 ```
+
+In questa modalita devono essere disponibili anche `vendor/katex/katex.min.css` e la cartella `vendor/katex/fonts/`, usate per le formule LaTeX nei testi Markdown. La sintassi supportata e `$formula$` in linea o un blocco delimitato da `$$` su righe separate.
 
 Il file `player-demo.html` mostra un esempio minimo funzionante.
 

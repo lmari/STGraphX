@@ -8,6 +8,7 @@ async function run() {
   let intervalCallback = null;
   let initialized = false;
   let refreshCount = 0;
+  const batchingStates = [];
   const execution = {
     t0: 0,
     dt: 1,
@@ -28,7 +29,10 @@ async function run() {
       clearSubmodelState: () => {},
       initializeAt: () => { initialized = true; },
       promotePending: () => {},
-      evaluateAtTime: () => ({ successCount: 1, errorCount: 0 }),
+      evaluateAtTime: () => {
+        batchingStates.push(timedState.batchingVisualRefresh);
+        return { successCount: 1, errorCount: 0 };
+      },
     },
     getExecution: () => execution,
     timedState,
@@ -57,6 +61,8 @@ async function run() {
   assert.equal(refreshCount, 1, "a timed run refreshes once before its first step");
   await intervalCallback();
   assert.equal(execution.currentTime, 2, "a timed tick evaluates the configured number of steps");
+  assert.deepEqual(batchingStates, [true, true, true], "all calculations in a timed batch defer visual refresh");
+  assert.equal(timedState.batchingVisualRefresh, false, "the visual batch marker is cleared before rendering");
   assert.equal(refreshCount, 2, "each timed tick refreshes the view once");
   await intervalCallback();
   assert.equal(execution.currentTime, 5, "subsequent timed ticks retain the same step batch size");

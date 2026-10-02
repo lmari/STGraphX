@@ -14,6 +14,8 @@ const rootDir = path.resolve(__dirname, "..");
 const outDir = path.join(rootDir, "build", "player");
 const bundleFiles = [
   "i18n-inline.js",
+  "vendor/katex/katex.min.js",
+  "markdown-rendering.js",
   "graph-functions.js",
   "semantic.js",
   "runtime-shared.js",
@@ -67,6 +69,7 @@ async function maybeMinify(sourceText) {
 
 async function main() {
   fs.mkdirSync(outDir, { recursive: true });
+  fs.cpSync(path.join(rootDir, "vendor", "katex"), path.join(outDir, "katex"), { recursive: true });
   const bundleText = buildBundleText();
   const bundlePath = path.join(outDir, "stgraphx-player.js");
   fs.writeFileSync(bundlePath, bundleText, "utf8");

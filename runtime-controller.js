@@ -437,11 +437,16 @@
         try {
           const stepsPerRefresh = visualRefreshInterval(execution);
           let outcome = null;
-          for (let step = 0; step < stepsPerRefresh; step += 1) {
-            outcome = await executeOneStep(false, { refreshView: false, notifyBreakpoint: false });
-            if (!outcome?.ok || outcome.completed || outcome.breakpointHit) {
-              break;
+          timedState.batchingVisualRefresh = true;
+          try {
+            for (let step = 0; step < stepsPerRefresh; step += 1) {
+              outcome = await executeOneStep(false, { refreshView: false, notifyBreakpoint: false });
+              if (!outcome?.ok || outcome.completed || outcome.breakpointHit) {
+                break;
+              }
             }
+          } finally {
+            timedState.batchingVisualRefresh = false;
           }
           // The delay controls the visual cadence. renderEverySteps only batches
           // calculations between two visual updates.

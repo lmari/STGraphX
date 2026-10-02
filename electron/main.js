@@ -193,7 +193,7 @@ app.whenReady().then(() => {
     const win = BrowserWindow.fromWebContents(event.sender);
     return dialog.showSaveDialog(win, {
       title: options.title || 'Save JSON',
-      defaultPath: options.suggestedName || 'model.json',
+      defaultPath: options.defaultPath || options.suggestedName || 'model.json',
       filters: [{ name: 'JSON', extensions: ['json'] }],
     });
   });

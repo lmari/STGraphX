@@ -22,6 +22,14 @@
     const getPlatform = typeof options.getPlatform === "function"
       ? options.getPlatform
       : () => globalThis.STGraphXPlatform;
+    const createFileHandleFromPath = typeof options.createFileHandleFromPath === "function"
+      ? options.createFileHandleFromPath
+      : (filePath) => {
+        if (!filePath || !hasPlatformApi("createFileHandleFromPath")) {
+          return null;
+        }
+        return getPlatform()?.createFileHandleFromPath(filePath) || null;
+      };
     const normalizeSubmodelPath = typeof options.normalizeSubmodelPath === "function"
       ? options.normalizeSubmodelPath
       : (value) => String(value || "");
@@ -79,14 +87,19 @@
         };
       }
       const filePath = String(entry?.path || entry?.webkitRelativePath || "").trim();
-      const directoryHandle = filePath && hasPlatformApi("createDirectoryHandleFromPath")
-        ? getPlatform()?.createDirectoryHandleFromPath(filePath) || null
-        : null;
+      // Desktop drag and drop provides the native path but not a writable
+      // FileSystemFileHandle. Recreate it so Save writes back immediately.
+      const fileHandle = filePath ? createFileHandleFromPath(filePath) : null;
+      const directoryHandle = fileHandle
+        ? await deriveDirectoryHandleFromFileHandle(fileHandle)
+        : (filePath && hasPlatformApi("createDirectoryHandleFromPath")
+          ? getPlatform()?.createDirectoryHandleFromPath(filePath) || null
+          : null);
       return {
         name: String(entry?.name || ""),
         text: await entry.text(),
         file: entry,
-        fileHandle: null,
+        fileHandle,
         directoryHandle,
       };
     }
@@ -147,16 +160,24 @@
       return root;
     }
 
-    async function pickSaveAsHandle(suggestedName) {
-      return showSaveFilePickerCompat({
-        suggestedName: normalizeJsonFilename(suggestedName),
+    function saveDialogOptions(suggestedName, directoryHandle = null) {
+      const filename = normalizeJsonFilename(suggestedName);
+      const directoryPath = String(directoryHandle?.path ?? "").replace(/[\\/]+$/u, "");
+      return {
+        suggestedName: filename,
+        startIn: directoryHandle || undefined,
+        defaultPath: directoryPath ? `${directoryPath}/${filename}` : filename,
         types: [
           {
             description: "JSON",
             accept: { "application/json": [".json"] },
           },
         ],
-      });
+      };
+    }
+
+    async function pickSaveAsHandle(suggestedName, directoryHandle = null) {
+      return showSaveFilePickerCompat(saveDialogOptions(suggestedName, directoryHandle));
     }
 
     async function pickSaveCsvHandle(suggestedName) {

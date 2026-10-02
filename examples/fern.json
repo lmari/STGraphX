@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "modelTitle": "fern by ifs",
+  "modelTitle": "Esempio di un Iterated Function System",
   "localFunctions": [],
   "view": {
     "zoom": 1,
@@ -9,20 +9,21 @@
     "showNodeValues": true,
     "gridSize": 20,
     "tooltipDelayMs": 300,
-    "scrollLeft": 0,
+    "scrollLeft": 10,
     "scrollTop": 175
   },
   "debug": {
     "watches": [],
     "breakpointEnabled": false,
-    "breakpointExpression": ""
+    "breakpointExpression": "",
+    "breakpointMessage": ""
   },
   "modelProperties": [],
-  "nodeCounter": 14,
-  "edgeCounter": 9,
-  "widgetCounter": 5,
-  "textItemCounter": 5,
-  "presentationGroupCounter": 3,
+  "nodeCounter": 17,
+  "edgeCounter": 12,
+  "widgetCounter": 8,
+  "textItemCounter": 8,
+  "presentationGroupCounter": 6,
   "presentationGroups": [],
   "dashboard": null,
   "execution": {
@@ -33,7 +34,8 @@
     "renderEverySteps": 10,
     "decimals": 3,
     "integrator": "euler",
-    "strictDefinitions": false
+    "strictDefinitions": false,
+    "stopOnRuntimeError": false
   },
   "nodes": [
     {
@@ -46,15 +48,15 @@
       "y": 110,
       "width": 61,
       "height": 45,
-      "fillColor": "#ffffff",
-      "strokeColor": "#f5f5f5",
+      "fillColor": "transparent",
+      "strokeColor": "transparent",
       "properties": [
         {
-          "key": "note formula",
+          "key": "formula notes",
           "value": ""
         },
         {
-          "key": "descrizione",
+          "key": "description",
           "value": ""
         }
       ],
@@ -70,15 +72,15 @@
       "y": 110,
       "width": 61,
       "height": 45,
-      "fillColor": "#ffffff",
-      "strokeColor": "#f5f5f5",
+      "fillColor": "transparent",
+      "strokeColor": "transparent",
       "properties": [
         {
-          "key": "note formula",
+          "key": "formula notes",
           "value": ""
         },
         {
-          "key": "descrizione",
+          "key": "description",
           "value": ""
         }
       ],
@@ -94,15 +96,15 @@
       "y": 110,
       "width": 61,
       "height": 45,
-      "fillColor": "#ffffff",
-      "strokeColor": "#f5f5f5",
+      "fillColor": "transparent",
+      "strokeColor": "transparent",
       "properties": [
         {
-          "key": "note formula",
+          "key": "formula notes",
           "value": ""
         },
         {
-          "key": "descrizione",
+          "key": "description",
           "value": ""
         }
       ],
@@ -118,15 +120,15 @@
       "y": 110,
       "width": 61,
       "height": 45,
-      "fillColor": "#ffffff",
-      "strokeColor": "#f5f5f5",
+      "fillColor": "transparent",
+      "strokeColor": "transparent",
       "properties": [
         {
-          "key": "note formula",
+          "key": "formula notes",
           "value": ""
         },
         {
-          "key": "descrizione",
+          "key": "description",
           "value": ""
         }
       ],
@@ -142,15 +144,15 @@
       "y": 110,
       "width": 61,
       "height": 45,
-      "fillColor": "#ffffff",
-      "strokeColor": "#f5f5f5",
+      "fillColor": "transparent",
+      "strokeColor": "transparent",
       "properties": [
         {
-          "key": "note formula",
+          "key": "formula notes",
           "value": ""
         },
         {
-          "key": "descrizione",
+          "key": "description",
           "value": ""
         }
       ],
@@ -170,11 +172,11 @@
       "strokeColor": "#000000",
       "properties": [
         {
-          "key": "note formula",
+          "key": "formula notes",
           "value": ""
         },
         {
-          "key": "descrizione",
+          "key": "description",
           "value": ""
         }
       ],
@@ -191,15 +193,15 @@
       "y": 110,
       "width": 61,
       "height": 45,
-      "fillColor": "#ffffff",
-      "strokeColor": "#f5f5f5",
+      "fillColor": "transparent",
+      "strokeColor": "transparent",
       "properties": [
         {
-          "key": "note formula",
+          "key": "formula notes",
           "value": ""
         },
         {
-          "key": "descrizione",
+          "key": "description",
           "value": ""
         }
       ],
@@ -219,11 +221,11 @@
       "strokeColor": "#000000",
       "properties": [
         {
-          "key": "note formula",
+          "key": "formula notes",
           "value": ""
         },
         {
-          "key": "descrizione",
+          "key": "description",
           "value": ""
         }
       ],
@@ -244,11 +246,11 @@
       "strokeColor": "#000000",
       "properties": [
         {
-          "key": "note formula",
+          "key": "formula notes",
           "value": ""
         },
         {
-          "key": "descrizione",
+          "key": "description",
           "value": ""
         }
       ],
@@ -269,11 +271,11 @@
       "strokeColor": "#000000",
       "properties": [
         {
-          "key": "note formula",
+          "key": "formula notes",
           "value": ""
         },
         {
-          "key": "descrizione",
+          "key": "description",
           "value": ""
         }
       ],
@@ -286,44 +288,54 @@
       "id": 1,
       "from": 8,
       "to": 6,
+      "color": "",
+      "influence": "none",
       "controlPoints": []
     },
     {
       "id": 2,
       "from": 6,
       "to": 9,
+      "color": "",
+      "influence": "none",
       "controlPoints": []
     },
     {
       "id": 3,
       "from": 6,
       "to": 10,
+      "color": "",
+      "influence": "none",
       "controlPoints": []
     },
     {
       "id": 4,
       "from": 9,
       "to": 10,
+      "color": "",
+      "influence": "none",
       "controlPoints": []
     },
     {
       "id": 5,
       "from": 10,
       "to": 9,
+      "color": "",
+      "influence": "none",
       "controlPoints": []
     }
   ],
   "textItems": [
     {
       "id": 1,
-      "x": 0,
-      "y": 20,
+      "x": -20,
+      "y": 40,
       "width": 381,
       "height": 35,
       "fillColor": "",
       "strokeColor": "",
       "dashboardPageId": null,
-      "html": "The example of an Iterated Function System"
+      "html": "Esempio di un Iterated Function System"
     }
   ],
   "widgets": [
@@ -344,11 +356,13 @@
       "expandNonScalarValues": false,
       "tableTextAlign": "left",
       "tableDecimalDigits": 0,
+      "tableColumnFormats": {},
       "xMin": "auto",
       "xMax": "auto",
       "yMin": "auto",
       "yMax": "auto",
       "showGrid": true,
+      "showAxes": true,
       "legendPosition": "none",
       "source": "",
       "showNumericValues": true,
@@ -385,6 +399,10 @@
           "showLine": false,
           "lineWidth": 2.2,
           "lineStyle": "solid",
+          "barMode": "none",
+          "showBars": false,
+          "barColor": "#0e7ac4",
+          "barWidth": 2.2,
           "pointMode": "all",
           "pointSize": 1
         }

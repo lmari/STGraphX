@@ -145,6 +145,7 @@
           dt: execCfg.dt,
           t1: execCfg.t1,
           delayMs: execCfg.delayMs,
+          renderEverySteps: execCfg.renderEverySteps,
           decimals: execCfg.decimals,
           integrator: execCfg.integrator,
           strictDefinitions: execCfg.strictDefinitions,

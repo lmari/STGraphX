@@ -7,6 +7,7 @@
 
 const svg = document.getElementById("graphCanvas");
 const graphViewport = document.getElementById("graphViewport");
+const modelNotesCanvasBtn = document.getElementById("modelNotesCanvasBtn");
 const sidebar = document.getElementById("sidebar");
 const statusText = document.getElementById("statusText");
 const fileStatusText = document.getElementById("fileStatusText");
@@ -49,6 +50,7 @@ const zoomOutItem = document.getElementById("zoomOutItem");
 const zoomResetItem = document.getElementById("zoomResetItem");
 const toggleGraphItem = document.getElementById("toggleGraphItem");
 const toggleWidgetsItem = document.getElementById("toggleWidgetsItem");
+const modelNotesItem = document.getElementById("modelNotesItem");
 const viewOptionsItem = document.getElementById("viewOptionsItem");
 const toggleGraphBtn = document.getElementById("toggleGraphBtn");
 const toggleWidgetsBtn = document.getElementById("toggleWidgetsBtn");
@@ -66,6 +68,7 @@ const runStrictDefinitionsInput = document.getElementById("runStrictDefinitionsI
 const runStopOnRuntimeErrorInput = document.getElementById("runStopOnRuntimeErrorInput");
 const selectAllBtn = document.getElementById("selectAllBtn");
 const renameNodeBtn = document.getElementById("renameNodeBtn");
+const renameSelectionLabel = document.getElementById("renameSelectionLabel");
 const editNodeExpressionBtn = document.getElementById("editNodeExpressionBtn");
 const cutBtn = document.getElementById("cutBtn");
 const copyBtn = document.getElementById("copyBtn");
@@ -176,6 +179,16 @@ const textEditorInput = document.getElementById("textEditorInput");
 const textEditorToolbar = document.getElementById("textEditorToolbar");
 const textEditorCloseBtn = document.getElementById("textEditorCloseBtn");
 const textEditorDismissBtn = document.getElementById("textEditorDismissBtn");
+const modelNotesModal = document.getElementById("modelNotesModal");
+const modelNotesInput = document.getElementById("modelNotesInput");
+const modelNotesPreview = document.getElementById("modelNotesPreview");
+const modelNotesReadOnly = document.getElementById("modelNotesReadOnly");
+const modelNotesEditor = document.getElementById("modelNotesEditor");
+const modelNotesEditBtn = document.getElementById("modelNotesEditBtn");
+const modelNotesToolbar = document.getElementById("modelNotesToolbar");
+const modelNotesCloseBtn = document.getElementById("modelNotesCloseBtn");
+const modelNotesDismissBtn = document.getElementById("modelNotesDismissBtn");
+const modelNotesInsertStructureBtn = document.getElementById("modelNotesInsertStructureBtn");
 const widgetConfig = document.getElementById("widgetConfig");
 const contextMenu = document.getElementById("contextMenu");
 const canvasContent = document.getElementById("canvasContent");
@@ -556,6 +569,14 @@ const modelSessionHelpers = globalThis.STGraphXModelSession?.createModelSessionH
   deriveDirectoryHandleFromFileHandle,
   hasPlatformApi,
   getPlatform: () => window.STGraphXPlatform,
+  createFileHandleFromPath(filePath) {
+    const electronHandle = createElectronPathFileHandle(filePath);
+    if (electronHandle) {
+      return electronHandle;
+    }
+    const createHandle = window.STGraphXPlatform?.createFileHandleFromPath;
+    return typeof createHandle === "function" ? createHandle(filePath) : null;
+  },
   normalizeSubmodelPath,
   basenameOfSubmodelPath,
   buildRuntimeModelFromData,
@@ -935,6 +956,7 @@ let fileStatusRefreshTimer = null;
 
 const graph = {
   modelTitle: "",
+  notes: { markdown: "" },
   properties: [],
   localFunctions: [],
   nodes: [],
@@ -1398,6 +1420,7 @@ function populateNodeColorSelect(selectEl, presets) {
 
 function sanitizeTextItem(item) {
   item.html = String(item?.html ?? "");
+  item.markdown = typeof item?.markdown === "string" ? item.markdown : null;
   item.x = Number.isFinite(Number(item?.x)) ? Number(item.x) : 120;
   item.y = Number.isFinite(Number(item?.y)) ? Number(item.y) : 120;
   item.width = clamp(Number(item?.width) || 220, 40, 1200);
@@ -1405,6 +1428,15 @@ function sanitizeTextItem(item) {
   item.fillColor = normalizeColorString(item?.fillColor);
   item.strokeColor = normalizeColorString(item?.strokeColor);
   item.dashboardPageId = normalizeDashboardPageId(item?.dashboardPageId);
+}
+
+function normalizeModelNotes(value) {
+  return { markdown: String(value?.markdown ?? "") };
+}
+
+function textItemMarkdown(item) {
+  if (typeof item?.markdown === "string") return item.markdown;
+  return globalThis.STGraphXMarkdown?.legacyHtmlToMarkdown(item?.html ?? "") ?? String(item?.html ?? "");
 }
 
 function sanitizeRichTextHtml(rawHtml) {
@@ -5785,6 +5817,22 @@ function renameSelectedNode() {
   return true;
 }
 
+function editSelectedTextItem() {
+  const item = ui.selected?.type === "text" ? getTextItemById(ui.selected.id) : null;
+  if (!item || isEditingUiLocked()) {
+    return false;
+  }
+  revealSidebarForCompactLayout();
+  openTextEditor();
+  return true;
+}
+
+function activateRenameSelectionAction() {
+  return ui.selected?.type === "text"
+    ? editSelectedTextItem()
+    : renameSelectedNode();
+}
+
 function editSelectedNodeExpression() {
   const node = selectedNodeForSidebar();
   if (!node || isSubmodelNode(node) || isWidgetControlledExpressionNode(node) || isEditingUiLocked()) {
@@ -8222,7 +8270,7 @@ function syncSelectedTextInputs(item = null) {
   if (!target) {
     return;
   }
-  const value = String(target.html ?? "");
+  const value = textItemMarkdown(target);
   if (textHtmlInput && document.activeElement !== textHtmlInput) {
     textHtmlInput.value = value;
   }
@@ -8236,6 +8284,114 @@ function closeTextEditor() {
     return;
   }
   textEditorModal.classList.add("hidden");
+}
+
+function modelNotesTemplate() {
+  return [
+    `# ${graph.modelTitle || t("text.unnamed")}`, "",
+    `## ${t("modelNotes.objectives")}`, "", `## ${t("modelNotes.use")}`, "",
+    `## ${t("modelNotes.scenarios")}`, "", `## ${t("modelNotes.observations")}`, "",
+    `## ${t("modelNotes.questions")}`, "",
+  ].join("\n");
+}
+
+function renderModelNotesPreview() {
+  const markdown = modelNotesInput?.value ?? graph.notes?.markdown ?? "";
+  const html = markdown.trim()
+    ? (globalThis.STGraphXMarkdown?.renderMarkdownToHtml(markdown) ?? "")
+    : `<p class="empty-props">${t("modelNotes.empty")}</p>`;
+  if (modelNotesPreview) modelNotesPreview.innerHTML = html;
+  if (modelNotesReadOnly) modelNotesReadOnly.innerHTML = html;
+}
+
+function setModelNotesEditing(editing) {
+  modelNotesReadOnly?.classList.toggle("hidden", editing);
+  modelNotesEditor?.classList.toggle("hidden", !editing);
+  modelNotesEditBtn?.classList.toggle("hidden", editing);
+  if (editing) window.requestAnimationFrame(() => modelNotesInput?.focus());
+}
+
+function openModelNotes(editing = false) {
+  if (!modelNotesModal || !modelNotesInput) return;
+  modelNotesInput.value = graph.notes?.markdown || "";
+  renderModelNotesPreview();
+  setModelNotesEditing(editing);
+  modelNotesModal.classList.remove("hidden");
+}
+
+function closeModelNotes() { modelNotesModal?.classList.add("hidden"); }
+
+function revealNodeFromModelNotes(nodeName) {
+  const node = graph.nodes.find((entry) => String(entry.name) === String(nodeName).trim());
+  if (!node) return;
+  selectSingleNode(node.id);
+  graphViewport.scrollLeft = Math.max(0, node.x * ui.zoom - graphViewport.clientWidth / 2);
+  graphViewport.scrollTop = Math.max(0, node.y * ui.zoom - graphViewport.clientHeight / 2);
+  render();
+}
+
+function modelNotesSelectionText() {
+  if (!modelNotesInput) return "";
+  const start = modelNotesInput.selectionStart ?? 0;
+  const end = modelNotesInput.selectionEnd ?? start;
+  return modelNotesInput.value.slice(start, end);
+}
+
+function replaceModelNotesSelection(text) {
+  if (!modelNotesInput) return false;
+  const start = modelNotesInput.selectionStart ?? 0;
+  const end = modelNotesInput.selectionEnd ?? start;
+  const value = String(text ?? "");
+  modelNotesInput.value = `${modelNotesInput.value.slice(0, start)}${value}${modelNotesInput.value.slice(end)}`;
+  const caret = start + value.length;
+  modelNotesInput.focus();
+  modelNotesInput.setSelectionRange(caret, caret);
+  modelNotesInput.dispatchEvent(new Event("input", { bubbles: true }));
+  return true;
+}
+
+async function copyModelNotesSelection() {
+  const text = modelNotesSelectionText();
+  if (!text) return false;
+  const ok = await copyTextToClipboard(text);
+  if (ok) setStatusKey("status.clipboardTextCopied");
+  else setStatusKey("error.clipboardTextCopyFailed");
+  return ok;
+}
+
+async function readPlainClipboardText() {
+  try {
+    const platformText = await Promise.resolve(globalThis.STGraphXPlatform?.readClipboardText?.());
+    if (typeof platformText === "string") return platformText;
+  } catch {}
+  try {
+    if (navigator.clipboard?.readText) return await navigator.clipboard.readText();
+  } catch {}
+  return "";
+}
+
+async function pasteModelNotesText() {
+  const text = await readPlainClipboardText();
+  if (!text) return false;
+  replaceModelNotesSelection(text);
+  return true;
+}
+
+async function cutModelNotesSelection() {
+  if (!await copyModelNotesSelection()) return false;
+  return replaceModelNotesSelection("");
+}
+
+function openModelNotesInputContextMenu(evt) {
+  evt.preventDefault();
+  const hasSelection = Boolean(modelNotesSelectionText());
+  showContextMenu(evt.clientX, evt.clientY, [
+    { label: t("menu.edit.selectAll"), action: () => { modelNotesInput?.focus(); modelNotesInput?.select(); } },
+    { separator: true },
+    { label: t("menu.edit.cut"), disabled: !hasSelection, action: () => { void cutModelNotesSelection(); } },
+    { label: t("menu.edit.copy"), disabled: !hasSelection, action: () => { void copyModelNotesSelection(); } },
+    { label: t("menu.edit.paste"), action: () => { void pasteModelNotesText(); } },
+  ]);
 }
 
 function openTextEditor() {
@@ -8389,16 +8545,12 @@ function exportGraphData() {
       influence: normalizeEdgeInfluence(e.influence),
       controlPoints: (e.controlPoints || []).map((cp) => ({ x: cp.x, y: cp.y })),
     })),
+    notes: normalizeModelNotes(graph.notes),
     textItems: graph.textItems.map((item) => ({
-      id: item.id,
-      x: item.x,
-      y: item.y,
-      width: item.width,
-      height: item.height,
-      fillColor: String(item.fillColor ?? ""),
-      strokeColor: String(item.strokeColor ?? ""),
+      id: item.id, x: item.x, y: item.y, width: item.width, height: item.height,
+      fillColor: String(item.fillColor ?? ""), strokeColor: String(item.strokeColor ?? ""),
       dashboardPageId: normalizeDashboardPageId(item.dashboardPageId),
-      html: String(item.html ?? ""),
+      ...(typeof item.markdown === "string" ? { markdown: item.markdown } : { html: String(item.html ?? "") }),
     })),
     widgets: graph.widgets.map((w) => ({
       id: w.id,
@@ -8579,6 +8731,7 @@ function applyGraphData(data) {
   const execCfg = normalizeExecutionConfig(data.execution);
   const savedView = data?.view && typeof data.view === "object" ? data.view : null;
   graph.modelTitle = String(data?.modelTitle ?? "");
+  graph.notes = normalizeModelNotes(data?.notes);
   graph.properties = Array.isArray(data?.modelProperties)
     ? data.modelProperties.map((p) => ({ key: String(p?.key ?? ""), value: String(p?.value ?? "") }))
     : [];
@@ -8670,6 +8823,7 @@ function applyGraphData(data) {
         fillColor: normalizeColorString(item.fillColor),
         strokeColor: normalizeColorString(item.strokeColor),
         dashboardPageId: item.dashboardPageId,
+        markdown: typeof item.markdown === "string" ? item.markdown : null,
         html: String(item.html ?? ""),
       };
       sanitizeTextItem(out);
@@ -8921,7 +9075,9 @@ function hasAnySelection() {
 function updateEditActionButtons() {
   const frozen = isEditingUiLocked();
   const selectedNode = selectedNodeForSidebar();
+  const selectedText = ui.selected?.type === "text" ? getTextItemById(ui.selected.id) : null;
   const canRenameNode = Boolean(selectedNode && !frozen);
+  const canEditText = Boolean(selectedText && !frozen);
   const canEditNodeExpression = Boolean(
     selectedNode
     && !frozen
@@ -8941,7 +9097,15 @@ function updateEditActionButtons() {
     deleteBtn.disabled = frozen || !hasAnySelection();
   }
   if (renameNodeBtn) {
-    renameNodeBtn.disabled = !canRenameNode;
+    renameNodeBtn.disabled = !canRenameNode && !canEditText;
+    const actionKey = selectedText ? "menu.edit.editText" : "menu.edit.renameNode";
+    const tooltipKey = selectedText ? "tooltip.menu.edit.editText" : "tooltip.menu.edit.renameNode";
+    if (renameSelectionLabel) {
+      renameSelectionLabel.dataset.i18n = actionKey;
+      renameSelectionLabel.textContent = t(actionKey);
+    }
+    renameNodeBtn.dataset.titleI18n = tooltipKey;
+    setTooltipText(renameNodeBtn, t(tooltipKey));
   }
   if (editNodeExpressionBtn) {
     editNodeExpressionBtn.disabled = !canEditNodeExpression;
@@ -9211,6 +9375,7 @@ function collectSelectedForClipboard() {
       fillColor: String(selectedText.fillColor ?? ""),
       strokeColor: String(selectedText.strokeColor ?? ""),
       dashboardPageId: normalizeDashboardPageId(selectedText.dashboardPageId),
+      markdown: typeof selectedText.markdown === "string" ? selectedText.markdown : null,
       html: String(selectedText.html ?? ""),
     }]
     : [];
@@ -9327,6 +9492,7 @@ async function pasteFromClipboard() {
         fillColor: normalizeColorString(item.fillColor),
         strokeColor: normalizeColorString(item.strokeColor),
         dashboardPageId: normalizeDashboardPageId(item.dashboardPageId),
+        markdown: typeof item.markdown === "string" ? item.markdown : null,
         html: String(item.html ?? ""),
       };
       sanitizeTextItem(textItem);
@@ -10367,6 +10533,7 @@ function render(options = {}) {
   updateEditActionButtons();
   syncPresentationGroups();
   syncDashboard();
+  modelNotesCanvasBtn?.classList.toggle("hidden", !String(graph.notes?.markdown ?? "").trim());
   const visibleNodeIds = visiblePresentationNodeIds();
   presentationGroupsLayer.innerHTML = "";
   dashboardLayer.innerHTML = "";
@@ -11514,6 +11681,7 @@ function importGraphData(data) {
           fillColor: normalizeColorString(item.fillColor),
           strokeColor: normalizeColorString(item.strokeColor),
           dashboardPageId: item.dashboardPageId,
+          markdown: typeof item.markdown === "string" ? item.markdown : null,
           html: String(item.html ?? ""),
         };
         sanitizeTextItem(out);
@@ -11657,6 +11825,7 @@ function importGraphData(data) {
   applyGraphData({
     version: 1,
     modelTitle: String(data.modelTitle ?? ""),
+    notes: normalizeModelNotes(data?.notes),
     localFunctions: Array.isArray(data?.localFunctions)
       ? data.localFunctions.map((definition) => sanitizeLocalFunctionDefinition(definition))
       : [],
@@ -12170,11 +12339,11 @@ async function writeTextToFileHandle(fileHandle, text) {
   return modelPersistenceHelpers.writeTextToFileHandle(fileHandle, text);
 }
 
-async function pickSaveAsHandle(suggestedName) {
+async function pickSaveAsHandle(suggestedName, directoryHandle = currentModelDirectoryHandle) {
   if (!supportsSaveFilePicker()) {
     return null;
   }
-  return modelSessionHelpers.pickSaveAsHandle(suggestedName);
+  return modelSessionHelpers.pickSaveAsHandle(suggestedName, directoryHandle);
 }
 
 async function pickSaveCsvHandle(suggestedName) {
@@ -12282,6 +12451,107 @@ async function loadGraphJsonFile(file) {
   }
 }
 
+function isJsonModelFile(file) {
+  return Boolean(
+    file
+    && (
+      String(file.type ?? "").toLowerCase() === "application/json"
+      || /\.json$/i.test(String(file.name ?? ""))
+    )
+  );
+}
+
+function droppedFileWithNativePath(file) {
+  const bridge = electronFileBridge();
+  let nativePath = "";
+  if (typeof bridge?.getPathForFile === "function") {
+    try {
+      nativePath = String(bridge.getPathForFile(file) ?? "").trim();
+    } catch (_err) {
+      nativePath = "";
+    }
+  }
+  nativePath = nativePath || String(file?.path ?? "").trim();
+  if (!nativePath) {
+    return file;
+  }
+  return {
+    name: String(file?.name ?? nativePathName(nativePath)),
+    path: nativePath,
+    type: String(file?.type ?? ""),
+    text: () => file.text(),
+  };
+}
+
+async function loadDroppedGraphJsonFiles(files) {
+  const jsonFiles = Array.from(files || []).filter(isJsonModelFile).map(droppedFileWithNativePath);
+  if (!jsonFiles.length) {
+    setStatusKey("error.dropModelJson");
+    return false;
+  }
+  try {
+    return await modelLoadingHelpers.loadGraphJsonFile(jsonFiles[0], jsonFiles.slice(1));
+  } catch (_err) {
+    cancelTransaction();
+    setStatusKey("status.readError");
+    return false;
+  }
+}
+
+function isExternalFileDrag(evt) {
+  return Array.from(evt?.dataTransfer?.types || []).includes("Files");
+}
+
+let modelFileDragDepth = 0;
+
+function clearModelFileDropState() {
+  modelFileDragDepth = 0;
+  graphViewport?.classList.remove("model-file-drop-active");
+  graphViewport?.removeAttribute("data-drop-label");
+}
+
+if (graphViewport) {
+  graphViewport.addEventListener("dragenter", (evt) => {
+    if (!isExternalFileDrag(evt)) {
+      return;
+    }
+    evt.preventDefault();
+    modelFileDragDepth += 1;
+    graphViewport.dataset.dropLabel = t("text.dropModelFile");
+    graphViewport.classList.add("model-file-drop-active");
+  });
+
+  graphViewport.addEventListener("dragover", (evt) => {
+    if (!isExternalFileDrag(evt)) {
+      return;
+    }
+    evt.preventDefault();
+    evt.dataTransfer.dropEffect = "copy";
+    graphViewport.dataset.dropLabel = t("text.dropModelFile");
+    graphViewport.classList.add("model-file-drop-active");
+  });
+
+  graphViewport.addEventListener("dragleave", (evt) => {
+    if (!isExternalFileDrag(evt)) {
+      return;
+    }
+    modelFileDragDepth = Math.max(0, modelFileDragDepth - 1);
+    if (modelFileDragDepth === 0) {
+      clearModelFileDropState();
+    }
+  });
+
+  graphViewport.addEventListener("drop", (evt) => {
+    if (!isExternalFileDrag(evt)) {
+      return;
+    }
+    evt.preventDefault();
+    const files = Array.from(evt.dataTransfer?.files || []);
+    clearModelFileDropState();
+    void loadDroppedGraphJsonFiles(files);
+  });
+}
+
 async function openGraphJson() {
   if (supportsOpenFilePicker()) {
     try {
@@ -12301,6 +12571,7 @@ async function openGraphJson() {
 
 function resetGraphToEmptyModel() {
   graph.modelTitle = "";
+  graph.notes = { markdown: "" };
   graph.properties = [];
   graph.localFunctions = [];
   graph.nodes = [];
@@ -13772,6 +14043,12 @@ if (feedbackLoopsItem) {
 if (viewOptionsItem) {
   viewOptionsItem.addEventListener("click", openViewOptions);
 }
+if (modelNotesItem) {
+  modelNotesItem.addEventListener("click", () => {
+    closeTopMenus();
+    openModelNotes();
+  });
+}
 toggleGraphItem.addEventListener("click", () => {
   toggleGraphVisibility();
 });
@@ -13868,7 +14145,7 @@ if (selectAllBtn) {
   selectAllBtn.addEventListener("click", selectAllNodes);
 }
 if (renameNodeBtn) {
-  renameNodeBtn.addEventListener("click", renameSelectedNode);
+  renameNodeBtn.addEventListener("click", activateRenameSelectionAction);
 }
 if (editNodeExpressionBtn) {
   editNodeExpressionBtn.addEventListener("click", editSelectedNodeExpression);
@@ -14543,7 +14820,8 @@ function bindTextInputEditor(input) {
     if (!item) {
       return;
     }
-    item.html = String(input.value ?? "");
+    item.markdown = String(input.value ?? "");
+    item.html = "";
     sanitizeTextItem(item);
     syncSelectedTextInputs(item);
     dirtySinceLastSave = true;
@@ -14567,51 +14845,54 @@ if (textHtmlInput) {
 
 function handleTextEditorTool(tool) {
   if (tool === "h1") {
-    wrapTextSelection("<h1>", "</h1>", t("text.toolbarHeading1"));
+    wrapTextSelection("# ", "", t("text.toolbarHeading1"));
     return;
   }
   if (tool === "h2") {
-    wrapTextSelection("<h2>", "</h2>", t("text.toolbarHeading2"));
+    wrapTextSelection("## ", "", t("text.toolbarHeading2"));
     return;
   }
   if (tool === "h3") {
-    wrapTextSelection("<h3>", "</h3>", t("text.toolbarHeading3"));
+    wrapTextSelection("### ", "", t("text.toolbarHeading3"));
     return;
   }
   if (tool === "p") {
-    wrapTextSelection("<p>", "</p>", t("text.toolbarParagraph"));
+    wrapTextSelection("", "\n\n", t("text.toolbarParagraph"));
     return;
   }
   if (tool === "b") {
-    wrapTextSelection("<strong>", "</strong>");
+    wrapTextSelection("**", "**");
     return;
   }
   if (tool === "i") {
-    wrapTextSelection("<em>", "</em>");
+    wrapTextSelection("*", "*");
+    return;
+  }
+  if (tool === "tex") {
+    wrapTextSelection("$", "$", "x^2");
     return;
   }
   if (tool === "u") {
-    wrapTextSelection("<u>", "</u>");
     return;
   }
   if (tool === "ul") {
-    wrapTextSelection("<ul>\n<li>", "</li>\n</ul>", t("text.toolbarListItem"));
+    wrapTextSelection("- ", "", t("text.toolbarListItem"));
     return;
   }
   if (tool === "ol") {
-    wrapTextSelection("<ol>\n<li>", "</li>\n</ol>", t("text.toolbarListItem"));
+    wrapTextSelection("1. ", "", t("text.toolbarListItem"));
     return;
   }
   if (tool === "li") {
-    wrapTextSelection("<li>", "</li>", t("text.toolbarListItem"));
+    wrapTextSelection("- ", "", t("text.toolbarListItem"));
     return;
   }
   if (tool === "br") {
-    insertTextHtmlSnippet("<br>");
+    insertTextHtmlSnippet("\n");
     return;
   }
   if (tool === "hr") {
-    insertTextHtmlSnippet("<hr>");
+    insertTextHtmlSnippet("\n---\n");
   }
 }
 
@@ -14637,6 +14918,74 @@ if (textEditorDismissBtn) {
     closeTextEditor();
   });
 }
+if (modelNotesInput) {
+  modelNotesInput.addEventListener("input", () => {
+    graph.notes = normalizeModelNotes({ markdown: modelNotesInput.value });
+    dirtySinceLastSave = true;
+    updateFileStatusLabel(true);
+    renderModelNotesPreview();
+    modelNotesCanvasBtn?.classList.toggle("hidden", !modelNotesInput.value.trim());
+  });
+  modelNotesInput.addEventListener("contextmenu", openModelNotesInputContextMenu);
+  modelNotesInput.addEventListener("keydown", (evt) => {
+    if (!(evt.ctrlKey || evt.metaKey)) return;
+    const key = evt.key.toLowerCase();
+    if (key === "a") {
+      evt.preventDefault();
+      modelNotesInput.select();
+    } else if (key === "c") {
+      evt.preventDefault();
+      void copyModelNotesSelection();
+    } else if (key === "x") {
+      evt.preventDefault();
+      void cutModelNotesSelection();
+    } else if (key === "v") {
+      evt.preventDefault();
+      void pasteModelNotesText();
+    }
+  });
+}
+if (modelNotesEditBtn) modelNotesEditBtn.addEventListener("click", () => setModelNotesEditing(true));
+if (modelNotesCanvasBtn) modelNotesCanvasBtn.addEventListener("click", () => openModelNotes(false));
+[modelNotesReadOnly, modelNotesPreview].filter(Boolean).forEach((container) => {
+  container.addEventListener("click", (evt) => {
+    const link = evt.target.closest("[data-stgraphx-node]");
+    if (!link) return;
+    evt.preventDefault();
+    revealNodeFromModelNotes(link.dataset.stgraphxNode);
+  });
+});
+if (modelNotesToolbar) {
+  modelNotesToolbar.addEventListener("click", (evt) => {
+    const button = evt.target.closest("[data-markdown-tool]");
+    if (!button || !modelNotesInput) return;
+    evt.preventDefault();
+    const tool = button.dataset.markdownTool;
+    const map = { h1: ["# ", ""], h2: ["## ", ""], h3: ["### ", ""], b: ["**", "**"], i: ["*", "*"], ul: ["- ", ""], ol: ["1. ", ""], hr: ["\n---\n", ""] };
+    const [prefix, suffix] = map[tool] || ["", ""];
+    const start = modelNotesInput.selectionStart ?? 0;
+    const end = modelNotesInput.selectionEnd ?? start;
+    const selected = start === end ? t("text.toolbarParagraph") : modelNotesInput.value.slice(start, end);
+    const insertion = tool === "nodeLink"
+      ? `[[${start === end ? "nomeNodo|testo" : `${selected}|${selected}`}]]`
+      : tool === "tex"
+      ? `$${start === end ? "x^2" : selected}$`
+      : `${prefix}${selected}${suffix}`;
+    modelNotesInput.value = `${modelNotesInput.value.slice(0, start)}${insertion}${modelNotesInput.value.slice(end)}`;
+    modelNotesInput.dispatchEvent(new Event("input", { bubbles: true }));
+    modelNotesInput.focus();
+  });
+}
+if (modelNotesInsertStructureBtn) {
+  modelNotesInsertStructureBtn.addEventListener("click", () => {
+    if (modelNotesInput && !modelNotesInput.value.trim()) {
+      modelNotesInput.value = modelNotesTemplate();
+      modelNotesInput.dispatchEvent(new Event("input", { bubbles: true }));
+    }
+  });
+}
+if (modelNotesCloseBtn) modelNotesCloseBtn.addEventListener("click", closeModelNotes);
+if (modelNotesDismissBtn) modelNotesDismissBtn.addEventListener("click", closeModelNotes);
 
 manualStepBtn.addEventListener("click", () => {
   void runManualStep();
@@ -14970,6 +15319,7 @@ bindModalDragHandle(watchDebuggerModal, ".watch-debugger-card");
 bindModalDragHandle(localFunctionsModal, ".local-functions-card");
 bindModalDragHandle(presentationGroupsModal, ".presentation-groups-card");
 bindModalDragHandle(textEditorModal, ".text-editor-card");
+bindModalDragHandle(modelNotesModal, ".model-notes-card");
 if (functionsHelpBtn) {
   functionsHelpBtn.addEventListener("click", () => {
     closeTopMenus();
@@ -15547,7 +15897,7 @@ document.addEventListener("keydown", (evt) => {
     && !evt.altKey
     && !isTypingTarget(evt.target)
   ) {
-    if (renameSelectedNode()) {
+    if (activateRenameSelectionAction()) {
       evt.preventDefault();
     }
     return;

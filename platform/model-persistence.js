@@ -108,7 +108,7 @@
 
       if (!forceSaveAs && !fileHandle) {
         try {
-          fileHandle = await pickSaveAsHandle(fileName);
+          fileHandle = await pickSaveAsHandle(fileName, directoryHandle);
           if (fileHandle) {
             fileName = fileHandle.name || normalizeJsonFilename(fileName);
             const ok = await writeJsonToFileHandle(fileHandle, json);
@@ -151,7 +151,7 @@
 
       if (forceSaveAs) {
         try {
-          fileHandle = await pickSaveAsHandle(fileName);
+          fileHandle = await pickSaveAsHandle(fileName, directoryHandle);
           if (fileHandle) {
             fileName = fileHandle.name || normalizeJsonFilename(fileName);
           }

@@ -57,7 +57,7 @@ L'editor costruisce, modifica ed esegue modelli e comprende widget, help, analis
 Le shell usano `index.html` e i file JavaScript/CSS referenziati da esso. In particolare sono necessari:
 
 - `app.js`, `styles.css`, `widgets.js`;
-- `semantic.js`, `graph-functions.js`, `i18n-inline.js`;
+- `semantic.js`, `graph-functions.js`, `i18n-inline.js`, `markdown-rendering.js`, `vendor/katex/`;
 - `runtime-*.js`;
 - `local-functions-core.js`, `help-content.js`, `model-analysis-*.js`, `watch-debugger-*.js`;
 - `platform/*.js`;
@@ -94,6 +94,8 @@ site/
   semantic.js
   graph-functions.js
   i18n-inline.js
+  markdown-rendering.js
+  vendor/katex/
   runtime-shared.js
   runtime-core.js
   runtime-loader.js

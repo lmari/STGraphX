@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "modelTitle": "brownian 3D",
+  "modelTitle": "Moto browniano 3D",
   "localFunctions": [],
   "view": {
     "zoom": 1,
@@ -15,14 +15,15 @@
   "debug": {
     "watches": [],
     "breakpointEnabled": false,
-    "breakpointExpression": ""
+    "breakpointExpression": "",
+    "breakpointMessage": ""
   },
   "modelProperties": [],
-  "nodeCounter": 18,
-  "edgeCounter": 26,
-  "widgetCounter": 4,
-  "textItemCounter": 3,
-  "presentationGroupCounter": 2,
+  "nodeCounter": 19,
+  "edgeCounter": 27,
+  "widgetCounter": 5,
+  "textItemCounter": 4,
+  "presentationGroupCounter": 3,
   "presentationGroups": [],
   "dashboard": null,
   "execution": {
@@ -33,7 +34,8 @@
     "renderEverySteps": 1,
     "decimals": 3,
     "integrator": "euler",
-    "strictDefinitions": false
+    "strictDefinitions": false,
+    "stopOnRuntimeError": false
   },
   "nodes": [
     {
@@ -414,66 +416,88 @@
       "id": 1,
       "from": 2,
       "to": 4,
+      "color": "",
+      "influence": "none",
       "controlPoints": []
     },
     {
       "id": 2,
       "from": 2,
       "to": 3,
+      "color": "",
+      "influence": "none",
       "controlPoints": []
     },
     {
       "id": 3,
       "from": 12,
       "to": 13,
+      "color": "",
+      "influence": "none",
       "controlPoints": []
     },
     {
       "id": 4,
       "from": 15,
       "to": 13,
+      "color": "",
+      "influence": "none",
       "controlPoints": []
     },
     {
       "id": 5,
       "from": 15,
       "to": 9,
+      "color": "",
+      "influence": "none",
       "controlPoints": []
     },
     {
       "id": 6,
       "from": 8,
       "to": 9,
+      "color": "",
+      "influence": "none",
       "controlPoints": []
     },
     {
       "id": 7,
       "from": 14,
       "to": 11,
+      "color": "",
+      "influence": "none",
       "controlPoints": []
     },
     {
       "id": 8,
       "from": 10,
       "to": 11,
+      "color": "",
+      "influence": "none",
       "controlPoints": []
     },
     {
       "id": 9,
       "from": 14,
       "to": 7,
+      "color": "",
+      "influence": "none",
       "controlPoints": []
     },
     {
       "id": 10,
       "from": 6,
       "to": 7,
+      "color": "",
+      "influence": "none",
       "controlPoints": []
     },
     {
       "id": 11,
       "from": 14,
       "to": 10,
+      "color": "",
+      "influence": "none",
       "controlPoints": [
         {
           "x": 400,
@@ -489,12 +513,16 @@
       "id": 12,
       "from": 6,
       "to": 14,
+      "color": "",
+      "influence": "none",
       "controlPoints": []
     },
     {
       "id": 13,
       "from": 6,
       "to": 10,
+      "color": "",
+      "influence": "none",
       "controlPoints": [
         {
           "x": 335,
@@ -506,6 +534,8 @@
       "id": 14,
       "from": 10,
       "to": 6,
+      "color": "",
+      "influence": "none",
       "controlPoints": [
         {
           "x": 320,
@@ -517,6 +547,8 @@
       "id": 15,
       "from": 10,
       "to": 14,
+      "color": "",
+      "influence": "none",
       "controlPoints": [
         {
           "x": 350,
@@ -528,48 +560,64 @@
       "id": 17,
       "from": 3,
       "to": 8,
+      "color": "",
+      "influence": "none",
       "controlPoints": []
     },
     {
       "id": 18,
       "from": 4,
       "to": 8,
+      "color": "",
+      "influence": "none",
       "controlPoints": []
     },
     {
       "id": 19,
       "from": 5,
       "to": 8,
+      "color": "",
+      "influence": "none",
       "controlPoints": []
     },
     {
       "id": 20,
       "from": 4,
       "to": 12,
+      "color": "",
+      "influence": "none",
       "controlPoints": []
     },
     {
       "id": 21,
       "from": 5,
       "to": 12,
+      "color": "",
+      "influence": "none",
       "controlPoints": []
     },
     {
       "id": 22,
       "from": 5,
       "to": 15,
+      "color": "",
+      "influence": "none",
       "controlPoints": []
     },
     {
       "id": 23,
       "from": 4,
       "to": 15,
+      "color": "",
+      "influence": "none",
       "controlPoints": []
     },
     {
       "id": 24,
       "from": 3,
       "to": 15,
+      "color": "",
+      "influence": "none",
       "controlPoints": []
     }
   ],
@@ -592,6 +640,7 @@
       "expandNonScalarValues": false,
       "tableTextAlign": "left",
       "tableDecimalDigits": 0,
+      "tableColumnFormats": {},
       "xMin": "auto",
       "xMax": "auto",
       "yMin": "auto",

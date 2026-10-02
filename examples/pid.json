@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "modelTitle": "controller pid",
+  "modelTitle": "Controller PID",
   "localFunctions": [],
   "view": {
     "zoom": 1,
@@ -9,20 +9,21 @@
     "showNodeValues": false,
     "gridSize": 20,
     "tooltipDelayMs": 300,
-    "scrollLeft": 0,
-    "scrollTop": 40
+    "scrollLeft": 190,
+    "scrollTop": 0
   },
   "debug": {
     "watches": [],
     "breakpointEnabled": false,
-    "breakpointExpression": ""
+    "breakpointExpression": "",
+    "breakpointMessage": ""
   },
   "modelProperties": [],
-  "nodeCounter": 13,
-  "edgeCounter": 15,
-  "widgetCounter": 6,
-  "textItemCounter": 5,
-  "presentationGroupCounter": 3,
+  "nodeCounter": 14,
+  "edgeCounter": 16,
+  "widgetCounter": 7,
+  "textItemCounter": 6,
+  "presentationGroupCounter": 4,
   "presentationGroups": [],
   "dashboard": null,
   "execution": {
@@ -33,7 +34,8 @@
     "renderEverySteps": 1,
     "decimals": 3,
     "integrator": "euler",
-    "strictDefinitions": false
+    "strictDefinitions": false,
+    "stopOnRuntimeError": false
   },
   "nodes": [
     {
@@ -42,19 +44,19 @@
       "output": false,
       "global": false,
       "type": "algebraic",
-      "x": 210,
-      "y": 121,
+      "x": 220,
+      "y": 120,
       "width": 75,
       "height": 45,
       "fillColor": "#ffffff",
       "strokeColor": "#000000",
       "properties": [
         {
-          "key": "note formula",
+          "key": "formula notes",
           "value": ""
         },
         {
-          "key": "descrizione",
+          "key": "description",
           "value": ""
         }
       ],
@@ -67,19 +69,19 @@
       "output": false,
       "global": false,
       "type": "state",
-      "x": 200,
-      "y": 290,
+      "x": 220,
+      "y": 300,
       "width": 75,
       "height": 45,
       "fillColor": "#ffffff",
       "strokeColor": "#000000",
       "properties": [
         {
-          "key": "descrizione",
+          "key": "description",
           "value": ""
         },
         {
-          "key": "note formula",
+          "key": "formula notes",
           "value": "Espressione legacy di output dello stato: (err-this)/timeD"
         }
       ],
@@ -100,11 +102,11 @@
       "strokeColor": "#000000",
       "properties": [
         {
-          "key": "note formula",
+          "key": "formula notes",
           "value": ""
         },
         {
-          "key": "descrizione",
+          "key": "description",
           "value": ""
         }
       ],
@@ -124,11 +126,11 @@
       "strokeColor": "#000000",
       "properties": [
         {
-          "key": "note formula",
+          "key": "formula notes",
           "value": ""
         },
         {
-          "key": "descrizione",
+          "key": "description",
           "value": ""
         }
       ],
@@ -141,19 +143,19 @@
       "output": false,
       "global": false,
       "type": "state",
-      "x": 250,
-      "y": 210,
+      "x": 280,
+      "y": 220,
       "width": 75,
       "height": 45,
       "fillColor": "#ffffff",
       "strokeColor": "#000000",
       "properties": [
         {
-          "key": "note formula",
+          "key": "formula notes",
           "value": ""
         },
         {
-          "key": "descrizione",
+          "key": "description",
           "value": ""
         }
       ],
@@ -166,19 +168,19 @@
       "output": false,
       "global": false,
       "type": "parameter",
-      "x": 210,
-      "y": 50,
+      "x": 220,
+      "y": 40,
       "width": 75,
       "height": 45,
       "fillColor": "#00ff00",
       "strokeColor": "#000000",
       "properties": [
         {
-          "key": "note formula",
+          "key": "formula notes",
           "value": ""
         },
         {
-          "key": "descrizione",
+          "key": "description",
           "value": "Guadagno del controller;\nvettore delle componenti dei coefficienti dei componenti:\n- proporzionale (P)\n- integrale (I)\n- derivativo (D)"
         }
       ],
@@ -198,11 +200,11 @@
       "strokeColor": "#000000",
       "properties": [
         {
-          "key": "note formula",
+          "key": "formula notes",
           "value": ""
         },
         {
-          "key": "descrizione",
+          "key": "description",
           "value": ""
         }
       ],
@@ -223,11 +225,11 @@
       "strokeColor": "#000000",
       "properties": [
         {
-          "key": "note formula",
+          "key": "formula notes",
           "value": ""
         },
         {
-          "key": "descrizione",
+          "key": "description",
           "value": "Temperatura dell'ambiente esterno"
         }
       ],
@@ -247,11 +249,11 @@
       "strokeColor": "#000000",
       "properties": [
         {
-          "key": "note formula",
+          "key": "formula notes",
           "value": ""
         },
         {
-          "key": "descrizione",
+          "key": "description",
           "value": ""
         }
       ],
@@ -264,74 +266,96 @@
       "id": 1,
       "from": 4,
       "to": 2,
+      "color": "",
+      "influence": "none",
       "controlPoints": []
     },
     {
       "id": 2,
       "from": 9,
       "to": 4,
+      "color": "",
+      "influence": "none",
       "controlPoints": []
     },
     {
       "id": 3,
       "from": 7,
       "to": 4,
+      "color": "",
+      "influence": "none",
       "controlPoints": []
     },
     {
       "id": 4,
       "from": 4,
       "to": 1,
+      "color": "",
+      "influence": "none",
       "controlPoints": []
     },
     {
       "id": 5,
       "from": 4,
       "to": 5,
+      "color": "",
+      "influence": "none",
       "controlPoints": []
     },
     {
       "id": 6,
       "from": 5,
       "to": 1,
+      "color": "",
+      "influence": "none",
       "controlPoints": []
     },
     {
       "id": 7,
       "from": 6,
       "to": 1,
+      "color": "",
+      "influence": "none",
       "controlPoints": []
     },
     {
       "id": 8,
       "from": 1,
       "to": 9,
+      "color": "",
+      "influence": "none",
       "controlPoints": []
     },
     {
       "id": 9,
       "from": 2,
       "to": 1,
+      "color": "",
+      "influence": "none",
       "controlPoints": []
     },
     {
       "id": 10,
       "from": 3,
       "to": 9,
+      "color": "",
+      "influence": "none",
       "controlPoints": []
     },
     {
       "id": 11,
       "from": 8,
       "to": 9,
+      "color": "",
+      "influence": "none",
       "controlPoints": []
     }
   ],
   "textItems": [
     {
       "id": 1,
-      "x": 80,
-      "y": -40,
+      "x": 280,
+      "y": 0,
       "width": 131,
       "height": 35,
       "fillColor": "",
@@ -358,11 +382,13 @@
       "expandNonScalarValues": false,
       "tableTextAlign": "left",
       "tableDecimalDigits": 0,
+      "tableColumnFormats": {},
       "xMin": "auto",
       "xMax": "auto",
       "yMin": "auto",
       "yMax": "auto",
       "showGrid": true,
+      "showAxes": true,
       "legendPosition": "top-right",
       "source": "setpoint",
       "showNumericValues": true,
@@ -394,8 +420,8 @@
       "id": 3,
       "type": "xychart",
       "customTitle": "",
-      "x": 520,
-      "y": 200,
+      "x": 500,
+      "y": 180,
       "width": 520,
       "height": 280,
       "dashboardPageId": null,
@@ -407,11 +433,13 @@
       "expandNonScalarValues": false,
       "tableTextAlign": "left",
       "tableDecimalDigits": 0,
+      "tableColumnFormats": {},
       "xMin": "auto",
       "xMax": "auto",
       "yMin": "auto",
       "yMax": "auto",
       "showGrid": true,
+      "showAxes": true,
       "legendPosition": "none",
       "source": "",
       "showNumericValues": true,
@@ -448,6 +476,10 @@
           "showLine": true,
           "lineWidth": 2.2,
           "lineStyle": "solid",
+          "barMode": "none",
+          "showBars": false,
+          "barColor": "#0e7ac4",
+          "barWidth": 2.2,
           "pointMode": "none",
           "pointSize": 2.4
         },
@@ -461,6 +493,10 @@
           "showLine": true,
           "lineWidth": 2.2,
           "lineStyle": "solid",
+          "barMode": "none",
+          "showBars": false,
+          "barColor": "#e67e22",
+          "barWidth": 2.2,
           "pointMode": "none",
           "pointSize": 2.4
         }

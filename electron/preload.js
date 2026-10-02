@@ -5,7 +5,7 @@
  * Copyright (c) 2026 Luca Mari
  */
 
-const { contextBridge, ipcRenderer } = require("electron");
+const { contextBridge, ipcRenderer, webUtils } = require("electron");
 const { exposePlatformInMainWorld } = require("../platform/install-platform.js");
 const { createElectronPlatform } = require("../platform/electron-platform.js");
 
@@ -17,6 +17,13 @@ exposePlatformInMainWorld(contextBridge, platform);
 // native File System Access handles do not expose a parent directory, which is
 // needed to reopen models and their relative submodels reliably.
 contextBridge.exposeInMainWorld("STGraphXElectronFiles", {
+  getPathForFile(file) {
+    try {
+      return String(webUtils.getPathForFile(file) || "");
+    } catch (_err) {
+      return "";
+    }
+  },
   async showConfirmDialog(options = {}) {
     const result = await ipcRenderer.invoke("stgraphx:show-confirm-dialog", options);
     return Number.isInteger(result?.response) ? result.response : -1;

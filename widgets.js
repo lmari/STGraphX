@@ -46,7 +46,8 @@ function addCanvasText(at = null) {
     height: 90,
     fillColor: "",
     strokeColor: "",
-    html: `<p><strong>${t("menu.insert.text")}</strong></p><p>${t("text.defaultCanvasText")}</p>`,
+    markdown: `**${t("menu.insert.text")}**\n\n${t("text.defaultCanvasText")}`,
+    html: "",
   });
   selectTextItem(id);
 }
@@ -2723,6 +2724,12 @@ function renderWidgets() {
     root.style.setProperty("--widget-font-size", `${widget.fontSize}px`);
     root.classList.toggle("title-bar-hidden", widget.showTitleBar === false && !widget.minimized);
     root.dataset.widgetId = String(widget.id);
+    if (["slider", "numeric", "select", "button"].includes(widget.type)) {
+      const description = getNodeDescription(getNodeByName(widget.source));
+      if (description) {
+        setTooltipText(root, description);
+      }
+    }
     root.addEventListener("pointerdown", (evt) => {
       if (typeof isTabletCanvasPanMode === "function" && isTabletCanvasPanMode()) {
         return;
@@ -3731,7 +3738,9 @@ function openTextContextMenu(evt, item) {
             editorModal.classList.remove("hidden");
           }
           if (editorInput) {
-            editorInput.value = String(item.html ?? "");
+            editorInput.value = typeof item.markdown === "string"
+              ? item.markdown
+              : (globalThis.STGraphXMarkdown?.legacyHtmlToMarkdown(item.html ?? "") ?? String(item.html ?? ""));
             editorInput.focus();
             editorInput.select();
           }
@@ -3924,6 +3933,9 @@ function buildNodeTooltipText(node) {
 }
 
 function canvasTextDisplayHtml(item) {
+  if (typeof item?.markdown === "string") {
+    return globalThis.STGraphXMarkdown?.renderMarkdownToHtml(item.markdown) || "";
+  }
   const sanitized = sanitizeRichTextHtml(item?.html ?? "");
   return sanitized || `<p>${t("text.defaultCanvasText")}</p>`;
 }
@@ -3941,7 +3953,8 @@ function updateSelectedTextHtml(nextValue) {
   if (editorInput && document.activeElement !== editorInput) {
     editorInput.value = nextValue;
   }
-  item.html = String(nextValue ?? "");
+  item.markdown = String(nextValue ?? "");
+  item.html = "";
   sanitizeTextItem(item);
   dirtySinceLastSave = true;
   updateFileStatusLabel(true);

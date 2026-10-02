@@ -434,6 +434,13 @@
       const numeric = Math.floor(Number(value));
       return Number.isFinite(numeric) && numeric > 0 ? numeric : null;
     };
+    const parseAxisLimit = (value) => {
+      if (value == null || (typeof value === "string" && (!value.trim() || value.trim().toLowerCase() === "auto"))) {
+        return null;
+      }
+      const numeric = Number(value);
+      return Number.isFinite(numeric) ? numeric : null;
+    };
     return Array.isArray(widgets) ? widgets.map((widget) => ({
       id: Number(widget?.id) || 0,
       type: String(widget?.type || ""),
@@ -448,7 +455,15 @@
         ? clamp(Math.round(Number(widget.fontSize)), 8, 32)
         : (Number.isFinite(Number(widget?.tableFontSize)) ? clamp(Math.round(Number(widget.tableFontSize)), 8, 32) : 13),
       outputOnly: Boolean(widget?.outputOnly),
+      xMin: parseAxisLimit(widget?.xMin),
+      xMax: parseAxisLimit(widget?.xMax),
+      yMin: parseAxisLimit(widget?.yMin),
+      yMax: parseAxisLimit(widget?.yMax),
+      showGrid: widget?.showGrid !== false,
       showAxes: widget?.showAxes !== false,
+      legendPosition: ["none", "top-right", "top-left", "bottom-right", "bottom-left"].includes(String(widget?.legendPosition ?? ""))
+        ? String(widget.legendPosition)
+        : "top-right",
       showHistory: Boolean(widget?.showHistory),
       expandNonScalarValues: Boolean(widget?.expandNonScalarValues) && !Boolean(widget?.showHistory),
       tableTextAlign: ["left", "center", "right"].includes(String(widget?.tableTextAlign ?? "")) ? String(widget.tableTextAlign) : "left",
@@ -514,6 +529,7 @@
           showTimeSeries: pair?.showTimeSeries !== false,
           showInstantProfile: pair?.showInstantProfile === true || pair?.seriesMode === "instant",
           color: /^#[0-9a-fA-F]{6}$/.test(String(pair?.color ?? "")) ? String(pair.color) : "#2d7ff9",
+          pointColor: /^#[0-9a-fA-F]{6}$/.test(String(pair?.pointColor ?? "")) ? String(pair.pointColor) : "",
           showLine: pair?.showLine !== false,
           lineWidth: Number.isFinite(Number(pair?.lineWidth)) ? clamp(Number(pair.lineWidth), 1, 8) : 2,
           lineStyle: String(pair?.lineStyle || "solid"),
@@ -697,7 +713,22 @@
     }[widget.type] || widget.type;
   }
 
+  function inputWidgetNodeDescription(model, widget) {
+    if (!["slider", "numeric", "button", "select"].includes(String(widget?.type ?? ""))) {
+      return "";
+    }
+    const source = String(widget?.source ?? "").trim();
+    const node = (model?.nodes || []).find((entry) => String(entry?.name ?? "") === source);
+    const property = (node?.properties || []).find((entry) => (
+      ["descrizione", "description"].includes(String(entry?.key ?? "").trim().toLowerCase())
+    ));
+    return String(property?.value ?? "").trim();
+  }
+
   function canvasTextDisplayHtml(item) {
+    if (typeof item?.markdown === "string") {
+      return globalThis.STGraphXMarkdown?.renderMarkdownToHtml(item.markdown) || "";
+    }
     const html = String(item?.html ?? "");
     return html.replace(/<script\b[^>]*>[\s\S]*?<\/script>/giu, "");
   }
@@ -711,6 +742,84 @@
       default:
         return [];
     }
+  }
+
+  function isFiniteScalar(value) {
+    return typeof value === "number" && Number.isFinite(value);
+  }
+
+  function isFiniteVector(value) {
+    return Array.isArray(value) && value.every((item) => isFiniteScalar(item));
+  }
+
+  function buildChartPairSeriesDefinitions(pair, xValue, yValue) {
+    if (isFiniteScalar(xValue) && isFiniteScalar(yValue)) {
+      return [{ label: `${pair.xSource} -> ${pair.ySource}`, point: { x: xValue, y: yValue } }];
+    }
+    if (isFiniteScalar(xValue) && isFiniteVector(yValue)) {
+      return yValue.map((item) => ({
+        label: `${pair.xSource} -> ${pair.ySource}`,
+        point: { x: xValue, y: item },
+      }));
+    }
+    if (isFiniteVector(xValue) && isFiniteVector(yValue) && xValue.length === yValue.length) {
+      return xValue.map((xItem, index) => ({
+        label: `${pair.xSource} -> ${pair.ySource}`,
+        point: { x: xItem, y: yValue[index] },
+      }));
+    }
+    return [];
+  }
+
+  function buildChartPairInstantSeriesDefinitions(pair, xValue, yValue) {
+    if (isFiniteScalar(xValue) && isFiniteVector(yValue)) {
+      return [{
+        label: `${pair.xSource} -> ${pair.ySource}`,
+        points: yValue.map((item) => ({ x: xValue, y: item })),
+      }];
+    }
+    if (isFiniteVector(xValue) && isFiniteVector(yValue) && xValue.length === yValue.length) {
+      return [{
+        label: `${pair.xSource} -> ${pair.ySource}`,
+        points: xValue.map((xItem, index) => ({ x: xItem, y: yValue[index] })),
+      }];
+    }
+    return [];
+  }
+
+  function appendChartSeriesPoint(series, point) {
+    const previous = series.points[series.points.length - 1];
+    if (previous && previous.x === point.x && previous.y === point.y) {
+      return;
+    }
+    series.points.push(point);
+  }
+
+  function chartSeriesForWidget(widget, widgetState) {
+    const pairs = widgetState?.pairs || widget?.xyPairs || [];
+    return pairs.flatMap((pair) => {
+      const result = [];
+      if (pair.showTimeSeries) {
+        const seriesData = Array.isArray(pair.seriesData) && pair.seriesData.length > 0
+          ? pair.seriesData
+          : [{ label: `${pair.xSource} -> ${pair.ySource}`, points: pair.points || [] }];
+        result.push(...seriesData.map((series, index) => ({
+          ...pair,
+          label: series.label || `${pair.xSource} -> ${pair.ySource}${seriesData.length > 1 ? ` [${index}]` : ""}`,
+          points: series.points || [],
+        })));
+      }
+      if (pair.showInstantProfile) {
+        const instantSeriesData = Array.isArray(pair.instantSeriesData) ? pair.instantSeriesData : [];
+        result.push(...instantSeriesData.map((series) => ({
+          ...pair,
+          label: series.label || `${pair.xSource} -> ${pair.ySource}`,
+          pointMode: pair.pointMode === "last" ? "all" : pair.pointMode,
+          points: series.points || [],
+        })));
+      }
+      return result;
+    });
   }
 
   function drawSimpleXYChart(canvas, pairs, execution, fontSize = 11, options = {}) {
@@ -751,6 +860,25 @@
         maxY = Math.max(maxY, pt.y);
       });
     });
+    const parseAxisLimit = (value) => {
+      if (value == null || (typeof value === "string" && (!value.trim() || value.trim().toLowerCase() === "auto"))) {
+        return null;
+      }
+      const numeric = Number(value);
+      return Number.isFinite(numeric) ? numeric : null;
+    };
+    const xMin = parseAxisLimit(options.xMin);
+    const xMax = parseAxisLimit(options.xMax);
+    const yMin = parseAxisLimit(options.yMin);
+    const yMax = parseAxisLimit(options.yMax);
+    if (xMin != null && xMax != null && xMax > xMin) {
+      minX = xMin;
+      maxX = xMax;
+    }
+    if (yMin != null && yMax != null && yMax > yMin) {
+      minY = yMin;
+      maxY = yMax;
+    }
     if (series.some((pair) => pair.showBars)) {
       minY = Math.min(minY, 0);
       maxY = Math.max(maxY, 0);
@@ -763,11 +891,28 @@
       minY -= 1;
       maxY += 1;
     }
-    const pad = 18;
+    const showAxes = options.showAxes !== false;
+    const showGrid = options.showGrid !== false;
+    const pad = showAxes ? 24 : 10;
     const sx = (width - pad * 2) / (maxX - minX);
     const sy = (height - pad * 2) / (maxY - minY);
 
-    if (options.showAxes !== false) {
+    if (showGrid) {
+      ctx.strokeStyle = "#e4ebf2";
+      ctx.lineWidth = 1;
+      for (let index = 1; index < 5; index += 1) {
+        const x = pad + ((width - pad * 2) * index) / 5;
+        const y = pad + ((height - pad * 2) * index) / 5;
+        ctx.beginPath();
+        ctx.moveTo(x, pad);
+        ctx.lineTo(x, height - pad);
+        ctx.moveTo(pad, y);
+        ctx.lineTo(width - pad, y);
+        ctx.stroke();
+      }
+    }
+
+    if (showAxes) {
       ctx.strokeStyle = "#9fb0c0";
       ctx.beginPath();
       ctx.moveTo(pad, height - pad);
@@ -822,7 +967,7 @@
         pointsToDraw.forEach((pt) => {
           const x = pad + (pt.x - minX) * sx;
           const y = height - pad - (pt.y - minY) * sy;
-          ctx.fillStyle = pair.color || "#2d7ff9";
+          ctx.fillStyle = pair.pointColor || pair.color || "#2d7ff9";
           ctx.beginPath();
           ctx.arc(x, y, pair.pointSize || 2, 0, Math.PI * 2);
           ctx.fill();
@@ -830,7 +975,7 @@
       }
     });
 
-    if (options.showAxes !== false) {
+    if (showAxes) {
       ctx.fillStyle = "#506070";
       ctx.font = `${Math.max(8, fontSize)}px sans-serif`;
       ctx.fillText(formatNumberValue(execution, minX), pad, height - 4);
@@ -843,6 +988,7 @@
       .map((pair, idx) => ({
         label: String(pair.label || `${pair.xSource || "x"} -> ${pair.ySource || "y"}`),
         color: pair.color || "#2d7ff9",
+        pointColor: pair.pointColor || pair.color || "#2d7ff9",
         lineWidth: pair.lineWidth || 2,
         lineStyle: pair.lineStyle || "solid",
         pointMode: pair.pointMode || "last",
@@ -850,12 +996,23 @@
         idx,
       }))
       .slice(0, 8);
-    if (visibleLegend.length > 0) {
+    const legendPosition = ["none", "top-right", "top-left", "bottom-right", "bottom-left"].includes(String(options.legendPosition ?? ""))
+      ? String(options.legendPosition)
+      : "top-right";
+    if (legendPosition !== "none" && visibleLegend.length > 0) {
       const rowHeight = 16;
       const legendWidth = Math.min(width - 24, 148);
       const legendHeight = visibleLegend.length * rowHeight + 12;
-      const left = width - legendWidth - 10;
-      const top = 10;
+      let left = width - legendWidth - 10;
+      let top = 10;
+      if (legendPosition === "top-left") {
+        left = 10;
+      } else if (legendPosition === "bottom-right") {
+        top = height - legendHeight - 10;
+      } else if (legendPosition === "bottom-left") {
+        left = 10;
+        top = height - legendHeight - 10;
+      }
       ctx.fillStyle = "rgba(255,255,255,0.86)";
       ctx.strokeStyle = "#d7e1eb";
       ctx.lineWidth = 1;
@@ -874,7 +1031,7 @@
         ctx.stroke();
         ctx.setLineDash([]);
         if (String(item.pointMode).toLowerCase() !== "none") {
-          ctx.fillStyle = item.color;
+          ctx.fillStyle = item.pointColor || item.color;
           ctx.beginPath();
           ctx.arc(left + 17, y, Math.min(3, item.pointSize), 0, Math.PI * 2);
           ctx.fill();
@@ -1091,6 +1248,7 @@
         timedStepLastActivityAt: 0,
       };
       this._activeInputWidgetId = null;
+      this._modelNotesNodeHighlightTimer = null;
       this.ready = Promise.resolve();
       this.syncViewOptionsFromAttributes();
     }
@@ -1144,7 +1302,9 @@
     }
 
     renderShell() {
+      const katexCssUrl = String(global.STGraphXKaTeXCssUrl || "vendor/katex/katex.min.css");
       this.shadowRoot.innerHTML = `
+        <link rel="stylesheet" href="${katexCssUrl}">
         <style>
           :host {
             display: block;
@@ -1211,6 +1371,28 @@
             background: rgba(255,255,255,0.84);
             overflow: auto;
             min-height: 320px;
+          }
+          .notes-canvas-btn {
+            position: absolute;
+            z-index: 12;
+            top: 12px;
+            left: 12px;
+            width: 34px;
+            height: 34px;
+            padding: 0;
+            border: 1px solid #7291aa;
+            border-radius: 6px;
+            background: #fafdff;
+            color: #294a64;
+            box-shadow: 0 1px 4px #17344a33;
+            font-size: 19px;
+            cursor: pointer;
+          }
+          .notes-canvas-btn:hover, .notes-canvas-btn:focus-visible {
+            color: #fff;
+            background: #3b6b8d;
+            outline: 2px solid #83b9dc;
+            outline-offset: 1px;
           }
           .canvas-content {
             position: relative;
@@ -1549,6 +1731,15 @@
             stroke: #c14747;
             stroke-width: 2;
           }
+          .node.notes-highlight .node-shape {
+            stroke: #d67a14;
+            stroke-width: 4;
+            filter: drop-shadow(0 0 5px rgba(214, 122, 20, 0.72));
+            animation: player-note-node-highlight 0.65s ease-in-out 3;
+          }
+          @keyframes player-note-node-highlight {
+            50% { stroke: #f3bf52; stroke-width: 6; }
+          }
           .edge {
             fill: none;
             stroke: var(--edge-stroke, #3b4e61);
@@ -1643,6 +1834,67 @@
             cursor: pointer;
             font: inherit;
           }
+          .model-notes-overlay {
+            position: absolute;
+            inset: 0;
+            z-index: 21;
+            display: grid;
+            place-items: center;
+            padding: 20px;
+            background: rgba(27, 47, 66, 0.3);
+          }
+          .model-notes-overlay[hidden] { display: none; }
+          .model-notes-dialog {
+            display: grid;
+            grid-template-rows: auto minmax(0, 1fr) auto;
+            width: min(100%, 720px);
+            max-height: min(80vh, 680px);
+            border: 1px solid #b8c9d8;
+            border-radius: 12px;
+            background: #fff;
+            box-shadow: 0 16px 38px rgba(25, 50, 75, 0.26);
+            overflow: hidden;
+          }
+          .model-notes-head {
+            padding: 14px 18px;
+            border-bottom: 1px solid #dbe5ee;
+            font-weight: 700;
+            cursor: grab;
+            touch-action: none;
+          }
+          .model-notes-head:active { cursor: grabbing; }
+          .model-notes-content {
+            min-height: 0;
+            padding: 16px 18px;
+            overflow: auto;
+            color: #31495f;
+            line-height: 1.45;
+          }
+          .model-notes-content h1, .model-notes-content h2, .model-notes-content h3 { color: #203f59; }
+          .model-notes-content p:first-child, .model-notes-content h1:first-child, .model-notes-content h2:first-child { margin-top: 0; }
+          .model-notes-content .latex-block { overflow-x: auto; margin: 0.6em 0; text-align: center; }
+          .model-notes-content .latex-fallback, .model-notes-content .latex-error { color: #9a4a1f; }
+          .model-notes-content .markdown-node-ref {
+            color: #12639c;
+            font-weight: 600;
+            text-decoration: underline dotted;
+            cursor: pointer;
+          }
+          .model-notes-actions {
+            display: flex;
+            justify-content: flex-end;
+            padding: 12px 18px;
+            border-top: 1px solid #dbe5ee;
+          }
+          .model-notes-actions button {
+            border: 1px solid #b7c7d8;
+            border-radius: 999px;
+            padding: 6px 14px;
+            background: #fff;
+            color: #203040;
+            cursor: pointer;
+            font: inherit;
+          }
         </style>
         <div class="player">
           <div class="toolbar">
@@ -1655,6 +1907,9 @@
           </div>
           <div class="surface">
             <div class="canvas">
+              <button type="button" class="notes-canvas-btn" data-action="openNotes" hidden aria-label="">
+                &#9636;
+              </button>
               <div class="canvas-content" data-role="canvasContent">
                 <svg data-role="svg"></svg>
                 <div class="widgets" data-role="widgets"></div>
@@ -1666,6 +1921,15 @@
               <div class="semantic-breakpoint-message" data-role="semanticBreakpointMessage" id="semanticBreakpointMessage"></div>
               <div class="semantic-breakpoint-actions">
                 <button type="button" data-action="dismissSemanticBreakpoint"></button>
+              </div>
+            </div>
+          </div>
+          <div class="model-notes-overlay" data-role="modelNotesOverlay" hidden>
+            <div class="model-notes-dialog" role="dialog" aria-modal="true" aria-labelledby="modelNotesTitle">
+              <div class="model-notes-head" data-role="modelNotesTitle" id="modelNotesTitle"></div>
+              <div class="model-notes-content" data-role="modelNotesContent"></div>
+              <div class="model-notes-actions">
+                <button type="button" data-action="closeNotes"></button>
               </div>
             </div>
           </div>
@@ -1684,6 +1948,13 @@
       this.$semanticBreakpointOverlay = this.shadowRoot.querySelector('[data-role="semanticBreakpointOverlay"]');
       this.$semanticBreakpointMessage = this.shadowRoot.querySelector('[data-role="semanticBreakpointMessage"]');
       this.$dismissSemanticBreakpoint = this.shadowRoot.querySelector('[data-action="dismissSemanticBreakpoint"]');
+      this.$notesButton = this.shadowRoot.querySelector('[data-action="openNotes"]');
+      this.$modelNotesOverlay = this.shadowRoot.querySelector('[data-role="modelNotesOverlay"]');
+      this.$modelNotesDialog = this.shadowRoot.querySelector(".model-notes-dialog");
+      this.$modelNotesHead = this.shadowRoot.querySelector(".model-notes-head");
+      this.$modelNotesTitle = this.shadowRoot.querySelector('[data-role="modelNotesTitle"]');
+      this.$modelNotesContent = this.shadowRoot.querySelector('[data-role="modelNotesContent"]');
+      this.$closeNotes = this.shadowRoot.querySelector('[data-action="closeNotes"]');
       this.refreshStaticTexts();
       this.applyViewOptions();
     }
@@ -1699,6 +1970,10 @@
         : this.t("action.timedStop");
       this.$reset.textContent = this.t("menu.run.reset");
       this.$dismissSemanticBreakpoint.textContent = this.t("action.close");
+      this.$notesButton.title = this.t("modelNotes.canvasButton");
+      this.$notesButton.setAttribute("aria-label", this.t("modelNotes.canvasButton"));
+      this.$modelNotesTitle.textContent = this.t("modelNotes.title");
+      this.$closeNotes.textContent = this.t("action.close");
       this.$title.textContent = this._state.rawModel?.modelTitle || "STGraphX";
     }
 
@@ -1716,6 +1991,112 @@
         void this.reset();
       });
       this.$dismissSemanticBreakpoint.addEventListener("click", () => this.closeSemanticBreakpointMessage());
+      this.$notesButton.addEventListener("click", () => this.openModelNotes());
+      this.$closeNotes.addEventListener("click", () => this.closeModelNotes());
+      this.$modelNotesOverlay.addEventListener("click", (event) => {
+        if (event.target === this.$modelNotesOverlay) {
+          this.closeModelNotes();
+        }
+      });
+      this.$modelNotesContent.addEventListener("click", (event) => {
+        const link = event.target.closest("[data-stgraphx-node]");
+        if (!link) {
+          return;
+        }
+        event.preventDefault();
+        this.revealNodeFromModelNotes(link.dataset.stgraphxNode);
+      });
+      this.$modelNotesHead.addEventListener("pointerdown", (event) => this.startModelNotesDrag(event));
+    }
+
+    openModelNotes() {
+      if (!this.$modelNotesOverlay || this.$notesButton.hidden) {
+        return;
+      }
+      this.$modelNotesOverlay.hidden = false;
+      this.$closeNotes?.focus();
+    }
+
+    closeModelNotes() {
+      if (this.$modelNotesOverlay) {
+        this.$modelNotesOverlay.hidden = true;
+      }
+    }
+
+    startModelNotesDrag(event) {
+      if (event.button !== 0 || !this.$modelNotesDialog || !this.$modelNotesOverlay) {
+        return;
+      }
+      const dialogRect = this.$modelNotesDialog.getBoundingClientRect();
+      const overlayRect = this.$modelNotesOverlay.getBoundingClientRect();
+      this.$modelNotesDialog.style.position = "absolute";
+      this.$modelNotesDialog.style.left = `${dialogRect.left - overlayRect.left}px`;
+      this.$modelNotesDialog.style.top = `${dialogRect.top - overlayRect.top}px`;
+      const drag = {
+        pointerId: event.pointerId,
+        offsetX: event.clientX - dialogRect.left,
+        offsetY: event.clientY - dialogRect.top,
+      };
+      const move = (moveEvent) => {
+        if (moveEvent.pointerId !== drag.pointerId) return;
+        const maxLeft = Math.max(0, overlayRect.width - dialogRect.width);
+        const maxTop = Math.max(0, overlayRect.height - dialogRect.height);
+        const left = Math.min(maxLeft, Math.max(0, moveEvent.clientX - overlayRect.left - drag.offsetX));
+        const top = Math.min(maxTop, Math.max(0, moveEvent.clientY - overlayRect.top - drag.offsetY));
+        this.$modelNotesDialog.style.left = `${left}px`;
+        this.$modelNotesDialog.style.top = `${top}px`;
+      };
+      const end = (endEvent) => {
+        if (endEvent.pointerId !== drag.pointerId) return;
+        this.$modelNotesHead.removeEventListener("pointermove", move);
+        this.$modelNotesHead.removeEventListener("pointerup", end);
+        this.$modelNotesHead.removeEventListener("pointercancel", end);
+      };
+      this.$modelNotesHead.setPointerCapture?.(event.pointerId);
+      this.$modelNotesHead.addEventListener("pointermove", move);
+      this.$modelNotesHead.addEventListener("pointerup", end);
+      this.$modelNotesHead.addEventListener("pointercancel", end);
+    }
+
+    revealNodeFromModelNotes(nodeName) {
+      const node = (this._state.rawModel?.nodes || []).find((entry) => (
+        String(entry?.name ?? "") === String(nodeName ?? "").trim()
+      ));
+      if (!node || !this.$canvas) {
+        return;
+      }
+      const bounds = this.graphBounds();
+      this.$canvas.scrollLeft = Math.max(0, (Number(node.x) - bounds.minX) * this._zoom - this.$canvas.clientWidth / 2);
+      this.$canvas.scrollTop = Math.max(0, (Number(node.y) - bounds.minY) * this._zoom - this.$canvas.clientHeight / 2);
+      const nodeElement = [...this.$svg.querySelectorAll("[data-player-node-id]")]
+        .find((element) => Number(element.dataset.playerNodeId) === Number(node.id));
+      if (!nodeElement) {
+        return;
+      }
+      if (this._modelNotesNodeHighlightTimer != null) {
+        clearTimeout(this._modelNotesNodeHighlightTimer);
+      }
+      nodeElement.classList.remove("notes-highlight");
+      void nodeElement.getBoundingClientRect();
+      nodeElement.classList.add("notes-highlight");
+      this._modelNotesNodeHighlightTimer = setTimeout(() => {
+        nodeElement.classList.remove("notes-highlight");
+        this._modelNotesNodeHighlightTimer = null;
+      }, 2100);
+    }
+
+    refreshModelNotes() {
+      const markdown = String(this._state.rawModel?.notes?.markdown ?? "").trim();
+      const hasNotes = Boolean(markdown);
+      this.$notesButton.hidden = !hasNotes;
+      if (!hasNotes && this.$modelNotesOverlay) {
+        this.$modelNotesOverlay.hidden = true;
+      }
+      if (this.$modelNotesContent) {
+        this.$modelNotesContent.innerHTML = hasNotes
+          ? (globalThis.STGraphXMarkdown?.renderMarkdownToHtml(markdown) || "")
+          : `<p class="empty">${this.t("modelNotes.empty")}</p>`;
+      }
     }
 
     openSemanticBreakpointMessage(message) {
@@ -2026,7 +2407,7 @@
           if (!this._state.suppressWidgetHistory) {
             this.recordWidgetState(timeValue);
           }
-          this.syncRuntimeToView();
+          this.syncRuntimeToView({ updateUi: !this._timedState.batchingVisualRefresh });
         },
       });
 
@@ -2060,10 +2441,9 @@
           return !isTimeWithinBounds(nextTime, cfg.t0, cfg.dt, cfg.t1);
         },
         refreshRuntimeView: ({ force = false } = {}) => {
-          if (!force && this._activeInputWidgetId != null) {
-            return;
-          }
-          this.renderAll();
+          this.renderAll({
+            preserveInputWidgetId: force ? null : this._activeInputWidgetId,
+          });
         },
         render: () => this.renderAll(),
         updateEditingLockUi: () => this.updateControlState(),
@@ -2132,7 +2512,12 @@
           this._state.widgetState.set(widget.id, { rows: [] });
         } else if (widget.type === "xychart") {
           this._state.widgetState.set(widget.id, {
-            pairs: widget.xyPairs.map((pair) => ({ ...pair, points: [] })),
+            pairs: widget.xyPairs.map((pair) => ({
+              ...pair,
+              points: [],
+              seriesData: [],
+              instantSeriesData: [],
+            })),
           });
         }
       });
@@ -2157,17 +2542,38 @@
           this._state.widgetState.set(widget.id, state);
         } else if (widget.type === "xychart") {
           const state = this._state.widgetState.get(widget.id) || {
-            pairs: widget.xyPairs.map((pair) => ({ ...pair, points: [] })),
+            pairs: widget.xyPairs.map((pair) => ({
+              ...pair,
+              points: [],
+              seriesData: [],
+              instantSeriesData: [],
+            })),
           };
           state.pairs.forEach((pair) => {
             const xValue = pair.xSource === "time"
               ? Number(timeValue)
-              : Number(nodeMap.get(pair.xSource)?.computedValue);
+              : nodeMap.get(pair.xSource)?.computedValue;
             const yValue = pair.ySource === "time"
               ? Number(timeValue)
-              : Number(nodeMap.get(pair.ySource)?.computedValue);
-            if (Number.isFinite(xValue) && Number.isFinite(yValue)) {
-              pair.points.push({ x: xValue, y: yValue });
+              : nodeMap.get(pair.ySource)?.computedValue;
+            if (pair.showInstantProfile) {
+              pair.instantSeriesData = buildChartPairInstantSeriesDefinitions(pair, xValue, yValue);
+            } else {
+              pair.instantSeriesData = [];
+            }
+            if (pair.showTimeSeries) {
+              const seriesDefinitions = buildChartPairSeriesDefinitions(pair, xValue, yValue);
+              seriesDefinitions.forEach((definition, index) => {
+                if (!pair.seriesData[index] || pair.seriesData[index].label !== definition.label) {
+                  pair.seriesData[index] = { label: definition.label, points: [] };
+                }
+                appendChartSeriesPoint(pair.seriesData[index], definition.point);
+              });
+              if (pair.seriesData.length > seriesDefinitions.length) {
+                pair.seriesData = pair.seriesData.slice(0, seriesDefinitions.length);
+              }
+            } else {
+              pair.seriesData = [];
             }
           });
           this._state.widgetState.set(widget.id, state);
@@ -2175,7 +2581,7 @@
       });
     }
 
-    syncRuntimeToView() {
+    syncRuntimeToView({ updateUi = true } = {}) {
       const rawNodes = this._state.rawModel?.nodes || [];
       const runtimeByName = buildNodeMap(this._state.runtimeModel);
       rawNodes.forEach((node) => {
@@ -2183,7 +2589,9 @@
         node.__runtimeValue = runtimeNode?.computedValue;
         node.__runtimeError = runtimeNode?.computedError;
       });
-      this.updateControlState();
+      if (updateUi) {
+        this.updateControlState();
+      }
     }
 
     updateControlState() {
@@ -2565,14 +2973,15 @@
       return { minX, minY, width: maxX - minX, height: maxY - minY };
     }
 
-    renderAll() {
+    renderAll({ preserveInputWidgetId = null } = {}) {
       if (!this.$svg || !this._state.rawModel) {
         return;
       }
       this.refreshStaticTexts();
+      this.refreshModelNotes();
       this.applyStatus();
       this.renderGraph();
-      this.renderWidgets();
+      this.renderWidgets({ preserveInputWidgetId });
       this.updateControlState();
       this.applyPendingViewport();
     }
@@ -2815,6 +3224,7 @@
 
       (model.nodes || []).filter((node) => visibleNodeIds.has(node.id)).forEach((node) => {
         const g = document.createElementNS(SVG_NS, "g");
+        g.dataset.playerNodeId = String(node.id);
         const submodelIcon = node.type === "submodel" ? normalizeSubmodelIcon(node.submodelIcon) : null;
         g.setAttribute("class", `node ${node.type || "state"}${node.__runtimeError ? " error" : ""}${node.output ? " output" : ""}${submodelIcon ? " submodel-icon-node" : ""}`);
         const tooltipText = nodeTooltipText(node, runtimeNodes.get(node.id), this._state.runtimeModel?.execution, this.t.bind(this));
@@ -2925,16 +3335,26 @@
       });
     }
 
-    renderWidgets() {
+    renderWidgets({ preserveInputWidgetId = null } = {}) {
       const model = this._state.rawModel;
       const bounds = this.graphBounds();
       const zoom = this._zoom;
-      this.$widgets.innerHTML = "";
+      const existingRoots = new Map(
+        [...this.$widgets.children].map((root) => [String(root.dataset.playerWidgetId ?? ""), root]),
+      );
+      const fragment = document.createDocumentFragment();
       (model.widgets || []).forEach((widget) => {
         if (!this.isDashboardItemVisible(widget)) return;
+        const widgetId = String(widget.id);
+        const existingRoot = existingRoots.get(widgetId);
+        if (preserveInputWidgetId != null && String(preserveInputWidgetId) === widgetId && existingRoot) {
+          fragment.appendChild(existingRoot);
+          return;
+        }
         const position = this.dashboardItemPosition(widget);
         const root = document.createElement("div");
         root.className = "widget";
+        root.dataset.playerWidgetId = widgetId;
         root.classList.toggle("title-bar-hidden", widget.showTitleBar === false);
         root.style.setProperty("--widget-scale", String(zoom));
         root.style.setProperty("--widget-font-size", `${widget.fontSize}px`);
@@ -2942,10 +3362,14 @@
         root.style.top = `${(position.y - bounds.minY) * zoom}px`;
         root.style.width = `${widget.width * zoom}px`;
         root.style.height = `${widget.height * zoom}px`;
+        const inputDescription = inputWidgetNodeDescription(model, widget);
+        if (inputDescription) {
+          root.title = inputDescription;
+        }
         const header = document.createElement("div");
         header.className = "widget-header";
         header.textContent = widgetTitle(widget, this.t.bind(this));
-        header.title = header.textContent;
+        header.title = inputDescription || header.textContent;
         const body = document.createElement("div");
         body.className = "widget-body";
         this.renderWidgetBody(body, widget);
@@ -2953,8 +3377,9 @@
           root.appendChild(header);
         }
         root.appendChild(body);
-        this.$widgets.appendChild(root);
+        fragment.appendChild(root);
       });
+      this.$widgets.replaceChildren(fragment);
     }
 
     renderWidgetBody(body, widget) {
@@ -3183,7 +3608,7 @@
         canvas.style.display = "block";
         canvas.width = Math.max(160, Math.floor(widget.width * this._zoom - 24));
         canvas.height = Math.max(120, Math.floor(widget.height * this._zoom - 54));
-        drawSimpleXYChart(canvas, widgetState?.pairs || widget.xyPairs || [], execution, widget.fontSize, widget);
+        drawSimpleXYChart(canvas, chartSeriesForWidget(widget, widgetState), execution, widget.fontSize, widget);
         body.appendChild(canvas);
         return;
       }

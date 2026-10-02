@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "modelTitle": "bayesian estimation 2D",
+  "modelTitle": "Stima bayesiana",
   "localFunctions": [],
   "view": {
     "zoom": 1,
@@ -9,20 +9,21 @@
     "showNodeValues": false,
     "gridSize": 20,
     "tooltipDelayMs": 300,
-    "scrollLeft": 152,
-    "scrollTop": 176
+    "scrollLeft": 128,
+    "scrollTop": 157
   },
   "debug": {
     "watches": [],
     "breakpointEnabled": false,
-    "breakpointExpression": ""
+    "breakpointExpression": "",
+    "breakpointMessage": ""
   },
   "modelProperties": [],
-  "nodeCounter": 25,
-  "edgeCounter": 28,
-  "widgetCounter": 17,
-  "textItemCounter": 13,
-  "presentationGroupCounter": 13,
+  "nodeCounter": 27,
+  "edgeCounter": 30,
+  "widgetCounter": 19,
+  "textItemCounter": 15,
+  "presentationGroupCounter": 15,
   "presentationGroups": [
     {
       "id": 5,
@@ -53,9 +54,11 @@
     "dt": 1,
     "t1": 100,
     "delayMs": 1,
+    "renderEverySteps": 1,
     "decimals": 5,
     "integrator": "euler",
-    "strictDefinitions": false
+    "strictDefinitions": false,
+    "stopOnRuntimeError": false
   },
   "nodes": [
     {
@@ -72,11 +75,11 @@
       "strokeColor": "#000000",
       "properties": [
         {
-          "key": "note formula",
+          "key": "formula notes",
           "value": ""
         },
         {
-          "key": "descrizione",
+          "key": "description",
           "value": "Simulate a Gaussian observation."
         }
       ],
@@ -97,11 +100,11 @@
       "strokeColor": "#000000",
       "properties": [
         {
-          "key": "note formula",
+          "key": "formula notes",
           "value": ""
         },
         {
-          "key": "descrizione",
+          "key": "description",
           "value": "Categories for hypothesis testing on expected value."
         }
       ],
@@ -121,11 +124,11 @@
       "strokeColor": "#000000",
       "properties": [
         {
-          "key": "note formula",
+          "key": "formula notes",
           "value": ""
         },
         {
-          "key": "descrizione",
+          "key": "description",
           "value": "Categories for hypothesis testing on standard deviation."
         }
       ],
@@ -145,11 +148,11 @@
       "strokeColor": "#000000",
       "properties": [
         {
-          "key": "note formula",
+          "key": "formula notes",
           "value": "array(size(hyp1),size(hyp2),\n  (1/hyp2[$1])*exp(-(hyp1[$0]-data)^2/(2*hyp2[$1]^2))\n)"
         },
         {
-          "key": "descrizione",
+          "key": "description",
           "value": "Likelihood, i.e., probability of the data given the (different) hypotheses."
         }
       ],
@@ -170,11 +173,11 @@
       "strokeColor": "#000000",
       "properties": [
         {
-          "key": "note formula",
+          "key": "formula notes",
           "value": ""
         },
         {
-          "key": "descrizione",
+          "key": "description",
           "value": "Estimated distribution on standard deviation, obtained by marginalization of the posterior."
         }
       ],
@@ -195,11 +198,11 @@
       "strokeColor": "#000000",
       "properties": [
         {
-          "key": "note formula",
+          "key": "formula notes",
           "value": ""
         },
         {
-          "key": "descrizione",
+          "key": "description",
           "value": "Estimated distribution on expected value, obtained by marginalization of the posterior."
         }
       ],
@@ -220,11 +223,11 @@
       "strokeColor": "#f5f5f5",
       "properties": [
         {
-          "key": "note formula",
+          "key": "formula notes",
           "value": ""
         },
         {
-          "key": "descrizione",
+          "key": "description",
           "value": "The first parameter -- expected value -- to be estimated\n(i.e., supposed to be unknown)."
         }
       ],
@@ -244,11 +247,11 @@
       "strokeColor": "#f5f5f5",
       "properties": [
         {
-          "key": "note formula",
+          "key": "formula notes",
           "value": ""
         },
         {
-          "key": "descrizione",
+          "key": "description",
           "value": "The second parameter -- standard deviation -- to be estimated\n(i.e., supposed to be unknown)."
         }
       ],
@@ -268,11 +271,11 @@
       "strokeColor": "#000000",
       "properties": [
         {
-          "key": "note formula",
+          "key": "formula notes",
           "value": ""
         },
         {
-          "key": "descrizione",
+          "key": "description",
           "value": "Prior probability distribution, assumed uniform for maximum entropy."
         }
       ],
@@ -293,11 +296,11 @@
       "strokeColor": "#000000",
       "properties": [
         {
-          "key": "note formula",
+          "key": "formula notes",
           "value": ""
         },
         {
-          "key": "descrizione",
+          "key": "description",
           "value": "Dynamically / sequentially modified posterior distribution.\nFrom a prior distribution, it is adapted to new data by means of likelihood."
         }
       ],
@@ -318,11 +321,11 @@
       "strokeColor": "#000000",
       "properties": [
         {
-          "key": "note formula",
+          "key": "formula notes",
           "value": ""
         },
         {
-          "key": "descrizione",
+          "key": "description",
           "value": ""
         }
       ],
@@ -343,11 +346,11 @@
       "strokeColor": "#000000",
       "properties": [
         {
-          "key": "note formula",
+          "key": "formula notes",
           "value": ""
         },
         {
-          "key": "descrizione",
+          "key": "description",
           "value": ""
         }
       ],
@@ -360,90 +363,120 @@
       "id": 1,
       "from": 10,
       "to": 6,
+      "color": "",
+      "influence": "none",
       "controlPoints": []
     },
     {
       "id": 2,
       "from": 8,
       "to": 1,
+      "color": "",
+      "influence": "none",
       "controlPoints": []
     },
     {
       "id": 3,
       "from": 7,
       "to": 1,
+      "color": "",
+      "influence": "none",
       "controlPoints": []
     },
     {
       "id": 4,
       "from": 4,
       "to": 10,
+      "color": "",
+      "influence": "none",
       "controlPoints": []
     },
     {
       "id": 5,
       "from": 2,
       "to": 4,
+      "color": "",
+      "influence": "none",
       "controlPoints": []
     },
     {
       "id": 6,
       "from": 1,
       "to": 4,
+      "color": "",
+      "influence": "none",
       "controlPoints": []
     },
     {
       "id": 7,
       "from": 9,
       "to": 10,
+      "color": "",
+      "influence": "none",
       "controlPoints": []
     },
     {
       "id": 8,
       "from": 2,
       "to": 9,
+      "color": "",
+      "influence": "none",
       "controlPoints": []
     },
     {
       "id": 9,
       "from": 3,
       "to": 4,
+      "color": "",
+      "influence": "none",
       "controlPoints": []
     },
     {
       "id": 10,
       "from": 3,
       "to": 9,
+      "color": "",
+      "influence": "none",
       "controlPoints": []
     },
     {
       "id": 11,
       "from": 10,
       "to": 5,
+      "color": "",
+      "influence": "none",
       "controlPoints": []
     },
     {
       "id": 24,
       "from": 6,
       "to": 23,
+      "color": "",
+      "influence": "none",
       "controlPoints": []
     },
     {
       "id": 25,
       "from": 2,
       "to": 23,
+      "color": "",
+      "influence": "none",
       "controlPoints": []
     },
     {
       "id": 26,
       "from": 5,
       "to": 24,
+      "color": "",
+      "influence": "none",
       "controlPoints": []
     },
     {
       "id": 27,
       "from": 3,
       "to": 24,
+      "color": "",
+      "influence": "none",
       "controlPoints": []
     }
   ],
@@ -478,11 +511,13 @@
       "expandNonScalarValues": false,
       "tableTextAlign": "left",
       "tableDecimalDigits": 0,
+      "tableColumnFormats": {},
       "xMin": "auto",
       "xMax": "auto",
       "yMin": "auto",
       "yMax": "auto",
       "showGrid": true,
+      "showAxes": true,
       "legendPosition": "top-right",
       "source": "",
       "showNumericValues": true,
@@ -519,6 +554,10 @@
           "showLine": true,
           "lineWidth": 2.2,
           "lineStyle": "solid",
+          "barMode": "none",
+          "showBars": false,
+          "barColor": "#0e7ac4",
+          "barWidth": 2.2,
           "pointMode": "none",
           "pointSize": 2.4
         }
@@ -541,11 +580,13 @@
       "expandNonScalarValues": false,
       "tableTextAlign": "left",
       "tableDecimalDigits": 0,
+      "tableColumnFormats": {},
       "xMin": "auto",
       "xMax": "auto",
       "yMin": "auto",
       "yMax": "auto",
       "showGrid": true,
+      "showAxes": true,
       "legendPosition": "top-right",
       "source": "",
       "showNumericValues": true,
@@ -582,6 +623,10 @@
           "showLine": true,
           "lineWidth": 2.2,
           "lineStyle": "solid",
+          "barMode": "none",
+          "showBars": false,
+          "barColor": "#0e7ac4",
+          "barWidth": 2.2,
           "pointMode": "none",
           "pointSize": 2.4
         }
@@ -604,11 +649,13 @@
       "expandNonScalarValues": false,
       "tableTextAlign": "left",
       "tableDecimalDigits": 0,
+      "tableColumnFormats": {},
       "xMin": "auto",
       "xMax": "auto",
       "yMin": "auto",
       "yMax": "auto",
       "showGrid": true,
+      "showAxes": true,
       "legendPosition": "top-right",
       "source": "prob",
       "showNumericValues": false,
@@ -653,11 +700,13 @@
       "expandNonScalarValues": false,
       "tableTextAlign": "center",
       "tableDecimalDigits": 2,
+      "tableColumnFormats": {},
       "xMin": "auto",
       "xMax": "auto",
       "yMin": "auto",
       "yMax": "auto",
       "showGrid": true,
+      "showAxes": true,
       "legendPosition": "top-right",
       "source": "",
       "showNumericValues": true,

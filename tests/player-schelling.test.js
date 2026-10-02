@@ -8,6 +8,11 @@ const { loadHeadlessRuntimeFromObject } = require("../headless-runtime.js");
 async function run() {
   const model = JSON.parse(fs.readFileSync(path.join(__dirname, "..", "player", "schelling.json"), "utf8"));
   const runtime = await loadHeadlessRuntimeFromObject(model, { lang: "en" });
+  assert.equal(
+    runtime._runtimeModel.execution.renderEverySteps,
+    model.execution.renderEverySteps,
+    "the runtime must preserve the visual refresh interval configured by the model",
+  );
   const moveToExpression = model.nodes.find((node) => node.name === "moveTo").valueExpression;
   for (const moveCount of [1, 2]) {
     const selection = globalThis.GraphSemantics.evaluateValueExpression(moveToExpression, {

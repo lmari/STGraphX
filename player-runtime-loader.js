@@ -18,6 +18,8 @@
 
   const sourceFiles = [
     "i18n-inline.js",
+    "vendor/katex/katex.min.js",
+    "markdown-rendering.js",
     "graph-functions.js",
     "semantic.js",
     "runtime-shared.js",
@@ -50,14 +52,19 @@
   async function loadRuntime() {
     const minifiedUrl = new URL("build/player/stgraphx-player.min.js", baseHref).href;
     const bundledUrl = new URL("build/player/stgraphx-player.js", baseHref).href;
+    const bundledKaTeXCssUrl = new URL("build/player/katex/katex.min.css", baseHref).href;
+    const sourceKaTeXCssUrl = new URL("vendor/katex/katex.min.css", baseHref).href;
     try {
+      global.STGraphXKaTeXCssUrl = bundledKaTeXCssUrl;
       await loadScript(minifiedUrl);
       return { mode: "bundle-min", url: minifiedUrl };
     } catch (_minError) {
       try {
+        global.STGraphXKaTeXCssUrl = bundledKaTeXCssUrl;
         await loadScript(bundledUrl);
         return { mode: "bundle", url: bundledUrl };
       } catch (_bundleError) {
+        global.STGraphXKaTeXCssUrl = sourceKaTeXCssUrl;
         const sourceUrls = sourceFiles.map((file) => new URL(file, baseHref).href);
         await loadSequential(sourceUrls);
         return { mode: "sources", url: sourceUrls[sourceUrls.length - 1] };

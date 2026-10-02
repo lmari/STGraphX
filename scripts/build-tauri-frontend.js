@@ -18,6 +18,7 @@ const files = [
   "semantic.js",
   "graph-functions.js",
   "i18n-inline.js",
+  "markdown-rendering.js",
   "local-functions-core.js",
   "help-content.js",
   "model-analysis-core.js",
@@ -40,7 +41,7 @@ const files = [
   "icon.png",
   "icon.ico",
 ];
-const directories = ["examples", "help", "platform"];
+const directories = ["examples", "help", "platform", "vendor"];
 
 async function copyFile(relativePath) {
   const source = path.join(root, relativePath);
