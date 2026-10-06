@@ -1,0 +1,243 @@
+{
+  "version": 1,
+  "modelTitle": "Smoke test dinamico base",
+  "localFunctions": [],
+  "view": {
+    "zoom": 0.9,
+    "showGrid": true,
+    "highlightNodeEdges": false,
+    "gridSize": 20,
+    "scrollLeft": 0,
+    "scrollTop": 18
+  },
+  "debug": {
+    "watches": [],
+    "breakpointEnabled": false,
+    "breakpointExpression": ""
+  },
+  "modelProperties": [],
+  "nodeCounter": 5,
+  "edgeCounter": 5,
+  "widgetCounter": 4,
+  "textItemCounter": 3,
+  "execution": {
+    "t0": 0,
+    "dt": 0.1,
+    "t1": 10,
+    "delayMs": 1,
+    "decimals": 3,
+    "integrator": "euler",
+    "strictDefinitions": false
+  },
+  "nodes": [
+    {
+      "id": 1,
+      "name": "rate",
+      "output": false,
+      "global": false,
+      "type": "parameter",
+      "x": 80,
+      "y": 160,
+      "width": 120,
+      "height": 70,
+      "fillColor": "",
+      "strokeColor": "",
+      "properties": [
+        {
+          "key": "note formula",
+          "value": ""
+        },
+        {
+          "key": "descrizione",
+          "value": "Tasso di crescita"
+        }
+      ],
+      "valueExpression": "0.5"
+    },
+    {
+      "id": 2,
+      "name": "x",
+      "output": true,
+      "global": false,
+      "type": "state",
+      "x": 360,
+      "y": 120,
+      "width": 140,
+      "height": 76,
+      "fillColor": "",
+      "strokeColor": "",
+      "properties": [
+        {
+          "key": "note formula",
+          "value": ""
+        },
+        {
+          "key": "descrizione",
+          "value": "Stato integrato"
+        }
+      ],
+      "stateTransition": "integral(dx)",
+      "initialState": "1"
+    },
+    {
+      "id": 3,
+      "name": "dx",
+      "output": true,
+      "global": false,
+      "type": "algebraic",
+      "x": 360,
+      "y": 260,
+      "width": 140,
+      "height": 76,
+      "fillColor": "",
+      "strokeColor": "",
+      "properties": [
+        {
+          "key": "note formula",
+          "value": ""
+        },
+        {
+          "key": "descrizione",
+          "value": "Derivata corrente"
+        }
+      ],
+      "input": false,
+      "valueExpression": "rate * x"
+    }
+  ],
+  "edges": [
+    {
+      "id": 1,
+      "from": 1,
+      "to": 3,
+      "controlPoints": []
+    },
+    {
+      "id": 2,
+      "from": 2,
+      "to": 3,
+      "controlPoints": []
+    },
+    {
+      "id": 3,
+      "from": 3,
+      "to": 2,
+      "controlPoints": []
+    }
+  ],
+  "textItems": [
+    {
+      "id": 1,
+      "x": 20,
+      "y": -20,
+      "width": 600,
+      "height": 80,
+      "fillColor": "",
+      "strokeColor": "",
+      "html": "<h1>Smoke test dinamico base</h1><p>Modello minimale: dx = rate * x, con x iniziale pari a 1.</p>"
+    }
+  ],
+  "widgets": [
+    {
+      "id": 1,
+      "type": "table",
+      "customTitle": "Valori",
+      "x": 640,
+      "y": -20,
+      "width": 280,
+      "height": 560,
+      "minimized": false,
+      "outputOnly": false,
+      "showHistory": true,
+      "xMin": "auto",
+      "xMax": "auto",
+      "yMin": "auto",
+      "yMax": "auto",
+      "showGrid": true,
+      "legendPosition": "top-right",
+      "source": "",
+      "showNumericValues": true,
+      "showIndices": true,
+      "autoFitCells": true,
+      "cellSize": 28,
+      "valueMin": "auto",
+      "valueMax": "auto",
+      "displayRows": null,
+      "displayCols": null,
+      "colorScheme": "blue",
+      "min": 0,
+      "max": 100,
+      "step": 1,
+      "value": 0,
+      "options": [],
+      "mappings": [],
+      "columns": [
+        "time",
+        "x",
+        "dx"
+      ],
+      "xyPairs": []
+    },
+    {
+      "id": 2,
+      "type": "xychart",
+      "customTitle": "Crescita di x",
+      "x": 40,
+      "y": 420,
+      "width": 520,
+      "height": 300,
+      "minimized": false,
+      "outputOnly": false,
+      "showHistory": false,
+      "xMin": 0,
+      "xMax": 10,
+      "yMin": "auto",
+      "yMax": "auto",
+      "showGrid": true,
+      "legendPosition": "top-left",
+      "source": "",
+      "showNumericValues": true,
+      "showIndices": true,
+      "autoFitCells": true,
+      "cellSize": 28,
+      "valueMin": "auto",
+      "valueMax": "auto",
+      "displayRows": null,
+      "displayCols": null,
+      "colorScheme": "blue",
+      "min": 0,
+      "max": 100,
+      "step": 1,
+      "value": 0,
+      "options": [],
+      "mappings": [],
+      "columns": [],
+      "xyPairs": [
+        {
+          "xSource": "time",
+          "ySource": "x",
+          "showTimeSeries": true,
+          "showInstantProfile": false,
+          "color": "#0e7ac4",
+          "showLine": true,
+          "lineWidth": 2.2,
+          "lineStyle": "solid",
+          "pointMode": "none",
+          "pointSize": 2.4
+        },
+        {
+          "xSource": "time",
+          "ySource": "dx",
+          "showTimeSeries": true,
+          "showInstantProfile": false,
+          "color": "#e67e22",
+          "showLine": true,
+          "lineWidth": 2.2,
+          "lineStyle": "solid",
+          "pointMode": "none",
+          "pointSize": 2.4
+        }
+      ]
+    }
+  ]
+}

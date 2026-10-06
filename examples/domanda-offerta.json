@@ -1,0 +1,315 @@
+{
+  "version": 1,
+  "modelTitle": "",
+  "localFunctions": [],
+  "view": {
+    "zoom": 1,
+    "showGrid": true,
+    "highlightNodeEdges": false,
+    "showNodeValues": false,
+    "gridSize": 20,
+    "tooltipDelayMs": 300,
+    "scrollLeft": 180,
+    "scrollTop": 180
+  },
+  "debug": {
+    "watches": [],
+    "breakpointEnabled": false,
+    "breakpointExpression": "",
+    "breakpointMessage": ""
+  },
+  "modelProperties": [],
+  "nodeCounter": 6,
+  "edgeCounter": 7,
+  "widgetCounter": 3,
+  "textItemCounter": 4,
+  "presentationGroupCounter": 1,
+  "presentationGroups": [],
+  "dashboard": null,
+  "execution": {
+    "t0": 0,
+    "dt": 1,
+    "t1": 20,
+    "delayMs": 100,
+    "renderEverySteps": 1,
+    "decimals": 3,
+    "integrator": "euler",
+    "strictDefinitions": true,
+    "stopOnRuntimeError": false
+  },
+  "nodes": [
+    {
+      "id": 1,
+      "name": "domanda",
+      "output": false,
+      "global": false,
+      "type": "state",
+      "x": 180,
+      "y": 260,
+      "width": 120,
+      "height": 70,
+      "fillColor": "",
+      "strokeColor": "",
+      "properties": [
+        {
+          "key": "note formula",
+          "value": ""
+        },
+        {
+          "key": "descrizione",
+          "value": ""
+        }
+      ],
+      "stateTransition": "100-0.5*prezzo",
+      "initialState": "range(90,110)"
+    },
+    {
+      "id": 2,
+      "name": "prezzo",
+      "output": true,
+      "global": false,
+      "type": "algebraic",
+      "x": 540,
+      "y": 260,
+      "width": 120,
+      "height": 70,
+      "fillColor": "",
+      "strokeColor": "",
+      "properties": [
+        {
+          "key": "note formula",
+          "value": ""
+        },
+        {
+          "key": "descrizione",
+          "value": ""
+        }
+      ],
+      "input": false,
+      "valueExpression": "0.75*differenza"
+    },
+    {
+      "id": 3,
+      "name": "offerta",
+      "output": false,
+      "global": false,
+      "type": "algebraic",
+      "x": 180,
+      "y": 420,
+      "width": 120,
+      "height": 70,
+      "fillColor": "",
+      "strokeColor": "",
+      "properties": [
+        {
+          "key": "note formula",
+          "value": ""
+        },
+        {
+          "key": "descrizione",
+          "value": ""
+        }
+      ],
+      "input": false,
+      "valueExpression": "50+0.5*prezzoPrec"
+    },
+    {
+      "id": 4,
+      "name": "differenza",
+      "output": false,
+      "global": false,
+      "type": "algebraic",
+      "x": 380,
+      "y": 340,
+      "width": 120,
+      "height": 70,
+      "fillColor": "",
+      "strokeColor": "",
+      "properties": [
+        {
+          "key": "note formula",
+          "value": ""
+        },
+        {
+          "key": "descrizione",
+          "value": ""
+        }
+      ],
+      "input": false,
+      "valueExpression": "domanda-offerta"
+    },
+    {
+      "id": 5,
+      "name": "prezzoPrec",
+      "output": false,
+      "global": false,
+      "type": "state",
+      "x": 540,
+      "y": 415,
+      "width": 120,
+      "height": 70,
+      "fillColor": "",
+      "strokeColor": "",
+      "properties": [
+        {
+          "key": "note formula",
+          "value": ""
+        },
+        {
+          "key": "descrizione",
+          "value": ""
+        }
+      ],
+      "stateTransition": "prezzo",
+      "initialState": "0"
+    }
+  ],
+  "edges": [
+    {
+      "id": 1,
+      "from": 2,
+      "to": 1,
+      "color": "",
+      "influence": "negative",
+      "controlPoints": []
+    },
+    {
+      "id": 2,
+      "from": 1,
+      "to": 4,
+      "color": "",
+      "influence": "positive",
+      "controlPoints": []
+    },
+    {
+      "id": 3,
+      "from": 3,
+      "to": 4,
+      "color": "",
+      "influence": "negative",
+      "controlPoints": []
+    },
+    {
+      "id": 4,
+      "from": 4,
+      "to": 2,
+      "color": "",
+      "influence": "positive",
+      "controlPoints": []
+    },
+    {
+      "id": 5,
+      "from": 2,
+      "to": 5,
+      "color": "",
+      "influence": "positive",
+      "controlPoints": []
+    },
+    {
+      "id": 6,
+      "from": 5,
+      "to": 3,
+      "color": "",
+      "influence": "positive",
+      "controlPoints": []
+    }
+  ],
+  "notes": {
+    "markdown": ""
+  },
+  "textItems": [
+    {
+      "id": 1,
+      "x": 460,
+      "y": 80,
+      "width": 580,
+      "height": 80,
+      "fillColor": "",
+      "strokeColor": "",
+      "dashboardPageId": null,
+      "markdown": "– la domanda diminuisce se il prezzo aumenta\n– il prezzo aumenta se la differenza tra la domanda e l'offerta aumenta\n– l'offerta aumenta se il prezzo precedente aumenta\n"
+    },
+    {
+      "id": 3,
+      "x": 720,
+      "y": 180,
+      "width": 460,
+      "height": 100,
+      "fillColor": "",
+      "strokeColor": "",
+      "dashboardPageId": null,
+      "markdown": "equazioni lineari, con:\n– demand: sensitivity to price: –0.5; baseline: 100\n– price: sensitivity to demand – supply: 0.75 (no baseline)\n– supply: sensitivity to previous price: 0.5; baseline: 50)\n"
+    }
+  ],
+  "widgets": [
+    {
+      "id": 2,
+      "type": "xychart",
+      "customTitle": "",
+      "x": 620,
+      "y": 340,
+      "width": 640,
+      "height": 320,
+      "dashboardPageId": null,
+      "minimized": false,
+      "showTitleBar": true,
+      "fontSize": 13,
+      "outputOnly": false,
+      "showHistory": false,
+      "expandNonScalarValues": false,
+      "tableTextAlign": "left",
+      "tableDecimalDigits": null,
+      "tableColumnFormats": {},
+      "xMin": "auto",
+      "xMax": "auto",
+      "yMin": "auto",
+      "yMax": "auto",
+      "showGrid": true,
+      "showAxes": true,
+      "legendPosition": "top-right",
+      "source": "",
+      "showNumericValues": true,
+      "showIndices": true,
+      "autoFitCells": true,
+      "cellSize": 28,
+      "valueMin": "auto",
+      "valueMax": "auto",
+      "displayRows": null,
+      "displayCols": null,
+      "colorScheme": "blue",
+      "viewMode": "grid",
+      "surfaceStyle": "solid",
+      "surfaceAzimuth": 45,
+      "surfaceElevation": 32,
+      "surfaceHeightScale": 1,
+      "min": 0,
+      "max": 100,
+      "step": 1,
+      "value": 0,
+      "falseLabel": "",
+      "trueLabel": "",
+      "options": [],
+      "mappings": [],
+      "columns": [],
+      "xyPairs": [
+        {
+          "xSource": "time",
+          "ySource": "prezzo",
+          "showTimeSeries": true,
+          "showInstantProfile": false,
+          "color": "#0e7ac4",
+          "pointColor": "#0e7ac4",
+          "showLine": true,
+          "lineWidth": 2.2,
+          "lineStyle": "solid",
+          "barMode": "none",
+          "showBars": false,
+          "barColor": "#0e7ac4",
+          "barWidth": 2.2,
+          "pointMode": "all",
+          "pointSize": 2.4
+        }
+      ]
+    }
+  ]
+}
