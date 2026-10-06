@@ -1881,7 +1881,8 @@ function tooltipInfoForTarget(target) {
   }
   const nodeEl = nodeTooltipTarget(target);
   if (nodeEl) {
-    const node = getNodeById(String(nodeEl.getAttribute("data-node-id") || ""));
+    // SVG data attributes are strings, whereas graph node identifiers are numeric.
+    const node = getNodeById(Number(nodeEl.getAttribute("data-node-id")));
     return buildNodeTooltipText(node);
   }
   return { text: String(target.dataset.tooltip || "").trim(), tone: "" };
@@ -1899,22 +1900,16 @@ function applyTooltipState(text, tone = "") {
 }
 
 function showNodeTooltip(node, target, clientX, clientY) {
-  cancelTooltipTimers();
   if (!appTooltip || !target || !node) {
     return;
   }
-  const { text, tone } = buildNodeTooltipText(node);
+  const { text } = buildNodeTooltipText(node);
   if (!text) {
     hideAppTooltip();
     return;
   }
   setTooltipText(target, text);
-  applyTooltipState(text, tone);
-  appTooltip.classList.remove("hidden");
-  appTooltip.setAttribute("aria-hidden", "false");
-  ui.tooltipTarget = target;
-  ui.tooltipPointer = { x: clientX, y: clientY };
-  positionAppTooltip(clientX, clientY);
+  scheduleShowAppTooltip(target, clientX, clientY, ui.tooltipDelayMs);
 }
 
 function refreshNodeTooltipElement(target) {
@@ -1922,7 +1917,7 @@ function refreshNodeTooltipElement(target) {
   if (!nodeEl) {
     return;
   }
-  const node = getNodeById(String(nodeEl.getAttribute("data-node-id") || ""));
+  const node = getNodeById(Number(nodeEl.getAttribute("data-node-id")));
   if (!node) {
     return;
   }
@@ -11019,7 +11014,7 @@ function render(options = {}) {
       setTooltipText(g, buildNodeTooltipText(node).text);
       ui.tooltipPointer = { x: evt.clientX, y: evt.clientY };
       if (ui.tooltipTarget === g) {
-        showNodeTooltip(node, g, evt.clientX, evt.clientY);
+        refreshActiveTooltip();
       } else {
         showNodeTooltip(node, g, evt.clientX, evt.clientY);
       }
@@ -16077,7 +16072,9 @@ document.addEventListener("keydown", (evt) => {
     return;
   }
 
-  if (evt.key === "Delete") {
+  // Let native text controls handle Delete/Backspace. Otherwise Delete removes
+  // the selected canvas object, which also closes the text editor.
+  if (evt.key === "Delete" && !isTypingTarget(evt.target)) {
     if (isEditingUiLocked()) {
       evt.preventDefault();
       return;

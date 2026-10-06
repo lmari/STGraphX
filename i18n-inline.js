@@ -7,7 +7,7 @@
 
 window.STGraphXAppMeta = {
   author: "Luca Mari",
-  releaseDate: "2026.10.02",
+  releaseDate: "2026.10.06",
   license: "MPL-2.0",
   copyright: "Copyright (c) 2026 Luca Mari",
 };
@@ -20,7 +20,7 @@ window.STGraphXI18nBundles = {
     "about.copyrightLabel": "Copyright",
     "about.iconAlt": "Icona di STGraphX",
     "about.licenseLabel": "Licenza",
-    "about.subtitle": "Ambiente di lavoro per il variable-based modeling",
+    "about.subtitle": "Ambiente per lo sviluppo e la simulazione di modelli di sistemi dinamici",
     "about.title": "About STGraphX",
     "about.versionLabel": "Ultimo aggiornamento",
     "action.addMapping": "Aggiungi mappatura",
@@ -1277,7 +1277,7 @@ window.STGraphXI18nBundles = {
     "about.copyrightLabel": "Copyright",
     "about.iconAlt": "STGraphX icon",
     "about.licenseLabel": "License",
-    "about.subtitle": "Variable-based modeling workbench",
+    "about.subtitle": "Workbench for the development and simulation of dynamic system models",
     "about.title": "About STGraphX",
     "about.versionLabel": "Last update",
     "action.addMapping": "Add mapping",

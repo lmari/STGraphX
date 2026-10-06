@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "modelTitle": "",
+  "modelTitle": "Domanda, offerta, prezzo",
   "localFunctions": [],
   "view": {
     "zoom": 1,
@@ -9,8 +9,8 @@
     "showNodeValues": false,
     "gridSize": 20,
     "tooltipDelayMs": 300,
-    "scrollLeft": 180,
-    "scrollTop": 180
+    "scrollLeft": 0,
+    "scrollTop": 280
   },
   "debug": {
     "watches": [],
@@ -19,11 +19,11 @@
     "breakpointMessage": ""
   },
   "modelProperties": [],
-  "nodeCounter": 6,
-  "edgeCounter": 7,
-  "widgetCounter": 3,
-  "textItemCounter": 4,
-  "presentationGroupCounter": 1,
+  "nodeCounter": 10,
+  "edgeCounter": 11,
+  "widgetCounter": 7,
+  "textItemCounter": 8,
+  "presentationGroupCounter": 5,
   "presentationGroups": [],
   "dashboard": null,
   "execution": {
@@ -215,41 +215,18 @@
     }
   ],
   "notes": {
-    "markdown": ""
+    "markdown": "# Modello domanda, offerta, prezzo\n\n## Specifiche\n– La domanda diminuisce se il prezzo aumenta.\n– Il prezzo aumenta se la differenza tra la domanda e l'offerta aumenta.\n– L'offerta aumenta se il prezzo precedente aumenta.\n\n## Note sulla costruzione del modello\nLe specifiche implicano due cicli: per ognuno occorre introdurre una variabile di stato: prezzo precedente e domanda, entrambi dunque anche con funzione di ritardatori.\n\nAlmeno in una prima versione, adottare equazioni lineari, con:\n– domanda: sensibilità al prezzo: –0.5; baseline: 100\n– prezzo: sensibilità alla differenza tra domanda e offerta: 0.75 (baseline: 0)\n– offerta: sensibilità al prezzo precedente: 0.5; baseline: 50)\n\n## Scenari da esplorare\nAssegnando uno stato iniziale vettoriale alla domanda, si può facilmente fare analisi di sensibilità."
   },
-  "textItems": [
-    {
-      "id": 1,
-      "x": 460,
-      "y": 80,
-      "width": 580,
-      "height": 80,
-      "fillColor": "",
-      "strokeColor": "",
-      "dashboardPageId": null,
-      "markdown": "– la domanda diminuisce se il prezzo aumenta\n– il prezzo aumenta se la differenza tra la domanda e l'offerta aumenta\n– l'offerta aumenta se il prezzo precedente aumenta\n"
-    },
-    {
-      "id": 3,
-      "x": 720,
-      "y": 180,
-      "width": 460,
-      "height": 100,
-      "fillColor": "",
-      "strokeColor": "",
-      "dashboardPageId": null,
-      "markdown": "equazioni lineari, con:\n– demand: sensitivity to price: –0.5; baseline: 100\n– price: sensitivity to demand – supply: 0.75 (no baseline)\n– supply: sensitivity to previous price: 0.5; baseline: 50)\n"
-    }
-  ],
+  "textItems": [],
   "widgets": [
     {
       "id": 2,
       "type": "xychart",
       "customTitle": "",
-      "x": 620,
-      "y": 340,
-      "width": 640,
-      "height": 320,
+      "x": 60,
+      "y": 480,
+      "width": 600,
+      "height": 300,
       "dashboardPageId": null,
       "minimized": false,
       "showTitleBar": true,
@@ -258,7 +235,7 @@
       "showHistory": false,
       "expandNonScalarValues": false,
       "tableTextAlign": "left",
-      "tableDecimalDigits": null,
+      "tableDecimalDigits": 0,
       "tableColumnFormats": {},
       "xMin": "auto",
       "xMax": "auto",
@@ -300,13 +277,13 @@
           "color": "#0e7ac4",
           "pointColor": "#0e7ac4",
           "showLine": true,
-          "lineWidth": 2.2,
+          "lineWidth": 1,
           "lineStyle": "solid",
           "barMode": "none",
           "showBars": false,
           "barColor": "#0e7ac4",
           "barWidth": 2.2,
-          "pointMode": "all",
+          "pointMode": "none",
           "pointSize": 2.4
         }
       ]
