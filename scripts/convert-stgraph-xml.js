@@ -661,7 +661,7 @@ function convertStGraphXml(xml, options = {}) {
       t0: numberValue(head?.attrs.time0, 0),
       dt: numberValue(head?.attrs.timeD, 1),
       t1: numberValue(head?.attrs.time1, 1),
-      delayMs: numberValue(head?.attrs.simulationDelay, 1),
+      delayMs: numberValue(head?.attrs.simulationDelay, 100),
       renderEverySteps: convertRenderEverySteps(head),
       decimals: 3,
       integrator,

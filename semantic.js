@@ -94,7 +94,7 @@
     return localScope;
   }
 
-  const MATH_SCOPE = Object.freeze(graphFunctions.createMathScope({
+  const MATH_SCOPE_OPTIONS = {
     array: unavailableArrayConstructor,
     map: unavailableMapOperator,
     filter: unavailableFilterOperator,
@@ -105,10 +105,24 @@
     getModelProperty: unavailableModelPropertyGetter,
     setModelProperty: unavailableModelPropertySetter,
     integral: unavailableIntegral,
-  }));
+  };
+  const MATH_SCOPE = Object.freeze(graphFunctions.createMathScope(MATH_SCOPE_OPTIONS));
+  const RANDOM_MATH_SCOPES = new WeakMap();
   const FUNCTION_NAMES = new Set(
     Object.keys(MATH_SCOPE).filter((name) => typeof MATH_SCOPE[name] === "function"),
   );
+
+  function mathScopeForEvaluation(options = {}) {
+    if (typeof options.random !== "function") {
+      return MATH_SCOPE;
+    }
+    let scope = RANDOM_MATH_SCOPES.get(options.random);
+    if (!scope) {
+      scope = Object.freeze(graphFunctions.createMathScope({ ...MATH_SCOPE_OPTIONS, random: options.random }));
+      RANDOM_MATH_SCOPES.set(options.random, scope);
+    }
+    return scope;
+  }
 
   function normalizeLocalFunctionDefinitions(definitions = []) {
     if (!Array.isArray(definitions)) {
@@ -2177,7 +2191,7 @@
     try {
       raw = evaluateAstWithLocalSelf(
         compiled,
-        { ...MATH_SCOPE, ...context },
+        { ...mathScopeForEvaluation(options), ...context },
         {
           ...(options?.hooks && typeof options.hooks === "object" ? options.hooks : {}),
           agentFieldAliases: normalizeAgentFieldAliasMap(options, context),
@@ -2251,7 +2265,7 @@
     try {
       raw = evaluateAstWithLocalSelf(
         { ...compiled, ast: derivativeAst },
-        { ...MATH_SCOPE, integral: unavailableIntegral, ...context },
+        { ...mathScopeForEvaluation(options), integral: unavailableIntegral, ...context },
         {
           ...(options?.hooks && typeof options.hooks === "object" ? options.hooks : {}),
           agentFieldAliases: normalizeAgentFieldAliasMap(options, context),
@@ -2295,7 +2309,7 @@
       for (const derivativeAst of compiled.integralArgAsts || []) {
         const raw = evaluateAstWithLocalSelf(
           { ...compiled, ast: derivativeAst },
-          { ...MATH_SCOPE, integral: unavailableIntegral, ...context },
+          { ...mathScopeForEvaluation(options), integral: unavailableIntegral, ...context },
           {
             ...(options?.hooks && typeof options.hooks === "object" ? options.hooks : {}),
             agentFieldAliases: normalizeAgentFieldAliasMap(options, context),
@@ -2341,7 +2355,7 @@
       const baseHooks = options?.hooks && typeof options.hooks === "object" ? options.hooks : null;
       raw = evaluateAstWithLocalSelf(
         compiled,
-        { ...MATH_SCOPE, integral: unavailableIntegral, ...context },
+        { ...mathScopeForEvaluation(options), integral: unavailableIntegral, ...context },
         {
           ...(baseHooks || {}),
           agentFieldAliases: normalizeAgentFieldAliasMap(options, context),
@@ -2561,6 +2575,7 @@
 
         const result = evaluateValueExpression(node.valueExpression, context, {
           localFunctions: options?.localFunctions || [],
+          random: options?.random,
         });
         results.set(nodeId, result);
         pending.delete(nodeId);
@@ -2698,6 +2713,7 @@
         }
         parameterResults.set(node.id, evaluateValueExpression(node.valueExpression, context, {
           localFunctions: options?.localFunctions || [],
+          random: options?.random,
         }));
         pendingParameters.delete(nodeId);
         parameterProgressed = true;
@@ -2787,6 +2803,7 @@
           : null;
         const result = customResult || evaluateValueExpression(node.valueExpression, context, {
           localFunctions: options?.localFunctions || [],
+          random: options?.random,
         });
         algebraicResults.set(nodeId, result);
         pending.delete(nodeId);
@@ -2859,6 +2876,7 @@
         stateTransitionResults.set(node.id, evaluateIntegralDerivativeList(node.valueExpression, context, {
           allowThisAlias: true,
           localFunctions: options?.localFunctions || [],
+          random: options?.random,
         }));
         return;
       }
@@ -2866,6 +2884,7 @@
         allowThisAlias: true,
         allowIntegral: true,
         localFunctions: options?.localFunctions || [],
+        random: options?.random,
       }));
     });
 

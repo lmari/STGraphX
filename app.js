@@ -9,6 +9,8 @@ const svg = document.getElementById("graphCanvas");
 const graphViewport = document.getElementById("graphViewport");
 const modelNotesCanvasBtn = document.getElementById("modelNotesCanvasBtn");
 const sidebar = document.getElementById("sidebar");
+const sidebarReopenBtn = document.getElementById("sidebarReopenBtn");
+const sidebarHideButtons = document.querySelectorAll("[data-sidebar-hide]");
 const statusText = document.getElementById("statusText");
 const fileStatusText = document.getElementById("fileStatusText");
 const menuTimeText = document.getElementById("menuTimeText");
@@ -111,6 +113,7 @@ const timeDelayInput = document.getElementById("timeDelayInput");
 const renderEveryStepsInput = document.getElementById("renderEveryStepsInput");
 const decimalDigitsInput = document.getElementById("decimalDigitsInput");
 const integratorInput = document.getElementById("integratorInput");
+const randomSeedInput = document.getElementById("randomSeedInput");
 const strictDefinitionsInput = document.getElementById("strictDefinitionsInput");
 const timeCurrentOutput = document.getElementById("timeCurrentOutput");
 const modelPropsList = document.getElementById("modelPropsList");
@@ -978,12 +981,14 @@ const graph = {
     t0: 0,
     dt: 1,
     t1: 10,
-    delayMs: 1000,
+    delayMs: 100,
     renderEverySteps: 1,
     decimals: 3,
     integrator: "euler",
     strictDefinitions: false,
     stopOnRuntimeError: false,
+    randomSeed: null,
+    randomState: null,
     currentTime: null,
   },
 };
@@ -1052,6 +1057,7 @@ const ui = {
   breakpointLastResult: null,
   localFunctionsEditor: null,
   tabletSidebarOpen: false,
+  sidebarHidden: false,
   tabletSidebarExpanded: false,
   tabletSidebarDrag: null,
   tabletCanvasMode: "edit",
@@ -1823,14 +1829,16 @@ function positionAppTooltip(clientX, clientY) {
     return;
   }
   const margin = 12;
+  const cursorOffsetX = 20;
+  const cursorOffsetY = 26;
   const rect = appTooltip.getBoundingClientRect();
-  let left = clientX + 14;
-  let top = clientY + 18;
+  let left = clientX + cursorOffsetX;
+  let top = clientY + cursorOffsetY;
   if (left + rect.width > window.innerWidth - margin) {
     left = window.innerWidth - rect.width - margin;
   }
   if (top + rect.height > window.innerHeight - margin) {
-    top = clientY - rect.height - 14;
+    top = clientY - rect.height - cursorOffsetY;
   }
   if (left < margin) {
     left = margin;
@@ -3129,6 +3137,7 @@ function openFeedbackLoops() {
 
 function closeFeedbackLoops() {
   feedbackLoopsModal?.classList.add("hidden");
+  clearFeedbackLoopFocus();
 }
 
 function analyzeModelStaticIssues() {
@@ -5637,7 +5646,11 @@ function refreshExpressionEditorValidation() {
   expressionEditorTextarea.classList.toggle("invalid", !syntaxResult.ok);
   showExpressionStatus(expressionEditorStatus, syntaxResult, false);
   expressionEditorSurface?.classList.toggle("invalid", !syntaxResult.ok);
-  let initialSyntaxOk = true;
+  // An empty field is an incomplete definition, not a malformed expression.
+  // It must remain reportable in strict mode without preventing the user from
+  // applying a valid change to the other state-definition field.
+  const mainCanApply = syntaxResult.ok || syntaxResult.empty;
+  let initialCanApply = true;
   if (expressionStateInitialInput && !expressionStateInitialBlock?.classList.contains("hidden")) {
     const initialResult = updateExpressionFieldState(
       expressionStateInitialInput,
@@ -5646,15 +5659,16 @@ function refreshExpressionEditorValidation() {
       true,
       "initial",
     );
-    initialSyntaxOk = initialResult.ok;
+    initialCanApply = initialResult.ok || initialResult.empty;
   } else {
     hideExpressionStatus(expressionStateInitialStatus);
   }
-  expressionEditorApplyBtn.disabled = !syntaxResult.ok || !initialSyntaxOk;
+  const canApply = mainCanApply && initialCanApply;
+  expressionEditorApplyBtn.disabled = !canApply;
   if (expressionEditorSwitchApplyBtn && expressionEditorSwitchModal && !expressionEditorSwitchModal.classList.contains("hidden")) {
-    expressionEditorSwitchApplyBtn.disabled = !syntaxResult.ok || !initialSyntaxOk;
+    expressionEditorSwitchApplyBtn.disabled = !canApply;
   }
-  ui.expressionEditor.syntaxOk = syntaxResult.ok && initialSyntaxOk;
+  ui.expressionEditor.syntaxOk = canApply;
   renderExpressionHighlight();
   if (expressionStateInitialInput && expressionStateInitialHighlight && !expressionStateInitialBlock?.classList.contains("hidden")) {
     renderExpressionHighlightFor(expressionStateInitialInput, expressionStateInitialHighlight);
@@ -6257,9 +6271,11 @@ function startTouchHold(evt, onTrigger, moveTolerance = 12, delayMs = 520) {
 function applyResponsiveUiState() {
   const compact = isCompactTabletLayout();
   const open = compact && ui.tabletSidebarOpen;
+  const sidebarHidden = !compact && ui.sidebarHidden;
   document.body.classList.toggle("tablet-sidebar-layout", compact);
   document.body.classList.toggle("tablet-sidebar-open", open);
   document.body.classList.toggle("tablet-sidebar-expanded", compact && open && ui.tabletSidebarExpanded);
+  document.body.classList.toggle("sidebar-hidden", sidebarHidden);
   if (tabletSidebarBackdrop) {
     tabletSidebarBackdrop.classList.toggle("hidden", !open);
   }
@@ -6270,8 +6286,30 @@ function applyResponsiveUiState() {
   if (tabletSidebarHeader) {
     tabletSidebarHeader.classList.toggle("hidden", !compact);
   }
+  if (sidebarReopenBtn) {
+    sidebarReopenBtn.classList.toggle("hidden", !sidebarHidden);
+    sidebarReopenBtn.setAttribute("aria-expanded", sidebarHidden ? "false" : "true");
+  }
   updateTabletSidebarHeaderUi();
   updateTabletCanvasModeUi();
+}
+
+function hideConfigurationSidebar() {
+  if (isCompactTabletLayout()) {
+    setTabletSidebarOpen(false);
+    return;
+  }
+  ui.sidebarHidden = true;
+  applyResponsiveUiState();
+}
+
+function showConfigurationSidebar() {
+  if (isCompactTabletLayout()) {
+    setTabletSidebarOpen(true);
+    return;
+  }
+  ui.sidebarHidden = false;
+  applyResponsiveUiState();
 }
 
 function setTabletSidebarOpen(open) {
@@ -7966,14 +8004,14 @@ function updateModelRunButtons() {
   }
   if (topRunTimedBtn) {
     const timedKey = ui.timedRunHandle == null ? "action.timedStart" : "action.timedStop";
-    topRunTimedBtn.textContent = ui.timedRunHandle == null ? "⏱" : "⏸";
+    topRunTimedBtn.textContent = ui.timedRunHandle == null ? "▶⏱" : "⏸";
     setTooltipText(topRunTimedBtn, `${t(timedKey)} (F9)`);
     topRunTimedBtn.disabled = blocked && ui.timedRunHandle == null;
     topRunTimedBtn.classList.toggle("active", ui.timedRunHandle != null);
   }
   if (tabletTimedBtn) {
     const timedKey = ui.timedRunHandle == null ? "action.timedStart" : "action.timedStop";
-    tabletTimedBtn.textContent = ui.timedRunHandle == null ? "⏱" : "⏸";
+    tabletTimedBtn.textContent = ui.timedRunHandle == null ? "▶⏱" : "⏸";
     setTooltipText(tabletTimedBtn, t(timedKey));
     tabletTimedBtn.disabled = blocked && ui.timedRunHandle == null;
     tabletTimedBtn.classList.toggle("active", ui.timedRunHandle != null);
@@ -7998,7 +8036,7 @@ function updateModelRunButtons() {
   }
   if (timedToggleBtn) {
     const timedKey = ui.timedRunHandle == null ? "action.timedStart" : "action.timedStop";
-    timedToggleBtn.textContent = ui.timedRunHandle == null ? "⏱" : "⏸";
+    timedToggleBtn.textContent = ui.timedRunHandle == null ? "▶⏱" : "⏸";
     setTooltipText(timedToggleBtn, `${t(timedKey)} (F9)`);
     timedToggleBtn.disabled = blocked && ui.timedRunHandle == null;
   }
@@ -8489,6 +8527,7 @@ function exportGraphData() {
       integrator: String(graph.execution.integrator ?? "euler"),
       strictDefinitions: Boolean(graph.execution.strictDefinitions),
       stopOnRuntimeError: Boolean(graph.execution.stopOnRuntimeError),
+      randomSeed: runtimeShared.normalizeRandomSeed(graph.execution.randomSeed),
     },
     nodes: graph.nodes.map((n) => {
       normalizeNodeDescriptionProperty(n);
@@ -8751,6 +8790,8 @@ function applyGraphData(data) {
     integrator: execCfg.integrator,
     strictDefinitions: execCfg.strictDefinitions,
     stopOnRuntimeError: execCfg.stopOnRuntimeError,
+    randomSeed: execCfg.randomSeed,
+    randomState: execCfg.randomSeed,
     currentTime: null,
   };
 
@@ -10494,6 +10535,9 @@ function refreshSidebar() {
     }
     if (document.activeElement !== integratorInput) {
       integratorInput.value = String(graph.execution.integrator ?? "euler");
+    }
+    if (randomSeedInput && document.activeElement !== randomSeedInput) {
+      randomSeedInput.value = graph.execution.randomSeed == null ? "" : String(graph.execution.randomSeed);
     }
     if (strictDefinitionsInput) {
       strictDefinitionsInput.checked = Boolean(graph.execution.strictDefinitions);
@@ -12590,12 +12634,14 @@ function resetGraphToEmptyModel() {
     t0: 0,
     dt: 1,
     t1: 10,
-    delayMs: 1000,
+    delayMs: 100,
     renderEverySteps: 1,
     decimals: 3,
     integrator: "euler",
     strictDefinitions: false,
     stopOnRuntimeError: false,
+    randomSeed: null,
+    randomState: null,
     currentTime: null,
   };
   nodeCounter = 1;
@@ -14300,6 +14346,27 @@ if (integratorInput) {
   });
 }
 
+if (randomSeedInput) {
+  randomSeedInput.addEventListener("change", () => {
+    const raw = String(randomSeedInput.value ?? "").trim();
+    if (!raw) {
+      graph.execution.randomSeed = null;
+      graph.execution.randomState = null;
+    } else {
+      const parsed = Number(raw);
+      if (!Number.isFinite(parsed) || !Number.isInteger(parsed)) {
+        randomSeedInput.value = graph.execution.randomSeed == null ? "" : String(graph.execution.randomSeed);
+        setStatusKey("error.randomSeedInvalid");
+        return;
+      }
+      graph.execution.randomSeed = runtimeShared.normalizeRandomSeed(parsed);
+      graph.execution.randomState = graph.execution.randomSeed;
+      randomSeedInput.value = String(graph.execution.randomSeed);
+    }
+    scheduleFileStatusRefresh();
+  });
+}
+
 function commitStrictDefinitionsToggle(enabled) {
   graph.execution.strictDefinitions = Boolean(enabled);
   setStatusKey(graph.execution.strictDefinitions ? "status.strictDefinitionsOn" : "status.strictDefinitionsOff");
@@ -14831,6 +14898,17 @@ function bindTextInputEditor(input) {
 
 bindTextInputEditor(textHtmlInput);
 bindTextInputEditor(textEditorInput);
+
+if (textEditorInput) {
+  textEditorInput.addEventListener("keydown", (evt) => {
+    if ((evt.ctrlKey || evt.metaKey) && evt.key === "Enter") {
+      evt.preventDefault();
+      commitTransaction();
+      render();
+      closeTextEditor();
+    }
+  });
+}
 
 if (textHtmlInput) {
   textHtmlInput.addEventListener("dblclick", () => {
@@ -16128,6 +16206,12 @@ window.addEventListener("resize", () => {
 
 async function boot() {
   await loadI18n();
+  sidebarHideButtons.forEach((button) => {
+    button.addEventListener("click", hideConfigurationSidebar);
+  });
+  if (sidebarReopenBtn) {
+    sidebarReopenBtn.addEventListener("click", showConfigurationSidebar);
+  }
   if (tabletSidebarToggle) {
     tabletSidebarToggle.addEventListener("click", () => {
       setTabletSidebarOpen(!ui.tabletSidebarOpen);

@@ -1,6 +1,6 @@
 /*!
  * STGraphX Embedded Player Bundle
- * Generated: 2026-10-02T19:54:31.731Z
+ * Generated: 2026-10-07T11:15:31.923Z
  */
 
 /* --- i18n-inline.js --- */
@@ -13,7 +13,7 @@
 
 window.STGraphXAppMeta = {
   author: "Luca Mari",
-  releaseDate: "2026.10.01",
+  releaseDate: "2026.10.06",
   license: "MPL-2.0",
   copyright: "Copyright (c) 2026 Luca Mari",
 };
@@ -26,7 +26,7 @@ window.STGraphXI18nBundles = {
     "about.copyrightLabel": "Copyright",
     "about.iconAlt": "Icona di STGraphX",
     "about.licenseLabel": "Licenza",
-    "about.subtitle": "Ambiente di lavoro per il variable-based modeling",
+    "about.subtitle": "Ambiente per lo sviluppo e la simulazione di modelli di sistemi dinamici",
     "about.title": "About STGraphX",
     "about.versionLabel": "Ultimo aggiornamento",
     "action.addMapping": "Aggiungi mappatura",
@@ -233,6 +233,7 @@ window.STGraphXI18nBundles = {
     "label.stateTransition": "Stato prossimo",
     "label.strictDefinitions": "Blocca esecuzione con nodi non definiti",
     "label.strictDefinitionsShort": "Definizioni rigorose",
+    "label.randomSeed": "Seme casuale",
     "label.submodelPath": "File sottomodello",
     "label.submodelIcon": "Icona",
     "label.textHtml": "Contenuto formattato",
@@ -996,6 +997,7 @@ window.STGraphXI18nBundles = {
     "tooltip.model.localFunctions": "Apre l'editor delle funzioni locali, riusabili dalle espressioni dei nodi del modello.",
     "tooltip.model.renderEverySteps": "Durante l'esecuzione temporizzata ridisegna canvas e widget ogni N passi. Il calcolo e le serie storiche restano completi a ogni passo.",
     "tooltip.model.strictDefinitions": "Se attivo, i nodi non definiti correttamente vengono evidenziati e bloccano l'esecuzione.",
+    "tooltip.model.randomSeed": "Intero opzionale che rende ripetibili le successioni generate da rand, randInt e dalle distribuzioni probabilistiche. Lascia vuoto per usare casualità non riproducibile.",
     "tooltip.menu.run.stopOnRuntimeError": "Interrompe l'esecuzione al primo errore prodotto dalla valutazione di un nodo, mostrando nodo, tempo e dettaglio tecnico.",
     "tooltip.model.t0": "Istante iniziale dell'esecuzione.",
     "tooltip.model.t1": "Istante finale dell'esecuzione.",
@@ -1272,6 +1274,7 @@ window.STGraphXI18nBundles = {
     "error.timeDelayInvalid": "Ritardo temporizzato non valido.",
     "error.timeDirection": "Con i parametri inseriti il tempo non raggiunge t1.",
     "error.timeInvalid": "Parametri temporali non validi.",
+    "error.randomSeedInvalid": "Il seme casuale deve essere un numero intero.",
     "error.timeStepZero": "Il passo temporale (delta t) non puo essere zero.",
     "error.timeTooManySteps": "Troppi passi temporali (massimo {max}).",
 
@@ -1283,7 +1286,7 @@ window.STGraphXI18nBundles = {
     "about.copyrightLabel": "Copyright",
     "about.iconAlt": "STGraphX icon",
     "about.licenseLabel": "License",
-    "about.subtitle": "Variable-based modeling workbench",
+    "about.subtitle": "Workbench for the development and simulation of dynamic system models",
     "about.title": "About STGraphX",
     "about.versionLabel": "Last update",
     "action.addMapping": "Add mapping",
@@ -1490,6 +1493,7 @@ window.STGraphXI18nBundles = {
     "label.stateTransition": "Next state",
     "label.strictDefinitions": "Block execution with undefined nodes",
     "label.strictDefinitionsShort": "Strict definitions",
+    "label.randomSeed": "Random seed",
     "label.submodelPath": "Submodel file",
     "label.submodelIcon": "Icon",
     "label.textHtml": "Formatted content",
@@ -2253,6 +2257,7 @@ window.STGraphXI18nBundles = {
     "tooltip.model.localFunctions": "Opens the editor for local functions reusable by the model node expressions.",
     "tooltip.model.renderEverySteps": "During timed execution, redraws the canvas and widgets every N steps. Computation and time histories remain complete at every step.",
     "tooltip.model.strictDefinitions": "When enabled, incorrectly defined nodes are highlighted and block execution.",
+    "tooltip.model.randomSeed": "Optional integer that makes sequences from rand, randInt, and probability distributions reproducible. Leave empty for non-reproducible randomness.",
     "tooltip.menu.run.stopOnRuntimeError": "Stops execution at the first node-evaluation error and shows the node, time, and technical detail.",
     "tooltip.model.t0": "Initial execution time.",
     "tooltip.model.t1": "Final execution time.",
@@ -2529,6 +2534,7 @@ window.STGraphXI18nBundles = {
     "error.timeDelayInvalid": "Invalid timed delay.",
     "error.timeDirection": "With current parameters, time does not reach t1.",
     "error.timeInvalid": "Invalid time parameters.",
+    "error.randomSeedInvalid": "The random seed must be an integer.",
     "error.timeStepZero": "Time step (delta t) cannot be zero.",
     "error.timeTooManySteps": "Too many time steps (max {max}).",
 
@@ -2859,7 +2865,11 @@ window.STGraphXI18nBundles = {
     return mu + sd * inverseStandardNormal(p);
   }
 
-  function gaussianSample(mean = 0, sigma = 1) {
+  function randomValue(randomSource) {
+    return typeof randomSource === "function" ? randomSource() : Math.random();
+  }
+
+  function gaussianSample(mean = 0, sigma = 1, randomSource = Math.random) {
     const mu = toFiniteNumber(mean, "mean");
     const sd = toFiniteNumber(sigma, "sigma");
     if (sd <= 0) {
@@ -2868,18 +2878,18 @@ window.STGraphXI18nBundles = {
     let u1 = 0;
     let u2 = 0;
     while (u1 <= Number.EPSILON) {
-      u1 = Math.random();
+      u1 = randomValue(randomSource);
     }
-    u2 = Math.random();
+    u2 = randomValue(randomSource);
     const z = Math.sqrt(-2 * Math.log(u1)) * Math.cos(2 * Math.PI * u2);
     return mu + sd * z;
   }
 
-  function gaussian() {
-    const { params, valueArg, mode } = parseDistributionCallArgs(arguments, [0, 1]);
+  function gaussianWithRandom(randomSource, args) {
+    const { params, valueArg, mode } = parseDistributionCallArgs(args, [0, 1]);
     const [mean, sigma] = params;
     if (valueArg === undefined) {
-      return gaussianSample(mean, sigma);
+      return gaussianSample(mean, sigma, randomSource);
     }
     if (mode === 1) {
       return mapDistributionValue(valueArg, (item) => gaussianCdf(item, mean, sigma));
@@ -2929,20 +2939,20 @@ window.STGraphXI18nBundles = {
     return lo + prob * (hi - lo);
   }
 
-  function uniformSample(minValue = 0, maxValue = 1) {
+  function uniformSample(minValue = 0, maxValue = 1, randomSource = Math.random) {
     const lo = toFiniteNumber(minValue, "min");
     const hi = toFiniteNumber(maxValue, "max");
     if (hi <= lo) {
       throw new Error("max must be > min");
     }
-    return lo + Math.random() * (hi - lo);
+    return lo + randomValue(randomSource) * (hi - lo);
   }
 
-  function uniform() {
-    const { params, valueArg, mode } = parseDistributionCallArgs(arguments, [0, 1]);
+  function uniformWithRandom(randomSource, args) {
+    const { params, valueArg, mode } = parseDistributionCallArgs(args, [0, 1]);
     const [minValue, maxValue] = params;
     if (valueArg === undefined) {
-      return uniformSample(minValue, maxValue);
+      return uniformSample(minValue, maxValue, randomSource);
     }
     if (mode === 1) {
       return mapDistributionValue(valueArg, (item) => uniformCdf(item, minValue, maxValue));
@@ -2989,23 +2999,23 @@ window.STGraphXI18nBundles = {
     return -Math.log(1 - prob) / lambda;
   }
 
-  function exponentialSample(rate = 1) {
+  function exponentialSample(rate = 1, randomSource = Math.random) {
     const lambda = toFiniteNumber(rate, "rate");
     if (lambda <= 0) {
       throw new Error("rate must be > 0");
     }
     let u = 0;
     while (u <= Number.EPSILON) {
-      u = Math.random();
+      u = randomValue(randomSource);
     }
     return -Math.log(u) / lambda;
   }
 
-  function exponential() {
-    const { params, valueArg, mode } = parseDistributionCallArgs(arguments, [1]);
+  function exponentialWithRandom(randomSource, args) {
+    const { params, valueArg, mode } = parseDistributionCallArgs(args, [1]);
     const [rate] = params;
     if (valueArg === undefined) {
-      return exponentialSample(rate);
+      return exponentialSample(rate, randomSource);
     }
     if (mode === 1) {
       return mapDistributionValue(valueArg, (item) => exponentialCdf(item, rate));
@@ -3091,29 +3101,29 @@ window.STGraphXI18nBundles = {
     return n;
   }
 
-  function binomialSample(trials = 1, probabilityValue = 0.5) {
+  function binomialSample(trials = 1, probabilityValue = 0.5, randomSource = Math.random) {
     const n = nonNegativeInteger(trials, "trials");
     const p = probabilityParameter(probabilityValue, "probability");
     let successes = 0;
     for (let trial = 0; trial < n; trial += 1) {
-      if (Math.random() < p) successes += 1;
+      if (randomValue(randomSource) < p) successes += 1;
     }
     return successes;
   }
 
-  function binomial() {
-    const { params, valueArg, mode } = parseDistributionCallArgs(arguments, [1, 0.5]);
+  function binomialWithRandom(randomSource, args) {
+    const { params, valueArg, mode } = parseDistributionCallArgs(args, [1, 0.5]);
     const [trials, probabilityValue] = params;
-    if (valueArg === undefined) return binomialSample(trials, probabilityValue);
+    if (valueArg === undefined) return binomialSample(trials, probabilityValue, randomSource);
     if (mode === 1) return mapDistributionValue(valueArg, (item) => binomialCdf(item, trials, probabilityValue));
     if (mode === 2) return mapDistributionValue(valueArg, (item) => binomialIcdf(item, trials, probabilityValue));
     return mapDistributionValue(valueArg, (item) => binomialPmf(item, trials, probabilityValue));
   }
 
-  function bernoulli() {
-    const { params, valueArg, mode } = parseDistributionCallArgs(arguments, [0.5]);
+  function bernoulliWithRandom(randomSource, args) {
+    const { params, valueArg, mode } = parseDistributionCallArgs(args, [0.5]);
     const [probabilityValue] = params;
-    if (valueArg === undefined) return Math.random() < probabilityParameter(probabilityValue, "probability") ? 1 : 0;
+    if (valueArg === undefined) return randomValue(randomSource) < probabilityParameter(probabilityValue, "probability") ? 1 : 0;
     if (mode === 1) return mapDistributionValue(valueArg, (item) => binomialCdf(item, 1, probabilityValue));
     if (mode === 2) return mapDistributionValue(valueArg, (item) => binomialIcdf(item, 1, probabilityValue));
     return mapDistributionValue(valueArg, (item) => binomialPmf(item, 1, probabilityValue));
@@ -3151,26 +3161,26 @@ window.STGraphXI18nBundles = {
     return limit;
   }
 
-  function poissonSample(rate = 1) {
+  function poissonSample(rate = 1, randomSource = Math.random) {
     const lambda = toFiniteNumber(rate, "rate");
     if (lambda < 0) throw new Error("rate must be >= 0");
     if (lambda === 0) return 0;
     // Splitting preserves the Poisson law and keeps Knuth's loop numerically stable.
-    if (lambda > 30) return poissonSample(lambda / 2) + poissonSample(lambda / 2);
+    if (lambda > 30) return poissonSample(lambda / 2, randomSource) + poissonSample(lambda / 2, randomSource);
     let count = 0;
     let product = 1;
     const threshold = Math.exp(-lambda);
     do {
       count += 1;
-      product *= Math.random();
+      product *= randomValue(randomSource);
     } while (product > threshold);
     return count - 1;
   }
 
-  function poisson() {
-    const { params, valueArg, mode } = parseDistributionCallArgs(arguments, [1]);
+  function poissonWithRandom(randomSource, args) {
+    const { params, valueArg, mode } = parseDistributionCallArgs(args, [1]);
     const [rate] = params;
-    if (valueArg === undefined) return poissonSample(rate);
+    if (valueArg === undefined) return poissonSample(rate, randomSource);
     if (mode === 1) return mapDistributionValue(valueArg, (item) => poissonCdf(item, rate));
     if (mode === 2) return mapDistributionValue(valueArg, (item) => poissonIcdf(item, rate));
     return mapDistributionValue(valueArg, (item) => poissonPmf(item, rate));
@@ -3271,12 +3281,12 @@ window.STGraphXI18nBundles = {
   }
 
   const probability = Object.freeze({
-    gaussian,
-    uniform,
-    exponential,
-    bernoulli,
-    binomial,
-    poisson,
+    gaussian: (...args) => gaussianWithRandom(Math.random, args),
+    uniform: (...args) => uniformWithRandom(Math.random, args),
+    exponential: (...args) => exponentialWithRandom(Math.random, args),
+    bernoulli: (...args) => bernoulliWithRandom(Math.random, args),
+    binomial: (...args) => binomialWithRandom(Math.random, args),
+    poisson: (...args) => poissonWithRandom(Math.random, args),
   });
 
   function normalizeCollectionValueKey(value) {
@@ -3768,7 +3778,7 @@ window.STGraphXI18nBundles = {
     throw new Error("grid collision mode must be 'error', 'first', or 'sum'");
   }
 
-  function chooseRandomElement(values) {
+  function chooseRandomElement(values, randomSource = Math.random) {
     if (!Array.isArray(values)) {
       throw new Error("choice expects a vector or matrix");
     }
@@ -3777,16 +3787,16 @@ window.STGraphXI18nBundles = {
       if (!values.length) {
         throw new Error("choice expects a non-empty vector or matrix");
       }
-      return values[Math.floor(Math.random() * values.length)].slice();
+      return values[Math.floor(randomValue(randomSource) * values.length)].slice();
     }
     const vector = ensureFlatVector(values, "choice");
     if (!vector.length) {
       throw new Error("choice expects a non-empty vector or matrix");
     }
-    return vector[Math.floor(Math.random() * vector.length)];
+    return vector[Math.floor(randomValue(randomSource) * vector.length)];
   }
 
-  function shuffleVectorValues(values) {
+  function shuffleVectorValues(values, randomSource = Math.random) {
     let vector = null;
     const isMatrix = Array.isArray(values) && values.every((row) => Array.isArray(row) && row.every((item) => !Array.isArray(item)));
     if (isMatrix) {
@@ -3795,7 +3805,7 @@ window.STGraphXI18nBundles = {
       vector = ensureFlatVector(values, "shuffle").slice();
     }
     for (let idx = vector.length - 1; idx > 0; idx -= 1) {
-      const swapIdx = Math.floor(Math.random() * (idx + 1));
+      const swapIdx = Math.floor(randomValue(randomSource) * (idx + 1));
       [vector[idx], vector[swapIdx]] = [vector[swapIdx], vector[idx]];
     }
     return vector;
@@ -4283,12 +4293,12 @@ window.STGraphXI18nBundles = {
     return { min, max };
   }
 
-  function randomFloatInRange(...args) {
+  function randomFloatInRange(randomSource, ...args) {
     const { min, max } = normalizeRandomBounds(args, "rand");
-    return min + Math.random() * (max - min);
+    return min + randomValue(randomSource) * (max - min);
   }
 
-  function randomIntInRange(...args) {
+  function randomIntInRange(randomSource, ...args) {
     if (args.length < 1 || args.length > 2) {
       throw new Error("randInt expects 1 or 2 arguments");
     }
@@ -4298,7 +4308,7 @@ window.STGraphXI18nBundles = {
     if (max < min) {
       throw new Error("randInt expects min <= max");
     }
-    return Math.floor(Math.random() * (max - min + 1)) + min;
+    return Math.floor(randomValue(randomSource) * (max - min + 1)) + min;
   }
 
   function sameArrayShape(left, right) {
@@ -4435,6 +4445,7 @@ window.STGraphXI18nBundles = {
   }
 
   function createMathScope(options = {}) {
+    const randomSource = typeof options.random === "function" ? options.random : Math.random;
     const scope = {
       // Internal special forms.
       __if: conditionalFunction,
@@ -4471,17 +4482,17 @@ window.STGraphXI18nBundles = {
 
       // Statistical, probabilistic, and random functions.
       average: averageArrayValues,
-      bernoulli,
-      binomial,
-      choice: chooseRandomElement,
+      bernoulli: (...args) => bernoulliWithRandom(randomSource, args),
+      binomial: (...args) => binomialWithRandom(randomSource, args),
+      choice: (values) => chooseRandomElement(values, randomSource),
       count: countTruthyValues,
-      exponential,
-      gaussian,
-      poisson,
-      rand: randomFloatInRange,
-      randInt: randomIntInRange,
+      exponential: (...args) => exponentialWithRandom(randomSource, args),
+      gaussian: (...args) => gaussianWithRandom(randomSource, args),
+      poisson: (...args) => poissonWithRandom(randomSource, args),
+      rand: (...args) => randomFloatInRange(randomSource, ...args),
+      randInt: (...args) => randomIntInRange(randomSource, ...args),
       stdev: stdevArrayValues,
-      uniform,
+      uniform: (...args) => uniformWithRandom(randomSource, args),
 
       // General sequences and array transformations.
       range: (...args) => {
@@ -4520,7 +4531,7 @@ window.STGraphXI18nBundles = {
       resize: resizeArrayValues,
       set: setArrayValues,
       setAt: setAtValue,
-      shuffle: shuffleVectorValues,
+      shuffle: (values) => shuffleVectorValues(values, randomSource),
       size: sizeOfValue,
       sort: sortVectorValues,
       sum: sumArrayValues,
@@ -4796,7 +4807,7 @@ window.STGraphXI18nBundles = {
     return localScope;
   }
 
-  const MATH_SCOPE = Object.freeze(graphFunctions.createMathScope({
+  const MATH_SCOPE_OPTIONS = {
     array: unavailableArrayConstructor,
     map: unavailableMapOperator,
     filter: unavailableFilterOperator,
@@ -4807,10 +4818,24 @@ window.STGraphXI18nBundles = {
     getModelProperty: unavailableModelPropertyGetter,
     setModelProperty: unavailableModelPropertySetter,
     integral: unavailableIntegral,
-  }));
+  };
+  const MATH_SCOPE = Object.freeze(graphFunctions.createMathScope(MATH_SCOPE_OPTIONS));
+  const RANDOM_MATH_SCOPES = new WeakMap();
   const FUNCTION_NAMES = new Set(
     Object.keys(MATH_SCOPE).filter((name) => typeof MATH_SCOPE[name] === "function"),
   );
+
+  function mathScopeForEvaluation(options = {}) {
+    if (typeof options.random !== "function") {
+      return MATH_SCOPE;
+    }
+    let scope = RANDOM_MATH_SCOPES.get(options.random);
+    if (!scope) {
+      scope = Object.freeze(graphFunctions.createMathScope({ ...MATH_SCOPE_OPTIONS, random: options.random }));
+      RANDOM_MATH_SCOPES.set(options.random, scope);
+    }
+    return scope;
+  }
 
   function normalizeLocalFunctionDefinitions(definitions = []) {
     if (!Array.isArray(definitions)) {
@@ -6879,7 +6904,7 @@ window.STGraphXI18nBundles = {
     try {
       raw = evaluateAstWithLocalSelf(
         compiled,
-        { ...MATH_SCOPE, ...context },
+        { ...mathScopeForEvaluation(options), ...context },
         {
           ...(options?.hooks && typeof options.hooks === "object" ? options.hooks : {}),
           agentFieldAliases: normalizeAgentFieldAliasMap(options, context),
@@ -6953,7 +6978,7 @@ window.STGraphXI18nBundles = {
     try {
       raw = evaluateAstWithLocalSelf(
         { ...compiled, ast: derivativeAst },
-        { ...MATH_SCOPE, integral: unavailableIntegral, ...context },
+        { ...mathScopeForEvaluation(options), integral: unavailableIntegral, ...context },
         {
           ...(options?.hooks && typeof options.hooks === "object" ? options.hooks : {}),
           agentFieldAliases: normalizeAgentFieldAliasMap(options, context),
@@ -6997,7 +7022,7 @@ window.STGraphXI18nBundles = {
       for (const derivativeAst of compiled.integralArgAsts || []) {
         const raw = evaluateAstWithLocalSelf(
           { ...compiled, ast: derivativeAst },
-          { ...MATH_SCOPE, integral: unavailableIntegral, ...context },
+          { ...mathScopeForEvaluation(options), integral: unavailableIntegral, ...context },
           {
             ...(options?.hooks && typeof options.hooks === "object" ? options.hooks : {}),
             agentFieldAliases: normalizeAgentFieldAliasMap(options, context),
@@ -7043,7 +7068,7 @@ window.STGraphXI18nBundles = {
       const baseHooks = options?.hooks && typeof options.hooks === "object" ? options.hooks : null;
       raw = evaluateAstWithLocalSelf(
         compiled,
-        { ...MATH_SCOPE, integral: unavailableIntegral, ...context },
+        { ...mathScopeForEvaluation(options), integral: unavailableIntegral, ...context },
         {
           ...(baseHooks || {}),
           agentFieldAliases: normalizeAgentFieldAliasMap(options, context),
@@ -7263,6 +7288,7 @@ window.STGraphXI18nBundles = {
 
         const result = evaluateValueExpression(node.valueExpression, context, {
           localFunctions: options?.localFunctions || [],
+          random: options?.random,
         });
         results.set(nodeId, result);
         pending.delete(nodeId);
@@ -7400,6 +7426,7 @@ window.STGraphXI18nBundles = {
         }
         parameterResults.set(node.id, evaluateValueExpression(node.valueExpression, context, {
           localFunctions: options?.localFunctions || [],
+          random: options?.random,
         }));
         pendingParameters.delete(nodeId);
         parameterProgressed = true;
@@ -7489,6 +7516,7 @@ window.STGraphXI18nBundles = {
           : null;
         const result = customResult || evaluateValueExpression(node.valueExpression, context, {
           localFunctions: options?.localFunctions || [],
+          random: options?.random,
         });
         algebraicResults.set(nodeId, result);
         pending.delete(nodeId);
@@ -7561,6 +7589,7 @@ window.STGraphXI18nBundles = {
         stateTransitionResults.set(node.id, evaluateIntegralDerivativeList(node.valueExpression, context, {
           allowThisAlias: true,
           localFunctions: options?.localFunctions || [],
+          random: options?.random,
         }));
         return;
       }
@@ -7568,6 +7597,7 @@ window.STGraphXI18nBundles = {
         allowThisAlias: true,
         allowIntegral: true,
         localFunctions: options?.localFunctions || [],
+        random: options?.random,
       }));
     });
 
@@ -7647,6 +7677,14 @@ window.STGraphXI18nBundles = {
       return clamp(Math.round(Number(value) || 0), 0, 12);
     }
 
+    function normalizeRandomSeed(value) {
+      if (value == null || String(value).trim() === "") {
+        return null;
+      }
+      const numeric = Number(value);
+      return Number.isFinite(numeric) && Number.isInteger(numeric) ? (numeric >>> 0) : null;
+    }
+
     function normalizeExecutionConfig(raw) {
       const t0 = Number(raw?.t0);
       const dt = Number(raw?.dt);
@@ -7657,6 +7695,7 @@ window.STGraphXI18nBundles = {
       const integrator = String(raw?.integrator ?? "euler").toLowerCase();
       const strictDefinitions = Boolean(raw?.strictDefinitions);
       const stopOnRuntimeError = Boolean(raw?.stopOnRuntimeError);
+      const randomSeed = normalizeRandomSeed(raw?.randomSeed);
       const currentTime = raw?.currentTime;
       return {
         t0: Number.isFinite(t0) ? t0 : 0,
@@ -7670,6 +7709,7 @@ window.STGraphXI18nBundles = {
         integrator: integrator === "rk4" ? "rk4" : "euler",
         strictDefinitions,
         stopOnRuntimeError,
+        randomSeed,
         currentTime: Number.isFinite(Number(currentTime)) ? Number(currentTime) : null,
       };
     }
@@ -7916,6 +7956,7 @@ window.STGraphXI18nBundles = {
       clamp,
       deepClone,
       normalizeExecutionConfig,
+      normalizeRandomSeed,
       sanitizeLocalFunctionDefinition,
       normalizeSubmodelPath,
       normalizeReadDataPath,
@@ -7954,6 +7995,7 @@ window.STGraphXI18nBundles = {
       t,
       semantics,
       normalizeExecutionConfig,
+      normalizeRandomSeed,
       deserializeNodeType,
       normalizeNodeDescriptionProperty,
       normalizeNodeFormulaNotesProperty,
@@ -7986,6 +8028,55 @@ window.STGraphXI18nBundles = {
     const normalizeEdgeColor = typeof normalizeEdgeColorInput === "function"
       ? normalizeEdgeColorInput
       : () => "";
+    const normalizeSeed = typeof normalizeRandomSeed === "function"
+      ? normalizeRandomSeed
+      : (value) => {
+        if (value == null || String(value).trim() === "") return null;
+        const numeric = Number(value);
+        return Number.isFinite(numeric) && Number.isInteger(numeric) ? (numeric >>> 0) : null;
+      };
+
+    function resetModelRandomGenerator(model) {
+      if (!model?.execution) {
+        return;
+      }
+      model.execution.randomState = normalizeSeed(model.execution.randomSeed);
+    }
+
+    function nextRandomValueForModel(model) {
+      const execution = model?.execution;
+      if (!execution || execution.randomSeed == null) {
+        return Math.random();
+      }
+      let state = Number(execution.randomState);
+      if (!Number.isFinite(state)) {
+        state = normalizeSeed(execution.randomSeed) ?? 0;
+      }
+      state = (state + 0x6D2B79F5) >>> 0;
+      execution.randomState = state;
+      let mixed = state;
+      mixed = Math.imul(mixed ^ (mixed >>> 15), mixed | 1);
+      mixed ^= mixed + Math.imul(mixed ^ (mixed >>> 7), mixed | 61);
+      return ((mixed ^ (mixed >>> 14)) >>> 0) / 4294967296;
+    }
+
+    function randomSourceForModel(model) {
+      if (!model || typeof model !== "object") {
+        return Math.random;
+      }
+      if (typeof model.__randomSource !== "function") {
+        Object.defineProperty(model, "__randomSource", {
+          value: () => nextRandomValueForModel(model),
+          configurable: true,
+          enumerable: false,
+        });
+      }
+      return model.__randomSource;
+    }
+
+    function randomEvaluationOptions(model, extra = {}) {
+      return { ...extra, random: randomSourceForModel(model) };
+    }
 
     function buildRuntimeModelFromData(data, options = {}) {
       if (!data || !Array.isArray(data.nodes) || !Array.isArray(data.edges)) {
@@ -8093,6 +8184,8 @@ window.STGraphXI18nBundles = {
           integrator: execCfg.integrator,
           strictDefinitions: execCfg.strictDefinitions,
           stopOnRuntimeError: execCfg.stopOnRuntimeError,
+          randomSeed: execCfg.randomSeed,
+          randomState: execCfg.randomSeed,
           currentTime: null,
         },
         __directoryPath: String(options.directoryPath ?? ""),
@@ -8227,6 +8320,7 @@ window.STGraphXI18nBundles = {
           const expr = String(node.valueExpression ?? "0");
           const result = semantics.evaluateValueExpression(expr, context, {
             localFunctions: localFunctionsForSemantics(model),
+            random: randomSourceForModel(model),
           });
           if (result.ok) {
             node.computedValue = result.value;
@@ -8279,6 +8373,7 @@ window.STGraphXI18nBundles = {
     }
 
     function initializeStateNodesForModel(model, timeValue, rootExecution) {
+      resetModelRandomGenerator(model);
       evaluateParameterNodesForModel(model, timeValue, rootExecution);
       const initialNodes = (model.nodes || []).filter((node) =>
         isStateNode(node) || (node.shape === "ellipse" && !node.externalValueEnabled));
@@ -8338,7 +8433,7 @@ window.STGraphXI18nBundles = {
             const result = semantics.evaluateValueExpression(
               expression,
               buildInitialStateContextForModel(model, node, timeValue, rootExecution, references),
-              { localFunctions: localFunctionsForSemantics(model) },
+              randomEvaluationOptions(model, { localFunctions: localFunctionsForSemantics(model) }),
             );
             node.computedValue = result.ok ? result.value : null;
             node.computedError = result.ok ? "" : result.reason || "runtime";
@@ -8533,6 +8628,7 @@ window.STGraphXI18nBundles = {
         }
         const result = semantics.evaluateValueExpression(expression, parentContext, {
           localFunctions: localFunctionsForSemantics(model),
+          random: randomSourceForModel(model),
         });
         if (!result.ok) {
           throw new Error(result.message || result.reason || "runtime");
@@ -8707,7 +8803,7 @@ window.STGraphXI18nBundles = {
             node.valueExpression,
             context,
             integralValuesMap.get(node.id) || [],
-            { allowThisAlias: true, localFunctions: localFunctionsForSemantics(model) },
+            randomEvaluationOptions(model, { allowThisAlias: true, localFunctions: localFunctionsForSemantics(model) }),
           ),
         );
       });
@@ -8730,6 +8826,7 @@ window.STGraphXI18nBundles = {
         {
           stateValueOverrides: stateValueOverrides || undefined,
           localFunctions: localFunctionsForSemantics(model),
+          random: randomSourceForModel(model),
           derivativeStateNodeIds: integralStateNodeIds.size > 0 ? integralStateNodeIds : undefined,
           customNodeEvaluator: createSubmodelNodeEvaluator(model, timeValue, env, {
             applyResults: options.applyResults !== false,
@@ -8768,6 +8865,7 @@ window.STGraphXI18nBundles = {
               derivativeStateNodeIds: integralStateNodeIds,
               stateValueOverrides: stage2StateOverrides,
               localFunctions: localFunctionsForSemantics(model),
+              random: randomSourceForModel(model),
               customNodeEvaluator: createSubmodelNodeEvaluator(model, timeValue + dt / 2, env, { applyResults: false }),
             },
           );
@@ -8796,8 +8894,9 @@ window.STGraphXI18nBundles = {
               executionPlan,
               {
                 derivativeStateNodeIds: integralStateNodeIds,
-                stateValueOverrides: stage3StateOverrides,
-                localFunctions: localFunctionsForSemantics(model),
+              stateValueOverrides: stage3StateOverrides,
+              localFunctions: localFunctionsForSemantics(model),
+              random: randomSourceForModel(model),
                 customNodeEvaluator: createSubmodelNodeEvaluator(model, timeValue + dt / 2, env, { applyResults: false }),
               },
             );
@@ -8828,6 +8927,7 @@ window.STGraphXI18nBundles = {
                   derivativeStateNodeIds: integralStateNodeIds,
                   stateValueOverrides: stage4StateOverrides,
                   localFunctions: localFunctionsForSemantics(model),
+                  random: randomSourceForModel(model),
                   customNodeEvaluator: createSubmodelNodeEvaluator(model, timeValue + dt, env, { applyResults: false }),
                 },
               );

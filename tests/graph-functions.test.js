@@ -9,6 +9,20 @@ const context = { window: {} };
 vm.runInNewContext(fs.readFileSync(path.join(__dirname, "..", "graph-functions.js"), "utf8"), context, { filename: "graph-functions.js" });
 vm.runInNewContext(fs.readFileSync(path.join(__dirname, "..", "semantic.js"), "utf8"), context, { filename: "semantic.js" });
 const scope = context.window.GraphFunctions.createMathScope();
+const deterministicValues = [0.25, 0.75, 0.1, 0.9];
+let deterministicIndex = 0;
+const deterministicScope = context.window.GraphFunctions.createMathScope({
+  random: () => deterministicValues[deterministicIndex++],
+});
+
+assert.equal(deterministicScope.rand(8), 2);
+assert.equal(deterministicScope.randInt(0, 9), 7);
+assert.equal(deterministicScope.bernoulli([0.2]), 1);
+assert.equal(deterministicScope.bernoulli([0.2]), 0);
+assert.equal(
+  context.window.GraphSemantics.evaluateValueExpression("rand(8)", {}, { random: () => 0.25 }).value,
+  2,
+);
 
 assert.equal(scope.pos(-3), 0);
 assert.equal(scope.pos(0), 0);

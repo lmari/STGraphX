@@ -141,7 +141,7 @@
         <div class="menu-run-toolbar" id="topRunToolbar">
           <button id="topRunEvalBtn" class="icon-btn menu-run-btn" type="button">▶▶</button>
           <button id="topRunStepBtn" class="icon-btn menu-run-btn" type="button">▶</button>
-          <button id="topRunTimedBtn" class="icon-btn menu-run-btn" type="button">⏱</button>
+          <button id="topRunTimedBtn" class="icon-btn menu-run-btn" type="button">▶⏱</button>
           <button id="topRunResetBtn" class="icon-btn menu-run-btn" type="button">↺</button>
         </div>
 
@@ -166,6 +166,7 @@
           </div>
         </section>
         <button id="modelNotesCanvasBtn" class="model-notes-canvas-btn hidden" type="button" data-i18n-aria-label="modelNotes.canvasButton" data-title-i18n="modelNotes.canvasButton">▤</button>
+        <button id="sidebarReopenBtn" class="sidebar-reopen-btn hidden" type="button" data-i18n-aria-label="action.showPanel" data-title-i18n="tooltip.action.showPanel">◀</button>
 
         <aside class="sidebar" id="sidebar">
           <div id="tabletSidebarHeader" class="tablet-sidebar-header">
@@ -177,7 +178,7 @@
           </div>
           <div id="noSelection" class="hidden"></div>
           <div id="globalPanel" class="panel hidden">
-            <h3 data-i18n="panel.model"></h3>
+            <h3 class="config-panel-title"><span data-i18n="panel.model"></span><button class="config-panel-hide-btn" type="button" data-sidebar-hide data-i18n-aria-label="action.hidePanel" data-title-i18n="tooltip.action.hidePanel">▶</button></h3>
 
             <div class="model-section">
               <label for="modelTitleInput" data-i18n="label.modelTitle" data-title-i18n="tooltip.model.title"></label>
@@ -230,12 +231,16 @@
               <div class="run-icons-row">
                 <button id="runFullModelBtn" class="icon-btn" type="button">▶▶</button>
                 <button id="manualStepBtn" class="icon-btn" type="button">▶</button>
-                <button id="timedToggleBtn" class="icon-btn" type="button">⏱</button>
+                <button id="timedToggleBtn" class="icon-btn" type="button">▶⏱</button>
                 <button id="resetExecBtn" class="icon-btn" type="button">↺</button>
               </div>
               <div class="row2-exec">
                 <button id="toggleGraphBtn" class="small-btn" type="button" data-i18n="view.btn.showGraph" data-title-i18n="tooltip.menu.view.toggleGraph"></button>
                 <button id="toggleWidgetsBtn" class="small-btn" type="button" data-i18n="view.btn.showWidgets" data-title-i18n="tooltip.menu.view.toggleWidgets"></button>
+              </div>
+              <div class="model-seed-row">
+                <label for="randomSeedInput" data-i18n="label.randomSeed" data-title-i18n="tooltip.model.randomSeed"></label>
+                <input id="randomSeedInput" type="number" step="1" data-title-i18n="tooltip.model.randomSeed" />
               </div>
             </div>
 
@@ -251,7 +256,7 @@
           </div>
 
           <div id="nodePanel" class="panel hidden">
-            <h3 data-i18n="panel.node"></h3>
+            <h3 class="config-panel-title"><span data-i18n="panel.node"></span><button class="config-panel-hide-btn" type="button" data-sidebar-hide data-i18n-aria-label="action.hidePanel" data-title-i18n="tooltip.action.hidePanel">▶</button></h3>
 
             <div class="panel-section compact-panel-section">
               <label for="nodeNameInput" data-i18n="label.name" data-title-i18n="tooltip.node.name"></label>
@@ -398,7 +403,7 @@
           </div>
 
           <div id="widgetPanel" class="panel hidden">
-            <h3 id="widgetPanelTitle" data-i18n="panel.widget"></h3>
+            <h3 class="config-panel-title"><span id="widgetPanelTitle" data-i18n="panel.widget"></span><button class="config-panel-hide-btn" type="button" data-sidebar-hide data-i18n-aria-label="action.hidePanel" data-title-i18n="tooltip.action.hidePanel">▶</button></h3>
             <div id="widgetConfig"></div>
           </div>
 
@@ -756,11 +761,11 @@
             <input id="gridSizeInput" type="number" min="5" max="100" step="1" value="20" data-title-i18n="tooltip.menu.view.gridStep" />
             <label for="tooltipDelayInput" data-i18n="menu.view.tooltipDelay" data-title-i18n="tooltip.menu.view.tooltipDelay"></label>
             <select id="tooltipDelayInput" data-title-i18n="tooltip.menu.view.tooltipDelay">
-              <option value="0" data-i18n="menu.view.tooltipDelayMode.none"></option>
               <option value="150" data-i18n="menu.view.tooltipDelayMode.fast"></option>
               <option value="300" data-i18n="menu.view.tooltipDelayMode.normal"></option>
               <option value="600" data-i18n="menu.view.tooltipDelayMode.slow"></option>
               <option value="1000" data-i18n="menu.view.tooltipDelayMode.slower"></option>
+              <option value="0" data-i18n="menu.view.tooltipDelayMode.none"></option>
             </select>
             <label for="decimalDigitsInput" data-i18n="label.decimals" data-title-i18n="tooltip.model.decimals"></label>
             <input id="decimalDigitsInput" type="number" min="0" max="12" step="1" data-title-i18n="tooltip.model.decimals" />

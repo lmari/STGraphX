@@ -484,6 +484,39 @@ body {
   isolation: isolate;
   z-index: 1;
   background: radial-gradient(circle at 20% 0%, #ffffff 0, #eef3f8 40%, #e3eaf2 100%);
+  transition: right 190ms ease;
+}
+
+body.sidebar-hidden .canvas-wrap {
+  right: 0;
+}
+
+.sidebar-reopen-btn {
+  position: absolute;
+  right: 16px;
+  top: 16px;
+  z-index: 20;
+  width: 42px;
+  height: 42px;
+  padding: 0;
+  border: 1px solid #78a8c9;
+  border-radius: 12px;
+  background: linear-gradient(180deg, #ffffff 0%, #deedf8 100%);
+  color: #1e4c6b;
+  box-shadow: 0 8px 18px rgba(18, 33, 47, 0.18);
+  font-size: 1.05rem;
+}
+
+.sidebar-reopen-btn:hover,
+.sidebar-reopen-btn:focus-visible {
+  color: #fff;
+  background: #2e6f9a;
+}
+
+body.sidebar-hidden .sidebar {
+  transform: translateX(calc(100% + 4px));
+  opacity: 0;
+  pointer-events: none;
 }
 
 .canvas-content {
@@ -1059,13 +1092,45 @@ body {
   pointer-events: auto;
   display: flex;
   flex-direction: column;
-  transition: background-color 140ms ease, border-color 140ms ease;
+  transition: transform 190ms ease, opacity 150ms ease, background-color 140ms ease, border-color 140ms ease;
 }
 
 h2,
 h3,
 h4 {
   margin: 0 0 10px;
+}
+
+.config-panel-title {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.config-panel-title > span {
+  flex: 1;
+  min-width: 0;
+}
+
+.config-panel-hide-btn {
+  flex: 0 0 auto;
+  width: 24px;
+  min-width: 24px;
+  height: 24px;
+  min-height: 24px;
+  margin: 0;
+  padding: 0;
+  border: 1px solid #b8c8d6;
+  border-radius: 6px;
+  background: #f9fcff;
+  color: #49657a;
+  line-height: 1;
+}
+
+.config-panel-hide-btn:hover,
+.config-panel-hide-btn:focus-visible {
+  color: #fff;
+  background: #486d88;
 }
 
 .panel,
@@ -1225,6 +1290,23 @@ h4 {
 .model-current-inline label {
   margin: 0;
   white-space: nowrap;
+}
+
+.model-seed-row {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 6px;
+  align-items: center;
+  margin-top: 4px;
+}
+
+.model-seed-row label {
+  margin: 0;
+  white-space: nowrap;
+}
+
+.model-seed-row input {
+  min-width: 0;
 }
 
 .model-properties-section {
@@ -3925,6 +4007,11 @@ body.tablet-sidebar-layout .expression-editor-resize-handle {
   margin-top: 6px;
 }
 
+/* The section is meaningful only for submodel nodes. */
+.submodel-icon-section.hidden {
+  display: none;
+}
+
 .submodel-icon-section label {
   color: var(--muted, #607487);
   font-size: 0.84rem;
@@ -4603,6 +4690,10 @@ body.tablet-sidebar-layout .menu-run-btn {
     color: #1e4c6b;
     box-shadow: 0 10px 24px rgba(18, 33, 47, 0.18);
     font-size: 1.25rem;
+  }
+
+  .sidebar-reopen-btn {
+    display: none;
   }
 
   .tablet-sidebar-toggle.active {

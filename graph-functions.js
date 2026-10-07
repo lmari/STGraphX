@@ -238,7 +238,11 @@
     return mu + sd * inverseStandardNormal(p);
   }
 
-  function gaussianSample(mean = 0, sigma = 1) {
+  function randomValue(randomSource) {
+    return typeof randomSource === "function" ? randomSource() : Math.random();
+  }
+
+  function gaussianSample(mean = 0, sigma = 1, randomSource = Math.random) {
     const mu = toFiniteNumber(mean, "mean");
     const sd = toFiniteNumber(sigma, "sigma");
     if (sd <= 0) {
@@ -247,18 +251,18 @@
     let u1 = 0;
     let u2 = 0;
     while (u1 <= Number.EPSILON) {
-      u1 = Math.random();
+      u1 = randomValue(randomSource);
     }
-    u2 = Math.random();
+    u2 = randomValue(randomSource);
     const z = Math.sqrt(-2 * Math.log(u1)) * Math.cos(2 * Math.PI * u2);
     return mu + sd * z;
   }
 
-  function gaussian() {
-    const { params, valueArg, mode } = parseDistributionCallArgs(arguments, [0, 1]);
+  function gaussianWithRandom(randomSource, args) {
+    const { params, valueArg, mode } = parseDistributionCallArgs(args, [0, 1]);
     const [mean, sigma] = params;
     if (valueArg === undefined) {
-      return gaussianSample(mean, sigma);
+      return gaussianSample(mean, sigma, randomSource);
     }
     if (mode === 1) {
       return mapDistributionValue(valueArg, (item) => gaussianCdf(item, mean, sigma));
@@ -308,20 +312,20 @@
     return lo + prob * (hi - lo);
   }
 
-  function uniformSample(minValue = 0, maxValue = 1) {
+  function uniformSample(minValue = 0, maxValue = 1, randomSource = Math.random) {
     const lo = toFiniteNumber(minValue, "min");
     const hi = toFiniteNumber(maxValue, "max");
     if (hi <= lo) {
       throw new Error("max must be > min");
     }
-    return lo + Math.random() * (hi - lo);
+    return lo + randomValue(randomSource) * (hi - lo);
   }
 
-  function uniform() {
-    const { params, valueArg, mode } = parseDistributionCallArgs(arguments, [0, 1]);
+  function uniformWithRandom(randomSource, args) {
+    const { params, valueArg, mode } = parseDistributionCallArgs(args, [0, 1]);
     const [minValue, maxValue] = params;
     if (valueArg === undefined) {
-      return uniformSample(minValue, maxValue);
+      return uniformSample(minValue, maxValue, randomSource);
     }
     if (mode === 1) {
       return mapDistributionValue(valueArg, (item) => uniformCdf(item, minValue, maxValue));
@@ -368,23 +372,23 @@
     return -Math.log(1 - prob) / lambda;
   }
 
-  function exponentialSample(rate = 1) {
+  function exponentialSample(rate = 1, randomSource = Math.random) {
     const lambda = toFiniteNumber(rate, "rate");
     if (lambda <= 0) {
       throw new Error("rate must be > 0");
     }
     let u = 0;
     while (u <= Number.EPSILON) {
-      u = Math.random();
+      u = randomValue(randomSource);
     }
     return -Math.log(u) / lambda;
   }
 
-  function exponential() {
-    const { params, valueArg, mode } = parseDistributionCallArgs(arguments, [1]);
+  function exponentialWithRandom(randomSource, args) {
+    const { params, valueArg, mode } = parseDistributionCallArgs(args, [1]);
     const [rate] = params;
     if (valueArg === undefined) {
-      return exponentialSample(rate);
+      return exponentialSample(rate, randomSource);
     }
     if (mode === 1) {
       return mapDistributionValue(valueArg, (item) => exponentialCdf(item, rate));
@@ -470,29 +474,29 @@
     return n;
   }
 
-  function binomialSample(trials = 1, probabilityValue = 0.5) {
+  function binomialSample(trials = 1, probabilityValue = 0.5, randomSource = Math.random) {
     const n = nonNegativeInteger(trials, "trials");
     const p = probabilityParameter(probabilityValue, "probability");
     let successes = 0;
     for (let trial = 0; trial < n; trial += 1) {
-      if (Math.random() < p) successes += 1;
+      if (randomValue(randomSource) < p) successes += 1;
     }
     return successes;
   }
 
-  function binomial() {
-    const { params, valueArg, mode } = parseDistributionCallArgs(arguments, [1, 0.5]);
+  function binomialWithRandom(randomSource, args) {
+    const { params, valueArg, mode } = parseDistributionCallArgs(args, [1, 0.5]);
     const [trials, probabilityValue] = params;
-    if (valueArg === undefined) return binomialSample(trials, probabilityValue);
+    if (valueArg === undefined) return binomialSample(trials, probabilityValue, randomSource);
     if (mode === 1) return mapDistributionValue(valueArg, (item) => binomialCdf(item, trials, probabilityValue));
     if (mode === 2) return mapDistributionValue(valueArg, (item) => binomialIcdf(item, trials, probabilityValue));
     return mapDistributionValue(valueArg, (item) => binomialPmf(item, trials, probabilityValue));
   }
 
-  function bernoulli() {
-    const { params, valueArg, mode } = parseDistributionCallArgs(arguments, [0.5]);
+  function bernoulliWithRandom(randomSource, args) {
+    const { params, valueArg, mode } = parseDistributionCallArgs(args, [0.5]);
     const [probabilityValue] = params;
-    if (valueArg === undefined) return Math.random() < probabilityParameter(probabilityValue, "probability") ? 1 : 0;
+    if (valueArg === undefined) return randomValue(randomSource) < probabilityParameter(probabilityValue, "probability") ? 1 : 0;
     if (mode === 1) return mapDistributionValue(valueArg, (item) => binomialCdf(item, 1, probabilityValue));
     if (mode === 2) return mapDistributionValue(valueArg, (item) => binomialIcdf(item, 1, probabilityValue));
     return mapDistributionValue(valueArg, (item) => binomialPmf(item, 1, probabilityValue));
@@ -530,26 +534,26 @@
     return limit;
   }
 
-  function poissonSample(rate = 1) {
+  function poissonSample(rate = 1, randomSource = Math.random) {
     const lambda = toFiniteNumber(rate, "rate");
     if (lambda < 0) throw new Error("rate must be >= 0");
     if (lambda === 0) return 0;
     // Splitting preserves the Poisson law and keeps Knuth's loop numerically stable.
-    if (lambda > 30) return poissonSample(lambda / 2) + poissonSample(lambda / 2);
+    if (lambda > 30) return poissonSample(lambda / 2, randomSource) + poissonSample(lambda / 2, randomSource);
     let count = 0;
     let product = 1;
     const threshold = Math.exp(-lambda);
     do {
       count += 1;
-      product *= Math.random();
+      product *= randomValue(randomSource);
     } while (product > threshold);
     return count - 1;
   }
 
-  function poisson() {
-    const { params, valueArg, mode } = parseDistributionCallArgs(arguments, [1]);
+  function poissonWithRandom(randomSource, args) {
+    const { params, valueArg, mode } = parseDistributionCallArgs(args, [1]);
     const [rate] = params;
-    if (valueArg === undefined) return poissonSample(rate);
+    if (valueArg === undefined) return poissonSample(rate, randomSource);
     if (mode === 1) return mapDistributionValue(valueArg, (item) => poissonCdf(item, rate));
     if (mode === 2) return mapDistributionValue(valueArg, (item) => poissonIcdf(item, rate));
     return mapDistributionValue(valueArg, (item) => poissonPmf(item, rate));
@@ -650,12 +654,12 @@
   }
 
   const probability = Object.freeze({
-    gaussian,
-    uniform,
-    exponential,
-    bernoulli,
-    binomial,
-    poisson,
+    gaussian: (...args) => gaussianWithRandom(Math.random, args),
+    uniform: (...args) => uniformWithRandom(Math.random, args),
+    exponential: (...args) => exponentialWithRandom(Math.random, args),
+    bernoulli: (...args) => bernoulliWithRandom(Math.random, args),
+    binomial: (...args) => binomialWithRandom(Math.random, args),
+    poisson: (...args) => poissonWithRandom(Math.random, args),
   });
 
   function normalizeCollectionValueKey(value) {
@@ -1147,7 +1151,7 @@
     throw new Error("grid collision mode must be 'error', 'first', or 'sum'");
   }
 
-  function chooseRandomElement(values) {
+  function chooseRandomElement(values, randomSource = Math.random) {
     if (!Array.isArray(values)) {
       throw new Error("choice expects a vector or matrix");
     }
@@ -1156,16 +1160,16 @@
       if (!values.length) {
         throw new Error("choice expects a non-empty vector or matrix");
       }
-      return values[Math.floor(Math.random() * values.length)].slice();
+      return values[Math.floor(randomValue(randomSource) * values.length)].slice();
     }
     const vector = ensureFlatVector(values, "choice");
     if (!vector.length) {
       throw new Error("choice expects a non-empty vector or matrix");
     }
-    return vector[Math.floor(Math.random() * vector.length)];
+    return vector[Math.floor(randomValue(randomSource) * vector.length)];
   }
 
-  function shuffleVectorValues(values) {
+  function shuffleVectorValues(values, randomSource = Math.random) {
     let vector = null;
     const isMatrix = Array.isArray(values) && values.every((row) => Array.isArray(row) && row.every((item) => !Array.isArray(item)));
     if (isMatrix) {
@@ -1174,7 +1178,7 @@
       vector = ensureFlatVector(values, "shuffle").slice();
     }
     for (let idx = vector.length - 1; idx > 0; idx -= 1) {
-      const swapIdx = Math.floor(Math.random() * (idx + 1));
+      const swapIdx = Math.floor(randomValue(randomSource) * (idx + 1));
       [vector[idx], vector[swapIdx]] = [vector[swapIdx], vector[idx]];
     }
     return vector;
@@ -1662,12 +1666,12 @@
     return { min, max };
   }
 
-  function randomFloatInRange(...args) {
+  function randomFloatInRange(randomSource, ...args) {
     const { min, max } = normalizeRandomBounds(args, "rand");
-    return min + Math.random() * (max - min);
+    return min + randomValue(randomSource) * (max - min);
   }
 
-  function randomIntInRange(...args) {
+  function randomIntInRange(randomSource, ...args) {
     if (args.length < 1 || args.length > 2) {
       throw new Error("randInt expects 1 or 2 arguments");
     }
@@ -1677,7 +1681,7 @@
     if (max < min) {
       throw new Error("randInt expects min <= max");
     }
-    return Math.floor(Math.random() * (max - min + 1)) + min;
+    return Math.floor(randomValue(randomSource) * (max - min + 1)) + min;
   }
 
   function sameArrayShape(left, right) {
@@ -1814,6 +1818,7 @@
   }
 
   function createMathScope(options = {}) {
+    const randomSource = typeof options.random === "function" ? options.random : Math.random;
     const scope = {
       // Internal special forms.
       __if: conditionalFunction,
@@ -1850,17 +1855,17 @@
 
       // Statistical, probabilistic, and random functions.
       average: averageArrayValues,
-      bernoulli,
-      binomial,
-      choice: chooseRandomElement,
+      bernoulli: (...args) => bernoulliWithRandom(randomSource, args),
+      binomial: (...args) => binomialWithRandom(randomSource, args),
+      choice: (values) => chooseRandomElement(values, randomSource),
       count: countTruthyValues,
-      exponential,
-      gaussian,
-      poisson,
-      rand: randomFloatInRange,
-      randInt: randomIntInRange,
+      exponential: (...args) => exponentialWithRandom(randomSource, args),
+      gaussian: (...args) => gaussianWithRandom(randomSource, args),
+      poisson: (...args) => poissonWithRandom(randomSource, args),
+      rand: (...args) => randomFloatInRange(randomSource, ...args),
+      randInt: (...args) => randomIntInRange(randomSource, ...args),
       stdev: stdevArrayValues,
-      uniform,
+      uniform: (...args) => uniformWithRandom(randomSource, args),
 
       // General sequences and array transformations.
       range: (...args) => {
@@ -1899,7 +1904,7 @@
       resize: resizeArrayValues,
       set: setArrayValues,
       setAt: setAtValue,
-      shuffle: shuffleVectorValues,
+      shuffle: (values) => shuffleVectorValues(values, randomSource),
       size: sizeOfValue,
       sort: sortVectorValues,
       sum: sumArrayValues,

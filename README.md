@@ -1,6 +1,6 @@
 # STGraphX: Readme
 
-versione 6 ottobre 2026
+versione 7 ottobre 2026
 
 Copyright (c) 2026 Luca Mari
 
@@ -71,6 +71,7 @@ Ha un'interfaccia utente responsive, che lo rende utilizzabile anche su tablet.
 * Gestione opzionale del blocco di esecuzione ed evidenziazione per nodi non definiti (**)
 * Una prima gestione di controllo di correttezza del modello
 * Un primo debugger, con gestione di watch e breakpoint, anche con messaggio semantico (**)
+* Possibilità di assegnare un random seed per i generatori di numeri pseudo-casuali (**)
 
 #### Funzionalità del linguaggio
 

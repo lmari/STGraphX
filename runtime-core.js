@@ -11,6 +11,7 @@
       t,
       semantics,
       normalizeExecutionConfig,
+      normalizeRandomSeed,
       deserializeNodeType,
       normalizeNodeDescriptionProperty,
       normalizeNodeFormulaNotesProperty,
@@ -43,6 +44,55 @@
     const normalizeEdgeColor = typeof normalizeEdgeColorInput === "function"
       ? normalizeEdgeColorInput
       : () => "";
+    const normalizeSeed = typeof normalizeRandomSeed === "function"
+      ? normalizeRandomSeed
+      : (value) => {
+        if (value == null || String(value).trim() === "") return null;
+        const numeric = Number(value);
+        return Number.isFinite(numeric) && Number.isInteger(numeric) ? (numeric >>> 0) : null;
+      };
+
+    function resetModelRandomGenerator(model) {
+      if (!model?.execution) {
+        return;
+      }
+      model.execution.randomState = normalizeSeed(model.execution.randomSeed);
+    }
+
+    function nextRandomValueForModel(model) {
+      const execution = model?.execution;
+      if (!execution || execution.randomSeed == null) {
+        return Math.random();
+      }
+      let state = Number(execution.randomState);
+      if (!Number.isFinite(state)) {
+        state = normalizeSeed(execution.randomSeed) ?? 0;
+      }
+      state = (state + 0x6D2B79F5) >>> 0;
+      execution.randomState = state;
+      let mixed = state;
+      mixed = Math.imul(mixed ^ (mixed >>> 15), mixed | 1);
+      mixed ^= mixed + Math.imul(mixed ^ (mixed >>> 7), mixed | 61);
+      return ((mixed ^ (mixed >>> 14)) >>> 0) / 4294967296;
+    }
+
+    function randomSourceForModel(model) {
+      if (!model || typeof model !== "object") {
+        return Math.random;
+      }
+      if (typeof model.__randomSource !== "function") {
+        Object.defineProperty(model, "__randomSource", {
+          value: () => nextRandomValueForModel(model),
+          configurable: true,
+          enumerable: false,
+        });
+      }
+      return model.__randomSource;
+    }
+
+    function randomEvaluationOptions(model, extra = {}) {
+      return { ...extra, random: randomSourceForModel(model) };
+    }
 
     function buildRuntimeModelFromData(data, options = {}) {
       if (!data || !Array.isArray(data.nodes) || !Array.isArray(data.edges)) {
@@ -150,6 +200,8 @@
           integrator: execCfg.integrator,
           strictDefinitions: execCfg.strictDefinitions,
           stopOnRuntimeError: execCfg.stopOnRuntimeError,
+          randomSeed: execCfg.randomSeed,
+          randomState: execCfg.randomSeed,
           currentTime: null,
         },
         __directoryPath: String(options.directoryPath ?? ""),
@@ -284,6 +336,7 @@
           const expr = String(node.valueExpression ?? "0");
           const result = semantics.evaluateValueExpression(expr, context, {
             localFunctions: localFunctionsForSemantics(model),
+            random: randomSourceForModel(model),
           });
           if (result.ok) {
             node.computedValue = result.value;
@@ -336,6 +389,7 @@
     }
 
     function initializeStateNodesForModel(model, timeValue, rootExecution) {
+      resetModelRandomGenerator(model);
       evaluateParameterNodesForModel(model, timeValue, rootExecution);
       const initialNodes = (model.nodes || []).filter((node) =>
         isStateNode(node) || (node.shape === "ellipse" && !node.externalValueEnabled));
@@ -395,7 +449,7 @@
             const result = semantics.evaluateValueExpression(
               expression,
               buildInitialStateContextForModel(model, node, timeValue, rootExecution, references),
-              { localFunctions: localFunctionsForSemantics(model) },
+              randomEvaluationOptions(model, { localFunctions: localFunctionsForSemantics(model) }),
             );
             node.computedValue = result.ok ? result.value : null;
             node.computedError = result.ok ? "" : result.reason || "runtime";
@@ -590,6 +644,7 @@
         }
         const result = semantics.evaluateValueExpression(expression, parentContext, {
           localFunctions: localFunctionsForSemantics(model),
+          random: randomSourceForModel(model),
         });
         if (!result.ok) {
           throw new Error(result.message || result.reason || "runtime");
@@ -764,7 +819,7 @@
             node.valueExpression,
             context,
             integralValuesMap.get(node.id) || [],
-            { allowThisAlias: true, localFunctions: localFunctionsForSemantics(model) },
+            randomEvaluationOptions(model, { allowThisAlias: true, localFunctions: localFunctionsForSemantics(model) }),
           ),
         );
       });
@@ -787,6 +842,7 @@
         {
           stateValueOverrides: stateValueOverrides || undefined,
           localFunctions: localFunctionsForSemantics(model),
+          random: randomSourceForModel(model),
           derivativeStateNodeIds: integralStateNodeIds.size > 0 ? integralStateNodeIds : undefined,
           customNodeEvaluator: createSubmodelNodeEvaluator(model, timeValue, env, {
             applyResults: options.applyResults !== false,
@@ -825,6 +881,7 @@
               derivativeStateNodeIds: integralStateNodeIds,
               stateValueOverrides: stage2StateOverrides,
               localFunctions: localFunctionsForSemantics(model),
+              random: randomSourceForModel(model),
               customNodeEvaluator: createSubmodelNodeEvaluator(model, timeValue + dt / 2, env, { applyResults: false }),
             },
           );
@@ -853,8 +910,9 @@
               executionPlan,
               {
                 derivativeStateNodeIds: integralStateNodeIds,
-                stateValueOverrides: stage3StateOverrides,
-                localFunctions: localFunctionsForSemantics(model),
+              stateValueOverrides: stage3StateOverrides,
+              localFunctions: localFunctionsForSemantics(model),
+              random: randomSourceForModel(model),
                 customNodeEvaluator: createSubmodelNodeEvaluator(model, timeValue + dt / 2, env, { applyResults: false }),
               },
             );
@@ -885,6 +943,7 @@
                   derivativeStateNodeIds: integralStateNodeIds,
                   stateValueOverrides: stage4StateOverrides,
                   localFunctions: localFunctionsForSemantics(model),
+                  random: randomSourceForModel(model),
                   customNodeEvaluator: createSubmodelNodeEvaluator(model, timeValue + dt, env, { applyResults: false }),
                 },
               );

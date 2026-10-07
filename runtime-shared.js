@@ -23,6 +23,14 @@
       return clamp(Math.round(Number(value) || 0), 0, 12);
     }
 
+    function normalizeRandomSeed(value) {
+      if (value == null || String(value).trim() === "") {
+        return null;
+      }
+      const numeric = Number(value);
+      return Number.isFinite(numeric) && Number.isInteger(numeric) ? (numeric >>> 0) : null;
+    }
+
     function normalizeExecutionConfig(raw) {
       const t0 = Number(raw?.t0);
       const dt = Number(raw?.dt);
@@ -33,12 +41,13 @@
       const integrator = String(raw?.integrator ?? "euler").toLowerCase();
       const strictDefinitions = Boolean(raw?.strictDefinitions);
       const stopOnRuntimeError = Boolean(raw?.stopOnRuntimeError);
+      const randomSeed = normalizeRandomSeed(raw?.randomSeed);
       const currentTime = raw?.currentTime;
       return {
         t0: Number.isFinite(t0) ? t0 : 0,
         dt: Number.isFinite(dt) && dt !== 0 ? dt : 1,
         t1: Number.isFinite(t1) ? t1 : 10,
-        delayMs: Number.isFinite(delayMs) && delayMs > 0 ? Math.round(delayMs) : 1000,
+        delayMs: Number.isFinite(delayMs) && delayMs > 0 ? Math.round(delayMs) : 100,
         renderEverySteps: Number.isFinite(renderEverySteps) && renderEverySteps >= 1
           ? Math.round(renderEverySteps)
           : 1,
@@ -46,6 +55,7 @@
         integrator: integrator === "rk4" ? "rk4" : "euler",
         strictDefinitions,
         stopOnRuntimeError,
+        randomSeed,
         currentTime: Number.isFinite(Number(currentTime)) ? Number(currentTime) : null,
       };
     }
@@ -292,6 +302,7 @@
       clamp,
       deepClone,
       normalizeExecutionConfig,
+      normalizeRandomSeed,
       sanitizeLocalFunctionDefinition,
       normalizeSubmodelPath,
       normalizeReadDataPath,
