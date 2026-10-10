@@ -459,6 +459,10 @@
       xMax: parseAxisLimit(widget?.xMax),
       yMin: parseAxisLimit(widget?.yMin),
       yMax: parseAxisLimit(widget?.yMax),
+      xGridStep: parseAxisLimit(widget?.xGridStep) > 0 ? parseAxisLimit(widget?.xGridStep) : null,
+      yGridStep: parseAxisLimit(widget?.yGridStep) > 0 ? parseAxisLimit(widget?.yGridStep) : null,
+      xAxisLabel: String(widget?.xAxisLabel ?? "").trim(),
+      yAxisLabel: String(widget?.yAxisLabel ?? "").trim(),
       showGrid: widget?.showGrid !== false,
       showAxes: widget?.showAxes !== false,
       legendPosition: ["none", "top-right", "top-left", "bottom-right", "bottom-left"].includes(String(widget?.legendPosition ?? ""))
@@ -540,7 +544,7 @@
             ? String(pair.barMode) !== "none"
             : (pair?.barMode === "stems" || pair?.barMode === "columns" || pair?.showBars === true),
           barColor: /^#[0-9a-fA-F]{6}$/.test(String(pair?.barColor ?? "")) ? String(pair.barColor) : (/^#[0-9a-fA-F]{6}$/.test(String(pair?.color ?? "")) ? String(pair.color) : "#2d7ff9"),
-          barWidth: Number.isFinite(Number(pair?.barWidth)) ? clamp(Number(pair.barWidth), 1, 12) : 2,
+          barWidth: Number.isFinite(Number(pair?.barWidth)) ? clamp(Number(pair.barWidth), 1, 40) : 2,
           pointMode: String(pair?.pointMode || "last"),
           pointSize: Number.isFinite(Number(pair?.pointSize)) ? clamp(Number(pair.pointSize), 1, 10) : 2,
           points: [],
@@ -871,18 +875,25 @@
     const xMax = parseAxisLimit(options.xMax);
     const yMin = parseAxisLimit(options.yMin);
     const yMax = parseAxisLimit(options.yMax);
-    if (xMin != null && xMax != null && xMax > xMin) {
-      minX = xMin;
-      maxX = xMax;
-    }
-    if (yMin != null && yMax != null && yMax > yMin) {
-      minY = yMin;
-      maxY = yMax;
-    }
     if (series.some((pair) => pair.showBars)) {
       minY = Math.min(minY, 0);
       maxY = Math.max(maxY, 0);
     }
+    const applyAxisBounds = (autoMin, autoMax, configuredMin, configuredMax) => {
+      if (configuredMin != null && configuredMax != null) {
+        return configuredMax > configuredMin ? [configuredMin, configuredMax] : [autoMin, autoMax];
+      }
+      const span = Math.max(1, Math.abs(autoMax - autoMin));
+      if (configuredMin != null) {
+        return [configuredMin, Math.max(autoMax, configuredMin + span)];
+      }
+      if (configuredMax != null) {
+        return [Math.min(autoMin, configuredMax - span), configuredMax];
+      }
+      return [autoMin, autoMax];
+    };
+    [minX, maxX] = applyAxisBounds(minX, maxX, xMin, xMax);
+    [minY, maxY] = applyAxisBounds(minY, maxY, yMin, yMax);
     if (minX === maxX) {
       minX -= 1;
       maxX += 1;
@@ -893,32 +904,67 @@
     }
     const showAxes = options.showAxes !== false;
     const showGrid = options.showGrid !== false;
-    const pad = showAxes ? 24 : 10;
-    const sx = (width - pad * 2) / (maxX - minX);
-    const sy = (height - pad * 2) / (maxY - minY);
+    const xGridStep = parseAxisLimit(options.xGridStep);
+    const yGridStep = parseAxisLimit(options.yGridStep);
+    const xAxisLabel = String(options.xAxisLabel ?? "").trim();
+    const yAxisLabel = String(options.yAxisLabel ?? "").trim();
+    const labelFontSize = Math.max(8, fontSize);
+    const leftPad = showAxes ? 28 + (yAxisLabel ? labelFontSize + 8 : 0) : 10;
+    const rightPad = showAxes ? 18 : 10;
+    const topPad = showAxes ? 18 : 10;
+    const bottomPad = showAxes ? 26 + (xAxisLabel ? labelFontSize + 12 : 0) : 10;
+    const plotW = Math.max(10, width - leftPad - rightPad);
+    const plotH = Math.max(10, height - topPad - bottomPad);
+    const sx = (x) => leftPad + ((x - minX) / (maxX - minX)) * plotW;
+    const sy = (y) => topPad + plotH - ((y - minY) / (maxY - minY)) * plotH;
+    const niceStep = (span) => {
+      const raw = Math.abs(span) / 5;
+      if (!Number.isFinite(raw) || raw <= 0) return 1;
+      const power = 10 ** Math.floor(Math.log10(raw));
+      const scaled = raw / power;
+      return (scaled <= 1 ? 1 : scaled <= 2 ? 2 : scaled <= 5 ? 5 : 10) * power;
+    };
+    const buildTicks = (min, max, requestedStep) => {
+      const step = requestedStep != null && requestedStep > 0 ? requestedStep : niceStep(max - min);
+      const ticks = [min];
+      const start = Math.ceil(min / step) * step;
+      for (let value = start, count = 0; value < max && count < 500; value += step, count += 1) {
+        if (Math.abs(value - min) >= step * 0.25 && Math.abs(value - max) >= step * 0.25) {
+          ticks.push(Number(value.toFixed(12)));
+        }
+      }
+      ticks.push(max);
+      return ticks.filter((value, index, values) => index === 0 || Math.abs(value - values[index - 1]) > step * 0.25);
+    };
+    const xTicks = buildTicks(minX, maxX, xGridStep);
+    const yTicks = buildTicks(minY, maxY, yGridStep);
 
     if (showGrid) {
       ctx.strokeStyle = "#e4ebf2";
       ctx.lineWidth = 1;
-      for (let index = 1; index < 5; index += 1) {
-        const x = pad + ((width - pad * 2) * index) / 5;
-        const y = pad + ((height - pad * 2) * index) / 5;
+      xTicks.slice(1, -1).forEach((tick) => {
+        const x = sx(tick);
         ctx.beginPath();
-        ctx.moveTo(x, pad);
-        ctx.lineTo(x, height - pad);
-        ctx.moveTo(pad, y);
-        ctx.lineTo(width - pad, y);
+        ctx.moveTo(x, topPad);
+        ctx.lineTo(x, topPad + plotH);
         ctx.stroke();
-      }
+      });
+      yTicks.slice(1, -1).forEach((tick) => {
+        const y = sy(tick);
+        ctx.beginPath();
+        ctx.moveTo(leftPad, y);
+        ctx.lineTo(leftPad + plotW, y);
+        ctx.stroke();
+      });
     }
 
     if (showAxes) {
       ctx.strokeStyle = "#9fb0c0";
       ctx.beginPath();
-      ctx.moveTo(pad, height - pad);
-      ctx.lineTo(width - pad, height - pad);
-      ctx.moveTo(pad, pad);
-      ctx.lineTo(pad, height - pad);
+      ctx.moveTo(leftPad, topPad + plotH);
+      ctx.lineTo(leftPad + plotW, topPad + plotH);
+      ctx.moveTo(leftPad, topPad);
+      ctx.lineTo(leftPad, topPad + plotH);
       ctx.stroke();
     }
 
@@ -930,13 +976,13 @@
         ctx.strokeStyle = pair.barColor || pair.color || "#2d7ff9";
         ctx.lineWidth = pair.barWidth || 2;
         ctx.setLineDash([]);
-        const baseline = height - pad - (0 - minY) * sy;
+        const baseline = sy(0);
         const barPoints = pair.barMode === "last"
           ? [pair.points[pair.points.length - 1]].filter(Boolean)
           : pair.points;
         barPoints.forEach((pt) => {
-          const x = pad + (pt.x - minX) * sx;
-          const y = height - pad - (pt.y - minY) * sy;
+          const x = sx(pt.x);
+          const y = sy(pt.y);
           ctx.beginPath();
           ctx.moveTo(x, baseline);
           ctx.lineTo(x, y);
@@ -948,8 +994,8 @@
       if (pair.showLine !== false) {
         ctx.beginPath();
         pair.points.forEach((pt, idx) => {
-          const x = pad + (pt.x - minX) * sx;
-          const y = height - pad - (pt.y - minY) * sy;
+          const x = sx(pt.x);
+          const y = sy(pt.y);
           if (idx === 0) {
             ctx.moveTo(x, y);
           } else {
@@ -965,8 +1011,8 @@
           ? pair.points
           : [pair.points[pair.points.length - 1]].filter(Boolean);
         pointsToDraw.forEach((pt) => {
-          const x = pad + (pt.x - minX) * sx;
-          const y = height - pad - (pt.y - minY) * sy;
+          const x = sx(pt.x);
+          const y = sy(pt.y);
           ctx.fillStyle = pair.pointColor || pair.color || "#2d7ff9";
           ctx.beginPath();
           ctx.arc(x, y, pair.pointSize || 2, 0, Math.PI * 2);
@@ -977,11 +1023,29 @@
 
     if (showAxes) {
       ctx.fillStyle = "#506070";
-      ctx.font = `${Math.max(8, fontSize)}px sans-serif`;
-      ctx.fillText(formatNumberValue(execution, minX), pad, height - 4);
-      ctx.fillText(formatNumberValue(execution, maxX), width - pad - 24, height - 4);
-      ctx.fillText(formatNumberValue(execution, maxY), 4, pad + 4);
-      ctx.fillText(formatNumberValue(execution, minY), 4, height - pad);
+      ctx.font = `${labelFontSize}px sans-serif`;
+      ctx.textBaseline = "top";
+      xTicks.forEach((tick, index) => {
+        const x = sx(tick);
+        ctx.textAlign = index === 0 ? "left" : index === xTicks.length - 1 ? "right" : "center";
+        ctx.fillText(formatNumberValue(execution, tick), x, topPad + plotH + 5);
+      });
+      ctx.textAlign = "right";
+      yTicks.forEach((tick) => {
+        ctx.fillText(formatNumberValue(execution, tick), leftPad - 6, sy(tick) - 5);
+      });
+      if (xAxisLabel) {
+        ctx.textAlign = "center";
+        ctx.fillText(xAxisLabel, leftPad + plotW / 2, topPad + plotH + labelFontSize + 12);
+      }
+      if (yAxisLabel) {
+        ctx.save();
+        ctx.translate(labelFontSize, topPad + plotH / 2);
+        ctx.rotate(-Math.PI / 2);
+        ctx.textAlign = "center";
+        ctx.fillText(yAxisLabel, 0, 0);
+        ctx.restore();
+      }
     }
 
     const visibleLegend = series

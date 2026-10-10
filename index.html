@@ -248,7 +248,7 @@
               <div class="row2-exec">
                 <button id="editLocalFunctionsBtn" class="small-btn" type="button" data-i18n="action.editLocalFunctions" data-title-i18n="tooltip.model.localFunctions"></button>
               </div>
-              <h4 data-i18n="panel.propertiesList"></h4>
+              <h4 data-i18n="panel.propertiesList" data-title-i18n="tooltip.model.properties"></h4>
               <div id="modelPropsList" class="props-list"></div>
               <button id="addModelPropBtn" class="small-btn" data-i18n="action.addProperty" data-title-i18n="tooltip.model.addProperty"></button>
             </div>
@@ -264,7 +264,7 @@
 
               <label for="nodeShapeInput" data-i18n="label.shape" data-title-i18n="tooltip.node.type"></label>
               <div class="node-type-row">
-                <select id="nodeShapeInput">
+                <select id="nodeShapeInput" data-title-i18n="tooltip.node.type">
                   <option value="rect" data-i18n="shape.rect"></option>
                   <option value="ellipse" data-i18n="shape.ellipse"></option>
                   <option value="diamond" data-i18n="shape.diamond"></option>
@@ -335,26 +335,26 @@
 
             <div class="panel-section compact-panel-section tablet-advanced-details">
               <label for="nodeValueOutput" data-i18n="label.valueComputed" data-title-i18n="tooltip.node.computedValue"></label>
-              <pre id="nodeValueOutput" class="value-output">-</pre>
+              <pre id="nodeValueOutput" class="value-output" data-title-i18n="tooltip.node.computedValue">-</pre>
             </div>
 
             <div class="panel-section compact-panel-section tablet-advanced-details">
               <div class="row2-exec">
                 <div>
-                  <label for="nodeFillColorInput" data-i18n="label.nodeFillColor"></label>
-                  <select id="nodeFillColorInput"></select>
+                  <label for="nodeFillColorInput" data-i18n="label.nodeFillColor" data-title-i18n="tooltip.node.fillColor"></label>
+                  <select id="nodeFillColorInput" data-title-i18n="tooltip.node.fillColor"></select>
                 </div>
                 <div>
-                  <label for="nodeStrokeColorInput" data-i18n="label.nodeStrokeColor"></label>
-                  <select id="nodeStrokeColorInput"></select>
+                  <label for="nodeStrokeColorInput" data-i18n="label.nodeStrokeColor" data-title-i18n="tooltip.node.strokeColor"></label>
+                  <select id="nodeStrokeColorInput" data-title-i18n="tooltip.node.strokeColor"></select>
                 </div>
               </div>
             </div>
 
             <div class="panel-section compact-panel-section tablet-advanced-details">
-              <h4 data-i18n="panel.propertiesList"></h4>
+              <h4 data-i18n="panel.propertiesList" data-title-i18n="tooltip.node.properties"></h4>
               <div id="propsList" class="props-list"></div>
-              <button id="addPropBtn" class="small-btn" data-i18n="action.addProperty"></button>
+              <button id="addPropBtn" class="small-btn" data-i18n="action.addProperty" data-title-i18n="tooltip.node.addProperty"></button>
             </div>
           </div>
 
@@ -376,28 +376,28 @@
             <div class="panel-section compact-panel-section">
               <div class="row2-exec">
                 <div>
-                  <label for="textWidthInput" data-i18n="label.width"></label>
-                  <input id="textWidthInput" type="number" min="40" max="1200" step="10" />
+                  <label for="textWidthInput" data-i18n="label.width" data-title-i18n="tooltip.text.width"></label>
+                  <input id="textWidthInput" type="number" min="40" max="1200" step="10" data-title-i18n="tooltip.text.width" />
                 </div>
                 <div>
-                  <label for="textHeightInput" data-i18n="label.height"></label>
-                  <input id="textHeightInput" type="number" min="24" max="1200" step="10" />
+                  <label for="textHeightInput" data-i18n="label.height" data-title-i18n="tooltip.text.height"></label>
+                  <input id="textHeightInput" type="number" min="24" max="1200" step="10" data-title-i18n="tooltip.text.height" />
                 </div>
               </div>
               <div class="tablet-advanced-details">
                 <div class="row2-exec">
                   <div>
-                    <label for="textFillColorInput" data-i18n="label.background"></label>
-                    <select id="textFillColorInput"></select>
+                    <label for="textFillColorInput" data-i18n="label.background" data-title-i18n="tooltip.text.fillColor"></label>
+                    <select id="textFillColorInput" data-title-i18n="tooltip.text.fillColor"></select>
                   </div>
                   <div>
-                    <label for="textStrokeColorInput" data-i18n="label.border"></label>
-                    <select id="textStrokeColorInput"></select>
+                    <label for="textStrokeColorInput" data-i18n="label.border" data-title-i18n="tooltip.text.strokeColor"></label>
+                    <select id="textStrokeColorInput" data-title-i18n="tooltip.text.strokeColor"></select>
                   </div>
                 </div>
                 <div class="hint" data-i18n="hint.textFormatting"></div>
-                <label for="textHtmlInput" data-i18n="label.textMarkdown"></label>
-                <textarea id="textHtmlInput" class="panel-textarea"></textarea>
+                <label for="textHtmlInput" data-i18n="label.textMarkdown" data-title-i18n="tooltip.text.markdown"></label>
+                <textarea id="textHtmlInput" class="panel-textarea" data-title-i18n="tooltip.text.markdown"></textarea>
               </div>
             </div>
           </div>
@@ -408,9 +408,9 @@
           </div>
 
           <div id="sidebarZoomControls" class="sidebar-zoom-controls">
-            <label for="zoomRangeInput" data-i18n="label.zoom"></label>
+            <label for="zoomRangeInput" data-i18n="label.zoom" data-title-i18n="tooltip.model.zoom"></label>
             <div class="zoom-control-row">
-              <input id="zoomRangeInput" type="range" min="25" max="300" step="5" />
+              <input id="zoomRangeInput" type="range" min="25" max="300" step="5" data-title-i18n="tooltip.model.zoom" />
               <span id="zoomRangeValue" class="zoom-range-value">100%</span>
             </div>
           </div>
@@ -454,7 +454,7 @@
             </div>
             <div id="expressionMainFieldBlock" class="expression-main-field">
               <div id="expressionStateTransitionHead" class="expression-field-head hidden">
-                <label id="expressionStateTransitionLabel" class="expression-preview-label" for="expressionEditorTextarea" data-i18n="label.stateTransition"></label>
+                <label id="expressionStateTransitionLabel" class="expression-preview-label" for="expressionEditorTextarea" data-i18n="label.stateTransition" data-title-i18n="tooltip.node.expressionState"></label>
                 <span id="expressionStateTransitionStatus" class="expr-status inline hidden"></span>
               </div>
               <div class="expression-editor-surface">

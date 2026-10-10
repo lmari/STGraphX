@@ -3259,11 +3259,28 @@ function expressionEditorMainFieldLabel(node) {
   return node.shape === "diamond" ? t("label.value") : t("label.behaviorFunction");
 }
 
+function expressionEditorMainFieldTooltipKey(node) {
+  return nodeExpressionTooltipKey(node);
+}
+
+function expressionEditorInitialFieldTooltipKey() {
+  return "tooltip.node.initialState";
+}
+
+function syncExpressionEditorFieldTooltips(node) {
+  const mainTooltip = t(expressionEditorMainFieldTooltipKey(node));
+  const initialTooltip = t(expressionEditorInitialFieldTooltipKey());
+  setTooltipText(expressionStateTransitionLabel, mainTooltip);
+  setTooltipText(expressionEditorTextarea, mainTooltip);
+  setTooltipText(expressionStateInitialInput, initialTooltip);
+}
+
 function syncExpressionEditorHeadLabel(node) {
   if (!expressionStateTransitionLabel) {
     return;
   }
   expressionStateTransitionLabel.textContent = expressionEditorMainFieldLabel(node);
+  syncExpressionEditorFieldTooltips(node);
 }
 
 function expressionEditorMeta() {
@@ -3297,6 +3314,7 @@ function setActiveExpressionEditor(editorKey) {
     return;
   }
   ui.expressionEditor.activeEditor = editorKey === "initial" ? "initial" : "main";
+  syncExpressionEditorFieldTooltips(getNodeById(ui.expressionEditor.nodeId));
   renderExpressionHighlight();
   renderExpressionAutocomplete();
 }
@@ -5007,6 +5025,13 @@ function setExpressionHelp(entry = null) {
 }
 
 function setExpressionEntryTooltip(entry = null) {
+  const node = ui.expressionEditor?.nodeId ? getNodeById(ui.expressionEditor.nodeId) : null;
+  const activeFieldKey = currentExpressionEditorFieldKey();
+  const fallback = t(
+    activeFieldKey === "initial"
+      ? expressionEditorInitialFieldTooltipKey()
+      : expressionEditorMainFieldTooltipKey(node),
+  );
   const preview = expressionValuePreviewForEntry(entry);
   const lines = [];
   if (entry?.name) {
@@ -5018,13 +5043,17 @@ function setExpressionEntryTooltip(entry = null) {
   if (preview?.typeLabel) {
     lines.push(`${t("expr.preview.type")}: ${preview.typeLabel}`);
   }
-  const tooltipText = lines.join("\n");
-  [
-    expressionEditorTextarea,
-    expressionEditorHighlight,
-    expressionStateInitialInput,
-    expressionStateInitialHighlight,
-  ].forEach((el) => setTooltipText(el, tooltipText));
+  const tooltipText = lines.join("\n") || fallback;
+  const activeInput = activeExpressionEditorInput();
+  const activeHighlight = activeExpressionEditorHighlight();
+  setTooltipText(activeInput, tooltipText);
+  setTooltipText(activeHighlight, tooltipText);
+
+  // Updating data-tooltip alone does not redraw an already visible custom
+  // tooltip. Keep it in sync while the pointer remains over the editor.
+  if (ui.tooltipTarget === activeInput || ui.tooltipTarget === activeHighlight) {
+    refreshActiveTooltip();
+  }
 }
 
 async function copyExpressionAuxText(sourceEl, emptyKey = "expr.copy.empty") {
@@ -8612,6 +8641,10 @@ function exportGraphData() {
       xMax: serializeAutoNullableNumber(w.xMax),
       yMin: serializeAutoNullableNumber(w.yMin),
       yMax: serializeAutoNullableNumber(w.yMax),
+      xGridStep: Number.isFinite(Number(w.xGridStep)) && Number(w.xGridStep) > 0 ? Number(w.xGridStep) : null,
+      yGridStep: Number.isFinite(Number(w.yGridStep)) && Number(w.yGridStep) > 0 ? Number(w.yGridStep) : null,
+      xAxisLabel: String(w.xAxisLabel ?? ""),
+      yAxisLabel: String(w.yAxisLabel ?? ""),
       showGrid: w.showGrid !== false,
       showAxes: w.showAxes !== false,
       legendPosition: ["none", "top-right", "top-left", "bottom-right", "bottom-left"].includes(String(w.legendPosition ?? ""))
@@ -8674,7 +8707,7 @@ function exportGraphData() {
           barMode: normalizeChartBarMode(pair?.barMode, pair?.showBars),
           showBars: normalizeChartBarMode(pair?.barMode, pair?.showBars) !== "none",
           barColor: /^#[0-9a-fA-F]{6}$/.test(String(pair?.barColor ?? "")) ? String(pair.barColor) : (/^#[0-9a-fA-F]{6}$/.test(String(pair?.color ?? "")) ? String(pair.color) : defaultChartSeriesColor(idx)),
-          barWidth: Number.isFinite(Number(pair?.barWidth)) ? clamp(Number(pair.barWidth), 1, 12) : 2.2,
+          barWidth: Number.isFinite(Number(pair?.barWidth)) ? clamp(Number(pair.barWidth), 1, 40) : 2.2,
           pointMode: normalizeChartPointMode(pair?.pointMode, pair?.showPoints),
           pointSize: Number.isFinite(Number(pair?.pointSize)) ? clamp(Number(pair.pointSize), 1, 12) : 2.4,
         }))
@@ -8895,6 +8928,10 @@ function applyGraphData(data) {
         xMax: parseAutoNullableNumber(w.xMax),
         yMin: parseAutoNullableNumber(w.yMin),
         yMax: parseAutoNullableNumber(w.yMax),
+        xGridStep: Number.isFinite(Number(w.xGridStep)) && Number(w.xGridStep) > 0 ? Number(w.xGridStep) : null,
+        yGridStep: Number.isFinite(Number(w.yGridStep)) && Number(w.yGridStep) > 0 ? Number(w.yGridStep) : null,
+        xAxisLabel: String(w.xAxisLabel ?? "").trim(),
+        yAxisLabel: String(w.yAxisLabel ?? "").trim(),
         showGrid: w.showGrid !== false,
         showAxes: w.showAxes !== false,
         legendPosition: ["none", "top-right", "top-left", "bottom-right", "bottom-left"].includes(String(w.legendPosition ?? ""))
@@ -8962,7 +8999,7 @@ function applyGraphData(data) {
             barMode: normalizeChartBarMode(pair?.barMode, pair?.showBars),
             showBars: normalizeChartBarMode(pair?.barMode, pair?.showBars) !== "none",
             barColor: /^#[0-9a-fA-F]{6}$/.test(String(pair?.barColor ?? "")) ? String(pair.barColor) : (/^#[0-9a-fA-F]{6}$/.test(String(pair?.color ?? "")) ? String(pair.color) : defaultChartSeriesColor(idx)),
-            barWidth: Number.isFinite(Number(pair?.barWidth)) ? clamp(Number(pair.barWidth), 1, 12) : 2.2,
+            barWidth: Number.isFinite(Number(pair?.barWidth)) ? clamp(Number(pair.barWidth), 1, 40) : 2.2,
             pointMode: normalizeChartPointMode(pair?.pointMode, pair?.showPoints),
             pointSize: Number.isFinite(Number(pair?.pointSize)) ? clamp(Number(pair.pointSize), 1, 12) : 2.4,
             points: [],
@@ -9954,6 +9991,7 @@ function refreshSidebar() {
     influenceLabel.textContent = t("label.edgeInfluence");
     const influenceInput = document.createElement("select");
     influenceInput.setAttribute("aria-label", influenceLabel.textContent);
+    setTooltipText(influenceLabel, t("tooltip.edge.influence"));
     ["none", "positive", "negative", "unknown"].forEach((value) => {
       const option = document.createElement("option");
       option.value = value;
@@ -9961,7 +9999,15 @@ function refreshSidebar() {
       influenceInput.appendChild(option);
     });
     influenceInput.value = normalizeEdgeInfluence(edge.influence);
+    const updateInfluenceTooltip = () => {
+      setTooltipText(influenceInput, t(`tooltip.edge.influence.${normalizeEdgeInfluence(influenceInput.value)}`));
+      Array.from(influenceInput.options).forEach((option) => {
+        option.title = t(`tooltip.edge.influence.${option.value}`);
+      });
+    };
+    updateInfluenceTooltip();
     influenceInput.addEventListener("change", () => {
+      updateInfluenceTooltip();
       runAction(() => {
         const target = getEdgeById(edgeId);
         if (target) {
@@ -9978,6 +10024,8 @@ function refreshSidebar() {
     colorLabel.textContent = t("label.edgeColor");
     const colorInput = document.createElement("select");
     colorInput.setAttribute("aria-label", colorLabel.textContent);
+    setTooltipText(colorLabel, t("tooltip.edge.color"));
+    setTooltipText(colorInput, t("tooltip.edge.color"));
     EDGE_COLOR_PRESETS.forEach((preset) => {
       const option = document.createElement("option");
       option.value = preset.value;
@@ -10107,6 +10155,10 @@ function refreshSidebar() {
     if (!sameSidebarNode || document.activeElement !== nodeShapeInput) {
       nodeShapeInput.value = node.shape;
     }
+    Array.from(nodeShapeInput?.options || []).forEach((option) => {
+      option.title = t(`tooltip.node.type.${option.value}`);
+    });
+    setTooltipText(nodeShapeInput, t(`tooltip.node.type.${node.shape}`));
     const showInputToggle = canMarkNodeAsInput(node);
     const showGlobalToggle = canMarkNodeAsGlobal(node);
     const submodelNode = isSubmodelNode(node);
@@ -11760,6 +11812,10 @@ function importGraphData(data) {
         xMax: parseAutoNullableNumber(w.xMax),
         yMin: parseAutoNullableNumber(w.yMin),
         yMax: parseAutoNullableNumber(w.yMax),
+        xGridStep: Number.isFinite(Number(w.xGridStep)) && Number(w.xGridStep) > 0 ? Number(w.xGridStep) : null,
+        yGridStep: Number.isFinite(Number(w.yGridStep)) && Number(w.yGridStep) > 0 ? Number(w.yGridStep) : null,
+        xAxisLabel: String(w.xAxisLabel ?? "").trim(),
+        yAxisLabel: String(w.yAxisLabel ?? "").trim(),
         showGrid: w.showGrid !== false,
         showAxes: w.showAxes !== false,
         legendPosition: ["none", "top-right", "top-left", "bottom-right", "bottom-left"].includes(String(w.legendPosition ?? ""))
@@ -11827,7 +11883,7 @@ function importGraphData(data) {
             barMode: normalizeChartBarMode(pair?.barMode, pair?.showBars),
             showBars: normalizeChartBarMode(pair?.barMode, pair?.showBars) !== "none",
             barColor: /^#[0-9a-fA-F]{6}$/.test(String(pair?.barColor ?? "")) ? String(pair.barColor) : (/^#[0-9a-fA-F]{6}$/.test(String(pair?.color ?? "")) ? String(pair.color) : defaultChartSeriesColor(idx)),
-            barWidth: Number.isFinite(Number(pair?.barWidth)) ? clamp(Number(pair.barWidth), 1, 12) : 2.2,
+            barWidth: Number.isFinite(Number(pair?.barWidth)) ? clamp(Number(pair.barWidth), 1, 40) : 2.2,
             pointMode: normalizeChartPointMode(pair?.pointMode, pair?.showPoints),
             pointSize: Number.isFinite(Number(pair?.pointSize)) ? clamp(Number(pair.pointSize), 1, 12) : 2.4,
             points: [],
@@ -15199,7 +15255,7 @@ if (expressionEditorTextarea) {
       refreshExpressionEditorValidation();
     }
   });
-  ["click", "keyup", "mouseup"].forEach((eventName) => {
+  ["click", "keyup", "mouseup", "select"].forEach((eventName) => {
     expressionEditorTextarea.addEventListener(eventName, () => {
       renderExpressionHighlight();
       renderExpressionAutocomplete();
@@ -15253,7 +15309,7 @@ if (expressionStateInitialInput) {
       refreshExpressionEditorValidation();
     }
   });
-  ["click", "keyup", "mouseup"].forEach((eventName) => {
+  ["click", "keyup", "mouseup", "select"].forEach((eventName) => {
     expressionStateInitialInput.addEventListener(eventName, () => {
       renderExpressionHighlight();
       renderExpressionAutocomplete();
@@ -15265,6 +15321,19 @@ if (expressionStateInitialInput) {
     });
   });
 }
+
+// `selectionchange` also covers caret movements performed by touch handles,
+// accessibility tools and browser commands, which do not consistently emit a
+// keyboard or mouse event on the textarea itself.
+document.addEventListener("selectionchange", () => {
+  if (!ui.expressionEditor || expressionEditorModal?.classList.contains("hidden")) {
+    return;
+  }
+  const active = document.activeElement;
+  if (active === expressionEditorTextarea || active === expressionStateInitialInput) {
+    renderExpressionAutocomplete();
+  }
+});
 
 const expressionResizeObserver = typeof ResizeObserver === "function"
   ? new ResizeObserver((entries) => {

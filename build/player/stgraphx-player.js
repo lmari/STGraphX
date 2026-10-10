@@ -1,6 +1,6 @@
 /*!
  * STGraphX Embedded Player Bundle
- * Generated: 2026-10-07T11:15:31.923Z
+ * Generated: 2026-10-10T15:24:16.648Z
  */
 
 /* --- i18n-inline.js --- */
@@ -13,7 +13,7 @@
 
 window.STGraphXAppMeta = {
   author: "Luca Mari",
-  releaseDate: "2026.10.06",
+  releaseDate: "2026.10.10",
   license: "MPL-2.0",
   copyright: "Copyright (c) 2026 Luca Mari",
 };
@@ -26,13 +26,15 @@ window.STGraphXI18nBundles = {
     "about.copyrightLabel": "Copyright",
     "about.iconAlt": "Icona di STGraphX",
     "about.licenseLabel": "Licenza",
-    "about.subtitle": "Ambiente per lo sviluppo e la simulazione di modelli di sistemi dinamici",
+    "about.subtitle": "Ambiente per lo sviluppo e l'esecuzione di modelli di sistemi dinamici",
     "about.title": "About STGraphX",
     "about.versionLabel": "Ultimo aggiornamento",
     "action.addMapping": "Aggiungi mappatura",
     "action.addOption": "Aggiungi opzione",
     "action.addProperty": "Aggiungi proprietà",
     "action.apply": "Applica",
+    "action.hidePanel": "Nascondi pannello",
+    "action.showPanel": "Mostra pannello",
     "action.cancel": "Annulla",
     "action.close": "Chiudi",
     "action.closeWithoutSaving": "No, chiudi senza salvare",
@@ -214,7 +216,7 @@ window.STGraphXI18nBundles = {
     "label.behaviorFunction": "Comportamento",
     "label.decimals": "Cifre decimali max",
     "label.description": "Descrizione",
-    "label.edgeInfluence": "Segno della relazione",
+    "label.edgeInfluence": "Segno della funzione",
     "label.edgeColor": "Colore",
     "label.formulaNotes": "Note formula",
     "label.global": "globale",
@@ -322,12 +324,12 @@ window.STGraphXI18nBundles = {
     "expr.help.agentColumnIndex": "Indice di colonna dell'agente o cella corrente nei contesti matriciali agent-based. Nelle strutture non matriciali non è disponibile.",
     "expr.help.agentFieldAlias": "Alias del campo agente {name}. Vale l'indice di colonna {index}.",
     "expr.help.agentIndex": "Indice di riga dell'agente o cella corrente. In esecuzione scalare vale 0; in esecuzione vettoriale identifica la componente locale; con matrici agent-based indica la riga corrente.",
-    "expr.help.agentIndicesWhere": "Gli indici degli agenti per cui la condizione e vera. Nella condizione self e la riga dell'agente corrente e $i il suo indice. Esempio: `agentIndicesWhere(self[STATE] == 1, agents)`.",
+    "expr.help.agentIndicesWhere": "Gli indici degli agenti per cui la condizione è vera. Nella condizione self è la riga dell'agente corrente e $i il suo indice. Esempio: `agentIndicesWhere(self[STATE] == 1, agents)`.",
     "expr.help.agents": "Crea una matrice di agenti con schema di proprietà. campi e un vettore di nomi di campo; il secondo argomento puo essere una matrice opzionale di agenti iniziali oppure un numero di agenti da inizializzare a zero. Esempi: agents([\"ID\",\"STATE\",\"X\",\"Y\"]) ; agents([\"ID\",\"STATE\"], [[1,0],[2,1]]) ; agents([\"X\",\"Y\",\"VX\",\"VY\"], 10).",
     "expr.help.agentSpace": "Un indice spaziale per una popolazione di agenti con coordinate intere non negative nelle colonne xCol e yCol. Se specifichi idCol, nelle celle dello spazio vengono memorizzati i valori di quella proprietà invece degli indici di riga. neighborhood puo valere 'moore' o 'vonNeumann'. Esempio: `agentSpace(agents, X, Y)`.",
     "expr.help.allNeighborCounts": "Un vettore con il numero di vicini di ogni agente. Esempio: `allNeighborCounts(agents, space)`.",
     "expr.help.and": "Congiunzione logica (equivalente a `&&`). Esempio: `a and b`.",
-    "expr.help.append": "Concatena in sequenza due o piu valori. Su vettori aggiunge elementi o concatena vettori. Se e presente una matrice, axis=0 (default) concatena righe e axis=1 colonne: l'ordine degli argomenti stabilisce se sono inserite prima o dopo la matrice. Le matrici agents supportano solo axis=0. Esempi: append([1,2], 3, [4,5]) ; append([[1,2]], [3,4], [5,6]) ; append([[1,2],[3,4]], [5,6], 1) ; append([5,6], [[1,2],[3,4]], 1).",
+    "expr.help.append": "Concatena in sequenza due o piu valori. Su vettori aggiunge elementi o concatena vettori. Se è presente una matrice, axis=0 (default) concatena righe e axis=1 colonne: l'ordine degli argomenti stabilisce se sono inserite prima o dopo la matrice. Le matrici agents supportano solo axis=0. Esempi: append([1,2], 3, [4,5]) ; append([[1,2]], [3,4], [5,6]) ; append([[1,2],[3,4]], [5,6], 1) ; append([5,6], [[1,2],[3,4]], 1).",
     "expr.help.appendRow": "Una copia della matrice con una nuova riga aggiunta in fondo. Per matrici agents aggiunge un nuovo agente. Esempio: `appendRow(agents, [3,1])`.",
     "expr.help.argmax": "L'indice del primo valore massimo. Per un vettore restituisce un indice; per una matrice restituisce [riga, colonna]. In caso di parita sceglie il primo elemento in ordine di righe e colonne. Esempi: argmax([2,7,4]) -> 1 ; argmax([[1,5],[5,2]]) -> [0,1].",
     "expr.help.argmin": "L'indice del primo valore minimo. Per un vettore restituisce un indice; per una matrice restituisce [riga, colonna]. In caso di parita sceglie il primo elemento in ordine di righe e colonne. Esempi: argmin([2,-1,4]) -> 1 ; argmin([[3,2],[1,1]]) -> [1,0].",
@@ -353,14 +355,14 @@ window.STGraphXI18nBundles = {
     "expr.help.exp": "Esponenziale naturale `e^x`. Esempio: `exp(0) -> 1`.",
     "expr.help.exponential": "Distribuzione di probabilità esponenziale (parametro di default: `rate=1`). Se `x` manca, estrae un campione. Con `mode=0` calcola la pdf, con `mode=1` la cdf, con `mode=2` la icdf. Esempi: exponential() ; exponential([2]) ; exponential([2], 1.5, 0) ; exponential([2], 0.9, 2).",
     "expr.help.filter": "Selezione da un vettore o una matrice. Con modo omesso o 'elements' mantiene gli elementi per cui la condizione è vera. Con modo='rows' filtra le righe di una matrice, dove $value è la riga corrente e $0 il suo indice. Con modo='cols' filtra le colonne, dove $value è la colonna corrente e $0 il suo indice. Esempi: filter($value>0, [-2,0,3]) ; filter($0===$1, [[1,2],[3,4]]) ; filter(griglia[$value]==1, coordinate, 'rows').",
-    "expr.help.filterAgents": "La sotto-popolazione degli agenti che soddisfano la condizione. Nella condizione self e la riga dell'agente corrente e $i il suo indice. Esempio: `filterAgents(self[ENERGY] > 0, agents)`.",
+    "expr.help.filterAgents": "La sotto-popolazione degli agenti che soddisfano la condizione. Nella condizione self è la riga dell'agente corrente e $i il suo indice. Esempio: `filterAgents(self[ENERGY] > 0, agents)`.",
     "expr.help.flatten": "Matrice trasformata in vettore concatenando le righe. Esempio: flatten([[1,2],[3,4]]) -> [1,2,3,4].",
     "expr.help.floor": "Arrotondamento per difetto di `x`. Esempio: `floor(1.8) -> 1`.",
     "expr.help.gaussian": "Distribuzione di probabilità gaussiana (parametri di default: `mu=0`, `sigma=1`). Se `x` manca, estrae un campione. Con `mode=0` calcola la pdf, con `mode=1` la cdf, con `mode=2` la icdf. Esempi: gaussian() ; gaussian([0,1]) ; gaussian([0,1], 0, 0) ; gaussian([0,1], 0.95, 2).",
     "expr.help.getModelProperty": "Una proprietà custom del modello. Esempio: `getModelProperty(\"title\", \"untitled\")`.",
     "expr.help.getProperty": "Una proprietà custom del nodo. Esempio: `getProperty(\"unit\", \"\")`.",
     "expr.help.grid": "Una matrice spaziale a partire da coordinate intere non negative. Se si specifica `[nRow, nCols]`, la matrice risultante ha dimensione fissa e genera errore se qualche coordinata esce dai limiti. `collisions` puo valere `error`, `first` oppure `sum`: il primo genera errore sulle coordinate coincidenti, il secondo tiene il valore della prima occorrenza, il terzo somma i valori coincidenti. Se `value` manca, usa `1`; se è scalare usa `value` in tutte le celle occupate; se è un vettore usa `value[i]` nella cella di riga `rows[i]` e colonna `cols[i]`. Esempi: grid([1,1], [0,2]) -> [[0,0,0],[1,0,1]] ; grid([1,1], [0,2], [4,5]) ; grid([1,1], [0,0], 'sum') -> [[0],[2]] ; grid([1,1], [0,2], [4,5], 'error', [1,2]).",
-    "expr.help.if": "Valore associato alla prima condizione vera, valutata in ordine, oppure defaultValue. La valutazione e' pigra e opera elemento per elemento con condizioni vettoriali o matriciali. Esempi: if(x > 0, x, 0); if(x < 0, -1, x == 0, 0, 1)",
+    "expr.help.if": "Valore associato alla prima condizione vera, valutata in ordine, oppure defaultValue. La valutazione è pigra e opera elemento per elemento con condizioni vettoriali o matriciali. Esempi: if(x > 0, x, 0); if(x < 0, -1, x == 0, 0, 1)",
     "expr.help.indicesWhere": "Gli indici degli elementi truthy oppure di quelli che soddisfano la condizione. Per un vettore restituisce un vettore di indici; per una matrice restituisce un vettore di coppie [riga,colonna]. Esempi: indicesWhere([0,1,0,1]) -> [1,3] ; indicesWhere($value>0, [-2,0,3]) -> [2] ; indicesWhere($0===$1, [[1,2],[3,4]]) -> [[0,0],[1,1]].",
     "expr.help.int": "Parte intera di `x`. Esempio: `int(-1.8) -> -1`.",
     "expr.help.integral": "Un'approssimazione discreta dell'integrale di x nel tempo. Con integratore Euler equivale a this + x * dt; con RK4 usa automaticamente il metodo di Runge-Kutta del quarto ordine sulle chiamate integral(...) presenti nelle transizioni di stato. Esempio: `integral(flow)`.",
@@ -379,7 +381,7 @@ window.STGraphXI18nBundles = {
     "expr.help.log2": "Logaritmo in base `2` di `x`. Esempio: `log2(8) -> 3`.",
     "expr.help.log10": "Logaritmo in base `10` di `x`. Esempio: `log10(100) -> 2`.",
     "expr.help.map": "Trasformazione elemento per elemento di un vettore o di una matrice. Dentro expr, $value è il valore corrente e $0, $1, ... sono gli indici locali. Esempi: map($value*2, [1,2,3]) ; map($0+$value, [10,20,30]) ; map($0+$1, [[1,2],[3,4]]).",
-    "expr.help.mapAgents": "Trasformazione riga per riga di tutti gli agenti. expr deve restituire per ogni agente una nuova riga con la stessa lunghezza. In expr self e la riga dell'agente corrente e $i il suo indice. Esempio: `mapAgents(setAt(self, ENERGY, self[ENERGY] + 1), agents)`.",
+    "expr.help.mapAgents": "Trasformazione riga per riga di tutti gli agenti. expr deve restituire per ogni agente una nuova riga con la stessa lunghezza. In expr self è la riga dell'agente corrente e $i il suo indice. Esempio: `mapAgents(setAt(self, ENERGY, self[ENERGY] + 1), agents)`.",
     "expr.help.max": "Massimo tra `x1`, `x2`, ... . Esempio: `max(2, 7, 4) -> 7`.",
     "expr.help.min": "Minimo tra `x1`, `x2`, ... . Esempio: `min(2, 7, 4) -> 2`.",
     "expr.help.ncols": "Il numero di colonne della matrice. Per una popolazione di agenti coincide con il numero di proprietà. Esempio: `ncols(agents)`.",
@@ -449,7 +451,7 @@ window.STGraphXI18nBundles = {
     "expr.preview.shape.vector": "vettore ({size})",
     "expr.preview.title": "Valore attuale della funzione",
     "expr.preview.type": "Tipo",
-    "expr.preview.unavailableState": "Anteprima non disponibile finche lo stato non e inizializzato.",
+    "expr.preview.unavailableState": "Anteprima non disponibile finché lo stato non è inizializzato.",
     "expr.switch.applyAndChange": "Applica e cambia",
     "expr.switch.body": "L'espressione corrente ha modifiche non applicate. Vuoi applicarle prima di cambiare selezione?",
     "expr.switch.discard": "Scarta e cambia",
@@ -457,9 +459,9 @@ window.STGraphXI18nBundles = {
 
     // Expression errors
     "expr.error.agentFieldUnknown": "{fn}: il nome di proprietà '{name}' non esiste nello schema degli agenti",
-    "expr.error.agentsFieldDuplicated": "Il nome di campo agente '{name}' e duplicato",
-    "expr.error.agentsFieldInvalid": "Il nome di campo agente '{name}' non e valido",
-    "expr.error.agentsFieldReserved": "Il nome di campo agente '{name}' e riservato",
+    "expr.error.agentsFieldDuplicated": "Il nome di campo agente '{name}' è duplicato",
+    "expr.error.agentsFieldInvalid": "Il nome di campo agente '{name}' non è valido",
+    "expr.error.agentsFieldReserved": "Il nome di campo agente '{name}' è riservato",
     "expr.error.agentsMatrixExpected": "{name} richiede una matrice di agenti",
     "expr.error.agentsMatrixRectangular": "{name} richiede una matrice di agenti rettangolare",
     "expr.error.agentsNeedsFields": "agents richiede almeno un nome di campo",
@@ -484,7 +486,7 @@ window.STGraphXI18nBundles = {
     "expr.error.appendAxis": "L'axis di append su matrici deve essere 0 o 1",
     "expr.error.appendColumnVector": "Con axis=1, append richiede una colonna vettore",
     "expr.error.appendColumnLength": "La lunghezza della colonna aggiunta non coincide con il numero di righe della matrice",
-    "expr.error.appendAgentColumn": "append con axis=1 non e supportato per matrici agents",
+    "expr.error.appendAgentColumn": "append con axis=1 non è supportato per matrici agents",
     "expr.error.arrayAxisIntegerOrVector": "L'asse {index} di array deve essere un intero non negativo o un vettore",
     "expr.error.arrayDimensionNonNegative": "La dimensione {index} di array deve essere un intero non negativo",
     "expr.error.arrayIndexInteger": "L'indice dell'array deve essere un intero",
@@ -638,7 +640,7 @@ window.STGraphXI18nBundles = {
     "localFunctions.error.reservedName": "Il nome '{name}' non può essere usato per una funzione locale.",
     "localFunctions.error.runtimeRecursion": "La funzione locale '{name}' non può richiamare sé stessa in modo ricorsivo.",
     "localFunctions.expression": "Espressione",
-    "localFunctions.intro": "Definisci funzioni riusabili a livello di modello. In questa prima versione ogni funzione usa solo i propri argomenti e le altre funzioni locali, senza ricorsione.",
+    "localFunctions.intro": "Definisci funzioni riusabili a livello di modello. Ogni funzione usa solo i propri argomenti e le altre funzioni locali, senza ricorsione.",
     "localFunctions.name": "Nome",
     "localFunctions.params": "Parametri",
     "localFunctions.title": "Funzioni locali",
@@ -650,11 +652,15 @@ window.STGraphXI18nBundles = {
     "widget.addPair": "Aggiungi coppia",
     "widget.addSeries": "Aggiungi serie Y",
     "widget.autoOption": "auto",
-    "widget.axisLimitsLabel": "Limiti assi x,y",
+    "widget.axisLimitsLabel": "Assi e griglia",
+    "widget.axisXGridStep": "Passo X",
+    "widget.axisXLabel": "Etichetta X",
     "widget.axisXMax": "X max",
     "widget.axisXMin": "X min",
     "widget.axisYMax": "Y max",
     "widget.axisYMin": "Y min",
+    "widget.axisYGridStep": "Passo Y",
+    "widget.axisYLabel": "Etichetta Y",
     "widget.barColor": "Colore barre",
     "widget.barMode": "Barre",
     "widget.barMode.all": "Barre",
@@ -954,7 +960,7 @@ window.STGraphXI18nBundles = {
     "tooltip.menu.run.analyze": "Esegue controlli statici sul modello e mostra un report dei problemi trovati.",
     "tooltip.menu.run.execute": "Esegue il modello fino a t1 o completa l'esecuzione già avviata.",
     "tooltip.menu.run.reset": "Reimposta l'esecuzione a t0 e pulisce i risultati dinamici.",
-    "tooltip.menu.run.step": "Esegue un solo passo temporale.",
+    "tooltip.menu.run.step": "Esegue il modello per un solo passo temporale.",
     "tooltip.menu.run.timed": "Avvia o ferma l'esecuzione temporizzata.",
     "tooltip.menu.run.watch": "Apre lo strumento di watch e breakpoint per il debugging del modello.",
     "tooltip.menu.view": "Controlli di visualizzazione, zoom e griglia.",
@@ -975,7 +981,7 @@ window.STGraphXI18nBundles = {
     "modelNotes.questions": "Domande aperte",
     "modelNotes.empty": "Non ci sono ancora appunti per questo modello.",
     "modelNotes.canvasButton": "Apri gli appunti del modello",
-    "modelNotes.nodeReferenceHelp": "Scrivi [[nomeNodo|testo]] per creare un collegamento al nodo; il testo dopo | e facoltativo.",
+    "modelNotes.nodeReferenceHelp": "Scrivi [[nomeNodo|testo]] per creare un collegamento al nodo; il testo dopo | è facoltativo.",
     "modelNotes.insertNodeLink": "Inserisci un collegamento a un nodo",
     "modelNotes.insertFormula": "Inserisci una formula LaTeX",
     "tooltip.text.insertFormula": "Inserisce una formula LaTeX in linea, delimitata da $...$.",
@@ -992,8 +998,10 @@ window.STGraphXI18nBundles = {
     "tooltip.model.currentTime": "Tempo corrente dell'esecuzione.",
     "tooltip.model.decimals": "Numero massimo di cifre decimali mostrate per i valori numerici.",
     "tooltip.model.delay": "Ritardo tra i passi in esecuzione temporizzata, in millisecondi.",
+    "tooltip.action.hidePanel": "Nasconde la barra di configurazione per ampliare il canvas.",
+    "tooltip.action.showPanel": "Riapre la barra di configurazione.",
     "tooltip.model.dt": "Passo temporale usato tra un'iterazione e la successiva.",
-    "tooltip.model.integrator": "Metodo numerico usato per integral(...). Eulero e il default; RK4 si applica alle chiamate integral(...) presenti nelle transizioni di stato.",
+    "tooltip.model.integrator": "Metodo numerico usato per integral(...). Eulero è il default; RK4 si applica alle chiamate integral(...) presenti nelle transizioni di stato.",
     "tooltip.model.localFunctions": "Apre l'editor delle funzioni locali, riusabili dalle espressioni dei nodi del modello.",
     "tooltip.model.renderEverySteps": "Durante l'esecuzione temporizzata ridisegna canvas e widget ogni N passi. Il calcolo e le serie storiche restano completi a ogni passo.",
     "tooltip.model.strictDefinitions": "Se attivo, i nodi non definiti correttamente vengono evidenziati e bloccano l'esecuzione.",
@@ -1003,6 +1011,7 @@ window.STGraphXI18nBundles = {
     "tooltip.model.t1": "Istante finale dell'esecuzione.",
     "tooltip.model.title": "Titolo descrittivo del modello, salvato nel file JSON.",
     "tooltip.node.computedValue": "Ultimo valore calcolato per il nodo selezionato.",
+    "tooltip.node.fillColor": "Colore o trasparenza dello sfondo del nodo nel grafo.",
     "tooltip.node.description": "Breve descrizione testuale del nodo, utile come documentazione interna del modello.",
     "tooltip.node.editExpression": "Apre un editor esteso per scrivere o modificare espressioni lunghe.",
     "tooltip.node.expressionBehavior": "Espressione di comportamento del nodo algebrico.",
@@ -1014,6 +1023,8 @@ window.STGraphXI18nBundles = {
     "tooltip.node.input": "Marca il nodo come ingresso esterno pilotabile da widget di input.",
     "tooltip.node.loadSubmodel": "Carica o aggiorna il sottomodello referenziato nel nodo selezionato.",
     "tooltip.node.name": "Nome univoco del nodo, usabile nelle espressioni dei nodi collegati.",
+    "tooltip.node.properties": "Coppie chiave-valore descrittive, salvate nel modello e disponibili come documentazione del nodo.",
+    "tooltip.node.addProperty": "Aggiunge una nuova proprietà descrittiva al nodo selezionato.",
     "tooltip.node.openSubmodel": "Apre il sottomodello referenziato nel nodo selezionato.",
     "tooltip.node.output": "Marca il nodo come uscita da mostrare nei widget di visualizzazione.",
     "tooltip.node.refreshSubmodel": "Legge il file del sottomodello e aggiorna l'interfaccia di input/output.",
@@ -1021,6 +1032,23 @@ window.STGraphXI18nBundles = {
     "tooltip.node.submodelBinding": "Seleziona quale variabile connessa alimenta questo input del sottomodello. Se vuoto, il sottomodello usa il proprio valore di default.",
     "tooltip.node.submodelPath": "Nome del file JSON del sottomodello, relativo alla cartella del modello corrente.",
     "tooltip.node.submodelIcon": "Sostituisce l'aspetto del nodo di sottomodello con un'icona, senza modificare il modello incluso.",
+    "tooltip.node.strokeColor": "Colore o trasparenza del bordo del nodo nel grafo.",
+    "tooltip.edge.influence": "Segno qualitativo della relazione: positivo, negativo, non determinato o non specificato.",
+    "tooltip.edge.influence.none": "Nessun segno dichiarato per la relazione.",
+    "tooltip.edge.influence.positive": "Relazione monotona crescente: un aumento della sorgente aumenta la destinazione.",
+    "tooltip.edge.influence.negative": "Relazione monotona decrescente: un aumento della sorgente diminuisce la destinazione.",
+    "tooltip.edge.influence.unknown": "Il segno della relazione non e noto o non e monotono.",
+    "tooltip.edge.color": "Colore usato per disegnare la freccia nel grafo.",
+    "tooltip.model.properties": "Coppie chiave-valore descrittive, salvate nel file JSON del modello.",
+    "tooltip.model.zoom": "Ingrandisce o riduce la visualizzazione del canvas.",
+    "tooltip.property.key": "Nome della proprietà descrittiva.",
+    "tooltip.property.value": "Valore testuale associato alla proprietà.",
+    "tooltip.property.remove": "Elimina questa proprietà.",
+    "tooltip.text.width": "Larghezza dell'oggetto di testo sul canvas, in pixel.",
+    "tooltip.text.height": "Altezza dell'oggetto di testo sul canvas, in pixel.",
+    "tooltip.text.fillColor": "Colore o trasparenza dello sfondo dell'oggetto di testo.",
+    "tooltip.text.strokeColor": "Colore o trasparenza del bordo dell'oggetto di testo.",
+    "tooltip.text.markdown": "Testo in formato Markdown, con supporto per formule LaTeX.",
     "tooltip.node.chooseSubmodelIcon": "Sceglie dal file system un'immagine da incorporare nel modello come icona.",
     "tooltip.node.clearSubmodelIcon": "Ripristina la visualizzazione standard del nodo di sottomodello.",
     "error.submodelIconRead": "Non è possibile leggere l'immagine selezionata.",
@@ -1034,6 +1062,10 @@ window.STGraphXI18nBundles = {
     "submodelIcon.process": "Processo",
     "submodelIcon.image": "Immagine dal file",
     "tooltip.node.type": "Tipo semantico del nodo: stato, algebrico o parametro.",
+    "tooltip.node.type.rect": "Variabile di stato: conserva un valore tra un passo e il successivo.",
+    "tooltip.node.type.ellipse": "Variabile algebrica: il valore e ricalcolato dalle sue dipendenze.",
+    "tooltip.node.type.diamond": "Parametro: valore definito dal modello o da un widget di input.",
+    "tooltip.node.type.submodel": "Sottomodello: include un altro modello STGraphX con ingressi e uscite.",
     "tooltip.tab.new": "Apre una nuova scheda modello.",
     "tooltip.widget.addColumn": "Aggiunge una nuova colonna alla tabella.",
     "tooltip.widget.addMapping": "Aggiunge una corrispondenza tra un valore numerico e un testo.",
@@ -1041,13 +1073,17 @@ window.STGraphXI18nBundles = {
     "tooltip.widget.addPair": "Aggiunge una nuova coppia di serie X-Y.",
     "tooltip.widget.axisXMax": "Limite superiore dell'asse X. Lascia vuoto per calcolarlo automaticamente.",
     "tooltip.widget.axisXMin": "Limite inferiore dell'asse X. Lascia vuoto per calcolarlo automaticamente.",
+    "tooltip.widget.axisXGridStep": "Distanza tra tacche e linee della griglia sull'asse X. Lascia vuoto per calcolarla automaticamente.",
+    "tooltip.widget.axisXLabel": "Testo visualizzato come etichetta dell'asse X.",
     "tooltip.widget.axisYMax": "Limite superiore dell'asse Y. Lascia vuoto per calcolarlo automaticamente.",
     "tooltip.widget.axisYMin": "Limite inferiore dell'asse Y. Lascia vuoto per calcolarlo automaticamente.",
+    "tooltip.widget.axisYGridStep": "Distanza tra tacche e linee della griglia sull'asse Y. Lascia vuoto per calcolarla automaticamente.",
+    "tooltip.widget.axisYLabel": "Testo visualizzato come etichetta dell'asse Y.",
     "tooltip.widget.barColor": "Colore delle barre verticali che uniscono i punti all'asse X.",
     "tooltip.widget.barMode": "Sceglie se disegnare nessuna barra, solo l'ultima o una barra per ogni punto fino all'asse X.",
     "tooltip.widget.barWidth": "Spessore delle barre verticali, in pixel.",
-    "tooltip.widget.binaryFalseLabel": "Testo sovrapposto al widget quando il valore booleano e 0 o falso. Lascia vuoto per non mostrare testo.",
-    "tooltip.widget.binaryTrueLabel": "Testo sovrapposto al widget quando il valore booleano e 1 o vero. Lascia vuoto per non mostrare testo.",
+    "tooltip.widget.binaryFalseLabel": "Testo sovrapposto al widget quando il valore booleano è 0 o falso. Lascia vuoto per non mostrare testo.",
+    "tooltip.widget.binaryTrueLabel": "Testo sovrapposto al widget quando il valore booleano è 1 o vero. Lascia vuoto per non mostrare testo.",
     "tooltip.widget.buttonInitialValue": "Imposta il valore del pulsante al reset del modello; non modifica l'esecuzione in corso.",
     "tooltip.widget.customTitle": "Titolo visualizzato nel widget. Se vuoto, viene generato dal tipo di widget e dal nodo selezionato.",
     "tooltip.widget.expandNonScalarValues": "Mostra vettori e matrici distribuendone i valori in celle separate. Alternativo alla serie storica.",
@@ -1061,7 +1097,7 @@ window.STGraphXI18nBundles = {
     "tooltip.widget.mappingText": "Testo da visualizzare quando il nodo ha il valore indicato.",
     "tooltip.widget.mappingValue": "Valore del nodo a cui associare il testo.",
     "tooltip.widget.matrixAutoFitCells": "Adatta automaticamente la dimensione delle celle allo spazio disponibile.",
-    "tooltip.widget.matrixCellSize": "Dimensione delle celle della griglia, in pixel, quando l'adattamento automatico e disattivato.",
+    "tooltip.widget.matrixCellSize": "Dimensione delle celle della griglia, in pixel, quando l'adattamento automatico è disattivato.",
     "tooltip.widget.matrixColorScheme": "Scala di colori usata per rappresentare i valori della matrice o della superficie. 'Categorie' assegna un colore distinto a ogni valore intero.",
     "tooltip.widget.matrixDisplayCols": "Numero massimo di colonne visibili. Lascia vuoto per mostrarle tutte.",
     "tooltip.widget.matrixDisplayRows": "Numero massimo di righe visibili. Lascia vuoto per mostrarle tutte.",
@@ -1286,13 +1322,15 @@ window.STGraphXI18nBundles = {
     "about.copyrightLabel": "Copyright",
     "about.iconAlt": "STGraphX icon",
     "about.licenseLabel": "License",
-    "about.subtitle": "Workbench for the development and simulation of dynamic system models",
+    "about.subtitle": "Workbench for the development and the execution of dynamic system models",
     "about.title": "About STGraphX",
     "about.versionLabel": "Last update",
     "action.addMapping": "Add mapping",
     "action.addOption": "Add option",
     "action.addProperty": "Add property",
     "action.apply": "Apply",
+    "action.hidePanel": "Hide panel",
+    "action.showPanel": "Show panel",
     "action.cancel": "Cancel",
     "action.close": "Close",
     "action.closeWithoutSaving": "No, close without saving",
@@ -1474,7 +1512,7 @@ window.STGraphXI18nBundles = {
     "label.behaviorFunction": "Behavior",
     "label.decimals": "Max decimal digits",
     "label.description": "Description",
-    "label.edgeInfluence": "Relationship sign",
+    "label.edgeInfluence": "Function sign",
     "label.edgeColor": "Color",
     "label.formulaNotes": "Formula notes",
     "label.global": "global",
@@ -1898,7 +1936,7 @@ window.STGraphXI18nBundles = {
     "localFunctions.error.reservedName": "The name '{name}' cannot be used for a local function.",
     "localFunctions.error.runtimeRecursion": "Local function '{name}' cannot call itself recursively.",
     "localFunctions.expression": "Expression",
-    "localFunctions.intro": "Define reusable model-level functions. In this first version each function can use only its own arguments and other local functions, with no recursion.",
+    "localFunctions.intro": "Define reusable model-level functions. Each function can use only its own arguments and other local functions, with no recursion.",
     "localFunctions.name": "Name",
     "localFunctions.params": "Parameters",
     "localFunctions.title": "Local functions",
@@ -1910,11 +1948,15 @@ window.STGraphXI18nBundles = {
     "widget.addPair": "Add pair",
     "widget.addSeries": "Add Y series",
     "widget.autoOption": "auto",
-    "widget.axisLimitsLabel": "Axis limits x,y",
+    "widget.axisLimitsLabel": "Axes and grid",
+    "widget.axisXGridStep": "X step",
+    "widget.axisXLabel": "X label",
     "widget.axisXMax": "X max",
     "widget.axisXMin": "X min",
     "widget.axisYMax": "Y max",
     "widget.axisYMin": "Y min",
+    "widget.axisYGridStep": "Y step",
+    "widget.axisYLabel": "Y label",
     "widget.barColor": "Bar color",
     "widget.barMode": "Bars",
     "widget.barMode.all": "Bars",
@@ -2214,7 +2256,7 @@ window.STGraphXI18nBundles = {
     "tooltip.menu.run.analyze": "Runs static checks on the model and shows a report of the detected issues.",
     "tooltip.menu.run.execute": "Runs the model up to t1 or completes an execution already in progress.",
     "tooltip.menu.run.reset": "Resets execution to t0 and clears dynamic results.",
-    "tooltip.menu.run.step": "Runs a single time step.",
+    "tooltip.menu.run.step": "Runs the model for a single time step.",
     "tooltip.menu.run.timed": "Starts or stops timed execution.",
     "tooltip.menu.run.watch": "Opens the watch and breakpoint tool for model debugging.",
     "tooltip.menu.view": "View, zoom, and grid controls.",
@@ -2252,6 +2294,8 @@ window.STGraphXI18nBundles = {
     "tooltip.model.currentTime": "Current execution time.",
     "tooltip.model.decimals": "Maximum number of decimal digits shown for numeric values.",
     "tooltip.model.delay": "Delay between steps in timed execution, in milliseconds.",
+    "tooltip.action.hidePanel": "Hides the configuration panel to enlarge the canvas.",
+    "tooltip.action.showPanel": "Reopens the configuration panel.",
     "tooltip.model.dt": "Time step used between successive iterations.",
     "tooltip.model.integrator": "Numerical method used for integral(...). Euler is the default; RK4 applies to integral(...) calls present in state transitions.",
     "tooltip.model.localFunctions": "Opens the editor for local functions reusable by the model node expressions.",
@@ -2263,6 +2307,7 @@ window.STGraphXI18nBundles = {
     "tooltip.model.t1": "Final execution time.",
     "tooltip.model.title": "Descriptive model title, saved in the JSON file.",
     "tooltip.node.computedValue": "Latest computed value for the selected node.",
+    "tooltip.node.fillColor": "Color or transparency of the node background in the graph.",
     "tooltip.node.description": "Short textual description of the node, useful as internal model documentation.",
     "tooltip.node.editExpression": "Opens a larger editor for writing or editing long expressions.",
     "tooltip.node.expressionBehavior": "Behavior expression of the algebraic node.",
@@ -2274,6 +2319,8 @@ window.STGraphXI18nBundles = {
     "tooltip.node.input": "Marks the node as an external input drivable by input widgets.",
     "tooltip.node.loadSubmodel": "Loads or refreshes the submodel referenced by the selected node.",
     "tooltip.node.name": "Unique node name, usable in connected node expressions.",
+    "tooltip.node.properties": "Descriptive key-value pairs saved in the model and available as node documentation.",
+    "tooltip.node.addProperty": "Adds a descriptive property to the selected node.",
     "tooltip.node.openSubmodel": "Opens the submodel referenced by the selected node.",
     "tooltip.node.output": "Marks the node as an output for display widgets.",
     "tooltip.node.refreshSubmodel": "Reads the submodel file and updates its input/output interface.",
@@ -2281,6 +2328,23 @@ window.STGraphXI18nBundles = {
     "tooltip.node.submodelBinding": "Select which connected variable feeds this submodel input. If left blank, the submodel uses its own default value.",
     "tooltip.node.submodelPath": "JSON file name of the submodel, relative to the current model folder.",
     "tooltip.node.submodelIcon": "Replaces the submodel node appearance with an icon without changing the included model.",
+    "tooltip.node.strokeColor": "Color or transparency of the node border in the graph.",
+    "tooltip.edge.influence": "Qualitative relation sign: positive, negative, unknown, or unspecified.",
+    "tooltip.edge.influence.none": "No sign is declared for the relation.",
+    "tooltip.edge.influence.positive": "Monotonically increasing relation: increasing the source increases the target.",
+    "tooltip.edge.influence.negative": "Monotonically decreasing relation: increasing the source decreases the target.",
+    "tooltip.edge.influence.unknown": "The relation sign is unknown or not monotonic.",
+    "tooltip.edge.color": "Color used to draw the edge in the graph.",
+    "tooltip.model.properties": "Descriptive key-value pairs saved in the model JSON file.",
+    "tooltip.model.zoom": "Enlarges or reduces the canvas view.",
+    "tooltip.property.key": "Name of the descriptive property.",
+    "tooltip.property.value": "Text value associated with the property.",
+    "tooltip.property.remove": "Deletes this property.",
+    "tooltip.text.width": "Width of the text item on the canvas, in pixels.",
+    "tooltip.text.height": "Height of the text item on the canvas, in pixels.",
+    "tooltip.text.fillColor": "Color or transparency of the text item background.",
+    "tooltip.text.strokeColor": "Color or transparency of the text item border.",
+    "tooltip.text.markdown": "Markdown text, with support for LaTeX formulas.",
     "tooltip.node.chooseSubmodelIcon": "Choose an image from the file system and embed it in the model as an icon.",
     "tooltip.node.clearSubmodelIcon": "Restore the standard submodel node appearance.",
     "error.submodelIconRead": "The selected image cannot be read.",
@@ -2294,6 +2358,10 @@ window.STGraphXI18nBundles = {
     "submodelIcon.process": "Process",
     "submodelIcon.image": "Image from file",
     "tooltip.node.type": "Semantic node type: state, algebraic, or parameter.",
+    "tooltip.node.type.rect": "State variable: preserves a value between one step and the next.",
+    "tooltip.node.type.ellipse": "Algebraic variable: its value is recalculated from its dependencies.",
+    "tooltip.node.type.diamond": "Parameter: value defined by the model or by an input widget.",
+    "tooltip.node.type.submodel": "Submodel: includes another STGraphX model with inputs and outputs.",
     "tooltip.tab.new": "Opens a new model tab.",
     "tooltip.widget.addColumn": "Adds a new column to the table.",
     "tooltip.widget.addMapping": "Adds a mapping between a numeric value and text.",
@@ -2301,8 +2369,12 @@ window.STGraphXI18nBundles = {
     "tooltip.widget.addPair": "Adds a new X-Y series pair.",
     "tooltip.widget.axisXMax": "Upper limit of the X axis. Leave blank to calculate it automatically.",
     "tooltip.widget.axisXMin": "Lower limit of the X axis. Leave blank to calculate it automatically.",
+    "tooltip.widget.axisXGridStep": "Spacing between ticks and grid lines on the X axis. Leave blank to calculate it automatically.",
+    "tooltip.widget.axisXLabel": "Text displayed as the X-axis label.",
     "tooltip.widget.axisYMax": "Upper limit of the Y axis. Leave blank to calculate it automatically.",
     "tooltip.widget.axisYMin": "Lower limit of the Y axis. Leave blank to calculate it automatically.",
+    "tooltip.widget.axisYGridStep": "Spacing between ticks and grid lines on the Y axis. Leave blank to calculate it automatically.",
+    "tooltip.widget.axisYLabel": "Text displayed as the Y-axis label.",
     "tooltip.widget.barColor": "Color of the vertical bars joining points to the X axis.",
     "tooltip.widget.barMode": "Chooses no bars, the last bar only, or one bar for every point down to the X axis.",
     "tooltip.widget.barWidth": "Width of the vertical bars, in pixels.",
@@ -7701,7 +7773,7 @@ window.STGraphXI18nBundles = {
         t0: Number.isFinite(t0) ? t0 : 0,
         dt: Number.isFinite(dt) && dt !== 0 ? dt : 1,
         t1: Number.isFinite(t1) ? t1 : 10,
-        delayMs: Number.isFinite(delayMs) && delayMs > 0 ? Math.round(delayMs) : 1000,
+        delayMs: Number.isFinite(delayMs) && delayMs > 0 ? Math.round(delayMs) : 100,
         renderEverySteps: Number.isFinite(renderEverySteps) && renderEverySteps >= 1
           ? Math.round(renderEverySteps)
           : 1,
@@ -11406,6 +11478,10 @@ window.STGraphXI18nBundles = {
       xMax: parseAxisLimit(widget?.xMax),
       yMin: parseAxisLimit(widget?.yMin),
       yMax: parseAxisLimit(widget?.yMax),
+      xGridStep: parseAxisLimit(widget?.xGridStep) > 0 ? parseAxisLimit(widget?.xGridStep) : null,
+      yGridStep: parseAxisLimit(widget?.yGridStep) > 0 ? parseAxisLimit(widget?.yGridStep) : null,
+      xAxisLabel: String(widget?.xAxisLabel ?? "").trim(),
+      yAxisLabel: String(widget?.yAxisLabel ?? "").trim(),
       showGrid: widget?.showGrid !== false,
       showAxes: widget?.showAxes !== false,
       legendPosition: ["none", "top-right", "top-left", "bottom-right", "bottom-left"].includes(String(widget?.legendPosition ?? ""))
@@ -11487,7 +11563,7 @@ window.STGraphXI18nBundles = {
             ? String(pair.barMode) !== "none"
             : (pair?.barMode === "stems" || pair?.barMode === "columns" || pair?.showBars === true),
           barColor: /^#[0-9a-fA-F]{6}$/.test(String(pair?.barColor ?? "")) ? String(pair.barColor) : (/^#[0-9a-fA-F]{6}$/.test(String(pair?.color ?? "")) ? String(pair.color) : "#2d7ff9"),
-          barWidth: Number.isFinite(Number(pair?.barWidth)) ? clamp(Number(pair.barWidth), 1, 12) : 2,
+          barWidth: Number.isFinite(Number(pair?.barWidth)) ? clamp(Number(pair.barWidth), 1, 40) : 2,
           pointMode: String(pair?.pointMode || "last"),
           pointSize: Number.isFinite(Number(pair?.pointSize)) ? clamp(Number(pair.pointSize), 1, 10) : 2,
           points: [],
@@ -11818,18 +11894,25 @@ window.STGraphXI18nBundles = {
     const xMax = parseAxisLimit(options.xMax);
     const yMin = parseAxisLimit(options.yMin);
     const yMax = parseAxisLimit(options.yMax);
-    if (xMin != null && xMax != null && xMax > xMin) {
-      minX = xMin;
-      maxX = xMax;
-    }
-    if (yMin != null && yMax != null && yMax > yMin) {
-      minY = yMin;
-      maxY = yMax;
-    }
     if (series.some((pair) => pair.showBars)) {
       minY = Math.min(minY, 0);
       maxY = Math.max(maxY, 0);
     }
+    const applyAxisBounds = (autoMin, autoMax, configuredMin, configuredMax) => {
+      if (configuredMin != null && configuredMax != null) {
+        return configuredMax > configuredMin ? [configuredMin, configuredMax] : [autoMin, autoMax];
+      }
+      const span = Math.max(1, Math.abs(autoMax - autoMin));
+      if (configuredMin != null) {
+        return [configuredMin, Math.max(autoMax, configuredMin + span)];
+      }
+      if (configuredMax != null) {
+        return [Math.min(autoMin, configuredMax - span), configuredMax];
+      }
+      return [autoMin, autoMax];
+    };
+    [minX, maxX] = applyAxisBounds(minX, maxX, xMin, xMax);
+    [minY, maxY] = applyAxisBounds(minY, maxY, yMin, yMax);
     if (minX === maxX) {
       minX -= 1;
       maxX += 1;
@@ -11840,32 +11923,67 @@ window.STGraphXI18nBundles = {
     }
     const showAxes = options.showAxes !== false;
     const showGrid = options.showGrid !== false;
-    const pad = showAxes ? 24 : 10;
-    const sx = (width - pad * 2) / (maxX - minX);
-    const sy = (height - pad * 2) / (maxY - minY);
+    const xGridStep = parseAxisLimit(options.xGridStep);
+    const yGridStep = parseAxisLimit(options.yGridStep);
+    const xAxisLabel = String(options.xAxisLabel ?? "").trim();
+    const yAxisLabel = String(options.yAxisLabel ?? "").trim();
+    const labelFontSize = Math.max(8, fontSize);
+    const leftPad = showAxes ? 28 + (yAxisLabel ? labelFontSize + 8 : 0) : 10;
+    const rightPad = showAxes ? 18 : 10;
+    const topPad = showAxes ? 18 : 10;
+    const bottomPad = showAxes ? 26 + (xAxisLabel ? labelFontSize + 12 : 0) : 10;
+    const plotW = Math.max(10, width - leftPad - rightPad);
+    const plotH = Math.max(10, height - topPad - bottomPad);
+    const sx = (x) => leftPad + ((x - minX) / (maxX - minX)) * plotW;
+    const sy = (y) => topPad + plotH - ((y - minY) / (maxY - minY)) * plotH;
+    const niceStep = (span) => {
+      const raw = Math.abs(span) / 5;
+      if (!Number.isFinite(raw) || raw <= 0) return 1;
+      const power = 10 ** Math.floor(Math.log10(raw));
+      const scaled = raw / power;
+      return (scaled <= 1 ? 1 : scaled <= 2 ? 2 : scaled <= 5 ? 5 : 10) * power;
+    };
+    const buildTicks = (min, max, requestedStep) => {
+      const step = requestedStep != null && requestedStep > 0 ? requestedStep : niceStep(max - min);
+      const ticks = [min];
+      const start = Math.ceil(min / step) * step;
+      for (let value = start, count = 0; value < max && count < 500; value += step, count += 1) {
+        if (Math.abs(value - min) >= step * 0.25 && Math.abs(value - max) >= step * 0.25) {
+          ticks.push(Number(value.toFixed(12)));
+        }
+      }
+      ticks.push(max);
+      return ticks.filter((value, index, values) => index === 0 || Math.abs(value - values[index - 1]) > step * 0.25);
+    };
+    const xTicks = buildTicks(minX, maxX, xGridStep);
+    const yTicks = buildTicks(minY, maxY, yGridStep);
 
     if (showGrid) {
       ctx.strokeStyle = "#e4ebf2";
       ctx.lineWidth = 1;
-      for (let index = 1; index < 5; index += 1) {
-        const x = pad + ((width - pad * 2) * index) / 5;
-        const y = pad + ((height - pad * 2) * index) / 5;
+      xTicks.slice(1, -1).forEach((tick) => {
+        const x = sx(tick);
         ctx.beginPath();
-        ctx.moveTo(x, pad);
-        ctx.lineTo(x, height - pad);
-        ctx.moveTo(pad, y);
-        ctx.lineTo(width - pad, y);
+        ctx.moveTo(x, topPad);
+        ctx.lineTo(x, topPad + plotH);
         ctx.stroke();
-      }
+      });
+      yTicks.slice(1, -1).forEach((tick) => {
+        const y = sy(tick);
+        ctx.beginPath();
+        ctx.moveTo(leftPad, y);
+        ctx.lineTo(leftPad + plotW, y);
+        ctx.stroke();
+      });
     }
 
     if (showAxes) {
       ctx.strokeStyle = "#9fb0c0";
       ctx.beginPath();
-      ctx.moveTo(pad, height - pad);
-      ctx.lineTo(width - pad, height - pad);
-      ctx.moveTo(pad, pad);
-      ctx.lineTo(pad, height - pad);
+      ctx.moveTo(leftPad, topPad + plotH);
+      ctx.lineTo(leftPad + plotW, topPad + plotH);
+      ctx.moveTo(leftPad, topPad);
+      ctx.lineTo(leftPad, topPad + plotH);
       ctx.stroke();
     }
 
@@ -11877,13 +11995,13 @@ window.STGraphXI18nBundles = {
         ctx.strokeStyle = pair.barColor || pair.color || "#2d7ff9";
         ctx.lineWidth = pair.barWidth || 2;
         ctx.setLineDash([]);
-        const baseline = height - pad - (0 - minY) * sy;
+        const baseline = sy(0);
         const barPoints = pair.barMode === "last"
           ? [pair.points[pair.points.length - 1]].filter(Boolean)
           : pair.points;
         barPoints.forEach((pt) => {
-          const x = pad + (pt.x - minX) * sx;
-          const y = height - pad - (pt.y - minY) * sy;
+          const x = sx(pt.x);
+          const y = sy(pt.y);
           ctx.beginPath();
           ctx.moveTo(x, baseline);
           ctx.lineTo(x, y);
@@ -11895,8 +12013,8 @@ window.STGraphXI18nBundles = {
       if (pair.showLine !== false) {
         ctx.beginPath();
         pair.points.forEach((pt, idx) => {
-          const x = pad + (pt.x - minX) * sx;
-          const y = height - pad - (pt.y - minY) * sy;
+          const x = sx(pt.x);
+          const y = sy(pt.y);
           if (idx === 0) {
             ctx.moveTo(x, y);
           } else {
@@ -11912,8 +12030,8 @@ window.STGraphXI18nBundles = {
           ? pair.points
           : [pair.points[pair.points.length - 1]].filter(Boolean);
         pointsToDraw.forEach((pt) => {
-          const x = pad + (pt.x - minX) * sx;
-          const y = height - pad - (pt.y - minY) * sy;
+          const x = sx(pt.x);
+          const y = sy(pt.y);
           ctx.fillStyle = pair.pointColor || pair.color || "#2d7ff9";
           ctx.beginPath();
           ctx.arc(x, y, pair.pointSize || 2, 0, Math.PI * 2);
@@ -11924,11 +12042,29 @@ window.STGraphXI18nBundles = {
 
     if (showAxes) {
       ctx.fillStyle = "#506070";
-      ctx.font = `${Math.max(8, fontSize)}px sans-serif`;
-      ctx.fillText(formatNumberValue(execution, minX), pad, height - 4);
-      ctx.fillText(formatNumberValue(execution, maxX), width - pad - 24, height - 4);
-      ctx.fillText(formatNumberValue(execution, maxY), 4, pad + 4);
-      ctx.fillText(formatNumberValue(execution, minY), 4, height - pad);
+      ctx.font = `${labelFontSize}px sans-serif`;
+      ctx.textBaseline = "top";
+      xTicks.forEach((tick, index) => {
+        const x = sx(tick);
+        ctx.textAlign = index === 0 ? "left" : index === xTicks.length - 1 ? "right" : "center";
+        ctx.fillText(formatNumberValue(execution, tick), x, topPad + plotH + 5);
+      });
+      ctx.textAlign = "right";
+      yTicks.forEach((tick) => {
+        ctx.fillText(formatNumberValue(execution, tick), leftPad - 6, sy(tick) - 5);
+      });
+      if (xAxisLabel) {
+        ctx.textAlign = "center";
+        ctx.fillText(xAxisLabel, leftPad + plotW / 2, topPad + plotH + labelFontSize + 12);
+      }
+      if (yAxisLabel) {
+        ctx.save();
+        ctx.translate(labelFontSize, topPad + plotH / 2);
+        ctx.rotate(-Math.PI / 2);
+        ctx.textAlign = "center";
+        ctx.fillText(yAxisLabel, 0, 0);
+        ctx.restore();
+      }
     }
 
     const visibleLegend = series

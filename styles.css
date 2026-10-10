@@ -1868,6 +1868,12 @@ button:disabled {
   justify-content: start;
 }
 
+.chart-axis-row {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 4px;
+}
+
 .chart-pair-point-controls {
   display: grid;
   grid-template-columns: minmax(72px, 1fr) 50px;

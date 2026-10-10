@@ -282,6 +282,10 @@ function addXYChartWidget(at = null) {
     xMax: null,
     yMin: null,
     yMax: null,
+    xGridStep: null,
+    yGridStep: null,
+    xAxisLabel: "",
+    yAxisLabel: "",
     showGrid: true,
     showAxes: true,
     legendPosition: "top-right",
@@ -523,7 +527,7 @@ function sanitizeWidgetXYPairs(widget) {
       barMode: normalizeChartBarMode(pair?.barMode, pair?.showBars),
       showBars: normalizeChartBarMode(pair?.barMode, pair?.showBars) !== "none",
       barColor: /^#[0-9a-fA-F]{6}$/.test(String(pair?.barColor ?? "")) ? String(pair.barColor) : (/^#[0-9a-fA-F]{6}$/.test(String(pair?.color ?? "")) ? String(pair.color) : defaultChartSeriesColor(idx)),
-      barWidth: Number.isFinite(Number(pair?.barWidth)) ? clamp(Number(pair.barWidth), 1, 12) : 2.2,
+      barWidth: Number.isFinite(Number(pair?.barWidth)) ? clamp(Number(pair.barWidth), 1, 40) : 2.2,
       pointMode: normalizeChartPointMode(pair?.pointMode, pair?.showPoints),
       pointSize: Number.isFinite(Number(pair?.pointSize)) ? clamp(Number(pair.pointSize), 1, 12) : 2.4,
       seriesData: Array.isArray(pair?.seriesData)
@@ -595,6 +599,12 @@ function sanitizeXYChartOptions(widget) {
   widget.xMax = parseNumOrNull(widget.xMax);
   widget.yMin = parseNumOrNull(widget.yMin);
   widget.yMax = parseNumOrNull(widget.yMax);
+  widget.xGridStep = parseNumOrNull(widget.xGridStep);
+  widget.yGridStep = parseNumOrNull(widget.yGridStep);
+  if (!(widget.xGridStep > 0)) widget.xGridStep = null;
+  if (!(widget.yGridStep > 0)) widget.yGridStep = null;
+  widget.xAxisLabel = String(widget.xAxisLabel ?? "").trim();
+  widget.yAxisLabel = String(widget.yAxisLabel ?? "").trim();
   widget.showGrid = widget.showGrid !== false;
   widget.showAxes = widget.showAxes !== false;
   widget.legendPosition = ["none", "top-right", "top-left", "bottom-right", "bottom-left"].includes(String(widget.legendPosition ?? ""))
@@ -983,7 +993,7 @@ function drawXYChart(canvas, seriesList = [], options = null) {
       barMode: normalizeChartBarMode(s?.barMode, s?.showBars),
       showBars: normalizeChartBarMode(s?.barMode, s?.showBars) !== "none",
       barColor: /^#[0-9a-fA-F]{6}$/.test(String(s?.barColor ?? "")) ? String(s.barColor) : (/^#[0-9a-fA-F]{6}$/.test(String(s?.color ?? "")) ? String(s.color) : defaultChartSeriesColor(idx)),
-      barWidth: Number.isFinite(Number(s?.barWidth)) ? clamp(Number(s.barWidth), 1, 12) : 2.2,
+      barWidth: Number.isFinite(Number(s?.barWidth)) ? clamp(Number(s.barWidth), 1, 40) : 2.2,
       pointMode: normalizeChartPointMode(s?.pointMode, s?.showPoints),
       pointSize: Number.isFinite(Number(s?.pointSize)) ? clamp(Number(s.pointSize), 1, 12) : 2.4,
       // Series points are normalized when the widget is loaded or edited.
@@ -1016,6 +1026,10 @@ function drawXYChart(canvas, seriesList = [], options = null) {
     xMax: parseAxisLimit(options?.xMax),
     yMin: parseAxisLimit(options?.yMin),
     yMax: parseAxisLimit(options?.yMax),
+    xGridStep: parseAxisLimit(options?.xGridStep),
+    yGridStep: parseAxisLimit(options?.yGridStep),
+    xAxisLabel: String(options?.xAxisLabel ?? "").trim(),
+    yAxisLabel: String(options?.yAxisLabel ?? "").trim(),
     showGrid: options?.showGrid !== false,
     showAxes: options?.showAxes !== false,
     legendPosition: ["none", "top-right", "top-left", "bottom-right", "bottom-left"].includes(String(options?.legendPosition ?? ""))
@@ -1039,18 +1053,25 @@ function drawXYChart(canvas, seriesList = [], options = null) {
       maxY = Math.max(maxY, p.y);
     });
   });
-  if (cfg.xMin != null && cfg.xMax != null && cfg.xMax > cfg.xMin) {
-    minX = cfg.xMin;
-    maxX = cfg.xMax;
-  }
-  if (cfg.yMin != null && cfg.yMax != null && cfg.yMax > cfg.yMin) {
-    minY = cfg.yMin;
-    maxY = cfg.yMax;
-  }
   if (activeSeries.some((series) => series.showBars)) {
     minY = Math.min(minY, 0);
     maxY = Math.max(maxY, 0);
   }
+  const applyAxisBounds = (autoMin, autoMax, configuredMin, configuredMax) => {
+    if (configuredMin != null && configuredMax != null) {
+      return configuredMax > configuredMin ? [configuredMin, configuredMax] : [autoMin, autoMax];
+    }
+    const span = Math.max(1, Math.abs(autoMax - autoMin));
+    if (configuredMin != null) {
+      return [configuredMin, Math.max(autoMax, configuredMin + span)];
+    }
+    if (configuredMax != null) {
+      return [Math.min(autoMin, configuredMax - span), configuredMax];
+    }
+    return [autoMin, autoMax];
+  };
+  [minX, maxX] = applyAxisBounds(minX, maxX, cfg.xMin, cfg.xMax);
+  [minY, maxY] = applyAxisBounds(minY, maxY, cfg.yMin, cfg.yMax);
   if (minX === maxX) {
     minX -= 1;
     maxX += 1;
@@ -1080,15 +1101,18 @@ function drawXYChart(canvas, seriesList = [], options = null) {
     return base * power;
   };
 
-  const buildTicks = (min, max, approxTicks = 5) => {
+  const buildTicks = (min, max, approxTicks = 5, requestedStep = null) => {
     const span = max - min;
     if (!Number.isFinite(span) || span <= 0) {
       return [min];
     }
-    const step = niceStep(span, approxTicks);
+    const step = Number.isFinite(requestedStep) && requestedStep > 0
+      ? requestedStep
+      : niceStep(span, approxTicks);
     const start = Math.ceil(min / step) * step;
     const ticks = [min];
-    for (let value = start; value < max; value += step) {
+    const maxTickCount = 500;
+    for (let value = start, count = 0; value < max && count < maxTickCount; value += step, count += 1) {
       if (Math.abs(value - min) < step * 0.25 || Math.abs(value - max) < step * 0.25) {
         continue;
       }
@@ -1099,16 +1123,16 @@ function drawXYChart(canvas, seriesList = [], options = null) {
   };
 
   ctx.font = chartFont;
-  const provisionalXTicks = buildTicks(minX, maxX, Math.max(4, Math.floor((width - 48) / 90)));
-  const provisionalYTicks = buildTicks(minY, maxY, Math.max(4, Math.floor((height - 48) / 60)));
+  const provisionalXTicks = buildTicks(minX, maxX, Math.max(4, Math.floor((width - 48) / 90)), cfg.xGridStep);
+  const provisionalYTicks = buildTicks(minY, maxY, Math.max(4, Math.floor((height - 48) / 60)), cfg.yGridStep);
   const maxYLabelWidth = provisionalYTicks.reduce((max, tick) => {
     const label = formatNumberValue(tick);
     return Math.max(max, ctx.measureText(label).width);
   }, 0);
-  const leftPad = Math.max(30, Math.ceil(maxYLabelWidth) + 14);
+  const leftPad = Math.max(30, Math.ceil(maxYLabelWidth) + 14 + (cfg.yAxisLabel ? fontSize + 8 : 0));
   const rightPad = 24;
   const topPad = 24;
-  const bottomPad = Math.max(30, fontSize + 19);
+  const bottomPad = Math.max(30, fontSize + (cfg.xAxisLabel ? 36 : 19));
   const plotW = Math.max(10, width - leftPad - rightPad);
   const plotH = Math.max(10, height - topPad - bottomPad);
 
@@ -1120,8 +1144,8 @@ function drawXYChart(canvas, seriesList = [], options = null) {
 
   const sx = (x) => leftPad + ((x - minX) / (maxX - minX)) * plotW;
   const sy = (y) => topPad + plotH - ((y - minY) / (maxY - minY)) * plotH;
-  const xTicks = buildTicks(minX, maxX, Math.max(4, Math.floor(plotW / 90)));
-  const yTicks = buildTicks(minY, maxY, Math.max(4, Math.floor(plotH / 60)));
+  const xTicks = buildTicks(minX, maxX, Math.max(4, Math.floor(plotW / 90)), cfg.xGridStep);
+  const yTicks = buildTicks(minY, maxY, Math.max(4, Math.floor(plotH / 60)), cfg.yGridStep);
   const chartPointBudget = Math.max(200, Math.floor(plotW * 2));
   const sampleSeriesPoints = (points) => {
     if (!Array.isArray(points) || points.length <= chartPointBudget) {
@@ -1318,6 +1342,18 @@ function drawXYChart(canvas, seriesList = [], options = null) {
         ctx.fillText(label, leftPad - 8, y - 6);
       }
     });
+    if (cfg.xAxisLabel) {
+      ctx.textAlign = "center";
+      ctx.fillText(cfg.xAxisLabel, leftPad + plotW / 2, topPad + plotH + fontSize + 16);
+    }
+    if (cfg.yAxisLabel) {
+      ctx.save();
+      ctx.translate(fontSize, topPad + plotH / 2);
+      ctx.rotate(-Math.PI / 2);
+      ctx.textAlign = "center";
+      ctx.fillText(cfg.yAxisLabel, 0, 0);
+      ctx.restore();
+    }
   }
 
   const legendSeries = [];
@@ -4041,6 +4077,7 @@ function renderPropertiesEditor(container, items, ownerKey, deleteHandler, optio
     const keyInput = document.createElement("input");
     keyInput.placeholder = t("prop.keyPlaceholder");
     keyInput.value = prop.key;
+    setTooltipText(keyInput, t("tooltip.property.key"));
     if (locked) {
       keyInput.readOnly = true;
       keyInput.tabIndex = -1;
@@ -4054,6 +4091,7 @@ function renderPropertiesEditor(container, items, ownerKey, deleteHandler, optio
     const valueInput = document.createElement("input");
     valueInput.placeholder = t("prop.valuePlaceholder");
     valueInput.value = prop.value;
+    setTooltipText(valueInput, t("tooltip.property.value"));
     valueInput.addEventListener("input", () => {
       prop.value = valueInput.value;
     });
@@ -4064,6 +4102,7 @@ function renderPropertiesEditor(container, items, ownerKey, deleteHandler, optio
     const delBtn = document.createElement("button");
     delBtn.type = "button";
     delBtn.textContent = "X";
+    setTooltipText(delBtn, t("tooltip.property.remove"));
     if (locked) {
       delBtn.disabled = true;
       delBtn.classList.add("hidden");
@@ -4144,8 +4183,12 @@ function refreshWidgetConfigPanel(widget) {
     "widget.barWidthShort": "tooltip.widget.barWidth",
     "widget.axisXMin": "tooltip.widget.axisXMin",
     "widget.axisXMax": "tooltip.widget.axisXMax",
+    "widget.axisXGridStep": "tooltip.widget.axisXGridStep",
+    "widget.axisXLabel": "tooltip.widget.axisXLabel",
     "widget.axisYMin": "tooltip.widget.axisYMin",
     "widget.axisYMax": "tooltip.widget.axisYMax",
+    "widget.axisYGridStep": "tooltip.widget.axisYGridStep",
+    "widget.axisYLabel": "tooltip.widget.axisYLabel",
     "widget.legendPosition": "tooltip.widget.legendPosition",
   };
 
@@ -5431,12 +5474,12 @@ function refreshWidgetConfigPanel(widget) {
     barWidthInput.type = "number";
     barWidthInput.step = "0.2";
     barWidthInput.min = "1";
-    barWidthInput.max = "12";
+    barWidthInput.max = "40";
     barWidthInput.value = String(Number(pair.barWidth ?? 2.2));
     setTooltipText(barWidthInput, t("widget.barWidth"));
     barWidthInput.addEventListener("change", () => {
       runAction(() => {
-        widget.xyPairs[activePairIndex].barWidth = clamp(Number(barWidthInput.value) || 2.2, 1, 12);
+        widget.xyPairs[activePairIndex].barWidth = clamp(Number(barWidthInput.value) || 2.2, 1, 40);
       });
     });
 
@@ -5497,8 +5540,9 @@ function refreshWidgetConfigPanel(widget) {
     return Number.isFinite(n) ? n : null;
   };
 
+  const axisInputs = [];
   const xLimitRow = document.createElement("div");
-  xLimitRow.className = "row2-exec";
+  xLimitRow.className = "chart-axis-row";
   const xMinInput = document.createElement("input");
   xMinInput.type = "number";
   xMinInput.step = "any";
@@ -5519,12 +5563,25 @@ function refreshWidgetConfigPanel(widget) {
       widget.xMax = parseLimitInput(xMaxInput.value);
     });
   });
+  const xGridStepInput = document.createElement("input");
+  xGridStepInput.type = "number";
+  xGridStepInput.min = "0";
+  xGridStepInput.step = "any";
+  xGridStepInput.placeholder = t("widget.autoOption");
+  xGridStepInput.value = widget.xGridStep == null ? "" : String(widget.xGridStep);
+  xGridStepInput.addEventListener("change", () => {
+    runAction(() => {
+      const value = parseLimitInput(xGridStepInput.value);
+      widget.xGridStep = value != null && value > 0 ? value : null;
+    });
+  });
   xLimitRow.appendChild(createCompactField("widget.axisXMin", xMinInput));
   xLimitRow.appendChild(createCompactField("widget.axisXMax", xMaxInput));
+  xLimitRow.appendChild(createCompactField("widget.axisXGridStep", xGridStepInput));
   chartAxisSection.appendChild(xLimitRow);
 
   const yLimitRow = document.createElement("div");
-  yLimitRow.className = "row2-exec";
+  yLimitRow.className = "chart-axis-row";
   const yMinInput = document.createElement("input");
   yMinInput.type = "number";
   yMinInput.step = "any";
@@ -5545,9 +5602,46 @@ function refreshWidgetConfigPanel(widget) {
       widget.yMax = parseLimitInput(yMaxInput.value);
     });
   });
+  const yGridStepInput = document.createElement("input");
+  yGridStepInput.type = "number";
+  yGridStepInput.min = "0";
+  yGridStepInput.step = "any";
+  yGridStepInput.placeholder = t("widget.autoOption");
+  yGridStepInput.value = widget.yGridStep == null ? "" : String(widget.yGridStep);
+  yGridStepInput.addEventListener("change", () => {
+    runAction(() => {
+      const value = parseLimitInput(yGridStepInput.value);
+      widget.yGridStep = value != null && value > 0 ? value : null;
+    });
+  });
   yLimitRow.appendChild(createCompactField("widget.axisYMin", yMinInput));
   yLimitRow.appendChild(createCompactField("widget.axisYMax", yMaxInput));
+  yLimitRow.appendChild(createCompactField("widget.axisYGridStep", yGridStepInput));
   chartAxisSection.appendChild(yLimitRow);
+  axisInputs.push(xMinInput, xMaxInput, xGridStepInput, yMinInput, yMaxInput, yGridStepInput);
+
+  const axisLabelsRow = document.createElement("div");
+  axisLabelsRow.className = "row2-exec";
+  const xAxisLabelInput = document.createElement("input");
+  xAxisLabelInput.type = "text";
+  xAxisLabelInput.value = widget.xAxisLabel || "";
+  xAxisLabelInput.addEventListener("change", () => {
+    runAction(() => {
+      widget.xAxisLabel = String(xAxisLabelInput.value ?? "").trim();
+    });
+  });
+  const yAxisLabelInput = document.createElement("input");
+  yAxisLabelInput.type = "text";
+  yAxisLabelInput.value = widget.yAxisLabel || "";
+  yAxisLabelInput.addEventListener("change", () => {
+    runAction(() => {
+      widget.yAxisLabel = String(yAxisLabelInput.value ?? "").trim();
+    });
+  });
+  axisLabelsRow.appendChild(createCompactField("widget.axisXLabel", xAxisLabelInput));
+  axisLabelsRow.appendChild(createCompactField("widget.axisYLabel", yAxisLabelInput));
+  chartAxisSection.appendChild(axisLabelsRow);
+  axisInputs.push(xAxisLabelInput, yAxisLabelInput);
 
   const gridLabel = document.createElement("label");
   gridLabel.className = "menu-check compact-bool";
@@ -5581,8 +5675,8 @@ function refreshWidgetConfigPanel(widget) {
   setConfigTooltip(axesLabel, "tooltip.widget.showAxes");
   const axisToggles = document.createElement("div");
   axisToggles.className = "chart-axis-toggles";
-  axisToggles.appendChild(gridLabel);
   axisToggles.appendChild(axesLabel);
+  axisToggles.appendChild(gridLabel);
   chartAxisSection.appendChild(axisToggles);
 
   const legendPositionSelect = document.createElement("select");
@@ -5598,7 +5692,11 @@ function refreshWidgetConfigPanel(widget) {
       widget.legendPosition = legendPositionSelect.value;
     });
   });
-  chartAxisSection.appendChild(createCompactField("widget.legendPosition", legendPositionSelect));
+  const chartLegendSection = createWidgetSection(true);
+  chartLegendSection.appendChild(createCompactField("widget.legendPosition", legendPositionSelect));
+  axisInputs.forEach((input) => {
+    input.disabled = widget.showAxes === false;
+  });
 }
 
 globalThis.Widgets = {
