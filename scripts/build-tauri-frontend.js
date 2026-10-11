@@ -21,6 +21,7 @@ const files = [
   "markdown-rendering.js",
   "local-functions-core.js",
   "help-content.js",
+  "unit-analysis-core.js",
   "model-analysis-core.js",
   "model-analysis-ui.js",
   "feedback-loop-core.js",

@@ -55,6 +55,8 @@
     const canBindButtonToNode = typeof options.canBindButtonToNode === "function" ? options.canBindButtonToNode : () => false;
     const canBindSliderToNode = typeof options.canBindSliderToNode === "function" ? options.canBindSliderToNode : () => false;
     const widgetDisplayName = typeof options.widgetDisplayName === "function" ? options.widgetDisplayName : (widget) => String(widget?.type || "?");
+    const unitAnalysis = options.unitAnalysis || null;
+    const parseExpressionAst = typeof options.parseExpressionAst === "function" ? options.parseExpressionAst : null;
 
     function collectExpressionIdentifierReferences(expression) {
       const src = String(expression ?? "");
@@ -379,6 +381,75 @@
       }
 
       const nodeMap = buildNodeNameMap();
+      if (unitAnalysis && parseExpressionAst) {
+        graph.nodes.forEach((node) => { delete node.inferredUnit; });
+        const units = new Map();
+        const declarations = new Map();
+        const reportedUnitIssues = new Set();
+        const reportUnitIssue = (key, vars, target) => {
+          const id = `${key}:${target?.id || "model"}:${vars?.expression || ""}:${vars?.reason || ""}:${vars?.expected || ""}:${vars?.actual || ""}`;
+          if (reportedUnitIssues.has(id)) return;
+          reportedUnitIssues.add(id);
+          pushAnalysisIssue(issues, "warning", key, vars, target);
+        };
+        graph.nodes.forEach((node) => {
+          const raw = String(node.unit || "").trim();
+          if (!raw || isSubmodelNode(node)) return;
+          const parsed = unitAnalysis.parseUnit(raw);
+          if (!parsed.ok) {
+            pushAnalysisIssue(issues, "warning", "analysis.issue.invalidUnit", { name: node.name, unit: raw }, { type: "node", id: node.id, name: node.name });
+            return;
+          }
+          declarations.set(node.name, parsed.value);
+          units.set(node.name, parsed.value);
+        });
+        const infer = (node, expression, expected, expressionKind) => {
+          if (!String(expression || "").trim()) return;
+          try {
+            const value = unitAnalysis.inferAst(parseExpressionAst(expression), {
+              resolve: (name) => name === "time" || name === "dt" || name === "t0" || name === "t1"
+                ? unitAnalysis.parseUnit(graph.execution?.timeUnit || "s").value : (name === "this" ? expected || unitAnalysis.unknown() : (units.get(name) || unitAnalysis.unknown())),
+            });
+            // A literal assigned to a declared source (for example 1000 euro)
+            // carries that declaration rather than becoming dimensionless.
+            const inferred = expected && unitAnalysis.isKnown(value) && unitAnalysis.same(value, unitAnalysis.dimensionless())
+              ? expected
+              : value;
+            if (expected && unitAnalysis.isKnown(inferred) && !unitAnalysis.same(expected, inferred)) {
+              reportUnitIssue("analysis.issue.unitMismatch", { name: node.name, expected: unitAnalysis.display(expected), actual: unitAnalysis.display(inferred) }, { type: "node", id: node.id, name: node.name });
+            }
+            if (value?.kind === "unknown" && value.reason) {
+              const unitLabel = (unit) => unitAnalysis.isKnown(unit) ? unitAnalysis.display(unit) || "1" : "?";
+              const reasonVars = {
+                left: unitLabel(value.left),
+                right: unitLabel(value.right),
+              };
+              reportUnitIssue("analysis.issue.unitExpressionMismatch", {
+                name: node.name,
+                expression: t(`analysis.unitExpression.${expressionKind}`),
+                reason: t(`analysis.unitReason.${value.reason}`, reasonVars),
+              }, { type: "node", id: node.id, name: node.name });
+            }
+            if (unitAnalysis.isKnown(inferred) && inferred.kind === "unit") {
+              units.set(node.name, expected || inferred);
+              node.inferredUnit = unitAnalysis.display(expected || inferred);
+            }
+          } catch (_err) { /* Formula diagnostics are handled elsewhere. */ }
+        };
+        for (let pass = 0; pass < graph.nodes.length; pass += 1) {
+          graph.nodes.forEach((node) => {
+            if (isSubmodelNode(node)) return;
+            const expected = declarations.get(node.name);
+            if (isStateNode(node)) {
+              infer(node, node.initialStateExpression, expected, "initialState");
+              infer(node, node.valueExpression, units.get(node.name) || expected, "nextState");
+            } else infer(node, node.valueExpression, expected, "value");
+          });
+        }
+        graph.nodes.forEach((node) => {
+          if (!node.inferredUnit && declarations.has(node.name)) node.inferredUnit = unitAnalysis.display(declarations.get(node.name));
+        });
+      }
       graph.edges.forEach((edge) => {
         const fromNode = getNodeById(edge.from);
         const toNode = getNodeById(edge.to);

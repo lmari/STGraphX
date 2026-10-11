@@ -9,6 +9,13 @@
 
 const graphFunctionHelpers = globalThis.GraphFunctions?.helpers || {};
 
+// Unit "1" is the internal notation for a dimensionless value and should not
+// consume space in widget labels intended for model readers.
+function displayWidgetUnit(value) {
+  const unit = String(value ?? "").trim();
+  return unit === "1" ? "" : unit;
+}
+
 function addTableWidget(at = null) {
   const id = widgetCounter++;
   const { x, y } = getSmartCanvasInsertionPoint({ width: 320, height: 160, anchor: at });
@@ -1828,6 +1835,11 @@ function widgetDefaultTitle(widget) {
 function widgetTitleBindingLabel(widget) {
   const source = String(widget?.source ?? "").trim();
   if (["slider", "numeric", "select", "button", "text", "led", "matrix"].includes(widget?.type)) {
+    if (widget?.type === "numeric" && source) {
+      const node = getNodeByName(source);
+      const unit = displayWidgetUnit(node?.unit || node?.inferredUnit);
+      return unit ? `${source} [${unit}]` : source;
+    }
     return source;
   }
   if (widget?.type === "table") {
@@ -2322,7 +2334,10 @@ function renderTableWidgetBody(body, widget, nodeMap = buildNodeNameMap()) {
   const headRow = document.createElement("tr");
   displayedCols.forEach((colName) => {
     const th = document.createElement("th");
-    th.textContent = colName || t("widget.columnEmpty");
+    const unit = displayWidgetUnit(colName === "time"
+      ? graph.execution?.timeUnit || "s"
+      : nodeMap.get(colName)?.unit || nodeMap.get(colName)?.inferredUnit);
+    th.textContent = colName ? (unit ? `${colName} [${unit}]` : colName) : t("widget.columnEmpty");
     th.style.textAlign = tableColumnFormat(widget, colName).align;
     headRow.appendChild(th);
   });
@@ -2501,7 +2516,19 @@ function refreshChartWidgetRuntimeBody(root, widget, nodeMap = buildNodeNameMap(
     }
     return out;
   });
-  drawXYChart(canvas, seriesList, widget);
+  const firstPair = displayedPairs[0] || widget.xyPairs?.[0] || {};
+  const axisLabel = (configured, source) => {
+    if (configured) return configured;
+    const unit = displayWidgetUnit(source === "time"
+      ? graph.execution?.timeUnit || "s"
+      : nodeMap.get(source)?.unit || nodeMap.get(source)?.inferredUnit);
+    return unit ? `${source} [${unit}]` : "";
+  };
+  drawXYChart(canvas, seriesList, {
+    ...widget,
+    xAxisLabel: axisLabel(widget.xAxisLabel, firstPair.xSource || "time"),
+    yAxisLabel: axisLabel(widget.yAxisLabel, firstPair.ySource || ""),
+  });
 }
 
 function refreshSliderWidgetRuntimeBody(root, widget) {
@@ -2957,7 +2984,19 @@ function renderWidgets() {
         }
         return out;
       });
-      drawXYChart(canvas, seriesList, widget);
+      const firstPair = displayedPairs[0] || widget.xyPairs?.[0] || {};
+      const axisLabel = (configured, source) => {
+        if (configured) return configured;
+        const unit = displayWidgetUnit(source === "time"
+          ? graph.execution?.timeUnit || "s"
+          : getNodeByName(source)?.unit || getNodeByName(source)?.inferredUnit);
+        return unit ? `${source} [${unit}]` : "";
+      };
+      drawXYChart(canvas, seriesList, {
+        ...widget,
+        xAxisLabel: axisLabel(widget.xAxisLabel, firstPair.xSource || "time"),
+        yAxisLabel: axisLabel(widget.yAxisLabel, firstPair.ySource || ""),
+      });
       canvasWrap.appendChild(canvas);
       body.appendChild(canvasWrap);
     } else if (widget.type === "slider") {
@@ -3953,19 +3992,25 @@ function buildNodeTooltipText(node) {
   const submodelTitle = node.shape === "submodel"
     ? String(node?.interfaceCache?.modelTitle ?? "").trim()
     : "";
+  const analysisIssue = String(node.analysisIssue?.message || node.unitAnalysisError || "").trim();
   const prefix = [
     submodelTitle ? t("text.submodelTooltipTitle", { title: submodelTitle }) : "",
     description,
+    analysisIssue,
   ].filter(Boolean).join(" | ");
+  const unit = displayWidgetUnit(node.unit || node.inferredUnit);
   if (node.computedValue != null) {
     const valueText = summarizeTooltipValue(node.computedValue);
-    return { text: prefix ? `${prefix}: ${valueText}` : valueText, tone: "value" };
+    const valueWithUnit = unit
+      ? (/^\s*[+-]?(?:\d|\.\d)/.test(valueText) ? `${valueText} ${unit}` : `${valueText} [${unit}]`)
+      : valueText;
+    return { text: prefix ? `${prefix}: ${valueWithUnit}` : valueWithUnit, tone: analysisIssue ? "error" : "value" };
   }
   if (String(node.computedError || "").trim()) {
     const errorText = localizeExpressionErrorMessage(node.computedError);
     return { text: prefix ? `${prefix}: ${errorText}` : errorText, tone: "error" };
   }
-  return { text: prefix, tone: "" };
+  return { text: prefix, tone: analysisIssue ? "error" : "" };
 }
 
 function canvasTextDisplayHtml(item) {

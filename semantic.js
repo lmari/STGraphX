@@ -2934,5 +2934,6 @@
     evaluateStatefulGraphStep,
     normalizeLocalFunctionDefinitions,
     extractAgentFieldNamesFromExpression,
+    parseExpressionAst,
   };
 })(window);

@@ -200,6 +200,7 @@
                   <input id="timeEndInput" type="number" step="any" data-title-i18n="tooltip.model.t1" />
                 </div>
               </div>
+              <div class="model-compact-row model-time-unit-row"><label for="timeUnitInput" data-i18n="label.timeUnit"></label><input id="timeUnitInput" type="text" placeholder="s" /></div>
 
               <div class="row3-exec model-compact-row model-execution-settings tablet-advanced-details">
                 <div>
@@ -261,7 +262,6 @@
             <div class="panel-section compact-panel-section">
               <label for="nodeNameInput" data-i18n="label.name" data-title-i18n="tooltip.node.name"></label>
               <input id="nodeNameInput" type="text" data-title-i18n="tooltip.node.name" />
-
               <label for="nodeShapeInput" data-i18n="label.shape" data-title-i18n="tooltip.node.type"></label>
               <div class="node-type-row">
                 <select id="nodeShapeInput" data-title-i18n="tooltip.node.type">
@@ -330,6 +330,9 @@
               </div>
               <div id="nodeValueExprStatus" class="expr-status hidden"></div>
               <div id="nodeWidgetBindingInfo" class="expr-status hidden"></div>
+
+              <label id="nodeUnitLabel" for="nodeUnitInput" data-i18n="label.unit" data-title-i18n="tooltip.node.unit"></label>
+              <input id="nodeUnitInput" type="text" placeholder="m/s" data-title-i18n="tooltip.node.unit" />
 
             </div>
 
@@ -859,6 +862,7 @@
     <script src="markdown-rendering.js"></script>
     <script src="local-functions-core.js"></script>
     <script src="help-content.js"></script>
+    <script src="unit-analysis-core.js"></script>
     <script src="model-analysis-core.js"></script>
     <script src="model-analysis-ui.js"></script>
     <script src="feedback-loop-core.js"></script>

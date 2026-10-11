@@ -35,6 +35,7 @@
       const t0 = Number(raw?.t0);
       const dt = Number(raw?.dt);
       const t1 = Number(raw?.t1);
+      const timeUnit = String(raw?.timeUnit ?? "s").trim() || "s";
       const delayMs = Number(raw?.delayMs);
       const renderEverySteps = Number(raw?.renderEverySteps);
       const decimals = Number(raw?.decimals);
@@ -47,6 +48,7 @@
         t0: Number.isFinite(t0) ? t0 : 0,
         dt: Number.isFinite(dt) && dt !== 0 ? dt : 1,
         t1: Number.isFinite(t1) ? t1 : 10,
+        timeUnit,
         delayMs: Number.isFinite(delayMs) && delayMs > 0 ? Math.round(delayMs) : 100,
         renderEverySteps: Number.isFinite(renderEverySteps) && renderEverySteps >= 1
           ? Math.round(renderEverySteps)

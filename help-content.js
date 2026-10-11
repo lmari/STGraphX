@@ -427,6 +427,12 @@
       return parts.length ? ` [${parts.join(" | ")}]` : "";
     }
 
+    function eightTupleUnitSuffix(node, expression = "") {
+      const unit = String(node?.unit || node?.inferredUnit || "").trim();
+      if (!unit) return "";
+      return /^\s*[+-]?(?:\d|\.\d)/.test(String(expression)) ? ` ${unit}` : ` [${unit}]`;
+    }
+
     function eightTupleBehaviorExpression(node, template = eightTupleTemplateCache) {
       if (!node) {
         return "";
@@ -466,22 +472,22 @@
 
       const parameterLines = [
         ...parameterNodes.map((node) => (
-          `${node.name} = ${String(node.valueExpression ?? "").trim() || getEightTupleTemplateText(template, "unspecified", "eightTuple.unspecified")}${eightTupleNodeAnnotation(
+          `${node.name} = ${String(node.valueExpression ?? "").trim() || getEightTupleTemplateText(template, "unspecified", "eightTuple.unspecified")}${eightTupleUnitSuffix(node, node.valueExpression)}${eightTupleNodeAnnotation(
             node,
             node.global ? t("label.global") : "",
           )}`
         )),
         ...stateNodes.map((node) => (
-          `${node.name}(t0) = ${String(node.initialStateExpression ?? "").trim() || getEightTupleTemplateText(template, "unspecified", "eightTuple.unspecified")}${eightTupleNodeAnnotation(node)}`
+          `${node.name}(t0) = ${String(node.initialStateExpression ?? "").trim() || getEightTupleTemplateText(template, "unspecified", "eightTuple.unspecified")}${eightTupleUnitSuffix(node, node.initialStateExpression)}${eightTupleNodeAnnotation(node)}`
         )),
       ];
 
       const inputLines = inputNodes.map((node) => (
-        `${node.name}: ${getEightTupleTemplateText(template, "rangeUndeclared", "eightTuple.rangeUndeclared")}${eightTupleNodeAnnotation(node)}`
+        `${node.name}: ${getEightTupleTemplateText(template, "rangeUndeclared", "eightTuple.rangeUndeclared")}${eightTupleUnitSuffix(node)}${eightTupleNodeAnnotation(node)}`
       ));
 
       const outputLines = outputNodes.map((node) => (
-        `${node.name}: ${getEightTupleTemplateText(template, "rangeUndeclared", "eightTuple.rangeUndeclared")}${eightTupleNodeAnnotation(node)}`
+        `${node.name}: ${getEightTupleTemplateText(template, "rangeUndeclared", "eightTuple.rangeUndeclared")}${eightTupleUnitSuffix(node)}${eightTupleNodeAnnotation(node)}`
       ));
 
       const stateRangeLines = stateNodes.map((node) => (
@@ -489,7 +495,7 @@
       ));
 
       const phiLines = stateNodes.map((node) => (
-        `${node.name}(t + Δt) = ${String(node.valueExpression ?? "").trim() || getEightTupleTemplateText(template, "unspecified", "eightTuple.unspecified")}${eightTupleNodeAnnotation(node)}`
+        `${node.name}(t + Δt) = ${String(node.valueExpression ?? "").trim() || getEightTupleTemplateText(template, "unspecified", "eightTuple.unspecified")}${eightTupleUnitSuffix(node, node.valueExpression)}${eightTupleNodeAnnotation(node)}`
       ));
 
       const etaLines = outputNodes.map((node) => (

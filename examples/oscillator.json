@@ -19,11 +19,11 @@
     "breakpointMessage": ""
   },
   "modelProperties": [],
-  "nodeCounter": 24,
-  "edgeCounter": 27,
-  "widgetCounter": 20,
-  "textItemCounter": 15,
-  "presentationGroupCounter": 14,
+  "nodeCounter": 25,
+  "edgeCounter": 28,
+  "widgetCounter": 21,
+  "textItemCounter": 16,
+  "presentationGroupCounter": 15,
   "presentationGroups": [
     {
       "id": 5,
@@ -54,13 +54,15 @@
   "execution": {
     "t0": 0,
     "dt": 0.01,
+    "timeUnit": "s",
     "t1": 100,
     "delayMs": 50,
     "renderEverySteps": 15,
     "decimals": 3,
     "integrator": "rk4",
-    "strictDefinitions": false,
-    "stopOnRuntimeError": false
+    "strictDefinitions": true,
+    "stopOnRuntimeError": false,
+    "randomSeed": null
   },
   "nodes": [
     {
@@ -75,6 +77,7 @@
       "height": 40,
       "fillColor": "transparent",
       "strokeColor": "transparent",
+      "unit": "",
       "properties": [
         {
           "key": "note formula",
@@ -100,6 +103,7 @@
       "height": 40,
       "fillColor": "transparent",
       "strokeColor": "transparent",
+      "unit": "",
       "properties": [
         {
           "key": "note formula",
@@ -124,6 +128,7 @@
       "height": 60,
       "fillColor": "transparent",
       "strokeColor": "transparent",
+      "unit": "rad/s",
       "properties": [
         {
           "key": "note formula",
@@ -149,6 +154,7 @@
       "height": 60,
       "fillColor": "transparent",
       "strokeColor": "transparent",
+      "unit": "rad/s",
       "properties": [
         {
           "key": "note formula",
@@ -174,6 +180,7 @@
       "height": 50,
       "fillColor": "transparent",
       "strokeColor": "transparent",
+      "unit": "",
       "properties": [
         {
           "key": "note formula",
@@ -199,6 +206,7 @@
       "height": 51,
       "fillColor": "transparent",
       "strokeColor": "transparent",
+      "unit": "rad",
       "properties": [
         {
           "key": "note formula",
@@ -223,6 +231,7 @@
       "height": 50,
       "fillColor": "transparent",
       "strokeColor": "transparent",
+      "unit": "",
       "properties": [
         {
           "key": "note formula",
@@ -248,6 +257,7 @@
       "height": 35,
       "fillColor": "transparent",
       "strokeColor": "transparent",
+      "unit": "",
       "properties": [
         {
           "key": "note formula",
@@ -273,6 +283,7 @@
       "height": 35,
       "fillColor": "transparent",
       "strokeColor": "transparent",
+      "unit": "",
       "properties": [
         {
           "key": "note formula",
@@ -298,6 +309,7 @@
       "height": 35,
       "fillColor": "transparent",
       "strokeColor": "transparent",
+      "unit": "",
       "properties": [
         {
           "key": "note formula",
@@ -323,6 +335,7 @@
       "height": 35,
       "fillColor": "transparent",
       "strokeColor": "transparent",
+      "unit": "",
       "properties": [
         {
           "key": "note formula",
@@ -521,6 +534,10 @@
       "xMax": "auto",
       "yMin": "auto",
       "yMax": "auto",
+      "xGridStep": null,
+      "yGridStep": null,
+      "xAxisLabel": "",
+      "yAxisLabel": "",
       "showGrid": true,
       "showAxes": true,
       "legendPosition": "none",
@@ -590,6 +607,10 @@
       "xMax": "auto",
       "yMin": "auto",
       "yMax": "auto",
+      "xGridStep": null,
+      "yGridStep": null,
+      "xAxisLabel": "",
+      "yAxisLabel": "",
       "showGrid": true,
       "showAxes": true,
       "legendPosition": "top-left",
@@ -676,6 +697,10 @@
       "xMax": 5,
       "yMin": -1.5,
       "yMax": 1,
+      "xGridStep": null,
+      "yGridStep": null,
+      "xAxisLabel": "",
+      "yAxisLabel": "",
       "showGrid": false,
       "showAxes": false,
       "legendPosition": "none",
@@ -762,6 +787,10 @@
       "xMax": "auto",
       "yMin": "auto",
       "yMax": "auto",
+      "xGridStep": null,
+      "yGridStep": null,
+      "xAxisLabel": "",
+      "yAxisLabel": "",
       "showGrid": true,
       "showAxes": true,
       "legendPosition": "none",
@@ -831,6 +860,10 @@
       "xMax": "auto",
       "yMin": "auto",
       "yMax": "auto",
+      "xGridStep": null,
+      "yGridStep": null,
+      "xAxisLabel": "",
+      "yAxisLabel": "",
       "showGrid": true,
       "showAxes": true,
       "legendPosition": "top-left",
@@ -917,6 +950,10 @@
       "xMax": "auto",
       "yMin": "auto",
       "yMax": "auto",
+      "xGridStep": null,
+      "yGridStep": null,
+      "xAxisLabel": "",
+      "yAxisLabel": "",
       "showGrid": true,
       "showAxes": true,
       "legendPosition": "top-right",
@@ -968,6 +1005,10 @@
       "xMax": "auto",
       "yMin": "auto",
       "yMax": "auto",
+      "xGridStep": null,
+      "yGridStep": null,
+      "xAxisLabel": "",
+      "yAxisLabel": "",
       "showGrid": true,
       "showAxes": true,
       "legendPosition": "top-right",

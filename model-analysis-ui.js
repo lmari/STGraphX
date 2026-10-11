@@ -33,6 +33,9 @@
       return [
         { severity: "error", nameKey: "analysis.issue.invalidTimeConfig", descKey: "analysis.checks.invalidTimeConfig" },
         { severity: "warning", nameKey: "analysis.issue.invalidDelay", descKey: "analysis.checks.invalidDelay" },
+        { severity: "warning", nameKey: "analysis.issue.invalidUnit", descKey: "analysis.checks.invalidUnit" },
+        { severity: "warning", nameKey: "analysis.issue.unitMismatch", descKey: "analysis.checks.unitMismatch" },
+        { severity: "warning", nameKey: "analysis.issue.unitExpressionMismatch", descKey: "analysis.checks.unitExpressionMismatch" },
         { severity: "error", nameKey: "analysis.issue.danglingEdge", descKey: "analysis.checks.danglingEdge" },
         { severity: "warning", nameKey: "analysis.issue.duplicateEdge", descKey: "analysis.checks.duplicateEdge" },
         { severity: "warning", nameKey: "analysis.issue.selfLoop", descKey: "analysis.checks.selfLoop" },
@@ -101,6 +104,10 @@
             path: "A -> B -> C",
             current: "vettore",
             next: "matrice",
+            unit: "?",
+            expected: "m",
+            actual: "s",
+            expression: "valore",
           });
           const desc = document.createElement("div");
           desc.className = "model-analysis-check-desc";

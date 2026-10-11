@@ -1,11 +1,12 @@
 {
   "version": 1,
-  "modelTitle": "",
+  "modelTitle": "n corpi liberi non interagenti",
   "localFunctions": [],
   "view": {
     "zoom": 1,
     "showGrid": true,
     "highlightNodeEdges": false,
+    "showNodeValues": false,
     "gridSize": 20,
     "tooltipDelayMs": 300,
     "scrollLeft": 208,
@@ -14,21 +15,29 @@
   "debug": {
     "watches": [],
     "breakpointEnabled": false,
-    "breakpointExpression": ""
+    "breakpointExpression": "",
+    "breakpointMessage": ""
   },
   "modelProperties": [],
-  "nodeCounter": 8,
-  "edgeCounter": 7,
-  "widgetCounter": 4,
-  "textItemCounter": 4,
+  "nodeCounter": 9,
+  "edgeCounter": 8,
+  "widgetCounter": 5,
+  "textItemCounter": 5,
+  "presentationGroupCounter": 1,
+  "presentationGroups": [],
+  "dashboard": null,
   "execution": {
     "t0": 0,
     "dt": 0.01,
+    "timeUnit": "s",
     "t1": 10,
     "delayMs": 1,
+    "renderEverySteps": 1,
     "decimals": 3,
     "integrator": "euler",
-    "strictDefinitions": false
+    "strictDefinitions": true,
+    "stopOnRuntimeError": false,
+    "randomSeed": null
   },
   "nodes": [
     {
@@ -43,6 +52,7 @@
       "height": 70,
       "fillColor": "",
       "strokeColor": "",
+      "unit": "corpi",
       "properties": [
         {
           "key": "note formula",
@@ -67,6 +77,7 @@
       "height": 70,
       "fillColor": "",
       "strokeColor": "",
+      "unit": "",
       "properties": [
         {
           "key": "note formula",
@@ -92,6 +103,7 @@
       "height": 70,
       "fillColor": "",
       "strokeColor": "",
+      "unit": "m/s",
       "properties": [
         {
           "key": "note formula",
@@ -117,6 +129,7 @@
       "height": 70,
       "fillColor": "",
       "strokeColor": "",
+      "unit": "",
       "properties": [
         {
           "key": "note formula",
@@ -142,6 +155,7 @@
       "height": 70,
       "fillColor": "",
       "strokeColor": "",
+      "unit": "m/s",
       "properties": [
         {
           "key": "note formula",
@@ -161,27 +175,38 @@
       "id": 1,
       "from": 3,
       "to": 2,
+      "color": "",
+      "influence": "none",
       "controlPoints": []
     },
     {
       "id": 2,
       "from": 2,
       "to": 3,
+      "color": "",
+      "influence": "none",
       "controlPoints": []
     },
     {
       "id": 3,
       "from": 5,
       "to": 4,
+      "color": "",
+      "influence": "none",
       "controlPoints": []
     },
     {
       "id": 4,
       "from": 4,
       "to": 5,
+      "color": "",
+      "influence": "none",
       "controlPoints": []
     }
   ],
+  "notes": {
+    "markdown": ""
+  },
   "textItems": [
     {
       "id": 1,
@@ -191,6 +216,7 @@
       "height": 60,
       "fillColor": "",
       "strokeColor": "",
+      "dashboardPageId": null,
       "html": "<h1>n corpi liberi non interagenti</h1>"
     }
   ],
@@ -203,14 +229,26 @@
       "y": 200,
       "width": 460,
       "height": 420,
+      "dashboardPageId": null,
       "minimized": false,
+      "showTitleBar": true,
+      "fontSize": 13,
       "outputOnly": false,
       "showHistory": false,
+      "expandNonScalarValues": false,
+      "tableTextAlign": "left",
+      "tableDecimalDigits": 0,
+      "tableColumnFormats": {},
       "xMin": 0,
       "xMax": 1,
       "yMin": 0,
       "yMax": 1,
+      "xGridStep": null,
+      "yGridStep": null,
+      "xAxisLabel": "",
+      "yAxisLabel": "",
       "showGrid": true,
+      "showAxes": true,
       "legendPosition": "top-right",
       "source": "",
       "showNumericValues": true,
@@ -222,6 +260,11 @@
       "displayRows": null,
       "displayCols": null,
       "colorScheme": "blue",
+      "viewMode": "grid",
+      "surfaceStyle": "solid",
+      "surfaceAzimuth": 45,
+      "surfaceElevation": 32,
+      "surfaceHeightScale": 1,
       "min": 0,
       "max": 100,
       "step": 1,
@@ -242,6 +285,10 @@
           "showLine": false,
           "lineWidth": 2.2,
           "lineStyle": "solid",
+          "barMode": "none",
+          "showBars": false,
+          "barColor": "#0e7ac4",
+          "barWidth": 2.2,
           "pointMode": "last",
           "pointSize": 5
         }

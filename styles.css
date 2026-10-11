@@ -1273,6 +1273,21 @@ h4 {
   grid-template-columns: 1fr 1fr 1fr;
 }
 
+.model-compact-row.model-time-unit-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.model-time-unit-row label {
+  margin: 0;
+  white-space: nowrap;
+}
+
+.model-time-unit-row input {
+  width: 76px;
+}
+
 .model-meta-row {
   display: grid;
   grid-template-columns: 1fr;
@@ -1494,6 +1509,8 @@ button:disabled {
 .node-formula-section {
   padding-top: 3px;
 }
+
+input.inferred-unit[readonly] { color: #6d7782; background: #f4f6f8; }
 
 #nodePanel h4,
 #textPanel h4,
@@ -3956,6 +3973,52 @@ body.tablet-sidebar-layout .expression-editor-resize-handle {
 .node.invalid-definition .node-shape-inner {
   stroke: #ba1f36;
   stroke-dasharray: 7 4;
+}
+
+.node.invalid-unit .node-shape {
+  fill: #fff8e8;
+  stroke: #b76d00;
+  stroke-width: 2.8;
+  stroke-dasharray: 5 3;
+}
+
+.node.invalid-unit .node-shape-inner {
+  stroke: #b76d00;
+  stroke-dasharray: 5 3;
+}
+
+.node.analysis-warning:not(.invalid-unit):not(.invalid-definition) .node-shape {
+  fill: #fff8e8;
+  stroke: #b76d00;
+  stroke-width: 2.8;
+  stroke-dasharray: 5 3;
+}
+
+.node.analysis-error:not(.invalid-definition) .node-shape {
+  fill: #fff5f6;
+  stroke: #ba1f36;
+  stroke-width: 2.8;
+  stroke-dasharray: 7 4;
+}
+
+.node.analysis-error:not(.invalid-definition) .node-shape-inner {
+  stroke: #ba1f36;
+  stroke-dasharray: 7 4;
+}
+
+.node-analysis-issue-marker {
+  fill: #b76d00;
+  stroke: #fff;
+  stroke-width: 1.5;
+  font-family: Georgia, serif;
+  font-size: 19px;
+  font-weight: 800;
+  paint-order: stroke;
+  pointer-events: none;
+}
+
+.node-analysis-issue-marker.error {
+  fill: #ba1f36;
 }
 
 .node.runtime-error .node-shape {

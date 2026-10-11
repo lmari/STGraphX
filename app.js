@@ -108,6 +108,7 @@ const widgetPanelTitle = document.getElementById("widgetPanelTitle");
 const modelTitleInput = document.getElementById("modelTitleInput");
 const timeStartInput = document.getElementById("timeStartInput");
 const timeStepInput = document.getElementById("timeStepInput");
+const timeUnitInput = document.getElementById("timeUnitInput");
 const timeEndInput = document.getElementById("timeEndInput");
 const timeDelayInput = document.getElementById("timeDelayInput");
 const renderEveryStepsInput = document.getElementById("renderEveryStepsInput");
@@ -127,6 +128,8 @@ const timedToggleBtn = document.getElementById("timedToggleBtn");
 const resetExecBtn = document.getElementById("resetExecBtn");
 
 const nodeNameInput = document.getElementById("nodeNameInput");
+const nodeUnitInput = document.getElementById("nodeUnitInput");
+const nodeUnitLabel = document.getElementById("nodeUnitLabel");
 const nodeShapeInput = document.getElementById("nodeShapeInput");
 const nodeInputInput = document.getElementById("nodeInputInput");
 const nodeInputLabel = nodeInputInput?.closest("label");
@@ -1063,6 +1066,7 @@ const ui = {
   tabletCanvasMode: "edit",
   touchViewportGesture: null,
   touchHold: null,
+  modelAnalysisIssues: null,
 };
 
 const submodelOrchestrationHelpers = globalThis.STGraphXSubmodelOrchestration?.createSubmodelOrchestrationHelpers({
@@ -2969,6 +2973,8 @@ const modelAnalysisCoreHelpers = globalThis.STGraphXModelAnalysisCore?.createMod
   canBindButtonToNode,
   canBindSliderToNode,
   widgetDisplayName,
+  unitAnalysis: globalThis.STGraphXUnitAnalysisCore,
+  parseExpressionAst: semantics.parseExpressionAst,
 });
 
 if (!modelAnalysisCoreHelpers) {
@@ -3141,7 +3147,59 @@ function closeFeedbackLoops() {
 }
 
 function analyzeModelStaticIssues() {
-  return modelAnalysisCoreHelpers.analyzeModelStaticIssues();
+  graph.nodes.forEach((node) => {
+    delete node.unitAnalysisError;
+    delete node.analysisIssue;
+  });
+  ui.modelAnalysisIssues = modelAnalysisCoreHelpers.analyzeModelStaticIssues();
+  ui.modelAnalysisIssues.forEach((issue) => {
+    if (issue.target?.type !== "node" || !["error", "warning"].includes(issue.severity)) return;
+    const node = getNodeById(issue.target.id);
+    if (!node) return;
+    const previous = node.analysisIssue;
+    if (!previous || (issue.severity === "error" && previous.severity !== "error")) {
+      node.analysisIssue = { severity: issue.severity, message: issue.message };
+    }
+    if ([
+      "analysis.issue.invalidUnit",
+      "analysis.issue.unitMismatch",
+      "analysis.issue.unitExpressionMismatch",
+    ].includes(issue.key)) {
+      node.unitAnalysisError = issue.message;
+    }
+  });
+  return ui.modelAnalysisIssues;
+}
+
+function independentNodesForUnitAnalysis() {
+  const nodeNames = new Set(graph.nodes.map((node) => String(node?.name || "")).filter(Boolean));
+  return graph.nodes.filter((node) => {
+    if (isSubmodelNode(node)) return false;
+    const fieldKey = isStateNode(node) ? "initial" : "value";
+    const expression = fieldKey === "initial" ? node.initialStateExpression : node.valueExpression;
+    if (!String(expression || "").trim()) return false;
+    return ![...expressionReferencesForAnalysis(node, fieldKey)].some((name) => nodeNames.has(name));
+  });
+}
+
+function canDeclareNodeUnit(node) {
+  if (!node || isSubmodelNode(node)) return false;
+  if (node.shape === "diamond" || node.input) return true;
+  if (!isStateNode(node)) return false;
+  const nodeNames = new Set(graph.nodes.map((item) => String(item?.name || "")).filter(Boolean));
+  return ![...expressionReferencesForAnalysis(node, "initial")].some((name) => nodeNames.has(name));
+}
+
+function strictUnitExecutionIssue() {
+  if (!graph.execution.strictDefinitions) return null;
+  const independentNodes = independentNodesForUnitAnalysis();
+  if (!independentNodes.length || independentNodes.some((node) => !String(node.unit || "").trim())) return null;
+  const issues = ui.modelAnalysisIssues || analyzeModelStaticIssues();
+  return issues.find((issue) => [
+    "analysis.issue.invalidUnit",
+    "analysis.issue.unitMismatch",
+    "analysis.issue.unitExpressionMismatch",
+  ].includes(issue.key)) || null;
 }
 
 function enforceStrictDefinitionsIfNeeded() {
@@ -3150,7 +3208,14 @@ function enforceStrictDefinitionsIfNeeded() {
   }
   const invalidNodes = invalidDefinedNodes();
   if (!invalidNodes.length) {
-    return true;
+    const unitIssue = strictUnitExecutionIssue();
+    if (!unitIssue) return true;
+    setStatusKey("error.strictUnitsBlocked", {
+      node: unitIssue.target?.name || "?",
+      reason: unitIssue.message,
+    });
+    render();
+    return false;
   }
   invalidNodes.forEach(({ node }) => {
     node.computedValue = null;
@@ -3181,7 +3246,7 @@ function clearStrictInvalidNodeValues() {
 }
 
 function hasStrictExecutionBlock() {
-  return Boolean(graph.execution.strictDefinitions && invalidDefinedNodes().length > 0);
+  return Boolean(graph.execution.strictDefinitions && (invalidDefinedNodes().length > 0 || strictUnitExecutionIssue()));
 }
 
 function selectedNodeForSidebar() {
@@ -5993,6 +6058,9 @@ function commitExpressionEditorValue(closeAfter = true) {
       node.initialStateExpression = String(nextInitialValue ?? "");
     }
   });
+  // Keep inferred units and their diagnostics synchronized with the editor,
+  // not only with the explicit "Analyze model" command.
+  analyzeModelStaticIssues();
   recalculateAfterNodeDefinitionChange();
   if (meta.inputEl && document.activeElement !== meta.inputEl) {
     meta.inputEl.value = nextValue;
@@ -6054,6 +6122,7 @@ function scheduleNodeDefinitionRecalculation(delayMs = 260) {
   }
   ui.nodeDefinitionRefreshTimer = window.setTimeout(() => {
     ui.nodeDefinitionRefreshTimer = null;
+    analyzeModelStaticIssues();
     recalculateAfterNodeDefinitionChange();
   }, delayMs);
 }
@@ -8598,6 +8667,7 @@ function exportGraphData() {
     execution: {
       t0: graph.execution.t0,
       dt: graph.execution.dt,
+      timeUnit: String(graph.execution.timeUnit ?? "s"),
       t1: graph.execution.t1,
       delayMs: graph.execution.delayMs,
       renderEverySteps: graph.execution.renderEverySteps,
@@ -8623,6 +8693,7 @@ function exportGraphData() {
         height: n.height,
         fillColor: String(n.fillColor ?? ""),
         strokeColor: String(n.strokeColor ?? ""),
+        unit: String(n.unit ?? "").trim(),
         properties: n.properties.map((p) => ({ key: String(p.key), value: String(p.value) })),
       };
       if (type === "algebraic") {
@@ -8865,6 +8936,7 @@ function applyGraphData(data) {
   graph.execution = {
     t0: execCfg.t0,
     dt: execCfg.dt,
+    timeUnit: execCfg.timeUnit,
     t1: execCfg.t1,
     delayMs: execCfg.delayMs,
     renderEverySteps: execCfg.renderEverySteps,
@@ -8892,6 +8964,7 @@ function applyGraphData(data) {
       height: n.height,
       fillColor: normalizeColorString(n.fillColor),
       strokeColor: normalizeColorString(n.strokeColor),
+      unit: String(n.unit ?? "").trim(),
       valueExpression: shape === "rect"
         ? String(n.stateTransition ?? "")
         : String(n.valueExpression ?? ""),
@@ -9101,6 +9174,7 @@ function applyGraphData(data) {
   ui.tooltipDelayMs = normalizeTooltipDelayMs(savedView?.tooltipDelayMs);
   normalizeInputNodeFlags();
   initializeStateNodes(graph.execution.t0);
+  analyzeModelStaticIssues();
 
   ui.drag = null;
   ui.resize = null;
@@ -9168,7 +9242,11 @@ function runAction(mutator) {
   }
   beginTransaction();
   mutator();
+  ui.modelAnalysisIssues = null;
   commitTransaction();
+  if (graph.execution.strictDefinitions) {
+    analyzeModelStaticIssues();
+  }
   render();
 }
 
@@ -9947,6 +10025,7 @@ function addNode(shape, atPoint = null) {
     height,
     fillColor: "",
     strokeColor: "",
+    unit: "",
     valueExpression: "",
     initialStateExpression: "",
     modelPath: "",
@@ -10201,6 +10280,13 @@ function refreshSidebar() {
     if (!sameSidebarNode || document.activeElement !== nodeNameInput) {
       nodeNameInput.value = node.name;
     }
+    if (!sameSidebarNode || document.activeElement !== nodeUnitInput) {
+      const declaredUnit = String(node.unit ?? "").trim();
+      const unitMayBeDeclared = canDeclareNodeUnit(node);
+      nodeUnitInput.value = declaredUnit || (unitMayBeDeclared ? "" : String(node.inferredUnit ?? ""));
+      nodeUnitInput.readOnly = !declaredUnit && Boolean(node.inferredUnit) && !unitMayBeDeclared;
+      nodeUnitInput.classList.toggle("inferred-unit", nodeUnitInput.readOnly);
+    }
     if (!sameSidebarNode || document.activeElement !== nodeShapeInput) {
       nodeShapeInput.value = node.shape;
     }
@@ -10211,6 +10297,9 @@ function refreshSidebar() {
     const showInputToggle = canMarkNodeAsInput(node);
     const showGlobalToggle = canMarkNodeAsGlobal(node);
     const submodelNode = isSubmodelNode(node);
+    nodeUnitLabel?.classList.toggle("hidden", submodelNode);
+    nodeUnitInput?.classList.toggle("hidden", submodelNode);
+    if (nodeUnitInput) nodeUnitInput.disabled = submodelNode || isEditingUiLocked();
     nodeInputInput.checked = Boolean(node.input);
     nodeOutputInput.checked = Boolean(node.output);
     nodeOutputInput.indeterminate = false;
@@ -10622,6 +10711,7 @@ function refreshSidebar() {
     if (document.activeElement !== timeStepInput) {
       timeStepInput.value = String(graph.execution.dt);
     }
+    if (timeUnitInput && document.activeElement !== timeUnitInput) timeUnitInput.value = String(graph.execution.timeUnit ?? "s");
     if (document.activeElement !== timeEndInput) {
       timeEndInput.value = String(graph.execution.t1);
     }
@@ -11200,6 +11290,12 @@ function render(options = {}) {
     if (graph.execution.strictDefinitions && !validateNodeDefinition(node).ok) {
       g.classList.add("invalid-definition");
     }
+    if (graph.execution.strictDefinitions && node.unitAnalysisError) {
+      g.classList.add("invalid-unit");
+    }
+    if (graph.execution.strictDefinitions && node.analysisIssue) {
+      g.classList.add(`analysis-${node.analysisIssue.severity}`);
+    }
     if (ui.edgeCreate && ui.edgeCreateHoverId === node.id && node.id !== ui.edgeCreate.fromId) {
       g.classList.add("edge-target");
     }
@@ -11475,6 +11571,18 @@ function render(options = {}) {
       globalBadgeLabel.textContent = "G";
     }
 
+    let analysisIssueMarker = null;
+    if (graph.execution.strictDefinitions && node.analysisIssue) {
+      analysisIssueMarker = document.createElementNS(SVG_NS, "text");
+      analysisIssueMarker.classList.add("node-analysis-issue-marker", node.analysisIssue.severity);
+      analysisIssueMarker.setAttribute("x", node.x + node.width / 2 + 3);
+      analysisIssueMarker.setAttribute("y", node.y - node.height / 2 + 13);
+      analysisIssueMarker.textContent = "!";
+      const title = document.createElementNS(SVG_NS, "title");
+      title.textContent = node.analysisIssue.message;
+      analysisIssueMarker.appendChild(title);
+    }
+
     const submodelPorts = [];
     if (isSubmodelNode(node)) {
       const makePorts = (items, side) => {
@@ -11574,6 +11682,9 @@ function render(options = {}) {
     if (globalBadge && globalBadgeLabel) {
       g.appendChild(globalBadge);
       g.appendChild(globalBadgeLabel);
+    }
+    if (analysisIssueMarker) {
+      g.appendChild(analysisIssueMarker);
     }
     submodelPorts.forEach((port) => g.appendChild(port));
     g.appendChild(edgePort);
@@ -11752,6 +11863,7 @@ function importGraphData(data) {
         height: clamp(Number(n.height) || 70, 30, 500),
         fillColor: normalizeColorString(n.fillColor),
         strokeColor: normalizeColorString(n.strokeColor),
+        unit: String(n.unit ?? "").trim(),
         valueExpression: shape === "rect" ? "" : String(n.valueExpression ?? ""),
         stateTransition: shape === "rect"
           ? String(n.stateTransition ?? "")
@@ -12768,6 +12880,7 @@ function resetGraphToEmptyModel() {
   ui.watchPreviousSnapshot = new Map();
   ui.breakpointLastResult = null;
   ui.localFunctionsEditor = null;
+  ui.modelAnalysisIssues = null;
 }
 
 async function createNewGraph() {
@@ -12930,7 +13043,7 @@ const runtimeController = globalThis.STGraphXRuntimeController?.createRuntimeCon
     clearAllTableWidgetRows();
   },
   clearSimulationHistory: () => clearSimulationOutputHistory(),
-  hasStrictExecutionBlock: () => graph.execution.strictDefinitions && invalidDefinedNodes().length > 0,
+  hasStrictExecutionBlock: () => hasStrictExecutionBlock(),
   buildEvaluationEnv: () => ({
     rootExecution: graph.execution,
     stack: [],
@@ -14398,6 +14511,7 @@ function commitExecutionInput(inputEl, key) {
 
 timeStartInput.addEventListener("change", () => commitExecutionInput(timeStartInput, "t0"));
 timeStepInput.addEventListener("change", () => commitExecutionInput(timeStepInput, "dt"));
+timeUnitInput?.addEventListener("change", () => { graph.execution.timeUnit = String(timeUnitInput.value ?? "").trim() || "s"; timeUnitInput.value = graph.execution.timeUnit; analyzeModelStaticIssues(); scheduleFileStatusRefresh(); });
 timeEndInput.addEventListener("change", () => commitExecutionInput(timeEndInput, "t1"));
 timeDelayInput.addEventListener("change", () => {
   const parsed = Number(timeDelayInput.value);
@@ -14474,6 +14588,7 @@ if (randomSeedInput) {
 
 function commitStrictDefinitionsToggle(enabled) {
   graph.execution.strictDefinitions = Boolean(enabled);
+  analyzeModelStaticIssues();
   setStatusKey(graph.execution.strictDefinitions ? "status.strictDefinitionsOn" : "status.strictDefinitionsOff");
   scheduleFileStatusRefresh();
   render();
@@ -14565,6 +14680,15 @@ nodeNameInput.addEventListener("input", () => {
   } else {
     setStatusKey("error.invalidNodeName");
   }
+});
+
+nodeUnitInput?.addEventListener("input", () => {
+  const node = selectedNodeForSidebar();
+  if (!node || isSubmodelNode(node)) return;
+  node.unit = String(nodeUnitInput.value ?? "").trim();
+  analyzeModelStaticIssues();
+  render();
+  scheduleFileStatusRefresh();
 });
 
 nodeNameInput.addEventListener("focus", () => {

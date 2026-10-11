@@ -10,7 +10,7 @@
     "gridSize": 20,
     "tooltipDelayMs": 300,
     "scrollLeft": 190,
-    "scrollTop": 0
+    "scrollTop": 63
   },
   "debug": {
     "watches": [],
@@ -19,23 +19,25 @@
     "breakpointMessage": ""
   },
   "modelProperties": [],
-  "nodeCounter": 14,
-  "edgeCounter": 16,
-  "widgetCounter": 7,
-  "textItemCounter": 6,
-  "presentationGroupCounter": 4,
+  "nodeCounter": 16,
+  "edgeCounter": 18,
+  "widgetCounter": 10,
+  "textItemCounter": 8,
+  "presentationGroupCounter": 6,
   "presentationGroups": [],
   "dashboard": null,
   "execution": {
     "t0": 0,
     "dt": 0.1,
+    "timeUnit": "s",
     "t1": 100,
     "delayMs": 10,
     "renderEverySteps": 1,
     "decimals": 3,
     "integrator": "euler",
-    "strictDefinitions": false,
-    "stopOnRuntimeError": false
+    "strictDefinitions": true,
+    "stopOnRuntimeError": false,
+    "randomSeed": null
   },
   "nodes": [
     {
@@ -50,13 +52,14 @@
       "height": 45,
       "fillColor": "#ffffff",
       "strokeColor": "#000000",
+      "unit": "",
       "properties": [
         {
-          "key": "formula notes",
+          "key": "note formula",
           "value": ""
         },
         {
-          "key": "description",
+          "key": "descrizione",
           "value": ""
         }
       ],
@@ -70,18 +73,19 @@
       "global": false,
       "type": "state",
       "x": 220,
-      "y": 300,
+      "y": 280,
       "width": 75,
       "height": 45,
       "fillColor": "#ffffff",
       "strokeColor": "#000000",
+      "unit": "",
       "properties": [
         {
-          "key": "description",
+          "key": "descrizione",
           "value": ""
         },
         {
-          "key": "formula notes",
+          "key": "note formula",
           "value": "Espressione legacy di output dello stato: (err-this)/timeD"
         }
       ],
@@ -100,13 +104,14 @@
       "height": 45,
       "fillColor": "#ffffff",
       "strokeColor": "#000000",
+      "unit": "",
       "properties": [
         {
-          "key": "formula notes",
+          "key": "note formula",
           "value": ""
         },
         {
-          "key": "description",
+          "key": "descrizione",
           "value": ""
         }
       ],
@@ -118,19 +123,20 @@
       "output": false,
       "global": false,
       "type": "algebraic",
-      "x": 410,
-      "y": 230,
+      "x": 400,
+      "y": 200,
       "width": 75,
       "height": 45,
       "fillColor": "#ffffff",
       "strokeColor": "#000000",
+      "unit": "",
       "properties": [
         {
-          "key": "formula notes",
+          "key": "note formula",
           "value": ""
         },
         {
-          "key": "description",
+          "key": "descrizione",
           "value": ""
         }
       ],
@@ -144,18 +150,19 @@
       "global": false,
       "type": "state",
       "x": 280,
-      "y": 220,
+      "y": 200,
       "width": 75,
       "height": 45,
       "fillColor": "#ffffff",
       "strokeColor": "#000000",
+      "unit": "",
       "properties": [
         {
-          "key": "formula notes",
+          "key": "note formula",
           "value": ""
         },
         {
-          "key": "description",
+          "key": "descrizione",
           "value": ""
         }
       ],
@@ -174,13 +181,14 @@
       "height": 45,
       "fillColor": "#00ff00",
       "strokeColor": "#000000",
+      "unit": "",
       "properties": [
         {
-          "key": "formula notes",
+          "key": "note formula",
           "value": ""
         },
         {
-          "key": "description",
+          "key": "descrizione",
           "value": "Guadagno del controller;\nvettore delle componenti dei coefficienti dei componenti:\n- proporzionale (P)\n- integrale (I)\n- derivativo (D)"
         }
       ],
@@ -192,19 +200,20 @@
       "output": true,
       "global": false,
       "type": "algebraic",
-      "x": 410,
-      "y": 300,
+      "x": 400,
+      "y": 280,
       "width": 75,
       "height": 45,
       "fillColor": "#00ff00",
       "strokeColor": "#000000",
+      "unit": "°C",
       "properties": [
         {
-          "key": "formula notes",
+          "key": "note formula",
           "value": ""
         },
         {
-          "key": "description",
+          "key": "descrizione",
           "value": ""
         }
       ],
@@ -223,13 +232,14 @@
       "height": 45,
       "fillColor": "#ffffff",
       "strokeColor": "#000000",
+      "unit": "°C",
       "properties": [
         {
-          "key": "formula notes",
+          "key": "note formula",
           "value": ""
         },
         {
-          "key": "description",
+          "key": "descrizione",
           "value": "Temperatura dell'ambiente esterno"
         }
       ],
@@ -247,18 +257,19 @@
       "height": 45,
       "fillColor": "#ffffff",
       "strokeColor": "#000000",
+      "unit": "",
       "properties": [
         {
-          "key": "formula notes",
+          "key": "note formula",
           "value": ""
         },
         {
-          "key": "description",
+          "key": "descrizione",
           "value": ""
         }
       ],
-      "stateTransition": "integral((tempAmb-this)/effSis+controller)",
-      "initialState": "0"
+      "stateTransition": "integral((tempAmb-this)/(effSis*dt)+controller)",
+      "initialState": "tempAmb"
     }
   ],
   "edges": [
@@ -351,6 +362,9 @@
       "controlPoints": []
     }
   ],
+  "notes": {
+    "markdown": ""
+  },
   "textItems": [
     {
       "id": 1,
@@ -368,8 +382,8 @@
     {
       "id": 2,
       "type": "slider",
-      "customTitle": "",
-      "x": 160,
+      "customTitle": "Controllore PID",
+      "x": 240,
       "y": 360,
       "width": 260,
       "height": 96,
@@ -387,6 +401,10 @@
       "xMax": "auto",
       "yMin": "auto",
       "yMax": "auto",
+      "xGridStep": null,
+      "yGridStep": null,
+      "xAxisLabel": "",
+      "yAxisLabel": "",
       "showGrid": true,
       "showAxes": true,
       "legendPosition": "top-right",
@@ -408,7 +426,7 @@
       "min": 0,
       "max": 40,
       "step": 1,
-      "value": 5,
+      "value": 20,
       "falseLabel": "",
       "trueLabel": "",
       "options": [],
@@ -438,6 +456,10 @@
       "xMax": "auto",
       "yMin": "auto",
       "yMax": "auto",
+      "xGridStep": null,
+      "yGridStep": null,
+      "xAxisLabel": "",
+      "yAxisLabel": "",
       "showGrid": true,
       "showAxes": true,
       "legendPosition": "none",
@@ -501,6 +523,67 @@
           "pointSize": 2.4
         }
       ]
+    },
+    {
+      "id": 8,
+      "type": "numeric",
+      "customTitle": "",
+      "x": 80,
+      "y": 320,
+      "width": 160,
+      "height": 140,
+      "dashboardPageId": null,
+      "minimized": false,
+      "showTitleBar": true,
+      "fontSize": 15,
+      "outputOnly": false,
+      "showHistory": false,
+      "expandNonScalarValues": false,
+      "tableTextAlign": "left",
+      "tableDecimalDigits": 0,
+      "tableColumnFormats": {},
+      "xMin": "auto",
+      "xMax": "auto",
+      "yMin": "auto",
+      "yMax": "auto",
+      "xGridStep": null,
+      "yGridStep": null,
+      "xAxisLabel": "",
+      "yAxisLabel": "",
+      "showGrid": true,
+      "showAxes": true,
+      "legendPosition": "top-right",
+      "source": "k",
+      "showNumericValues": true,
+      "showIndices": true,
+      "autoFitCells": true,
+      "cellSize": 28,
+      "valueMin": "auto",
+      "valueMax": "auto",
+      "displayRows": null,
+      "displayCols": null,
+      "colorScheme": "blue",
+      "viewMode": "grid",
+      "surfaceStyle": "solid",
+      "surfaceAzimuth": 45,
+      "surfaceElevation": 32,
+      "surfaceHeightScale": 1,
+      "min": 0,
+      "max": 100,
+      "step": 1,
+      "inputRows": 3,
+      "inputCols": 1,
+      "value": [
+        0.5,
+        0.2,
+        0.1
+      ],
+      "falseLabel": "",
+      "trueLabel": "",
+      "options": [],
+      "mappings": [],
+      "columns": [],
+      "xyPairs": []
     }
   ]
 }
