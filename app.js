@@ -3572,7 +3572,7 @@ function renderExpressionLibrary() {
         return leftStarts ? -1 : 1;
       }
       const kindDelta = expressionEntryKindOrder(left.kind) - expressionEntryKindOrder(right.kind);
-      return kindDelta || left.name.localeCompare(right.name);
+      return kindDelta || compareExpressionLibraryEntries(left, right);
     });
   if (!selectedName && filteredEntries.length > 0 && ui.expressionEditor) {
     ui.expressionEditor.librarySelectedName = filteredEntries[0].name;
@@ -3605,7 +3605,7 @@ function renderExpressionLibrary() {
       list.className = "expression-library-list";
       groups.get(kind)
         .slice()
-        .sort((a, b) => a.name.localeCompare(b.name))
+        .sort(compareExpressionLibraryEntries)
         .forEach((entry) => {
           visibleEntries.push(entry);
           const item = document.createElement("div");
@@ -3660,9 +3660,17 @@ function renderExpressionLibrary() {
               return;
             }
             selectEntry();
+            // mousedown is cancelled to preserve the expression caret; restore
+            // keyboard focus explicitly so arrows navigate the library.
+            item.focus({ preventScroll: true });
           });
           item.addEventListener("keydown", (evt) => {
-            if (evt.key === "Enter") {
+            if (evt.key === "ArrowDown" || evt.key === "ArrowUp") {
+              evt.preventDefault();
+              moveLibrarySelection(evt.key === "ArrowDown" ? 1 : -1);
+              const activeItem = expressionLibrary.querySelector(".expression-library-item.active");
+              activeItem?.focus({ preventScroll: true });
+            } else if (evt.key === "Enter") {
               evt.preventDefault();
               activate();
             } else if (evt.key === " ") {
@@ -3690,8 +3698,26 @@ function renderExpressionLibrary() {
   if (effectiveSelectedName) {
     window.requestAnimationFrame(() => {
       const active = expressionLibrary.querySelector(`.expression-library-item[data-entry-name="${CSS.escape(effectiveSelectedName)}"]`);
-      active?.scrollIntoView({ block: "nearest" });
+      revealExpressionLibraryEntry(active);
     });
+  }
+}
+
+function revealExpressionLibraryEntry(item) {
+  if (!item || !expressionLibrary) {
+    return;
+  }
+  item.scrollIntoView({ block: "nearest" });
+  const groupTitle = item.closest(".expression-library-group")?.querySelector(".expression-library-title");
+  const libraryRect = expressionLibrary.getBoundingClientRect();
+  const titleRect = groupTitle?.getBoundingClientRect();
+  const safeTop = Math.max(
+    libraryRect.top,
+    Math.min(libraryRect.bottom, titleRect?.bottom ?? libraryRect.top),
+  ) + 4;
+  const itemRect = item.getBoundingClientRect();
+  if (itemRect.top < safeTop) {
+    expressionLibrary.scrollTop -= safeTop - itemRect.top;
   }
 }
 
@@ -3714,7 +3740,7 @@ function setSelectedLibraryEntry(name, entry = null) {
   const active = expressionLibrary.querySelector(`.expression-library-item[data-entry-name="${CSS.escape(nextName)}"]`);
   if (active) {
     active.classList.add("active");
-    active.scrollIntoView({ block: "nearest" });
+    revealExpressionLibraryEntry(active);
   }
 }
 
@@ -4532,6 +4558,29 @@ function runPendingExpressionEditorSelectionAction() {
   }
 }
 
+function expressionSystemVariableOrder(name) {
+  const order = ["time", "dt", "t0", "t1", "this", "self"];
+  const index = order.indexOf(String(name || ""));
+  if (index >= 0) {
+    return index;
+  }
+  return String(name || "").startsWith("$") ? order.length : Number.POSITIVE_INFINITY;
+}
+
+function compareExpressionLibraryEntries(left, right) {
+  const leftSystemOrder = expressionSystemVariableOrder(left?.name);
+  const rightSystemOrder = expressionSystemVariableOrder(right?.name);
+  const leftIsSystemVariable = Number.isFinite(leftSystemOrder);
+  const rightIsSystemVariable = Number.isFinite(rightSystemOrder);
+  if (leftIsSystemVariable !== rightIsSystemVariable) {
+    return leftIsSystemVariable ? -1 : 1;
+  }
+  if (leftIsSystemVariable && leftSystemOrder !== rightSystemOrder) {
+    return leftSystemOrder - rightSystemOrder;
+  }
+  return String(left?.name || "").localeCompare(String(right?.name || ""), undefined, { numeric: true });
+}
+
 function expressionCatalogForEditor() {
   const meta = expressionEditorMeta();
   if (!meta) {
@@ -4658,7 +4707,7 @@ function expressionCatalogForEditor() {
 
   return out.sort((a, b) => {
     const linkedDelta = Number(Boolean(b.linkedNode)) - Number(Boolean(a.linkedNode));
-    return linkedDelta || a.name.localeCompare(b.name);
+    return linkedDelta || compareExpressionLibraryEntries(a, b);
   });
 }
 
