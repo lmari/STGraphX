@@ -146,6 +146,9 @@
     }
 
     function serializeNodeType(shape) {
+      if (shape === "draft") {
+        return "draft";
+      }
       if (shape === "ellipse") {
         return "algebraic";
       }
@@ -159,6 +162,9 @@
     }
 
     function deserializeNodeType(type) {
+      if (type === "draft") {
+        return "draft";
+      }
       if (type === "algebraic") {
         return "ellipse";
       }

@@ -64,6 +64,7 @@
           <button class="menu-title" type="button" data-menu="insertMenu" data-i18n="menu.insert" data-title-i18n="tooltip.menu.insert"></button>
           <div class="menu-panel" id="insertMenu">
             <div class="menu-section-title" data-i18n="menu.insert.group.nodes"></div>
+            <button id="addDraftNodeItem" class="menu-command" type="button" data-title-i18n="tooltip.menu.insert.draft"><span class="menu-command-label"><span class="menu-item-icon" aria-hidden="true">┄</span><span data-i18n="menu.insert.draft"></span></span><span class="menu-shortcut">Alt+0</span></button>
             <button id="addRectNodeItem" class="menu-command" type="button" data-title-i18n="tooltip.menu.insert.rect"><span class="menu-command-label"><span class="menu-item-icon" aria-hidden="true">▭</span><span data-i18n="menu.insert.rect"></span></span><span class="menu-shortcut">Alt+1</span></button>
             <button id="addEllipseNodeItem" class="menu-command" type="button" data-title-i18n="tooltip.menu.insert.ellipse"><span class="menu-command-label"><span class="menu-item-icon" aria-hidden="true">○</span><span data-i18n="menu.insert.ellipse"></span></span><span class="menu-shortcut">Alt+2</span></button>
             <button id="addDiamondNodeItem" class="menu-command" type="button" data-title-i18n="tooltip.menu.insert.diamond"><span class="menu-command-label"><span class="menu-item-icon" aria-hidden="true">◇</span><span data-i18n="menu.insert.diamond"></span></span><span class="menu-shortcut">Alt+3</span></button>
@@ -265,6 +266,7 @@
               <label for="nodeShapeInput" data-i18n="label.shape" data-title-i18n="tooltip.node.type"></label>
               <div class="node-type-row">
                 <select id="nodeShapeInput" data-title-i18n="tooltip.node.type">
+                  <option value="draft" data-i18n="shape.draft"></option>
                   <option value="rect" data-i18n="shape.rect"></option>
                   <option value="ellipse" data-i18n="shape.ellipse"></option>
                   <option value="diamond" data-i18n="shape.diamond"></option>
@@ -336,12 +338,12 @@
 
             </div>
 
-            <div class="panel-section compact-panel-section tablet-advanced-details">
+            <div class="panel-section compact-panel-section tablet-advanced-details node-semantic-section">
               <label for="nodeValueOutput" data-i18n="label.valueComputed" data-title-i18n="tooltip.node.computedValue"></label>
               <pre id="nodeValueOutput" class="value-output" data-title-i18n="tooltip.node.computedValue">-</pre>
             </div>
 
-            <div class="panel-section compact-panel-section tablet-advanced-details">
+            <div class="panel-section compact-panel-section tablet-advanced-details node-semantic-section">
               <div class="row2-exec">
                 <div>
                   <label for="nodeFillColorInput" data-i18n="label.nodeFillColor" data-title-i18n="tooltip.node.fillColor"></label>
@@ -354,7 +356,7 @@
               </div>
             </div>
 
-            <div class="panel-section compact-panel-section tablet-advanced-details">
+            <div class="panel-section compact-panel-section tablet-advanced-details node-semantic-section">
               <h4 data-i18n="panel.propertiesList" data-title-i18n="tooltip.node.properties"></h4>
               <div id="propsList" class="props-list"></div>
               <button id="addPropBtn" class="small-btn" data-i18n="action.addProperty" data-title-i18n="tooltip.node.addProperty"></button>
@@ -743,11 +745,11 @@
               <span data-i18n="menu.view.showGrid"></span>
             </label>
             <label class="option-check" for="highlightNodeEdgesInput" data-title-i18n="tooltip.menu.view.highlightNodeEdges">
-              <input id="highlightNodeEdgesInput" type="checkbox" />
+              <input id="highlightNodeEdgesInput" type="checkbox" checked />
               <span data-i18n="menu.view.highlightNodeEdges"></span>
             </label>
             <label class="option-check" for="showNodeValuesInput" data-title-i18n="tooltip.menu.view.showNodeValues">
-              <input id="showNodeValuesInput" type="checkbox" />
+              <input id="showNodeValuesInput" type="checkbox" checked />
               <span data-i18n="menu.view.showNodeValues"></span>
             </label>
           </div>

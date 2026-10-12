@@ -1,12 +1,12 @@
 # STGraphX: Readme
 
-versione 11 ottobre 2026
+versione 12 ottobre 2026
 
 Copyright (c) 2026 Luca Mari
 
 ## Contesto
 
-STGraphX è un editor ed esecutore di modelli dinamici a grafo orientato.
+STGraphX è un editor ed esecutore di modelli di sistemi dinamici a grafo orientato.
 
 È una reimplementazione di STGraph, da Java a JavaScript, realizzata interamente in _vibe coding_ con GPT-Codex-5.x (ho guardato ma mai toccato il codice generato, che al momento è di circa 1k linee HTML, 5k linee CSS, 40k linee JS).
 
@@ -39,7 +39,8 @@ Ha un'interfaccia utente responsive, che lo rende utilizzabile anche su tablet.
 
 ### Implementati (senza librerie esterne)
 
-((*): funzionalità già presente in STGraph ma migliorata in modo significativo; (**): funzionalità assente in STGraph e introdotta qui)
+(*): funzionalità già presente in STGraph ma migliorata in modo significativo  
+(**): funzionalità assente in STGraph e introdotta qui
 
 #### Funzionalità generali
 
@@ -59,6 +60,7 @@ Ha un'interfaccia utente responsive, che lo rende utilizzabile anche su tablet.
 
 * Gestione dei nodi algebrici, di stato, parametri e sottomodelli, con funzioni in sintassi javascript (compresa la gestione locale di `this` come stato attuale); controllo sintattico sul nome dei nodi; controllo sui parametri (valore non cambia dopo la prima esecuzione; frecce entranti non ammesse); inizializzazione ordinata di stati e nodi algebrici, con controllo di cicli nelle definizioni iniziali; controllo del numero di cifre decimali visualizzate (*)
 * Gestione di variabili globali
+* Possibilità di introdurre nodi "bozza" per una prima definizione dei modelli (**)
 * Possibilità di definire funzioni locali ai modelli (*)
 * Gestione di nodi di output e di widget di output: grafici, tabelle, matrici, led, testo; le tabelle possono mostrare una serie storica oppure espandere vettori e matrici in celle scalari; pannello di configurazione aggiornato dinamicamente (*)
 * Gestione di nodi di input e di widget di input, anche per parametri: slider, pulsante, selettore di testo, tabella di input numerico scalare, vettoriale o matriciale; pannello di configurazione aggiornato dinamicamente
@@ -69,7 +71,8 @@ Ha un'interfaccia utente responsive, che lo rende utilizzabile anche su tablet.
 * Definizione della base dei tempi e modalità varie di esecuzione; pannello di configurazione aggiornato dinamicamente
 * Gestione di esecuzione completa, passo-passo, temporizzata, con modello in modalità read-only durante l'esecuzione
 * Gestione opzionale del blocco di esecuzione ed evidenziazione per nodi non definiti (**)
-* Una prima gestione di controllo di correttezza del modello
+* Una prima gestione di controllo di correttezza del modello (**)
+* Una prima gestione di unità di misura per le variabili, con inferenza sull'unità delle variabili derivate (**)
 * Un primo debugger, con gestione di watch e breakpoint, anche con messaggio semantico (**)
 * Possibilità di assegnare un random seed per i generatori di numeri pseudo-casuali (**)
 

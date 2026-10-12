@@ -102,7 +102,7 @@
       const nodes = data.nodes
         .filter((n) => Number.isInteger(n.id))
         .map((n) => {
-          if (!["state", "algebraic", "parameter", "submodel"].includes(n.type)) {
+          if (!["draft", "state", "algebraic", "parameter", "submodel"].includes(n.type)) {
             throw new Error(t("error.invalidJson"));
           }
           const shape = deserializeNodeType(n.type);
@@ -110,7 +110,7 @@
             id: n.id,
             name: typeof n.name === "string" ? n.name : t("node.defaultName", { id: n.id }),
             input: shape === "ellipse" ? Boolean(n.input) : false,
-            output: Boolean(n.output),
+            output: shape === "draft" ? false : Boolean(n.output),
             global: shape === "diamond" ? Boolean(n.global) : false,
             shape,
             x: Number.isFinite(Number(n.x)) ? Number(n.x) : 200,
@@ -160,8 +160,14 @@
         });
       const nodesWithValidNames = semantics.sanitizeNodeNames(nodes, "n");
       const nodeIds = new Set(nodesWithValidNames.map((node) => node.id));
+      const nodeById = new Map(nodesWithValidNames.map((node) => [node.id, node]));
       const edges = data.edges
-        .filter((e) => Number.isInteger(e.id) && nodeIds.has(e.from) && nodeIds.has(e.to) && e.from !== e.to)
+        .filter((e) => Number.isInteger(e.id)
+          && nodeIds.has(e.from)
+          && nodeIds.has(e.to)
+          && e.from !== e.to
+          && nodeById.get(e.from)?.shape !== "draft"
+          && nodeById.get(e.to)?.shape !== "draft")
         .map((e) => ({
           id: e.id,
           from: e.from,

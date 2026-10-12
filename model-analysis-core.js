@@ -18,6 +18,7 @@
     const isSubmodelNode = typeof options.isSubmodelNode === "function" ? options.isSubmodelNode : () => false;
     const isStateNode = typeof options.isStateNode === "function" ? options.isStateNode : () => false;
     const isAlgebraicNode = typeof options.isAlgebraicNode === "function" ? options.isAlgebraicNode : () => false;
+    const isDraftNode = typeof options.isDraftNode === "function" ? options.isDraftNode : () => false;
     const accessibleAgentFieldAliasNames = typeof options.accessibleAgentFieldAliasNames === "function"
       ? options.accessibleAgentFieldAliasNames
       : () => [];
@@ -111,11 +112,17 @@
     }
 
     function incomingEdgesForNode(nodeId, model = getGraph()) {
-      return (model?.edges || []).filter((edge) => edge.to === nodeId);
+      return (model?.edges || []).filter((edge) => {
+        if (edge.to !== nodeId) return false;
+        return !isDraftNode((model?.nodes || []).find((node) => node.id === edge.from));
+      });
     }
 
     function outgoingEdgesForNode(nodeId, model = getGraph()) {
-      return (model?.edges || []).filter((edge) => edge.from === nodeId);
+      return (model?.edges || []).filter((edge) => {
+        if (edge.from !== nodeId) return false;
+        return !isDraftNode((model?.nodes || []).find((node) => node.id === edge.to));
+      });
     }
 
     function pureTimeConfigIssue(execution = getGraph()?.execution) {
@@ -143,7 +150,7 @@
     }
 
     function expressionReferencesForAnalysis(node, fieldKey = "value") {
-      if (!node || isSubmodelNode(node)) {
+      if (!node || isDraftNode(node) || isSubmodelNode(node)) {
         return new Set();
       }
       const expr = fieldKey === "initial"
@@ -173,7 +180,7 @@
         return false;
       }
       return (model?.nodes || []).some((node) => {
-        if (!node || node.id === targetNode.id) {
+        if (!node || isDraftNode(node) || node.id === targetNode.id) {
           return false;
         }
         if (expressionReferencesForAnalysis(node, "value").has(targetName)) {
@@ -370,6 +377,7 @@
 
     function analyzeModelStaticIssues() {
       const graph = getGraph();
+      const isDraftEdge = (edge) => isDraftNode(getNodeById(edge.from)) || isDraftNode(getNodeById(edge.to));
       const issues = [];
       const timeIssue = pureTimeConfigIssue(graph.execution);
       if (timeIssue) {
@@ -394,7 +402,7 @@
         };
         graph.nodes.forEach((node) => {
           const raw = String(node.unit || "").trim();
-          if (!raw || isSubmodelNode(node)) return;
+          if (!raw || isDraftNode(node) || isSubmodelNode(node)) return;
           const parsed = unitAnalysis.parseUnit(raw);
           if (!parsed.ok) {
             pushAnalysisIssue(issues, "warning", "analysis.issue.invalidUnit", { name: node.name, unit: raw }, { type: "node", id: node.id, name: node.name });
@@ -438,7 +446,7 @@
         };
         for (let pass = 0; pass < graph.nodes.length; pass += 1) {
           graph.nodes.forEach((node) => {
-            if (isSubmodelNode(node)) return;
+            if (isDraftNode(node) || isSubmodelNode(node)) return;
             const expected = declarations.get(node.name);
             if (isStateNode(node)) {
               infer(node, node.initialStateExpression, expected, "initialState");
@@ -450,7 +458,7 @@
           if (!node.inferredUnit && declarations.has(node.name)) node.inferredUnit = unitAnalysis.display(declarations.get(node.name));
         });
       }
-      graph.edges.forEach((edge) => {
+      graph.edges.filter((edge) => !isDraftEdge(edge)).forEach((edge) => {
         const fromNode = getNodeById(edge.from);
         const toNode = getNodeById(edge.to);
         if (fromNode && toNode) {
@@ -465,7 +473,7 @@
         );
       });
       const edgeGroups = new Map();
-      graph.edges.forEach((edge) => {
+      graph.edges.filter((edge) => !isDraftEdge(edge)).forEach((edge) => {
         const fromNode = getNodeById(edge.from);
         const toNode = getNodeById(edge.to);
         const signature = [edge.from, edge.to].join("|");
@@ -488,7 +496,7 @@
           );
         });
       });
-      graph.edges.forEach((edge) => {
+      graph.edges.filter((edge) => !isDraftEdge(edge)).forEach((edge) => {
         if (edge.from !== edge.to) {
           return;
         }
@@ -521,6 +529,7 @@
       });
 
       graph.nodes.forEach((node) => {
+        if (isDraftNode(node)) return;
         const definitionIssue = validateNodeDefinition(node);
         if (!definitionIssue.ok) {
           issues.push({
@@ -532,6 +541,7 @@
       });
 
       graph.nodes.forEach((node) => {
+        if (isDraftNode(node)) return;
         if (isSubmodelNode(node)) {
           const incomingEdges = incomingEdgesForNode(node.id, graph);
           const incomingNameToEdges = new Map();
@@ -585,7 +595,7 @@
           bindingRefs.forEach((refs) => {
             refs.forEach((name) => {
               const depNode = nodeMap.get(name);
-              if (!depNode || depNode.id === node.id) {
+              if (!depNode || isDraftNode(depNode) || depNode.id === node.id) {
                 return;
               }
               if (!incomingNameToEdges.has(name) && !isGlobalParameterNode(depNode)) {
@@ -618,7 +628,7 @@
 
         valueRefs.forEach((name) => {
           const depNode = nodeMap.get(name);
-          if (!depNode || depNode.id === node.id) {
+          if (!depNode || isDraftNode(depNode) || depNode.id === node.id) {
             return;
           }
           if (!incomingNameToEdges.has(name) && !isGlobalParameterNode(depNode)) {
@@ -634,7 +644,7 @@
 
         initialRefs.forEach((name) => {
           const depNode = nodeMap.get(name);
-          if (!depNode || depNode.id === node.id) {
+          if (!depNode || isDraftNode(depNode) || depNode.id === node.id) {
             return;
           }
           if (!incomingNameToEdges.has(name) && !isGlobalParameterNode(depNode)) {
@@ -671,7 +681,8 @@
       });
 
       graph.nodes.forEach((node) => {
-        const hasOutgoingEdges = graph.edges.some((edge) => edge.from === node.id);
+        if (isDraftNode(node)) return;
+        const hasOutgoingEdges = outgoingEdgesForNode(node.id, graph).length > 0;
         const usedByTable = graph.widgets.some((widget) => widget.type === "table" && Array.isArray(widget.columns) && widget.columns.includes(node.name));
         const usedByChart = graph.widgets.some((widget) => widget.type === "xychart"
           && Array.isArray(widget.xyPairs)

@@ -2509,20 +2509,21 @@
   }
 
   function evaluateGraphExpressions(nodes, edges, globals = {}, options = {}) {
-    const nodeById = new Map(nodes.map((node) => [node.id, node]));
+    const executableNodes = nodes.filter((node) => !isDraftNode(node));
+    const nodeById = new Map(executableNodes.map((node) => [node.id, node]));
     const incoming = new Map();
-    nodes.forEach((node) => incoming.set(node.id, []));
+    executableNodes.forEach((node) => incoming.set(node.id, []));
     edges.forEach((edge) => {
       if (incoming.has(edge.to) && nodeById.has(edge.from)) {
         incoming.get(edge.to).push(edge.from);
       }
     });
 
-    const pending = new Set(nodes.map((node) => node.id));
+    const pending = new Set(executableNodes.map((node) => node.id));
     const results = new Map();
-    const globalParameterNodes = nodes.filter((node) => isGlobalParameterNode(node));
+    const globalParameterNodes = executableNodes.filter((node) => isGlobalParameterNode(node));
     const globalReferences = new Map(
-      nodes.map((node) => [
+      executableNodes.map((node) => [
         node.id,
         globalParameterNodes.filter((globalNode) =>
           globalNode.id !== node.id && collectIdentifierReferences(node.valueExpression).has(globalNode.name)),
@@ -2587,7 +2588,7 @@
       results.set(nodeId, { ok: false, reason: "dependency" });
     });
 
-    return nodes.map((node) => ({
+    return executableNodes.map((node) => ({
       id: node.id,
       result: results.get(node.id) || { ok: false, reason: "dependency" },
     }));
@@ -2601,6 +2602,10 @@
     return String(node?.shape || "") === "diamond";
   }
 
+  function isDraftNode(node) {
+    return String(node?.shape || "") === "draft";
+  }
+
   function isGlobalParameterNode(node) {
     return isParameterNode(node) && Boolean(node?.global);
   }
@@ -2610,9 +2615,10 @@
   }
 
   function prepareStatefulExecutionPlan(nodes, edges) {
-    const nodeById = new Map(nodes.map((node) => [node.id, node]));
+    const executableNodes = nodes.filter((node) => !isDraftNode(node));
+    const nodeById = new Map(executableNodes.map((node) => [node.id, node]));
     const incoming = new Map();
-    nodes.forEach((node) => incoming.set(node.id, []));
+    executableNodes.forEach((node) => incoming.set(node.id, []));
     edges.forEach((edge) => {
       if (incoming.has(edge.to) && nodeById.has(edge.from)) {
         incoming.get(edge.to).push(edge.from);
@@ -2621,13 +2627,14 @@
     return {
       nodeById,
       incoming,
-      stateNodes: nodes.filter((node) => isStateNode(node)),
-      globalParameterNodes: nodes.filter((node) => isGlobalParameterNode(node)),
+      stateNodes: executableNodes.filter((node) => isStateNode(node)),
+      globalParameterNodes: executableNodes.filter((node) => isGlobalParameterNode(node)),
     };
   }
 
   function evaluateStatefulGraphStep(nodes, edges, globals = {}, plan = null, options = {}) {
     const runtimePlan = plan || prepareStatefulExecutionPlan(nodes, edges);
+    const executableNodes = nodes.filter((node) => !isDraftNode(node));
     const nodeById = runtimePlan.nodeById;
     const incoming = runtimePlan.incoming;
     const stateValueOverrides = options?.stateValueOverrides instanceof Map ? options.stateValueOverrides : null;
@@ -2639,7 +2646,7 @@
       ? runtimePlan.globalParameterNodes
       : [];
     const globalValueRefs = new Map(
-      nodes.map((node) => [
+      executableNodes.map((node) => [
         node.id,
         globalParameterNodes.filter((globalNode) =>
           globalNode.id !== node.id && collectIdentifierReferences(node.valueExpression).has(globalNode.name)),
@@ -2651,9 +2658,9 @@
       }
       return node.computedValue;
     };
-    const fixedNodes = nodes.filter((node) => !isStateNode(node) && hasExternalValue(node));
-    const parameterNodes = nodes.filter((node) => isParameterNode(node) && !hasExternalValue(node));
-    const algebraicNodes = nodes.filter((node) => !isStateNode(node) && !isParameterNode(node) && !hasExternalValue(node));
+    const fixedNodes = executableNodes.filter((node) => !isStateNode(node) && hasExternalValue(node));
+    const parameterNodes = executableNodes.filter((node) => isParameterNode(node) && !hasExternalValue(node));
+    const algebraicNodes = executableNodes.filter((node) => !isStateNode(node) && !isParameterNode(node) && !hasExternalValue(node));
     const fixedResults = new Map();
     const stateNodes = runtimePlan.stateNodes;
     const parameterResults = new Map();

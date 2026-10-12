@@ -3507,7 +3507,7 @@ function pointInsideNode(node, p) {
   const hw = node.width / 2;
   const hh = node.height / 2;
 
-  if (node.shape === "ellipse") {
+  if (node.shape === "ellipse" || node.shape === "draft") {
     const v = (dx * dx) / (hw * hw) + (dy * dy) / (hh * hh);
     return v <= 1;
   }
@@ -3537,6 +3537,14 @@ function openBackgroundContextMenu(evt) {
     {
       title: true,
       label: t("menu.insert.group.nodes"),
+    },
+    {
+      label: t("context.bg.newDraft"),
+      icon: "┄",
+      action: () => {
+        runAction(() => addNode("draft", p));
+        setStatusKey("status.nodeCreated");
+      },
     },
     {
       label: t("context.bg.newRect"),
@@ -3992,7 +4000,9 @@ function buildNodeTooltipText(node) {
   const submodelTitle = node.shape === "submodel"
     ? String(node?.interfaceCache?.modelTitle ?? "").trim()
     : "";
-  const analysisIssue = String(node.analysisIssue?.message || node.unitAnalysisError || "").trim();
+  const analysisIssue = String(
+    node.analysisIssue?.message || node.unitAnalysisError || node._definitionIssueMessage || "",
+  ).trim();
   const prefix = [
     submodelTitle ? t("text.submodelTooltipTitle", { title: submodelTitle }) : "",
     description,

@@ -2199,9 +2199,9 @@ input.inferred-unit[readonly] { color: #6d7782; background: #f4f6f8; }
 
 .view-options-card {
   /* Fallback for Safari versions that do not support CSS min(). */
-  width: 460px;
+  width: 550px;
   max-width: calc(100vw - 40px);
-  width: min(460px, calc(100vw - 40px));
+  width: min(550px, calc(100vw - 40px));
   box-sizing: border-box;
   gap: 8px;
 }
@@ -2224,22 +2224,23 @@ input.inferred-unit[readonly] { color: #6d7782; background: #f4f6f8; }
 }
 
 .view-options-checks {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 2px 16px;
-  align-items: stretch;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 3px 10px;
+  align-items: center;
 }
 
 .option-check {
-  display: flex;
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
   align-items: center;
   min-height: 27px;
+  justify-content: start;
   gap: 5px;
   color: #31485b;
   font-size: 0.86rem;
-  flex: 0 1 calc(50% - 8px);
   min-width: 0;
-  white-space: normal;
+  white-space: nowrap;
 }
 
 .option-check input {
@@ -3959,6 +3960,29 @@ body.tablet-sidebar-layout .expression-editor-resize-handle {
   pointer-events: none;
 }
 
+/* Draft nodes are visual planning elements: their transparent body remains
+   pointer-active, while selection reveals the otherwise absent outline. */
+.node.draft-node .node-shape {
+  fill: transparent;
+  stroke: transparent;
+  pointer-events: all;
+}
+
+.node.draft-node .node-label {
+  fill: #71808c;
+  font-style: italic;
+}
+
+.node.draft-node.selected .node-shape {
+  stroke: #8798a6;
+  stroke-width: 1.5;
+  stroke-dasharray: 5 4;
+}
+
+#nodePanel.draft-node-panel .node-semantic-section {
+  display: none !important;
+}
+
 .node.invalid-definition .node-shape {
   fill: #fff5f6;
   stroke: #ba1f36;
@@ -5069,8 +5093,8 @@ body.tablet-sidebar-layout .menu-run-btn {
 }
 
 @media (max-width: 480px) {
-  .view-options-checks .option-check {
-    flex-basis: 100%;
+  .view-options-checks {
+    grid-template-columns: 1fr;
   }
 }
 

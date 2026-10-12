@@ -1,6 +1,6 @@
 /*!
  * STGraphX Embedded Player Bundle
- * Generated: 2026-10-11T09:11:54.263Z
+ * Generated: 2026-10-12T15:35:07.151Z
  */
 
 /* --- i18n-inline.js --- */
@@ -13,7 +13,7 @@
 
 window.STGraphXAppMeta = {
   author: "Luca Mari",
-  releaseDate: "2026.10.10",
+  releaseDate: "2026.10.12",
   license: "MPL-2.0",
   copyright: "Copyright (c) 2026 Luca Mari",
 };
@@ -87,6 +87,7 @@ window.STGraphXI18nBundles = {
     "confirm.openGraph.save": "Ci sono modifiche non salvate. Vuoi salvarle prima di aprire un altro modello?",
     "confirm.selectModelFolder": "Il modello usa sottomodelli. Vuoi selezionare la cartella del modello per consentirne il caricamento automatico?",
     "context.bg.insertTitle": "Inserisci",
+    "context.bg.newDraft": "Bozza",
     "context.bg.newButtonWidget": "Pulsante",
     "context.bg.newNumericWidget": "Input numerico",
     "context.bg.newDiamond": "Parametro",
@@ -148,6 +149,7 @@ window.STGraphXI18nBundles = {
     "menu.help.functions": "Funzioni disponibili...",
     "menu.insert": "Inserisci",
     "menu.insert.buttonWidget": "Pulsante",
+    "menu.insert.draft": "Bozza",
     "menu.insert.diamond": "Parametro",
     "menu.insert.ellipse": "Variabile algebrica",
     "menu.insert.group.content": "Contenuti",
@@ -226,6 +228,7 @@ window.STGraphXI18nBundles = {
     "label.integrator": "Integratore",
     "label.modelTitle": "Titolo",
     "label.name": "Nome",
+    "label.unit": "Unità",
     "label.nodeFillColor": "Sfondo",
     "label.nodeStrokeColor": "Bordo",
     "label.output": "output",
@@ -233,7 +236,7 @@ window.STGraphXI18nBundles = {
     "label.shape": "Tipo",
     "label.state": "Stato",
     "label.stateTransition": "Stato prossimo",
-    "label.strictDefinitions": "Blocca esecuzione con variabili non definite",
+    "label.strictDefinitions": "Blocca esecuzione con definizioni o unità incoerenti",
     "label.strictDefinitionsShort": "Definizioni rigorose",
     "label.randomSeed": "Seme casuale",
     "label.submodelPath": "File sottomodello",
@@ -245,6 +248,7 @@ window.STGraphXI18nBundles = {
     "label.timeEnd": "t1",
     "label.timeStart": "t0",
     "label.timeStep": "delta t",
+    "label.timeUnit": "Unità di tempo",
     "label.value": "Valore",
     "label.valueComputed": "Valore calcolato",
     "label.valueExpr": "Espressione valore",
@@ -291,6 +295,7 @@ window.STGraphXI18nBundles = {
     "prop.keyPlaceholder": "chiave",
     "prop.valuePlaceholder": "valore",
     "shape.diamond": "parametro",
+    "shape.draft": "bozza",
     "shape.ellipse": "algebrico",
     "shape.rect": "stato",
     "shape.submodel": "sottomodello",
@@ -945,6 +950,7 @@ window.STGraphXI18nBundles = {
     "tooltip.menu.insert.button": "Inserisce un widget pulsante per pilotare ingressi booleani.",
     "tooltip.menu.insert.chart": "Inserisce un widget grafico x-y.",
     "tooltip.menu.insert.diamond": "Inserisce un nuovo parametro.",
+    "tooltip.menu.insert.draft": "Inserisce una bozza senza semantica esecutiva, da definire successivamente.",
     "tooltip.menu.insert.ellipse": "Inserisce una nuova variabile algebrica.",
     "tooltip.menu.insert.led": "Inserisce un widget LED per visualizzare un valore booleano.",
     "tooltip.menu.insert.matrix": "Inserisce un widget per visualizzare una matrice.",
@@ -1004,7 +1010,7 @@ window.STGraphXI18nBundles = {
     "tooltip.model.integrator": "Metodo numerico usato per integral(...). Eulero è il default; RK4 si applica alle chiamate integral(...) presenti nelle transizioni di stato.",
     "tooltip.model.localFunctions": "Apre l'editor delle funzioni locali, riusabili dalle espressioni delle variabili del modello.",
     "tooltip.model.renderEverySteps": "Durante l'esecuzione temporizzata ridisegna canvas e widget ogni N passi. Il calcolo e le serie storiche restano completi a ogni passo.",
-    "tooltip.model.strictDefinitions": "Se attivo, le variabili non definite correttamente vengono evidenziate e bloccano l'esecuzione.",
+    "tooltip.model.strictDefinitions": "Se attivo, le variabili non definite correttamente bloccano l'esecuzione; se tutte le sorgenti hanno un'unità, blocca anche le incoerenze dimensionali.",
     "tooltip.model.randomSeed": "Intero opzionale che rende ripetibili le successioni generate da rand, randInt e dalle distribuzioni probabilistiche. Lascia vuoto per usare casualità non riproducibile.",
     "tooltip.menu.run.stopOnRuntimeError": "Interrompe l'esecuzione al primo errore prodotto dalla valutazione di una variabile, mostrando la variabile, il tempo e il dettaglio tecnico.",
     "tooltip.model.t0": "Istante iniziale dell'esecuzione.",
@@ -1023,6 +1029,7 @@ window.STGraphXI18nBundles = {
     "tooltip.node.input": "Marca la variabile come ingresso esterno pilotabile da widget di input.",
     "tooltip.node.loadSubmodel": "Carica o aggiorna il sottomodello referenziato nella variabile selezionata.",
     "tooltip.node.name": "Nome univoco della variabile, usabile nelle espressioni delle variabili collegate.",
+    "tooltip.node.unit": "Unità di misura opzionale. Vettori e matrici sono assunti omogenei: ogni elemento ha questa unità.",
     "tooltip.node.properties": "Coppie chiave-valore descrittive, salvate nel modello e disponibili come documentazione della variabile.",
     "tooltip.node.addProperty": "Aggiunge una nuova proprietà descrittiva alla variabile selezionata.",
     "tooltip.node.openSubmodel": "Apre il sottomodello referenziato nella variabile selezionata.",
@@ -1061,7 +1068,8 @@ window.STGraphXI18nBundles = {
     "submodelIcon.grid": "Griglia",
     "submodelIcon.process": "Processo",
     "submodelIcon.image": "Immagine dal file",
-    "tooltip.node.type": "Tipo semantico della variabile: stato, algebrico o parametro.",
+    "tooltip.node.type": "Tipo semantico della variabile: bozza, stato, algebrica, parametro o sottomodello.",
+    "tooltip.node.type.draft": "Bozza: elemento di progettazione senza semantica esecutiva; può essere convertito in seguito in un altro tipo.",
     "tooltip.node.type.rect": "Variabile di stato: conserva un valore tra un passo e il successivo.",
     "tooltip.node.type.ellipse": "Variabile algebrica: il valore e ricalcolato dalle sue dipendenze.",
     "tooltip.node.type.diamond": "Parametro: valore definito dal modello o da un widget di input.",
@@ -1156,11 +1164,14 @@ window.STGraphXI18nBundles = {
     "analysis.checks.initialDefinitionCycle": "Segnala cicli tra stati e variabili algebriche necessari per calcolare gli stati iniziali.",
     "analysis.checks.intro": "Questa finestra riassume i controlli statici attualmente eseguiti da Analizza modello e spiega in breve quando viene generato ciascun errore, warning o info.",
     "analysis.checks.invalidDelay": "Segnala un ritardo non valido per l'esecuzione temporizzata, per esempio nullo o non numerico.",
+    "analysis.checks.invalidUnit": "Segnala unità di misura dichiarate con una sintassi non riconosciuta.",
     "analysis.checks.invalidSubmodelBinding": "Segnala binding di ingresso dei sottomodelli che non sono semanticamente validi.",
     "analysis.checks.invalidTimeConfig": "Segnala una configurazione del tempo non eseguibile, per esempio dt nullo o intervallo incoerente rispetto a t0 e t1.",
     "analysis.checks.missingIncomingEdge": "Segnala espressioni che usano un'altra variabile senza la corrispondente freccia entrante.",
     "analysis.checks.selfLoop": "Segnala self-loop che possono essere voluti, ma spesso indicano una connessione sospetta.",
     "analysis.checks.stateShapeMismatch": "Segnala variabili di stato in cui stato iniziale e stato successivo sembrano avere shape incompatibili.",
+    "analysis.checks.unitExpressionMismatch": "Segnala formule che combinano valori con unità incompatibili, per esempio una somma tra € e €/anno.",
+    "analysis.checks.unitMismatch": "Segnala una formula il cui risultato ha un'unità incompatibile con l'unità dichiarata per la variabile.",
     "analysis.checks.tableColumnNotOutput": "Segnala colonne di tabelle collegate a variabili non marcate come output.",
     "analysis.checks.tableMissingColumn": "Segnala colonne di tabelle che puntano a variabili non più presenti.",
     "analysis.checks.tableNoColumns": "Segnala widget tabella senza colonne configurate.",
@@ -1191,6 +1202,17 @@ window.STGraphXI18nBundles = {
     "analysis.issue.missingIncomingEdge": "L'espressione di {target} usa {source}, ma manca la freccia {source} -> {target}.",
     "analysis.issue.selfLoop": "La freccia {name} crea un self-loop potenzialmente sospetto.",
     "analysis.issue.stateShapeMismatch": "Nella variabile di stato {name}, stato iniziale e stato successivo sembrano avere forme diverse ({current} vs {next}).",
+    "analysis.issue.invalidUnit": "Unità non valida per {name}: {unit}.",
+    "analysis.issue.unitExpressionMismatch": "Unità incompatibili nell'espressione {expression} di {name}: {reason}.",
+    "analysis.issue.unitMismatch": "Unità incompatibile per {name}: attesa {expected}, inferita {actual}.",
+    "analysis.unitExpression.initialState": "dello stato iniziale",
+    "analysis.unitExpression.nextState": "dello stato prossimo",
+    "analysis.unitExpression.value": "del valore",
+    "analysis.unitReason.add": "gli addendi hanno unità diverse ({left} e {right})",
+    "analysis.unitReason.array": "gli elementi dell'array hanno unità diverse",
+    "analysis.unitReason.compare": "i valori confrontati hanno unità diverse ({left} e {right})",
+    "analysis.unitReason.dimensionless": "è richiesto un argomento adimensionale",
+    "analysis.unitReason.if": "i valori alternativi hanno unità diverse",
     "analysis.issue.tableColumnNotOutput": "Il widget tabella {name} usa la colonna {source}, ma la variabile non è marcata come output.",
     "analysis.issue.tableMissingColumn": "Il widget tabella {name} usa la colonna {source}, ma la variabile non esiste più.",
     "analysis.issue.tableNoColumns": "Il widget tabella {name} non ha colonne configurate.",
@@ -1282,16 +1304,17 @@ window.STGraphXI18nBundles = {
     "error.invalidNodeName": "Nome variabile non valido: usa solo lettere, numeri e underscore, senza iniziare con un numero.",
     "error.load": "Errore caricamento: {message}",
     "error.loadCancelled": "Caricamento annullato.",
+    "error.nodeDefinition.draft": "bozza da definire",
     "error.nodeDefinition.invalidBehavior": "comportamento non valido ({reason})",
     "error.nodeDefinition.invalidInitialState": "stato iniziale non valido ({reason})",
     "error.nodeDefinition.invalidSubmodelPath": "sottomodello non valido ({reason})",
     "error.nodeDefinition.invalidTransition": "stato prossimo non valido ({reason})",
     "error.nodeDefinition.invalidValue": "valore non valido ({reason})",
-    "error.nodeDefinition.missingBehavior": "comportamento mancante",
+    "error.nodeDefinition.missingBehavior": "funzione di comportamento mancante",
     "error.nodeDefinition.missingInitialState": "stato iniziale mancante",
     "error.nodeDefinition.missingSubmodelPath": "file del sottomodello mancante",
     "error.submodelInterfaceUnavailable": "Interfaccia del sottomodello non disponibile.",
-    "error.nodeDefinition.missingTransition": "stato prossimo mancante",
+    "error.nodeDefinition.missingTransition": "funzione di stato prossimo mancante",
     "error.nodeDefinition.missingValue": "valore mancante",
     "error.parameterIncomingEdge": "Un parametro non può avere frecce entranti.",
     "error.recentMissing": "Il file recente selezionato non è più disponibile.",
@@ -1299,6 +1322,7 @@ window.STGraphXI18nBundles = {
     "error.reservedNodeName": "Nome variabile non valido: parola riservata.",
     "error.saveFailed": "Salvataggio non riuscito.",
     "error.strictDefinitionsBlocked": "Esecuzione bloccata: {count} variabili non correttamente definite (prima: {node}, motivo: {reason}).",
+    "error.strictUnitsBlocked": "Esecuzione bloccata: incongruenza nelle unità di misura (variabile: {node}, motivo: {reason}).",
     "error.submodelDirectoryUnsupported": "Il browser o il contesto corrente non supportano la scelta della cartella del modello.",
     "error.submodelLoadFailed": "Impossibile leggere il sottomodello: {message}",
     "error.submodelMissingPath": "Specifica prima il file del sottomodello.",
@@ -1383,6 +1407,7 @@ window.STGraphXI18nBundles = {
     "confirm.openGraph.save": "There are unsaved changes. Save them before opening another model?",
     "confirm.selectModelFolder": "This model uses submodels. Do you want to select the model folder so they can be loaded automatically?",
     "context.bg.insertTitle": "Insert",
+    "context.bg.newDraft": "Draft",
     "context.bg.newButtonWidget": "Button",
     "context.bg.newNumericWidget": "Numeric input",
     "context.bg.newDiamond": "Parameter",
@@ -1444,6 +1469,7 @@ window.STGraphXI18nBundles = {
     "menu.help.functions": "Available functions...",
     "menu.insert": "Insert",
     "menu.insert.buttonWidget": "Button",
+    "menu.insert.draft": "Draft",
     "menu.insert.diamond": "Parameter",
     "menu.insert.ellipse": "Algebraic variable",
     "menu.insert.group.content": "Content",
@@ -1522,6 +1548,7 @@ window.STGraphXI18nBundles = {
     "label.integrator": "Integrator",
     "label.modelTitle": "Title",
     "label.name": "Name",
+    "label.unit": "Unit",
     "label.nodeFillColor": "Background",
     "label.nodeStrokeColor": "Border",
     "label.output": "output",
@@ -1529,7 +1556,7 @@ window.STGraphXI18nBundles = {
     "label.shape": "Type",
     "label.state": "State",
     "label.stateTransition": "Next state",
-    "label.strictDefinitions": "Block execution with undefined variables",
+    "label.strictDefinitions": "Block execution for invalid definitions or units",
     "label.strictDefinitionsShort": "Strict definitions",
     "label.randomSeed": "Random seed",
     "label.submodelPath": "Submodel file",
@@ -1541,6 +1568,7 @@ window.STGraphXI18nBundles = {
     "label.timeEnd": "t1",
     "label.timeStart": "t0",
     "label.timeStep": "delta t",
+    "label.timeUnit": "Time unit",
     "label.value": "Value",
     "label.valueComputed": "Computed value",
     "label.valueExpr": "Value expression",
@@ -1587,6 +1615,7 @@ window.STGraphXI18nBundles = {
     "prop.keyPlaceholder": "key",
     "prop.valuePlaceholder": "value",
     "shape.diamond": "parameter",
+    "shape.draft": "draft",
     "shape.ellipse": "algebraic",
     "shape.rect": "state",
     "shape.submodel": "submodel",
@@ -2241,6 +2270,7 @@ window.STGraphXI18nBundles = {
     "tooltip.menu.insert.button": "Inserts a button widget to drive boolean inputs.",
     "tooltip.menu.insert.chart": "Inserts an x-y chart widget.",
     "tooltip.menu.insert.diamond": "Inserts a new parameter.",
+    "tooltip.menu.insert.draft": "Inserts a draft without execution semantics, to be defined later.",
     "tooltip.menu.insert.ellipse": "Inserts a new algebraic variable.",
     "tooltip.menu.insert.led": "Inserts an LED widget to display a boolean value.",
     "tooltip.menu.insert.matrix": "Inserts a widget to display a matrix.",
@@ -2300,7 +2330,7 @@ window.STGraphXI18nBundles = {
     "tooltip.model.integrator": "Numerical method used for integral(...). Euler is the default; RK4 applies to integral(...) calls present in state transitions.",
     "tooltip.model.localFunctions": "Opens the editor for local functions reusable by the model variable expressions.",
     "tooltip.model.renderEverySteps": "During timed execution, redraws the canvas and widgets every N steps. Computation and time histories remain complete at every step.",
-    "tooltip.model.strictDefinitions": "When enabled, incorrectly defined variables are highlighted and block execution.",
+    "tooltip.model.strictDefinitions": "When enabled, incorrectly defined variables block execution; if every source has a unit, dimensional inconsistencies block it too.",
     "tooltip.model.randomSeed": "Optional integer that makes sequences from rand, randInt, and probability distributions reproducible. Leave empty for non-reproducible randomness.",
     "tooltip.menu.run.stopOnRuntimeError": "Stops execution at the first error while evaluating a variable and shows the variable, time, and technical detail.",
     "tooltip.model.t0": "Initial execution time.",
@@ -2319,6 +2349,7 @@ window.STGraphXI18nBundles = {
     "tooltip.node.input": "Marks the variable as an external input drivable by input widgets.",
     "tooltip.node.loadSubmodel": "Loads or refreshes the submodel referenced by the selected variable.",
     "tooltip.node.name": "Unique variable name, usable in connected variable expressions.",
+    "tooltip.node.unit": "Optional measurement unit. Vectors and matrices are assumed homogeneous: every element has this unit.",
     "tooltip.node.properties": "Descriptive key-value pairs saved in the model and available as variable documentation.",
     "tooltip.node.addProperty": "Adds a descriptive property to the selected variable.",
     "tooltip.node.openSubmodel": "Opens the submodel referenced by the selected variable.",
@@ -2357,7 +2388,8 @@ window.STGraphXI18nBundles = {
     "submodelIcon.grid": "Grid",
     "submodelIcon.process": "Process",
     "submodelIcon.image": "Image from file",
-    "tooltip.node.type": "Semantic variable type: state, algebraic, or parameter.",
+    "tooltip.node.type": "Semantic variable type: draft, state, algebraic, parameter, or submodel.",
+    "tooltip.node.type.draft": "Draft: a design element without execution semantics that can later be converted to another type.",
     "tooltip.node.type.rect": "State variable: preserves a value between one step and the next.",
     "tooltip.node.type.ellipse": "Algebraic variable: its value is recalculated from its dependencies.",
     "tooltip.node.type.diamond": "Parameter: value defined by the model or by an input widget.",
@@ -2452,11 +2484,14 @@ window.STGraphXI18nBundles = {
     "analysis.checks.initialDefinitionCycle": "Reports cycles among states and algebraic variables needed to calculate initial states.",
     "analysis.checks.intro": "This window summarizes the static checks currently performed by Analyze model and briefly explains when each error, warning, or info is generated.",
     "analysis.checks.invalidDelay": "Reports an invalid delay for timed execution, for example zero or non-numeric.",
+    "analysis.checks.invalidUnit": "Reports declared measurement units with unrecognized syntax.",
     "analysis.checks.invalidSubmodelBinding": "Reports submodel input bindings that are not semantically valid.",
     "analysis.checks.invalidTimeConfig": "Reports a time configuration that cannot be executed, for example a zero dt or an interval inconsistent with t0 and t1.",
     "analysis.checks.missingIncomingEdge": "Reports expressions that use another variable without the corresponding incoming edge.",
     "analysis.checks.selfLoop": "Reports self-loops that may be intentional, but often indicate a suspicious connection.",
     "analysis.checks.stateShapeMismatch": "Reports state variables whose initial state and next state appear to have incompatible shapes.",
+    "analysis.checks.unitExpressionMismatch": "Reports formulas that combine values with incompatible units, for example a sum of € and €/year.",
+    "analysis.checks.unitMismatch": "Reports a formula whose result has a unit incompatible with the unit declared for the variable.",
     "analysis.checks.tableColumnNotOutput": "Reports table columns connected to variables not marked as output.",
     "analysis.checks.tableMissingColumn": "Reports table columns that point to variables no longer present.",
     "analysis.checks.tableNoColumns": "Reports table widgets without configured columns.",
@@ -2487,6 +2522,17 @@ window.STGraphXI18nBundles = {
     "analysis.issue.missingIncomingEdge": "The expression of {target} uses {source}, but the edge {source} -> {target} is missing.",
     "analysis.issue.selfLoop": "Edge {name} creates a potentially suspicious self-loop.",
     "analysis.issue.stateShapeMismatch": "In state variable {name}, initial state and next state appear to have different shapes ({current} vs {next}).",
+    "analysis.issue.invalidUnit": "Invalid unit for {name}: {unit}.",
+    "analysis.issue.unitExpressionMismatch": "Incompatible units in the {expression} expression of {name}: {reason}.",
+    "analysis.issue.unitMismatch": "Incompatible unit for {name}: expected {expected}, inferred {actual}.",
+    "analysis.unitExpression.initialState": "initial state",
+    "analysis.unitExpression.nextState": "next state",
+    "analysis.unitExpression.value": "value",
+    "analysis.unitReason.add": "the operands of the sum have different units ({left} and {right})",
+    "analysis.unitReason.array": "the array elements have different units",
+    "analysis.unitReason.compare": "the compared values have different units ({left} and {right})",
+    "analysis.unitReason.dimensionless": "a dimensionless argument is required",
+    "analysis.unitReason.if": "the alternative values have different units",
     "analysis.issue.tableColumnNotOutput": "Table widget {name} uses column {source}, but that variable is not marked as output.",
     "analysis.issue.tableMissingColumn": "Table widget {name} uses column {source}, but that variable no longer exists.",
     "analysis.issue.tableNoColumns": "Table widget {name} has no configured columns.",
@@ -2578,16 +2624,17 @@ window.STGraphXI18nBundles = {
     "error.invalidNodeName": "Invalid variable name: use letters, digits and underscore, and do not start with a digit.",
     "error.load": "Load error: {message}",
     "error.loadCancelled": "Load canceled.",
+    "error.nodeDefinition.draft": "draft to be defined",
     "error.nodeDefinition.invalidBehavior": "invalid behavior ({reason})",
     "error.nodeDefinition.invalidInitialState": "invalid initial state ({reason})",
     "error.nodeDefinition.invalidSubmodelPath": "invalid submodel ({reason})",
     "error.nodeDefinition.invalidTransition": "invalid next state ({reason})",
     "error.nodeDefinition.invalidValue": "invalid value ({reason})",
-    "error.nodeDefinition.missingBehavior": "missing behavior",
+    "error.nodeDefinition.missingBehavior": "missing behavior function",
     "error.nodeDefinition.missingInitialState": "missing initial state",
     "error.nodeDefinition.missingSubmodelPath": "missing submodel file",
     "error.submodelInterfaceUnavailable": "Submodel interface is unavailable.",
-    "error.nodeDefinition.missingTransition": "missing next state",
+    "error.nodeDefinition.missingTransition": "missing next state function",
     "error.nodeDefinition.missingValue": "missing value",
     "error.parameterIncomingEdge": "A parameter cannot have incoming edges.",
     "error.recentMissing": "The selected recent file is no longer available.",
@@ -2595,6 +2642,7 @@ window.STGraphXI18nBundles = {
     "error.reservedNodeName": "Invalid variable name: reserved word.",
     "error.saveFailed": "Save failed.",
     "error.strictDefinitionsBlocked": "Execution blocked: {count} variables are not correctly defined (first: {node}, reason: {reason}).",
+    "error.strictUnitsBlocked": "Execution blocked: inconsistent measurement units (variable: {node}, reason: {reason}).",
     "error.submodelDirectoryUnsupported": "This browser or current context does not support choosing the model folder.",
     "error.submodelLoadFailed": "Unable to read the submodel: {message}",
     "error.submodelMissingPath": "Specify the submodel file first.",
@@ -7294,20 +7342,21 @@ window.STGraphXI18nBundles = {
   }
 
   function evaluateGraphExpressions(nodes, edges, globals = {}, options = {}) {
-    const nodeById = new Map(nodes.map((node) => [node.id, node]));
+    const executableNodes = nodes.filter((node) => !isDraftNode(node));
+    const nodeById = new Map(executableNodes.map((node) => [node.id, node]));
     const incoming = new Map();
-    nodes.forEach((node) => incoming.set(node.id, []));
+    executableNodes.forEach((node) => incoming.set(node.id, []));
     edges.forEach((edge) => {
       if (incoming.has(edge.to) && nodeById.has(edge.from)) {
         incoming.get(edge.to).push(edge.from);
       }
     });
 
-    const pending = new Set(nodes.map((node) => node.id));
+    const pending = new Set(executableNodes.map((node) => node.id));
     const results = new Map();
-    const globalParameterNodes = nodes.filter((node) => isGlobalParameterNode(node));
+    const globalParameterNodes = executableNodes.filter((node) => isGlobalParameterNode(node));
     const globalReferences = new Map(
-      nodes.map((node) => [
+      executableNodes.map((node) => [
         node.id,
         globalParameterNodes.filter((globalNode) =>
           globalNode.id !== node.id && collectIdentifierReferences(node.valueExpression).has(globalNode.name)),
@@ -7372,7 +7421,7 @@ window.STGraphXI18nBundles = {
       results.set(nodeId, { ok: false, reason: "dependency" });
     });
 
-    return nodes.map((node) => ({
+    return executableNodes.map((node) => ({
       id: node.id,
       result: results.get(node.id) || { ok: false, reason: "dependency" },
     }));
@@ -7386,6 +7435,10 @@ window.STGraphXI18nBundles = {
     return String(node?.shape || "") === "diamond";
   }
 
+  function isDraftNode(node) {
+    return String(node?.shape || "") === "draft";
+  }
+
   function isGlobalParameterNode(node) {
     return isParameterNode(node) && Boolean(node?.global);
   }
@@ -7395,9 +7448,10 @@ window.STGraphXI18nBundles = {
   }
 
   function prepareStatefulExecutionPlan(nodes, edges) {
-    const nodeById = new Map(nodes.map((node) => [node.id, node]));
+    const executableNodes = nodes.filter((node) => !isDraftNode(node));
+    const nodeById = new Map(executableNodes.map((node) => [node.id, node]));
     const incoming = new Map();
-    nodes.forEach((node) => incoming.set(node.id, []));
+    executableNodes.forEach((node) => incoming.set(node.id, []));
     edges.forEach((edge) => {
       if (incoming.has(edge.to) && nodeById.has(edge.from)) {
         incoming.get(edge.to).push(edge.from);
@@ -7406,13 +7460,14 @@ window.STGraphXI18nBundles = {
     return {
       nodeById,
       incoming,
-      stateNodes: nodes.filter((node) => isStateNode(node)),
-      globalParameterNodes: nodes.filter((node) => isGlobalParameterNode(node)),
+      stateNodes: executableNodes.filter((node) => isStateNode(node)),
+      globalParameterNodes: executableNodes.filter((node) => isGlobalParameterNode(node)),
     };
   }
 
   function evaluateStatefulGraphStep(nodes, edges, globals = {}, plan = null, options = {}) {
     const runtimePlan = plan || prepareStatefulExecutionPlan(nodes, edges);
+    const executableNodes = nodes.filter((node) => !isDraftNode(node));
     const nodeById = runtimePlan.nodeById;
     const incoming = runtimePlan.incoming;
     const stateValueOverrides = options?.stateValueOverrides instanceof Map ? options.stateValueOverrides : null;
@@ -7424,7 +7479,7 @@ window.STGraphXI18nBundles = {
       ? runtimePlan.globalParameterNodes
       : [];
     const globalValueRefs = new Map(
-      nodes.map((node) => [
+      executableNodes.map((node) => [
         node.id,
         globalParameterNodes.filter((globalNode) =>
           globalNode.id !== node.id && collectIdentifierReferences(node.valueExpression).has(globalNode.name)),
@@ -7436,9 +7491,9 @@ window.STGraphXI18nBundles = {
       }
       return node.computedValue;
     };
-    const fixedNodes = nodes.filter((node) => !isStateNode(node) && hasExternalValue(node));
-    const parameterNodes = nodes.filter((node) => isParameterNode(node) && !hasExternalValue(node));
-    const algebraicNodes = nodes.filter((node) => !isStateNode(node) && !isParameterNode(node) && !hasExternalValue(node));
+    const fixedNodes = executableNodes.filter((node) => !isStateNode(node) && hasExternalValue(node));
+    const parameterNodes = executableNodes.filter((node) => isParameterNode(node) && !hasExternalValue(node));
+    const algebraicNodes = executableNodes.filter((node) => !isStateNode(node) && !isParameterNode(node) && !hasExternalValue(node));
     const fixedResults = new Map();
     const stateNodes = runtimePlan.stateNodes;
     const parameterResults = new Map();
@@ -7719,6 +7774,7 @@ window.STGraphXI18nBundles = {
     evaluateStatefulGraphStep,
     normalizeLocalFunctionDefinitions,
     extractAgentFieldNamesFromExpression,
+    parseExpressionAst,
   };
 })(window);
 
@@ -7761,6 +7817,7 @@ window.STGraphXI18nBundles = {
       const t0 = Number(raw?.t0);
       const dt = Number(raw?.dt);
       const t1 = Number(raw?.t1);
+      const timeUnit = String(raw?.timeUnit ?? "s").trim() || "s";
       const delayMs = Number(raw?.delayMs);
       const renderEverySteps = Number(raw?.renderEverySteps);
       const decimals = Number(raw?.decimals);
@@ -7773,6 +7830,7 @@ window.STGraphXI18nBundles = {
         t0: Number.isFinite(t0) ? t0 : 0,
         dt: Number.isFinite(dt) && dt !== 0 ? dt : 1,
         t1: Number.isFinite(t1) ? t1 : 10,
+        timeUnit,
         delayMs: Number.isFinite(delayMs) && delayMs > 0 ? Math.round(delayMs) : 100,
         renderEverySteps: Number.isFinite(renderEverySteps) && renderEverySteps >= 1
           ? Math.round(renderEverySteps)
@@ -7870,6 +7928,9 @@ window.STGraphXI18nBundles = {
     }
 
     function serializeNodeType(shape) {
+      if (shape === "draft") {
+        return "draft";
+      }
       if (shape === "ellipse") {
         return "algebraic";
       }
@@ -7883,6 +7944,9 @@ window.STGraphXI18nBundles = {
     }
 
     function deserializeNodeType(type) {
+      if (type === "draft") {
+        return "draft";
+      }
       if (type === "algebraic") {
         return "ellipse";
       }
@@ -8158,7 +8222,7 @@ window.STGraphXI18nBundles = {
       const nodes = data.nodes
         .filter((n) => Number.isInteger(n.id))
         .map((n) => {
-          if (!["state", "algebraic", "parameter", "submodel"].includes(n.type)) {
+          if (!["draft", "state", "algebraic", "parameter", "submodel"].includes(n.type)) {
             throw new Error(t("error.invalidJson"));
           }
           const shape = deserializeNodeType(n.type);
@@ -8166,7 +8230,7 @@ window.STGraphXI18nBundles = {
             id: n.id,
             name: typeof n.name === "string" ? n.name : t("node.defaultName", { id: n.id }),
             input: shape === "ellipse" ? Boolean(n.input) : false,
-            output: Boolean(n.output),
+            output: shape === "draft" ? false : Boolean(n.output),
             global: shape === "diamond" ? Boolean(n.global) : false,
             shape,
             x: Number.isFinite(Number(n.x)) ? Number(n.x) : 200,
@@ -8216,8 +8280,14 @@ window.STGraphXI18nBundles = {
         });
       const nodesWithValidNames = semantics.sanitizeNodeNames(nodes, "n");
       const nodeIds = new Set(nodesWithValidNames.map((node) => node.id));
+      const nodeById = new Map(nodesWithValidNames.map((node) => [node.id, node]));
       const edges = data.edges
-        .filter((e) => Number.isInteger(e.id) && nodeIds.has(e.from) && nodeIds.has(e.to) && e.from !== e.to)
+        .filter((e) => Number.isInteger(e.id)
+          && nodeIds.has(e.from)
+          && nodeIds.has(e.to)
+          && e.from !== e.to
+          && nodeById.get(e.from)?.shape !== "draft"
+          && nodeById.get(e.to)?.shape !== "draft")
         .map((e) => ({
           id: e.id,
           from: e.from,
@@ -11137,7 +11207,7 @@ window.STGraphXI18nBundles = {
     const halfWidth = (Number(node.width) || 120) / 2;
     const halfHeight = (Number(node.height) || 70) / 2;
     let scale;
-    if (node.type === "algebraic") {
+    if (node.type === "algebraic" || node.type === "draft") {
       scale = 1 / (Math.sqrt((dx * dx) / (halfWidth * halfWidth) + (dy * dy) / (halfHeight * halfHeight)) || 1);
     } else if (node.type === "parameter") {
       scale = 1 / (Math.abs(dx) / halfWidth + Math.abs(dy) / halfHeight || 1);
@@ -12814,6 +12884,11 @@ window.STGraphXI18nBundles = {
             stroke: #c14747;
             stroke-width: 2;
           }
+          .node.draft .node-label {
+            fill: #71808c;
+            font-style: italic;
+            font-weight: 500;
+          }
           .node.notes-highlight .node-shape {
             stroke: #d67a14;
             stroke-width: 4;
@@ -14324,7 +14399,7 @@ window.STGraphXI18nBundles = {
           g.style.setProperty("--node-stroke", node.strokeColor);
         }
         let shape;
-        if (node.type === "algebraic") {
+        if (node.type === "algebraic" || node.type === "draft") {
           shape = document.createElementNS(SVG_NS, "ellipse");
           shape.setAttribute("cx", node.x);
           shape.setAttribute("cy", node.y);
@@ -14344,8 +14419,16 @@ window.STGraphXI18nBundles = {
           shape.setAttribute("rx", node.type === "submodel" ? "4" : "8");
         }
         shape.setAttribute("class", "node-shape");
+        if (node.type === "draft") {
+          shape.setAttribute("fill", "transparent");
+          shape.setAttribute("stroke", "transparent");
+        }
         const label = document.createElementNS(SVG_NS, "text");
         label.setAttribute("class", "node-label");
+        if (node.type === "draft") {
+          label.setAttribute("fill", "#71808c");
+          label.setAttribute("font-style", "italic");
+        }
         label.setAttribute("x", node.x);
         label.setAttribute("y", submodelIcon
           ? node.y + (node.height || 70) / 2 + 14

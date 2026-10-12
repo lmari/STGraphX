@@ -32,6 +32,7 @@ const tabletSidebarCloseBtn = document.getElementById("tabletSidebarCloseBtn");
 const menuRoots = Array.from(document.querySelectorAll(".menu-root"));
 const menuTitles = Array.from(document.querySelectorAll(".menu-title"));
 const menuCommands = Array.from(document.querySelectorAll(".menu-command"));
+const addDraftNodeItem = document.getElementById("addDraftNodeItem");
 const addRectNodeItem = document.getElementById("addRectNodeItem");
 const addEllipseNodeItem = document.getElementById("addEllipseNodeItem");
 const addDiamondNodeItem = document.getElementById("addDiamondNodeItem");
@@ -1011,8 +1012,8 @@ const ui = {
   marquee: null,
   snapToGrid: true,
   showGrid: true,
-  highlightNodeEdges: false,
-  showNodeValues: false,
+  highlightNodeEdges: true,
+  showNodeValues: true,
   gridSize: 20,
   tooltipDelayMs: 300,
   zoom: 1,
@@ -2714,6 +2715,11 @@ function validateNodeDefinition(node) {
   if (!node) {
     return { ok: true };
   }
+  if (isDraftNode(node)) {
+    return graph.execution.strictDefinitions
+      ? { ok: false, reason: "draft" }
+      : { ok: true };
+  }
   const validateExpr = (value, fieldKey, options = {}) => {
     const readDataUsage = validateReadDataExpressionUsage(value, {
       allowReadData: node?.shape === "diamond",
@@ -2795,6 +2801,9 @@ function invalidDefinedNodes() {
 function nodeDefinitionIssueText(issue) {
   if (!issue || issue.ok) {
     return "";
+  }
+  if (issue.reason === "draft") {
+    return t("error.nodeDefinition.draft");
   }
   if (issue.reason === "missingBehavior") {
     return t("error.nodeDefinition.missingBehavior");
@@ -2954,6 +2963,7 @@ const modelAnalysisCoreHelpers = globalThis.STGraphXModelAnalysisCore?.createMod
   isSubmodelNode,
   isStateNode,
   isAlgebraicNode,
+  isDraftNode,
   accessibleAgentFieldAliasNames,
   buildNodeNameMap,
   getNodeById,
@@ -3174,7 +3184,7 @@ function analyzeModelStaticIssues() {
 function independentNodesForUnitAnalysis() {
   const nodeNames = new Set(graph.nodes.map((node) => String(node?.name || "")).filter(Boolean));
   return graph.nodes.filter((node) => {
-    if (isSubmodelNode(node)) return false;
+    if (isDraftNode(node) || isSubmodelNode(node)) return false;
     const fieldKey = isStateNode(node) ? "initial" : "value";
     const expression = fieldKey === "initial" ? node.initialStateExpression : node.valueExpression;
     if (!String(expression || "").trim()) return false;
@@ -3183,7 +3193,7 @@ function independentNodesForUnitAnalysis() {
 }
 
 function canDeclareNodeUnit(node) {
-  if (!node || isSubmodelNode(node)) return false;
+  if (!node || isDraftNode(node) || isSubmodelNode(node)) return false;
   if (node.shape === "diamond" || node.input) return true;
   if (!isStateNode(node)) return false;
   const nodeNames = new Set(graph.nodes.map((item) => String(item?.name || "")).filter(Boolean));
@@ -3258,7 +3268,7 @@ function selectedNodeForSidebar() {
 }
 
 function expressionFieldMeta(fieldKey, node = selectedNodeForSidebar()) {
-  if (!node) {
+  if (!node || isDraftNode(node)) {
     return null;
   }
   if (fieldKey === "value") {
@@ -5945,6 +5955,9 @@ function openNodePrimaryEditor(node) {
     void openSubmodelNodeInNewTab(node);
     return;
   }
+  if (isDraftNode(node)) {
+    return;
+  }
   if (ui.expressionEditor && !expressionEditorModal?.classList.contains("hidden")) {
     selectSingleNode(node.id);
     return;
@@ -6475,7 +6488,7 @@ function setTabletSidebarExpanded(expanded) {
   applyResponsiveUiState();
 }
 
-function bindModalDragHandle(modalRoot, cardSelector) {
+function bindModalDragHandle(modalRoot, cardSelector, { allowCompactTouch = false } = {}) {
   if (!modalRoot) {
     return;
   }
@@ -6488,10 +6501,13 @@ function bindModalDragHandle(modalRoot, cardSelector) {
     if (evt.target.closest("button")) {
       return;
     }
-    if (isCompactTouchPointerEvent(evt)) {
+    if (!allowCompactTouch && isCompactTouchPointerEvent(evt)) {
       return;
     }
     const rect = modalCard.getBoundingClientRect();
+    // Modal cards normally participate in the backdrop flex layout. Switch to
+    // fixed positioning before applying coordinates so dragging takes effect.
+    modalCard.style.position = "fixed";
     modalCard.style.transform = "none";
     modalCard.style.left = `${rect.left}px`;
     modalCard.style.top = `${rect.top}px`;
@@ -7048,6 +7064,10 @@ function isStateNode(node) {
   return node?.shape === "rect";
 }
 
+function isDraftNode(node) {
+  return node?.shape === "draft";
+}
+
 function isAlgebraicNode(node) {
   return node?.shape === "ellipse";
 }
@@ -7061,7 +7081,7 @@ function nodeHasIncomingEdges(nodeId) {
 }
 
 function canMarkNodeAsInput(node) {
-  return isAlgebraicNode(node) && !nodeHasIncomingEdges(node.id);
+  return !isDraftNode(node) && isAlgebraicNode(node) && !nodeHasIncomingEdges(node.id);
 }
 
 function canMarkNodeAsGlobal(node) {
@@ -8693,7 +8713,7 @@ function exportGraphData() {
         height: n.height,
         fillColor: String(n.fillColor ?? ""),
         strokeColor: String(n.strokeColor ?? ""),
-        unit: String(n.unit ?? "").trim(),
+        unit: type === "draft" ? "" : String(n.unit ?? "").trim(),
         properties: n.properties.map((p) => ({ key: String(p.key), value: String(p.value) })),
       };
       if (type === "algebraic") {
@@ -8715,7 +8735,7 @@ function exportGraphData() {
           )
           : {};
         out.interfaceCache = normalizeSubmodelInterfaceCache(n.interfaceCache);
-      } else {
+      } else if (type !== "draft") {
         out.valueExpression = String(n.valueExpression ?? "");
       }
       return out;
@@ -8884,8 +8904,8 @@ function restoreModelContext(context) {
   clearAllSelection();
   ui.zoom = clampZoom(Number(context.view?.zoom) || 1);
   ui.showGrid = context.view?.showGrid !== false;
-  ui.highlightNodeEdges = context.view?.highlightNodeEdges === true;
-  ui.showNodeValues = context.view?.showNodeValues === true;
+  ui.highlightNodeEdges = context.view?.highlightNodeEdges !== false;
+  ui.showNodeValues = context.view?.showNodeValues !== false;
   ui.gridSize = clamp(Number(context.view?.gridSize) || ui.gridSize || 20, 5, 100);
   ui.tooltipDelayMs = normalizeTooltipDelayMs(context.view?.tooltipDelayMs);
   setStatus(String(context.statusMessage || t("status.ready")));
@@ -8955,7 +8975,7 @@ function applyGraphData(data) {
       id: n.id,
       name: n.name,
       input: shape === "ellipse" ? Boolean(n.input) : false,
-      output: Boolean(n.output),
+      output: shape === "draft" ? false : Boolean(n.output),
       global: shape === "diamond" ? Boolean(n.global) : false,
       shape,
       x: n.x,
@@ -8964,7 +8984,7 @@ function applyGraphData(data) {
       height: n.height,
       fillColor: normalizeColorString(n.fillColor),
       strokeColor: normalizeColorString(n.strokeColor),
-      unit: String(n.unit ?? "").trim(),
+      unit: shape === "draft" ? "" : String(n.unit ?? "").trim(),
       valueExpression: shape === "rect"
         ? String(n.stateTransition ?? "")
         : String(n.valueExpression ?? ""),
@@ -9168,8 +9188,8 @@ function applyGraphData(data) {
   );
   ui.zoom = clampZoom(Number(savedView?.zoom) || 1);
   ui.showGrid = savedView?.showGrid !== false;
-  ui.highlightNodeEdges = savedView?.highlightNodeEdges === true;
-  ui.showNodeValues = savedView?.showNodeValues === true;
+  ui.highlightNodeEdges = savedView?.highlightNodeEdges !== false;
+  ui.showNodeValues = savedView?.showNodeValues !== false;
   ui.gridSize = clamp(Number(savedView?.gridSize) || ui.gridSize || 20, 5, 100);
   ui.tooltipDelayMs = normalizeTooltipDelayMs(savedView?.tooltipDelayMs);
   normalizeInputNodeFlags();
@@ -9433,6 +9453,7 @@ function updateEditingLockUi() {
     panel?.classList.toggle("execution-frozen", executionActive);
   });
   [
+    addDraftNodeItem,
     addRectNodeItem,
     addEllipseNodeItem,
     addDiamondNodeItem,
@@ -9768,7 +9789,7 @@ function nodeBoundaryPoint(node, targetX, targetY) {
   const hh = node.height / 2;
   let scale = 1;
 
-  if (node.shape === "ellipse") {
+  if (node.shape === "ellipse" || isDraftNode(node)) {
     const denom = Math.sqrt((dx * dx) / (hw * hw) + (dy * dy) / (hh * hh)) || 1;
     scale = 1 / denom;
   } else if (node.shape === "diamond") {
@@ -10006,8 +10027,8 @@ function getSmartCanvasInsertionPoint({ width, height, anchor = null } = {}) {
 
 function addNode(shape, atPoint = null) {
   const id = nodeCounter++;
-  const width = 120;
-  const height = 70;
+  const width = shape === "draft" ? 54 : 120;
+  const height = shape === "draft" ? 54 : 70;
   const position = getSmartCanvasInsertionPoint({ width, height, anchor: atPoint });
   const px = position.x + width / 2;
   const py = position.y + height / 2;
@@ -10023,8 +10044,8 @@ function addNode(shape, atPoint = null) {
     y: py,
     width,
     height,
-    fillColor: "",
-    strokeColor: "",
+    fillColor: shape === "draft" ? "transparent" : "",
+    strokeColor: shape === "draft" ? "transparent" : "",
     unit: "",
     valueExpression: "",
     initialStateExpression: "",
@@ -10297,9 +10318,15 @@ function refreshSidebar() {
     const showInputToggle = canMarkNodeAsInput(node);
     const showGlobalToggle = canMarkNodeAsGlobal(node);
     const submodelNode = isSubmodelNode(node);
-    nodeUnitLabel?.classList.toggle("hidden", submodelNode);
-    nodeUnitInput?.classList.toggle("hidden", submodelNode);
-    if (nodeUnitInput) nodeUnitInput.disabled = submodelNode || isEditingUiLocked();
+    const draftNode = isDraftNode(node);
+    nodePanel.classList.toggle("draft-node-panel", draftNode);
+    nodeFormulaSection?.classList.toggle("hidden", draftNode);
+    nodeValueSection?.classList.toggle("hidden", draftNode);
+    nodeColorSection?.classList.toggle("hidden", draftNode);
+    nodePropsSection?.classList.toggle("hidden", draftNode);
+    nodeUnitLabel?.classList.toggle("hidden", submodelNode || draftNode);
+    nodeUnitInput?.classList.toggle("hidden", submodelNode || draftNode);
+    if (nodeUnitInput) nodeUnitInput.disabled = submodelNode || draftNode || isEditingUiLocked();
     nodeInputInput.checked = Boolean(node.input);
     nodeOutputInput.checked = Boolean(node.output);
     nodeOutputInput.indeterminate = false;
@@ -10323,7 +10350,7 @@ function refreshSidebar() {
     const stateNode = isStateNode(node);
     const parameterNode = node.shape === "diamond";
     if (nodeOutputInput?.closest("label")) {
-      nodeOutputInput.closest("label").classList.toggle("hidden", submodelNode);
+      nodeOutputInput.closest("label").classList.toggle("hidden", submodelNode || draftNode);
     }
     if (submodelNode && !sameSidebarNode) {
       nodeOutputInput.checked = false;
@@ -10398,10 +10425,10 @@ function refreshSidebar() {
     if (!submodelNode && (!sameSidebarNode || document.activeElement !== nodeValueExprInput)) {
       nodeValueExprInput.value = node.valueExpression || "";
     }
-    nodeValueExprLabel.classList.toggle("hidden", submodelNode);
-    nodeValueExprRow?.classList.toggle("hidden", submodelNode);
-    nodeValueExprStatus.classList.toggle("hidden", submodelNode);
-    if (!submodelNode) {
+    nodeValueExprLabel.classList.toggle("hidden", submodelNode || draftNode);
+    nodeValueExprRow?.classList.toggle("hidden", submodelNode || draftNode);
+    nodeValueExprStatus.classList.toggle("hidden", submodelNode || draftNode);
+    if (!submodelNode && !draftNode) {
       updateExpressionFieldState(nodeValueExprInput, nodeValueExprStatus, node.valueExpression || "", false, "value");
       setExplicitControlDisabled(
         nodeValueExprInput,
@@ -10417,19 +10444,19 @@ function refreshSidebar() {
       setExplicitControlDisabled(editNodeValueExprBtn, true);
     }
     if (nodeWidgetBindingInfo) {
-      const controlledByWidget = !submodelNode && hasInputWidgetBinding(node);
+      const controlledByWidget = !submodelNode && !draftNode && hasInputWidgetBinding(node);
       nodeWidgetBindingInfo.classList.toggle("hidden", !controlledByWidget);
       nodeWidgetBindingInfo.classList.remove("ok", "error");
       nodeWidgetBindingInfo.textContent = controlledByWidget ? t("node.widgetControlled") : "";
     }
     if (nodeInitialStateLabel) {
-      nodeInitialStateLabel.classList.toggle("hidden", !stateNode || submodelNode);
+      nodeInitialStateLabel.classList.toggle("hidden", !stateNode || submodelNode || draftNode);
     }
     if (nodeInitialStateInput) {
-      nodeInitialStateRow?.classList.toggle("hidden", !stateNode || submodelNode);
-      nodeInitialStateInput.classList.toggle("hidden", !stateNode || submodelNode);
+      nodeInitialStateRow?.classList.toggle("hidden", !stateNode || submodelNode || draftNode);
+      nodeInitialStateInput.classList.toggle("hidden", !stateNode || submodelNode || draftNode);
       if (nodeInitialStateStatus) {
-        nodeInitialStateStatus.classList.toggle("hidden", !stateNode || submodelNode);
+        nodeInitialStateStatus.classList.toggle("hidden", !stateNode || submodelNode || draftNode);
       }
       if (stateNode && !submodelNode && (!sameSidebarNode || document.activeElement !== nodeInitialStateInput)) {
         nodeInitialStateInput.value = node.initialStateExpression || "";
@@ -10488,6 +10515,7 @@ function refreshSidebar() {
   }
 
   ui.sidebarNodeId = null;
+  nodePanel.classList.remove("draft-node-panel");
   nodePanel.classList.add("hidden");
   textPanel.classList.add("hidden");
   edgePanel.classList.add("hidden");
@@ -11237,8 +11265,27 @@ function render(options = {}) {
     if (!visibleNodeIds.has(node.id)) {
       return;
     }
+    const definitionIssue = graph.execution.strictDefinitions
+      ? validateNodeDefinition(node)
+      : null;
+    const definitionIssueMessage = definitionIssue && !definitionIssue.ok
+      ? nodeDefinitionIssueText(definitionIssue)
+      : "";
+    // This is rendering metadata only: keep it out of saved model data.
+    Object.defineProperty(node, "_definitionIssueMessage", {
+      configurable: true,
+      enumerable: false,
+      value: definitionIssueMessage,
+      writable: true,
+    });
+    const visualIssue = node.analysisIssue || (definitionIssueMessage
+      ? { severity: "error", message: definitionIssueMessage }
+      : null);
     const g = document.createElementNS(SVG_NS, "g");
     g.classList.add("node");
+    if (isDraftNode(node)) {
+      g.classList.add("draft-node");
+    }
     g.setAttribute("data-node-id", node.id);
     g.setAttribute("data-node-tooltip", "1");
     setTooltipText(g, buildNodeTooltipText(node).text);
@@ -11287,14 +11334,14 @@ function render(options = {}) {
     if (isFeedbackLoopFocusActive("node", node.id)) {
       g.classList.add("feedback-loop-focus");
     }
-    if (graph.execution.strictDefinitions && !validateNodeDefinition(node).ok) {
+    if (definitionIssue && !definitionIssue.ok) {
       g.classList.add("invalid-definition");
     }
     if (graph.execution.strictDefinitions && node.unitAnalysisError) {
       g.classList.add("invalid-unit");
     }
-    if (graph.execution.strictDefinitions && node.analysisIssue) {
-      g.classList.add(`analysis-${node.analysisIssue.severity}`);
+    if (graph.execution.strictDefinitions && visualIssue) {
+      g.classList.add(`analysis-${visualIssue.severity}`);
     }
     if (ui.edgeCreate && ui.edgeCreateHoverId === node.id && node.id !== ui.edgeCreate.fromId) {
       g.classList.add("edge-target");
@@ -11303,7 +11350,7 @@ function render(options = {}) {
     let shapeEl;
     let shapeOutlineEl = null;
     let submodelInnerShape = null;
-    if (node.shape === "ellipse") {
+    if (node.shape === "ellipse" || isDraftNode(node)) {
       shapeEl = document.createElementNS(SVG_NS, "ellipse");
       shapeEl.setAttribute("cx", node.x);
       shapeEl.setAttribute("cy", node.y);
@@ -11480,7 +11527,7 @@ function render(options = {}) {
     const label = document.createElementNS(SVG_NS, "text");
     label.classList.add("node-label");
     label.setAttribute("x", node.x);
-    const showRuntimeValue = ui.showNodeValues === true && graph.execution.currentTime != null;
+    const showRuntimeValue = !isDraftNode(node) && ui.showNodeValues === true && graph.execution.currentTime != null;
     label.setAttribute(
       "y",
       submodelIcon
@@ -11572,14 +11619,14 @@ function render(options = {}) {
     }
 
     let analysisIssueMarker = null;
-    if (graph.execution.strictDefinitions && node.analysisIssue) {
+    if (graph.execution.strictDefinitions && visualIssue) {
       analysisIssueMarker = document.createElementNS(SVG_NS, "text");
-      analysisIssueMarker.classList.add("node-analysis-issue-marker", node.analysisIssue.severity);
+      analysisIssueMarker.classList.add("node-analysis-issue-marker", visualIssue.severity);
       analysisIssueMarker.setAttribute("x", node.x + node.width / 2 + 3);
       analysisIssueMarker.setAttribute("y", node.y - node.height / 2 + 13);
       analysisIssueMarker.textContent = "!";
       const title = document.createElementNS(SVG_NS, "title");
-      title.textContent = node.analysisIssue.message;
+      title.textContent = visualIssue.message;
       analysisIssueMarker.appendChild(title);
     }
 
@@ -11846,7 +11893,7 @@ function importGraphData(data) {
   const nodes = data.nodes
     .filter((n) => Number.isInteger(n.id))
     .map((n) => {
-      if (!["state", "algebraic", "parameter", "submodel"].includes(n.type)) {
+      if (!["draft", "state", "algebraic", "parameter", "submodel"].includes(n.type)) {
         throw new Error(t("error.invalidJson"));
       }
       const shape = deserializeNodeType(n.type);
@@ -11854,7 +11901,7 @@ function importGraphData(data) {
         id: n.id,
         name: typeof n.name === "string" ? n.name : t("node.defaultName", { id: n.id }),
         input: shape === "ellipse" ? Boolean(n.input) : false,
-        output: Boolean(n.output),
+        output: shape === "draft" ? false : Boolean(n.output),
         global: shape === "diamond" ? Boolean(n.global) : false,
         type: serializeNodeType(shape),
         x: Number.isFinite(n.x) ? n.x : 200,
@@ -11863,7 +11910,7 @@ function importGraphData(data) {
         height: clamp(Number(n.height) || 70, 30, 500),
         fillColor: normalizeColorString(n.fillColor),
         strokeColor: normalizeColorString(n.strokeColor),
-        unit: String(n.unit ?? "").trim(),
+        unit: shape === "draft" ? "" : String(n.unit ?? "").trim(),
         valueExpression: shape === "rect" ? "" : String(n.valueExpression ?? ""),
         stateTransition: shape === "rect"
           ? String(n.stateTransition ?? "")
@@ -12089,8 +12136,8 @@ function importGraphData(data) {
       ? {
         zoom: clampZoom(Number(data.view.zoom) || 1),
         showGrid: data.view.showGrid !== false,
-        highlightNodeEdges: data.view.highlightNodeEdges === true,
-        showNodeValues: data.view.showNodeValues === true,
+        highlightNodeEdges: data.view.highlightNodeEdges !== false,
+        showNodeValues: data.view.showNodeValues !== false,
         gridSize: clamp(Number(data.view.gridSize) || 20, 5, 100),
         tooltipDelayMs: normalizeTooltipDelayMs(data.view.tooltipDelayMs),
         scrollLeft: Math.max(0, Number(data.view.scrollLeft) || 0),
@@ -12861,6 +12908,8 @@ function resetGraphToEmptyModel() {
     randomState: null,
     currentTime: null,
   };
+  ui.highlightNodeEdges = true;
+  ui.showNodeValues = true;
   nodeCounter = 1;
   edgeCounter = 1;
   widgetCounter = 1;
@@ -13618,9 +13667,6 @@ window.addEventListener("pointermove", (evt) => {
   if (ui.tabletSidebarDrag && evt.pointerId === ui.tabletSidebarDrag.pointerId) {
     return;
   }
-  if (handleCompactTouchViewportPointerMove(evt)) {
-    return;
-  }
   if (ui.modalDrag && evt.pointerId === ui.modalDrag.pointerId) {
     const card = ui.modalDrag.card;
     if (card) {
@@ -13628,6 +13674,9 @@ window.addEventListener("pointermove", (evt) => {
       card.style.left = `${evt.clientX - ui.modalDrag.offsetX}px`;
       card.style.top = `${evt.clientY - ui.modalDrag.offsetY}px`;
     }
+    return;
+  }
+  if (handleCompactTouchViewportPointerMove(evt)) {
     return;
   }
   if (ui.modalResize && evt.pointerId === ui.modalResize.pointerId) {
@@ -14159,6 +14208,15 @@ svg.addEventListener("contextmenu", (evt) => {
 });
 
 getMenuUi().bindInteractions(recentModelsMenuBtn);
+
+if (addDraftNodeItem) {
+  addDraftNodeItem.addEventListener("click", () => {
+    runAction(() => {
+      addNode("draft");
+    });
+    setStatusKey("status.nodeCreated");
+  });
+}
 
 addRectNodeItem.addEventListener("click", () => {
   runAction(() => {
@@ -14737,7 +14795,26 @@ nodeShapeInput.addEventListener("change", () => {
   }
   runAction(() => {
     const wasSliderBindable = canBindSliderToNode(node);
+    const wasDraft = isDraftNode(node);
     node.shape = nodeShapeInput.value;
+    if (isDraftNode(node)) {
+      node.input = false;
+      node.output = false;
+      node.global = false;
+      node.unit = "";
+      node.valueExpression = "";
+      node.initialStateExpression = "";
+      node.computedValue = null;
+      node.computedError = "";
+      node.pendingStateValue = null;
+      node.pendingStateError = "";
+      node.fillColor = "transparent";
+      node.strokeColor = "transparent";
+    }
+    if (wasDraft && !isDraftNode(node)) {
+      node.fillColor = "";
+      node.strokeColor = "";
+    }
     if (!canMarkNodeAsGlobal(node)) {
       node.global = false;
     }
@@ -15635,6 +15712,7 @@ bindModalDragHandle(localFunctionsModal, ".local-functions-card");
 bindModalDragHandle(presentationGroupsModal, ".presentation-groups-card");
 bindModalDragHandle(textEditorModal, ".text-editor-card");
 bindModalDragHandle(modelNotesModal, ".model-notes-card");
+bindModalDragHandle(viewOptionsModal, ".view-options-card", { allowCompactTouch: true });
 if (functionsHelpBtn) {
   functionsHelpBtn.addEventListener("click", () => {
     closeTopMenus();
@@ -16088,13 +16166,13 @@ window.addEventListener("keydown", (evt) => {
     createNewGraph();
     return;
   }
-  if (evt.altKey && !evt.ctrlKey && !evt.metaKey && !evt.shiftKey && evt.key.toLowerCase() === "n" && !isTypingTarget(evt.target)) {
+  if (evt.altKey && !evt.ctrlKey && !evt.metaKey && !evt.shiftKey && evt.code === "KeyN" && !isTypingTarget(evt.target)) {
     evt.preventDefault();
     evt.stopPropagation();
     createNewGraph();
     return;
   }
-  if (evt.altKey && !evt.ctrlKey && !evt.metaKey && !evt.shiftKey && evt.key.toLowerCase() === "o" && !isTypingTarget(evt.target)) {
+  if (evt.altKey && !evt.ctrlKey && !evt.metaKey && !evt.shiftKey && evt.code === "KeyO" && !isTypingTarget(evt.target)) {
     evt.preventDefault();
     evt.stopPropagation();
     openGraphJson();
@@ -16259,11 +16337,19 @@ document.addEventListener("keydown", (evt) => {
   }
 
   if (evt.altKey && !evt.ctrlKey && !evt.metaKey && !evt.shiftKey && !isTypingTarget(evt.target)) {
-    if (isEditingUiLocked() && ["1", "2", "3", "4"].includes(evt.key)) {
+    if (isEditingUiLocked() && ["Digit0", "Digit1", "Digit2", "Digit3", "Digit4"].includes(evt.code)) {
       evt.preventDefault();
       return;
     }
-    if (evt.key === "1") {
+    if (evt.code === "Digit0") {
+      evt.preventDefault();
+      runAction(() => {
+        addNode("draft");
+      });
+      setStatusKey("status.nodeCreated");
+      return;
+    }
+    if (evt.code === "Digit1") {
       evt.preventDefault();
       runAction(() => {
         addNode("rect");
@@ -16271,7 +16357,7 @@ document.addEventListener("keydown", (evt) => {
       setStatusKey("status.nodeCreated");
       return;
     }
-    if (evt.key === "2") {
+    if (evt.code === "Digit2") {
       evt.preventDefault();
       runAction(() => {
         addNode("ellipse");
@@ -16279,7 +16365,7 @@ document.addEventListener("keydown", (evt) => {
       setStatusKey("status.nodeCreated");
       return;
     }
-    if (evt.key === "3") {
+    if (evt.code === "Digit3") {
       evt.preventDefault();
       runAction(() => {
         addNode("diamond");
@@ -16287,7 +16373,7 @@ document.addEventListener("keydown", (evt) => {
       setStatusKey("status.nodeCreated");
       return;
     }
-    if (evt.key === "4") {
+    if (evt.code === "Digit4") {
       evt.preventDefault();
       runAction(() => {
         addNode("submodel");

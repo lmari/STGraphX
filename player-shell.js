@@ -118,7 +118,7 @@
     const halfWidth = (Number(node.width) || 120) / 2;
     const halfHeight = (Number(node.height) || 70) / 2;
     let scale;
-    if (node.type === "algebraic") {
+    if (node.type === "algebraic" || node.type === "draft") {
       scale = 1 / (Math.sqrt((dx * dx) / (halfWidth * halfWidth) + (dy * dy) / (halfHeight * halfHeight)) || 1);
     } else if (node.type === "parameter") {
       scale = 1 / (Math.abs(dx) / halfWidth + Math.abs(dy) / halfHeight || 1);
@@ -1795,6 +1795,11 @@
             stroke: #c14747;
             stroke-width: 2;
           }
+          .node.draft .node-label {
+            fill: #71808c;
+            font-style: italic;
+            font-weight: 500;
+          }
           .node.notes-highlight .node-shape {
             stroke: #d67a14;
             stroke-width: 4;
@@ -3305,7 +3310,7 @@
           g.style.setProperty("--node-stroke", node.strokeColor);
         }
         let shape;
-        if (node.type === "algebraic") {
+        if (node.type === "algebraic" || node.type === "draft") {
           shape = document.createElementNS(SVG_NS, "ellipse");
           shape.setAttribute("cx", node.x);
           shape.setAttribute("cy", node.y);
@@ -3325,8 +3330,16 @@
           shape.setAttribute("rx", node.type === "submodel" ? "4" : "8");
         }
         shape.setAttribute("class", "node-shape");
+        if (node.type === "draft") {
+          shape.setAttribute("fill", "transparent");
+          shape.setAttribute("stroke", "transparent");
+        }
         const label = document.createElementNS(SVG_NS, "text");
         label.setAttribute("class", "node-label");
+        if (node.type === "draft") {
+          label.setAttribute("fill", "#71808c");
+          label.setAttribute("font-style", "italic");
+        }
         label.setAttribute("x", node.x);
         label.setAttribute("y", submodelIcon
           ? node.y + (node.height || 70) / 2 + 14
