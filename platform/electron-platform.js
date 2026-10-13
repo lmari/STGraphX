@@ -43,6 +43,9 @@ function createElectronPlatform({ ipcRenderer, clipboard = null }) {
     getStartupLanguage() {
       return "";
     },
+    openExternalUrl(url) {
+      return ipcRenderer.invoke("stgraphx:open-external-url", String(url ?? ""));
+    },
     readClipboardText() {
       return canUseLocalClipboard
         ? clipboard.readText()

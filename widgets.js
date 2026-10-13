@@ -3879,6 +3879,25 @@ function openEdgeContextMenu(evt, edgeId, atPoint) {
       },
       disabled: edge.controlPoints.length === 0,
     },
+    { separator: true },
+    {
+      label: t("context.edge.reverse"),
+      action: () => {
+        runAction(() => {
+          const target = getEdgeById(edgeId);
+          if (!target) {
+            return;
+          }
+          // A binding only applies when this edge enters a submodel.
+          removeSubmodelInputBindingsForRemovedEdge(target);
+          [target.from, target.to] = [target.to, target.from];
+          target.controlPoints = (target.controlPoints || []).slice().reverse();
+          ui.selectedControlPoint = null;
+          selectEdge(edgeId);
+        });
+        setStatusKey("status.edgeReversed");
+      },
+    },
     {
       label: t("context.edge.delete"),
       action: () => {

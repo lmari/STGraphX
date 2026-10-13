@@ -1,6 +1,6 @@
 /*!
  * STGraphX Embedded Player Bundle
- * Generated: 2026-10-12T15:35:07.151Z
+ * Generated: 2026-10-13T14:25:52.360Z
  */
 
 /* --- i18n-inline.js --- */
@@ -13,7 +13,7 @@
 
 window.STGraphXAppMeta = {
   author: "Luca Mari",
-  releaseDate: "2026.10.12",
+  releaseDate: "2026.10.13",
   license: "MPL-2.0",
   copyright: "Copyright (c) 2026 Luca Mari",
 };
@@ -66,7 +66,9 @@ window.STGraphXI18nBundles = {
     "action.timedStart": "Avvia temporizzata",
     "action.timedStop": "Ferma temporizzata",
     "app.title": "STGraphX",
+    "aria.back": "Indietro",
     "aria.close": "Chiudi",
+    "aria.forward": "Avanti",
     "aria.graphCanvas": "Canvas del grafo",
     "color.blue": "Blu",
     "color.default": "Automatico",
@@ -106,6 +108,7 @@ window.STGraphXI18nBundles = {
     "context.edge.clearCp": "Rimuovi tutti i punti controllo",
     "context.edge.delete": "Elimina freccia",
     "context.edge.removeCp": "Elimina punto controllo",
+    "context.edge.reverse": "Inverti verso freccia",
     "context.node.addProp": "Aggiungi proprietà",
     "context.node.delete": "Elimina nodo",
     "context.node.newLinked": "Nuovo nodo collegato",
@@ -144,9 +147,13 @@ window.STGraphXI18nBundles = {
     "menu.help": "Help",
     "menu.help.about": "About...",
     "menu.help.analyze": "Analizza modello...",
+    "menu.help.documentation": "Guida di STGraphX...",
     "menu.help.eightTuple": "Genera 8-upla...",
     "menu.help.examples": "Modelli di esempio...",
     "menu.help.functions": "Funzioni disponibili...",
+    "documentation.loadError": "Impossibile caricare il documento: {message}",
+    "documentation.loading": "Caricamento documento...",
+    "documentation.title": "Guida di STGraphX",
     "menu.insert": "Inserisci",
     "menu.insert.buttonWidget": "Pulsante",
     "menu.insert.draft": "Bozza",
@@ -307,6 +314,7 @@ window.STGraphXI18nBundles = {
     "viewOptions.canvas": "Canvas",
     "viewOptions.interface": "Interfaccia e valori",
     "viewOptions.language": "Lingua dell'interfaccia",
+    "viewOptions.unitChecks": "Controlla unità di misura",
     "viewOptions.title": "Opzioni di visualizzazione",
 
     // Expression editor
@@ -565,7 +573,7 @@ window.STGraphXI18nBundles = {
     "expr.error.invalidReducer": "Reducer non valido",
     "expr.error.invalidToken": "Token non valido.",
     "expr.error.mapAgentsRowLength": "mapAgents richiede che ogni agente trasformato sia un vettore riga con lunghezza coerente",
-    "expr.error.matchingShapes": "Gli argomenti devono avere shape compatibili",
+    "expr.error.matchingShapes": "Gli argomenti devono avere dimensioni compatibili",
     "expr.error.matrixColOutOfRange": "Indice di colonna della matrice fuori intervallo",
     "expr.error.matrixIndexMatrixTarget": "L'indice di matrice richiede una matrice come target",
     "expr.error.matrixIndexPair": "L'indice di matrice deve essere una coppia di interi",
@@ -824,6 +832,7 @@ window.STGraphXI18nBundles = {
     "status.edgeCanceled": "Connessione annullata: rilascia su un nodo di destinazione.",
     "status.edgeCreated": "Freccia creata con drag & drop.",
     "status.edgeDeleted": "Freccia eliminata.",
+    "status.edgeReversed": "Verso della freccia invertito.",
     "status.evalDone": "Esecuzione completata su {count} variabili.",
     "status.evalDoneTime": "Esecuzione completata: {count} variabili, {steps} passi, durata {duration}.",
     "status.evalStepDone": "Passo eseguito su {count} variabili.",
@@ -943,6 +952,9 @@ window.STGraphXI18nBundles = {
     "tooltip.menu.help": "Aiuto e documentazione integrata.",
     "tooltip.menu.help.about": "Mostra informazioni sintetiche sull'app.",
     "tooltip.menu.help.analyze": "Esegue controlli statici sul modello e mostra un report dei problemi trovati.",
+    "tooltip.menu.help.documentation": "Apre la guida e i documenti principali di STGraphX.",
+    "tooltip.documentation.back": "Torna al documento precedente.",
+    "tooltip.documentation.forward": "Vai al documento successivo.",
     "tooltip.menu.help.eightTuple": "Genera una descrizione strutturata del modello attivo in forma di 8-upla.",
     "tooltip.menu.help.examples": "Apre una pagina con i modelli di esempio disponibili.",
     "tooltip.menu.help.functions": "Apre l'elenco delle funzioni disponibili nelle espressioni.",
@@ -974,7 +986,8 @@ window.STGraphXI18nBundles = {
     "tooltip.menu.view.feedbackLoops": "Individua i cicli diretti e ne classifica il segno complessivo.",
     "tooltip.menu.view.gridStep": "Imposta la distanza tra le linee della griglia.",
     "tooltip.menu.view.highlightNodeEdges": "Evidenzia con colori diversi le frecce entranti e uscenti del nodo selezionato.",
-    "tooltip.menu.view.options": "Apre le preferenze per griglia, valori delle variabili, tooltip e formattazione numerica.",
+    "tooltip.menu.view.options": "Apre le preferenze per griglia, valori delle variabili, unità, tooltip e formattazione numerica.",
+    "tooltip.view.unitChecks": "Segnala incompatibilità tra unità di misura e le usa per il blocco delle definizioni rigorose.",
     "tooltip.menu.view.modelNotes": "Apre gli appunti Markdown associati al modello.",
     "modelNotes.title": "Appunti del modello",
     "modelNotes.markdown": "Markdown",
@@ -1169,7 +1182,7 @@ window.STGraphXI18nBundles = {
     "analysis.checks.invalidTimeConfig": "Segnala una configurazione del tempo non eseguibile, per esempio dt nullo o intervallo incoerente rispetto a t0 e t1.",
     "analysis.checks.missingIncomingEdge": "Segnala espressioni che usano un'altra variabile senza la corrispondente freccia entrante.",
     "analysis.checks.selfLoop": "Segnala self-loop che possono essere voluti, ma spesso indicano una connessione sospetta.",
-    "analysis.checks.stateShapeMismatch": "Segnala variabili di stato in cui stato iniziale e stato successivo sembrano avere shape incompatibili.",
+    "analysis.checks.stateShapeMismatch": "Segnala variabili di stato in cui stato iniziale e stato successivo sembrano avere dimensioni incompatibili.",
     "analysis.checks.unitExpressionMismatch": "Segnala formule che combinano valori con unità incompatibili, per esempio una somma tra € e €/anno.",
     "analysis.checks.unitMismatch": "Segnala una formula il cui risultato ha un'unità incompatibile con l'unità dichiarata per la variabile.",
     "analysis.checks.tableColumnNotOutput": "Segnala colonne di tabelle collegate a variabili non marcate come output.",
@@ -1386,7 +1399,9 @@ window.STGraphXI18nBundles = {
     "action.timedStart": "Start timed",
     "action.timedStop": "Stop timed",
     "app.title": "STGraphX",
+    "aria.back": "Back",
     "aria.close": "Close",
+    "aria.forward": "Forward",
     "aria.graphCanvas": "Graph canvas",
     "color.blue": "Blue",
     "color.default": "Automatic",
@@ -1426,6 +1441,7 @@ window.STGraphXI18nBundles = {
     "context.edge.clearCp": "Remove all control points",
     "context.edge.delete": "Delete edge",
     "context.edge.removeCp": "Delete control point",
+    "context.edge.reverse": "Reverse edge direction",
     "context.node.addProp": "Add property",
     "context.node.delete": "Delete node",
     "context.node.newLinked": "New linked node",
@@ -1464,9 +1480,13 @@ window.STGraphXI18nBundles = {
     "menu.help": "Help",
     "menu.help.about": "About...",
     "menu.help.analyze": "Analyze model...",
+    "menu.help.documentation": "STGraphX guide...",
     "menu.help.eightTuple": "Generate 8-tuple...",
     "menu.help.examples": "Example models...",
     "menu.help.functions": "Available functions...",
+    "documentation.loadError": "Unable to load the document: {message}",
+    "documentation.loading": "Loading document...",
+    "documentation.title": "STGraphX guide",
     "menu.insert": "Insert",
     "menu.insert.buttonWidget": "Button",
     "menu.insert.draft": "Draft",
@@ -1627,6 +1647,7 @@ window.STGraphXI18nBundles = {
     "viewOptions.canvas": "Canvas",
     "viewOptions.interface": "Interface and values",
     "viewOptions.language": "Interface language",
+    "viewOptions.unitChecks": "Check measurement units",
     "viewOptions.title": "View options",
 
     // Expression editor
@@ -2144,6 +2165,7 @@ window.STGraphXI18nBundles = {
     "status.edgeCanceled": "Connection canceled: release over a destination node.",
     "status.edgeCreated": "Edge created with drag & drop.",
     "status.edgeDeleted": "Edge deleted.",
+    "status.edgeReversed": "Edge direction reversed.",
     "status.evalDone": "Execution completed on {count} variables.",
     "status.evalDoneTime": "Execution completed: {count} variables, {steps} steps, duration {duration}.",
     "status.evalStepDone": "Step executed on {count} variables.",
@@ -2263,6 +2285,9 @@ window.STGraphXI18nBundles = {
     "tooltip.menu.help": "Built-in help and documentation.",
     "tooltip.menu.help.about": "Shows basic information about the app.",
     "tooltip.menu.help.analyze": "Runs static checks on the model and shows a report of the detected issues.",
+    "tooltip.menu.help.documentation": "Opens the STGraphX guide and its main documentation.",
+    "tooltip.documentation.back": "Returns to the previous document.",
+    "tooltip.documentation.forward": "Moves to the next document.",
     "tooltip.menu.help.eightTuple": "Generates a structured description of the active model in 8-tuple form.",
     "tooltip.menu.help.examples": "Opens a page with the example models shipped with the app.",
     "tooltip.menu.help.functions": "Opens the list of functions available in expressions.",
@@ -2294,7 +2319,8 @@ window.STGraphXI18nBundles = {
     "tooltip.menu.view.feedbackLoops": "Finds directed cycles and classifies their overall sign.",
     "tooltip.menu.view.gridStep": "Sets the spacing between grid lines.",
     "tooltip.menu.view.highlightNodeEdges": "Highlights incoming and outgoing edges of the selected node with different colors.",
-    "tooltip.menu.view.options": "Opens preferences for the grid, variable values, tooltips, and numeric formatting.",
+    "tooltip.menu.view.options": "Opens preferences for the grid, variable values, units, tooltips, and numeric formatting.",
+    "tooltip.view.unitChecks": "Reports incompatible measurement units and uses them to block strict definitions.",
     "tooltip.menu.view.modelNotes": "Opens the Markdown notes associated with the model.",
     "modelNotes.title": "Model notes",
     "modelNotes.markdown": "Markdown",
@@ -2672,7 +2698,11 @@ window.STGraphXI18nBundles = {
   function escapeHtml(value) {
     return String(value ?? "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/\"/g, "&quot;").replace(/'/g, "&#39;");
   }
-  function safeHref(value) { const href = String(value ?? "").trim(); return /^(https?:|mailto:|#)/iu.test(href) ? href : ""; }
+  function safeHref(value) {
+    const href = String(value ?? "").trim();
+    if (!href || /^(?:javascript|data|vbscript):/iu.test(href) || href.startsWith("//")) return "";
+    return /^(?:https?:|mailto:|#)/iu.test(href) || !/^[a-z][a-z0-9+.-]*:/iu.test(href) ? href : "";
+  }
   function renderLatex(source, displayMode = false) {
     const latex = String(source ?? "").trim();
     if (!latex) return "";
@@ -2706,9 +2736,23 @@ window.STGraphXI18nBundles = {
       const [rawName, ...rawLabel] = String(nodeSpec).split("|");
       const name = rawName.trim();
       const label = rawLabel.join("|").trim() || name;
-      return name ? `<a href="#" class="markdown-node-ref" data-stgraphx-node="${escapeHtml(name)}">${label}</a>` : "";
+      return name ? stash(`<a href="#" class="markdown-node-ref" data-stgraphx-node="${escapeHtml(name)}">${label}</a>`) : "";
     });
-    html = html.replace(/\[([^\]]+)\]\(([^)\s]+)\)/g, (_m, label, href) => { const safe = safeHref(href); return safe ? `<a href="${escapeHtml(safe)}" target="_blank" rel="noopener noreferrer">${label}</a>` : label; });
+    html = html.replace(/\[([^\]]+)\]\(([^)\s]+)\)/g, (_m, label, href) => {
+      const safe = safeHref(href);
+      return safe ? stash(`<a href="${escapeHtml(safe)}" target="_blank" rel="noopener noreferrer">${label}</a>`) : label;
+    });
+    // Documentation also contains plain http(s) addresses.  Turn those into
+    // normal external links after Markdown links have been stashed, so URLs
+    // already used as a link target are never processed twice.
+    html = html.replace(/(^|[\s(])((?:https?:\/\/)[^\s<]+)/giu, (_m, prefix, rawHref) => {
+      const trailing = rawHref.match(/[.,;:!?]+$/u)?.[0] || "";
+      const href = rawHref.slice(0, rawHref.length - trailing.length);
+      const safe = safeHref(href);
+      return safe
+        ? `${prefix}${stash(`<a href="${escapeHtml(safe)}" target="_blank" rel="noopener noreferrer">${escapeHtml(href)}</a>`)}${trailing}`
+        : `${prefix}${rawHref}`;
+    });
     html = html.replace(/\*\*([^*]+)\*\*/g, "<strong>$1</strong>").replace(/__([^_]+)__/g, "<strong>$1</strong>").replace(/~~([^~]+)~~/g, "<s>$1</s>").replace(/\*([^*]+)\*/g, "<em>$1</em>").replace(/_([^_]+)_/g, "<em>$1</em>");
     return html.replace(/\u0000M(\d+)\u0000/g, (_m, index) => fragments[Number(index)] || "");
   }
@@ -2725,7 +2769,7 @@ window.STGraphXI18nBundles = {
       const oneLineMath = /^\s*\$\$\s*(.*?)\s*\$\$\s*$/.exec(line);
       if (oneLineMath) { flushParagraph(); flushList(); output.push(`<div class="latex-block">${renderLatex(oneLineMath[1], true)}</div>`); return; }
       if (/^\s*\$\$\s*$/.test(line)) { flushParagraph(); flushList(); inMath = true; mathLines = []; return; }
-      const heading = /^(#{1,3})\s+(.+)$/.exec(line); const unordered = /^\s*[-*+]\s+(.+)$/.exec(line); const ordered = /^\s*\d+[.)]\s+(.+)$/.exec(line);
+      const heading = /^(#{1,4})\s+(.+)$/.exec(line); const unordered = /^\s*[-*+]\s+(.+)$/.exec(line); const ordered = /^\s*\d+[.)]\s+(.+)$/.exec(line);
       if (heading) { flushParagraph(); flushList(); const level = heading[1].length; output.push(`<h${level}>${renderInlineMarkdown(heading[2])}</h${level}>`); }
       else if (/^\s*(---|\*\*\*|___)\s*$/.test(line)) { flushParagraph(); flushList(); output.push("<hr>"); }
       else if (unordered || ordered) { flushParagraph(); const type = unordered ? "ul" : "ol"; if (!list || list.type !== type) { flushList(); list = { type, items: [] }; } list.items.push((unordered || ordered)[1]); }

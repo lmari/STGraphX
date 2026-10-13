@@ -3,7 +3,11 @@
   function escapeHtml(value) {
     return String(value ?? "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/\"/g, "&quot;").replace(/'/g, "&#39;");
   }
-  function safeHref(value) { const href = String(value ?? "").trim(); return /^(https?:|mailto:|#)/iu.test(href) ? href : ""; }
+  function safeHref(value) {
+    const href = String(value ?? "").trim();
+    if (!href || /^(?:javascript|data|vbscript):/iu.test(href) || href.startsWith("//")) return "";
+    return /^(?:https?:|mailto:|#)/iu.test(href) || !/^[a-z][a-z0-9+.-]*:/iu.test(href) ? href : "";
+  }
   function renderLatex(source, displayMode = false) {
     const latex = String(source ?? "").trim();
     if (!latex) return "";
@@ -37,9 +41,23 @@
       const [rawName, ...rawLabel] = String(nodeSpec).split("|");
       const name = rawName.trim();
       const label = rawLabel.join("|").trim() || name;
-      return name ? `<a href="#" class="markdown-node-ref" data-stgraphx-node="${escapeHtml(name)}">${label}</a>` : "";
+      return name ? stash(`<a href="#" class="markdown-node-ref" data-stgraphx-node="${escapeHtml(name)}">${label}</a>`) : "";
     });
-    html = html.replace(/\[([^\]]+)\]\(([^)\s]+)\)/g, (_m, label, href) => { const safe = safeHref(href); return safe ? `<a href="${escapeHtml(safe)}" target="_blank" rel="noopener noreferrer">${label}</a>` : label; });
+    html = html.replace(/\[([^\]]+)\]\(([^)\s]+)\)/g, (_m, label, href) => {
+      const safe = safeHref(href);
+      return safe ? stash(`<a href="${escapeHtml(safe)}" target="_blank" rel="noopener noreferrer">${label}</a>`) : label;
+    });
+    // Documentation also contains plain http(s) addresses.  Turn those into
+    // normal external links after Markdown links have been stashed, so URLs
+    // already used as a link target are never processed twice.
+    html = html.replace(/(^|[\s(])((?:https?:\/\/)[^\s<]+)/giu, (_m, prefix, rawHref) => {
+      const trailing = rawHref.match(/[.,;:!?]+$/u)?.[0] || "";
+      const href = rawHref.slice(0, rawHref.length - trailing.length);
+      const safe = safeHref(href);
+      return safe
+        ? `${prefix}${stash(`<a href="${escapeHtml(safe)}" target="_blank" rel="noopener noreferrer">${escapeHtml(href)}</a>`)}${trailing}`
+        : `${prefix}${rawHref}`;
+    });
     html = html.replace(/\*\*([^*]+)\*\*/g, "<strong>$1</strong>").replace(/__([^_]+)__/g, "<strong>$1</strong>").replace(/~~([^~]+)~~/g, "<s>$1</s>").replace(/\*([^*]+)\*/g, "<em>$1</em>").replace(/_([^_]+)_/g, "<em>$1</em>");
     return html.replace(/\u0000M(\d+)\u0000/g, (_m, index) => fragments[Number(index)] || "");
   }
@@ -56,7 +74,7 @@
       const oneLineMath = /^\s*\$\$\s*(.*?)\s*\$\$\s*$/.exec(line);
       if (oneLineMath) { flushParagraph(); flushList(); output.push(`<div class="latex-block">${renderLatex(oneLineMath[1], true)}</div>`); return; }
       if (/^\s*\$\$\s*$/.test(line)) { flushParagraph(); flushList(); inMath = true; mathLines = []; return; }
-      const heading = /^(#{1,3})\s+(.+)$/.exec(line); const unordered = /^\s*[-*+]\s+(.+)$/.exec(line); const ordered = /^\s*\d+[.)]\s+(.+)$/.exec(line);
+      const heading = /^(#{1,4})\s+(.+)$/.exec(line); const unordered = /^\s*[-*+]\s+(.+)$/.exec(line); const ordered = /^\s*\d+[.)]\s+(.+)$/.exec(line);
       if (heading) { flushParagraph(); flushList(); const level = heading[1].length; output.push(`<h${level}>${renderInlineMarkdown(heading[2])}</h${level}>`); }
       else if (/^\s*(---|\*\*\*|___)\s*$/.test(line)) { flushParagraph(); flushList(); output.push("<hr>"); }
       else if (unordered || ordered) { flushParagraph(); const type = unordered ? "ul" : "ol"; if (!list || list.type !== type) { flushList(); list = { type, items: [] }; } list.items.push((unordered || ordered)[1]); }

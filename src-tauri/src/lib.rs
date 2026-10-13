@@ -5,6 +5,7 @@
 
 use std::fs;
 use std::path::Path;
+use std::process::Command;
 
 fn dialog_with_title(title: &str) -> rfd::FileDialog {
     let dialog = rfd::FileDialog::new().add_filter("JSON", &["json"]);
@@ -72,7 +73,9 @@ fn open_directory_dialog(title: String) -> Option<String> {
     } else {
         dialog.set_title(title)
     };
-    dialog.pick_folder().map(|path| path.to_string_lossy().into_owned())
+    dialog
+        .pick_folder()
+        .map(|path| path.to_string_lossy().into_owned())
 }
 
 #[tauri::command]
@@ -87,6 +90,21 @@ fn write_clipboard_text(text: String) -> Result<(), String> {
     clipboard.set_text(text).map_err(|error| error.to_string())
 }
 
+#[tauri::command]
+fn open_external_url(url: String) -> Result<(), String> {
+    let url = url.trim();
+    if !(url.starts_with("http://") || url.starts_with("https://")) {
+        return Err("Unsupported external URL".to_string());
+    }
+    #[cfg(target_os = "linux")]
+    let result = Command::new("xdg-open").arg(url).spawn();
+    #[cfg(target_os = "macos")]
+    let result = Command::new("open").arg(url).spawn();
+    #[cfg(target_os = "windows")]
+    let result = Command::new("cmd").args(["/C", "start", "", url]).spawn();
+    result.map(|_| ()).map_err(|error| error.to_string())
+}
+
 pub fn run() {
     tauri::Builder::default()
         .invoke_handler(tauri::generate_handler![
@@ -99,6 +117,7 @@ pub fn run() {
             open_directory_dialog,
             read_clipboard_text,
             write_clipboard_text,
+            open_external_url,
         ])
         .run(tauri::generate_context!())
         .expect("error while running STGraphX Tauri application");

@@ -126,6 +126,9 @@
     async getStartupLanguage() {
       return invoke("get_startup_language");
     },
+    async openExternalUrl(url) {
+      return invoke("open_external_url", { url: String(url ?? "") });
+    },
     async readClipboardText() {
       return invoke("read_clipboard_text");
     },

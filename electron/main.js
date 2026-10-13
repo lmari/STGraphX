@@ -5,7 +5,7 @@
  * Copyright (c) 2026 Luca Mari
  */
 
-const { app, BrowserWindow, clipboard, dialog, ipcMain } = require('electron');
+const { app, BrowserWindow, clipboard, dialog, ipcMain, shell } = require('electron');
 const path = require('path');
 const fs = require('fs/promises');
 
@@ -56,6 +56,12 @@ function createWindow() {
 
   const startupLang = resolveStartupLang();
   win.loadFile(path.join(__dirname, '..', 'index.html'), startupLang ? { query: { lang: startupLang } } : undefined);
+  win.webContents.setWindowOpenHandler(({ url }) => {
+    if (/^https?:/iu.test(String(url || ''))) {
+      void shell.openExternal(url);
+    }
+    return { action: 'deny' };
+  });
   win.webContents.on('before-input-event', (event, input) => {
     const isCloseShortcut = input.type === 'keyDown'
       && !input.shift
@@ -136,6 +142,14 @@ app.whenReady().then(() => {
   ipcMain.handle('stgraphx:read-clipboard-text', () => clipboard.readText());
   ipcMain.handle('stgraphx:write-clipboard-text', (_event, text) => {
     clipboard.writeText(String(text ?? ''));
+    return true;
+  });
+  ipcMain.handle('stgraphx:open-external-url', async (_event, rawUrl) => {
+    const url = String(rawUrl || '').trim();
+    if (!/^https?:/iu.test(url)) {
+      throw new Error('Unsupported external URL');
+    }
+    await shell.openExternal(url);
     return true;
   });
   ipcMain.handle('stgraphx:show-confirm-dialog', async (event, options = {}) => {

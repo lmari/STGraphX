@@ -41,8 +41,16 @@ const files = [
   "icon.svg",
   "icon.png",
   "icon.ico",
+  "README.md",
+  "README-ARCHITECTURE.md",
+  "README-CONVERSION.md",
+  "README-PLAYER.md",
+  "README-USAGE.md",
+  "QUICK-START.md",
+  "QUICK-START-USERS.md",
+  "QUICK-START-DEVELOPERS.md",
 ];
-const directories = ["examples", "help", "platform", "vendor"];
+const directories = ["examples", "help", "platform", "vendor", "docs"];
 
 async function copyFile(relativePath) {
   const source = path.join(root, relativePath);

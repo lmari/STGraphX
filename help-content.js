@@ -15,6 +15,19 @@
   const EXAMPLE_CATALOG_PATH = "examples/examples-catalog.json";
   const EXAMPLE_STYLE_PATH = "examples/examples-help.css";
   const EIGHT_TUPLE_TEMPLATE_PATH = "help/eight-tuple-template.json";
+  const DOCUMENTATION_ENTRY_PATH = "README.md";
+  const DOCUMENTATION_PATHS = new Set([
+    "README.md",
+    "QUICK-START.md",
+    "QUICK-START-USERS.md",
+    "QUICK-START-DEVELOPERS.md",
+    "README-ARCHITECTURE.md",
+    "README-PLAYER.md",
+    "README-USAGE.md",
+    "README-CONVERSION.md",
+    "docs/QUICK-FUNCTION-REFERENCE.md",
+    "docs/RIFERIMENTO-RAPIDO-FUNZIONI.md",
+  ]);
   const EXAMPLE_LAYOUT_VARIANTS = new Set(["list", "compact", "stack"]);
   const EXAMPLES_HELP_STYLE_TAG_ID = "examples-help-external-style";
 
@@ -52,6 +65,22 @@
     const isStateNode = typeof options.isStateNode === "function" ? options.isStateNode : () => false;
     const isAlgebraicNode = typeof options.isAlgebraicNode === "function" ? options.isAlgebraicNode : () => false;
     const isSubmodelNode = typeof options.isSubmodelNode === "function" ? options.isSubmodelNode : () => false;
+    const openExternalUrl = typeof options.openExternalUrl === "function"
+      ? options.openExternalUrl
+      : async (url) => {
+        const popup = window.open(String(url ?? ""), "_blank", "noopener,noreferrer");
+        if (popup) popup.opener = null;
+        return Boolean(popup);
+      };
+    const hasExternalUrlOpener = typeof options.hasExternalUrlOpener === "function"
+      ? options.hasExternalUrlOpener
+      : () => false;
+    const documentationHelpModal = options.documentationHelpModal || null;
+    const documentationHelpTitle = options.documentationHelpTitle || null;
+    const documentationHelpPath = options.documentationHelpPath || null;
+    const documentationHelpContent = options.documentationHelpContent || null;
+    const documentationHelpBackBtn = options.documentationHelpBackBtn || null;
+    const documentationHelpForwardBtn = options.documentationHelpForwardBtn || null;
     const examplesHelpModal = options.examplesHelpModal || null;
     const examplesHelpTitle = options.examplesHelpTitle || null;
     const examplesHelpIntro = options.examplesHelpIntro || null;
@@ -65,6 +94,9 @@
     const aboutAppAuthorValue = options.aboutAppAuthorValue || null;
     const aboutAppLicenseValue = options.aboutAppLicenseValue || null;
     const aboutAppCopyrightValue = options.aboutAppCopyrightValue || null;
+    const documentationHistory = [];
+    let documentationHistoryIndex = -1;
+    let documentationRequestId = 0;
 
     function localizedRecordText(record) {
       if (typeof record === "string") {
@@ -415,6 +447,237 @@
       examplesHelpModal.classList.add("hidden");
     }
 
+    function normalizeDocumentationPath(rawPath, currentPath = DOCUMENTATION_ENTRY_PATH) {
+      const source = String(rawPath ?? "").trim().replace(/\\/g, "/");
+      if (!source || /^(?:https?:|mailto:|#)/iu.test(source)) {
+        return "";
+      }
+      const withoutSuffix = source.split(/[?#]/u, 1)[0];
+      const baseParts = String(currentPath || DOCUMENTATION_ENTRY_PATH).split("/").slice(0, -1);
+      const parts = withoutSuffix.startsWith("/") ? [] : baseParts;
+      for (const part of withoutSuffix.replace(/^\/+/, "").split("/")) {
+        if (!part || part === ".") continue;
+        if (part === "..") {
+          if (!parts.length) return "";
+          parts.pop();
+        } else {
+          parts.push(part);
+        }
+      }
+      const normalized = parts.join("/");
+      return DOCUMENTATION_PATHS.has(normalized) ? normalized : "";
+    }
+
+    function normalizeDocumentationModelPath(rawPath, currentPath) {
+      const source = String(rawPath ?? "").trim().replace(/\\/g, "/");
+      if (!/\.json(?:[?#].*)?$/iu.test(source)) return "";
+      const withoutSuffix = source.split(/[?#]/u, 1)[0];
+      const baseParts = String(currentPath || DOCUMENTATION_ENTRY_PATH).split("/").slice(0, -1);
+      const parts = withoutSuffix.startsWith("/") ? [] : baseParts;
+      for (const part of withoutSuffix.replace(/^\/+/, "").split("/")) {
+        if (!part || part === ".") continue;
+        if (part === "..") {
+          if (!parts.length) return "";
+          parts.pop();
+        } else {
+          parts.push(part);
+        }
+      }
+      const normalized = parts.join("/");
+      return normalized.startsWith("examples/") ? normalized : "";
+    }
+
+    function documentationTitleForPath(path) {
+      const name = String(path || "").split("/").pop() || "";
+      return name.replace(/\.md$/iu, "") || t("documentation.title");
+    }
+
+    function markdownForDocumentation(markdown) {
+      const source = String(markdown ?? "");
+      // Repository READMEs may use HTML links. Convert only these anchors
+      // before rendering; arbitrary HTML remains escaped in model notes.
+      const htmlLinks = source.replace(/<a\s+[^>]*href\s*=\s*["']([^"']+)["'][^>]*>([\s\S]*?)<\/a>/giu, (_match, href, label) => {
+        const text = String(label).replace(/<[^>]*>/gu, "").trim() || href;
+        return `[${text}](${href})`;
+      });
+      // The existing documentation commonly refers to sibling files as code.
+      // Make those known guide documents navigable without changing the files.
+      return htmlLinks.replace(/`((?:README|QUICK-START)[A-Za-z0-9-]*\.md|docs\/[A-Za-z0-9_\-]+\.md)`/gu, (_match, path) => (
+        `[${path}](${path})`
+      ));
+    }
+
+    function updateDocumentationNavigation() {
+      if (documentationHelpBackBtn) {
+        documentationHelpBackBtn.disabled = documentationHistoryIndex <= 0;
+      }
+      if (documentationHelpForwardBtn) {
+        documentationHelpForwardBtn.disabled = documentationHistoryIndex < 0 || documentationHistoryIndex >= documentationHistory.length - 1;
+      }
+    }
+
+    function linkifyDocumentationUrls() {
+      if (!documentationHelpContent || typeof document === "undefined" || typeof NodeFilter === "undefined") {
+        return;
+      }
+      const urlPattern = /https?:\/\/[^\s<]+/giu;
+      const walker = document.createTreeWalker(documentationHelpContent, NodeFilter.SHOW_TEXT);
+      const textNodes = [];
+      let current = walker.nextNode();
+      while (current) {
+        if (!current.parentElement?.closest("a")) {
+          textNodes.push(current);
+        }
+        current = walker.nextNode();
+      }
+      textNodes.forEach((textNode) => {
+        const source = textNode.nodeValue || "";
+        if (!urlPattern.test(source)) {
+          urlPattern.lastIndex = 0;
+          return;
+        }
+        urlPattern.lastIndex = 0;
+        const fragment = document.createDocumentFragment();
+        let cursor = 0;
+        source.replace(urlPattern, (rawUrl, offset) => {
+          const trailing = rawUrl.match(/[.,;:!?]+$/u)?.[0] || "";
+          const url = rawUrl.slice(0, rawUrl.length - trailing.length);
+          if (offset > cursor) fragment.appendChild(document.createTextNode(source.slice(cursor, offset)));
+          const anchor = document.createElement("a");
+          anchor.href = url;
+          anchor.target = "_blank";
+          anchor.rel = "noopener noreferrer";
+          anchor.textContent = url;
+          fragment.appendChild(anchor);
+          if (trailing) fragment.appendChild(document.createTextNode(trailing));
+          cursor = offset + rawUrl.length;
+          return rawUrl;
+        });
+        if (cursor < source.length) fragment.appendChild(document.createTextNode(source.slice(cursor)));
+        textNode.replaceWith(fragment);
+        urlPattern.lastIndex = 0;
+      });
+    }
+
+    async function renderDocumentationPath(path, options = {}) {
+      const normalized = normalizeDocumentationPath(path, options.currentPath || DOCUMENTATION_ENTRY_PATH);
+      if (!normalized || !documentationHelpContent) {
+        return false;
+      }
+      const requestId = ++documentationRequestId;
+      if (options.addToHistory !== false) {
+        documentationHistory.splice(documentationHistoryIndex + 1);
+        documentationHistory.push(normalized);
+        documentationHistoryIndex = documentationHistory.length - 1;
+      }
+      if (documentationHelpTitle) documentationHelpTitle.textContent = documentationTitleForPath(normalized);
+      if (documentationHelpPath) documentationHelpPath.textContent = normalized;
+      documentationHelpContent.textContent = t("documentation.loading");
+      updateDocumentationNavigation();
+      try {
+        const text = await loadExamplesAssetText(normalized);
+        if (requestId !== documentationRequestId) return false;
+        const renderer = globalThis.STGraphXMarkdown?.renderMarkdownToHtml;
+        documentationHelpContent.innerHTML = typeof renderer === "function"
+          ? renderer(markdownForDocumentation(text))
+          : "";
+        // URLs in fenced examples deliberately remain code in the generic
+        // Markdown renderer. In the application guide they are instructions
+        // the reader may need to open, so make them actionable here as well.
+        linkifyDocumentationUrls();
+        bindDocumentationLinks();
+        documentationHelpContent.scrollTop = 0;
+        return true;
+      } catch (error) {
+        if (requestId !== documentationRequestId) return false;
+        documentationHelpContent.textContent = t("documentation.loadError", { message: String(error?.message || error || "") });
+        return false;
+      }
+    }
+
+    async function openDocumentationModel(path) {
+      const normalized = normalizeDocumentationModelPath(path, DOCUMENTATION_ENTRY_PATH);
+      if (!normalized) return false;
+      const opened = await openExampleModel(normalized.slice("examples/".length));
+      if (opened) closeDocumentationHelp();
+      return opened;
+    }
+
+    function openExternalDocumentationUrl(url) {
+      // In desktop shells use the explicit native bridge.  The fallback keeps
+      // ordinary web deployments independent from platform-specific code.
+      if (!hasExternalUrlOpener()) {
+        return false;
+      }
+      Promise.resolve(openExternalUrl(url)).catch(() => {
+        // If a shell bridge fails, still give Electron's window-open handler
+        // a chance to hand the URL to the operating system.
+        const popup = globalThis.open?.(url, "_blank", "noopener,noreferrer");
+        if (popup) popup.opener = null;
+      });
+      return true;
+    }
+
+    function onDocumentationLinkClick(event, anchor) {
+      const href = String(anchor.getAttribute("href") || "").trim();
+      const currentPath = documentationHistory[documentationHistoryIndex] || DOCUMENTATION_ENTRY_PATH;
+      const targetPath = normalizeDocumentationPath(href, currentPath);
+      if (targetPath) {
+        event.preventDefault();
+        void renderDocumentationPath(targetPath, { currentPath });
+        return;
+      }
+      const modelPath = normalizeDocumentationModelPath(href, currentPath);
+      if (modelPath) {
+        event.preventDefault();
+        void openDocumentationModel(modelPath);
+        return;
+      }
+      if (/^https?:/iu.test(href)) {
+        // Electron handles target=_blank in its main-process window-open
+        // handler; browsers do so natively. Intercept only Tauri, whose
+        // WebView otherwise has no external-browser target.
+        if (globalThis.STGraphXPlatform?.isTauri && openExternalDocumentationUrl(href)) {
+          event.preventDefault();
+        }
+      }
+    }
+
+    function bindDocumentationLinks() {
+      documentationHelpContent?.querySelectorAll("a[href]").forEach((anchor) => {
+        anchor.addEventListener("click", (event) => onDocumentationLinkClick(event, anchor));
+      });
+    }
+
+    function openDocumentationHelp() {
+      if (!documentationHelpModal) return;
+      documentationHelpModal.classList.remove("hidden");
+      if (documentationHistoryIndex < 0) {
+        void renderDocumentationPath(DOCUMENTATION_ENTRY_PATH);
+      } else {
+        updateDocumentationNavigation();
+      }
+    }
+
+    function closeDocumentationHelp() {
+      documentationHelpModal?.classList.add("hidden");
+    }
+
+    if (documentationHelpBackBtn) {
+      documentationHelpBackBtn.addEventListener("click", () => {
+        if (documentationHistoryIndex <= 0) return;
+        documentationHistoryIndex -= 1;
+        void renderDocumentationPath(documentationHistory[documentationHistoryIndex], { addToHistory: false });
+      });
+    }
+    if (documentationHelpForwardBtn) {
+      documentationHelpForwardBtn.addEventListener("click", () => {
+        if (documentationHistoryIndex >= documentationHistory.length - 1) return;
+        documentationHistoryIndex += 1;
+        void renderDocumentationPath(documentationHistory[documentationHistoryIndex], { addToHistory: false });
+      });
+    }
+
     function eightTupleNodeAnnotation(node, extraText = "") {
       const parts = [];
       const description = getNodeDescription(node);
@@ -745,11 +1008,13 @@
 
     return {
       closeAboutApp,
+      closeDocumentationHelp,
       closeEightTuple,
       closeExamplesHelp,
       copyEightTupleText,
       exportEightTupleMarkdown,
       openAboutApp,
+      openDocumentationHelp,
       openEightTuple,
       openExamplesHelp,
       renderEightTuple,

@@ -131,6 +131,7 @@
         <div class="menu-root">
           <button class="menu-title" type="button" data-menu="helpMenu" data-i18n="menu.help" data-title-i18n="tooltip.menu.help"></button>
           <div class="menu-panel" id="helpMenu">
+            <button id="documentationHelpBtn" class="menu-command" type="button" data-title-i18n="tooltip.menu.help.documentation"><span data-i18n="menu.help.documentation"></span></button>
             <button id="functionsHelpBtn" class="menu-command" type="button" data-title-i18n="tooltip.menu.help.functions"><span data-i18n="menu.help.functions"></span><span class="menu-shortcut">F1</span></button>
             <button id="eightTupleBtn" class="menu-command" type="button" data-title-i18n="tooltip.menu.help.eightTuple"><span data-i18n="menu.help.eightTuple"></span></button>
             <button id="analyzeModelBtn" class="menu-command" type="button" data-title-i18n="tooltip.menu.help.analyze"><span data-i18n="menu.help.analyze"></span></button>
@@ -506,6 +507,25 @@
         <div id="expressionEditorResizeHandle" class="expression-editor-resize-handle" aria-hidden="true"></div>
       </div>
     </div>
+    <div id="documentationHelpModal" class="modal-backdrop hidden">
+      <div class="modal-card documentation-help-card" role="dialog" aria-modal="true" aria-labelledby="documentationHelpTitle">
+        <div class="modal-head">
+          <div class="documentation-help-heading">
+            <h3 id="documentationHelpTitle" data-i18n="documentation.title"></h3>
+            <div id="documentationHelpPath" class="documentation-help-path"></div>
+          </div>
+          <div class="documentation-help-actions">
+            <button id="documentationHelpBackBtn" class="icon-btn" type="button" data-i18n-aria-label="aria.back" data-title-i18n="tooltip.documentation.back">‹</button>
+            <button id="documentationHelpForwardBtn" class="icon-btn" type="button" data-i18n-aria-label="aria.forward" data-title-i18n="tooltip.documentation.forward">›</button>
+            <button id="documentationHelpCloseBtn" class="icon-btn modal-close-btn" type="button" data-i18n-aria-label="aria.close">×</button>
+          </div>
+        </div>
+        <div id="documentationHelpContent" class="documentation-help-content markdown-content"></div>
+        <div class="modal-actions">
+          <button id="documentationHelpDismissBtn" type="button" data-i18n="action.close"></button>
+        </div>
+      </div>
+    </div>
     <div id="functionsHelpModal" class="modal-backdrop hidden">
       <div class="modal-card functions-help-card" role="dialog" aria-modal="true" aria-labelledby="functionsHelpTitle">
         <div class="modal-head">
@@ -751,6 +771,10 @@
             <label class="option-check" for="showNodeValuesInput" data-title-i18n="tooltip.menu.view.showNodeValues">
               <input id="showNodeValuesInput" type="checkbox" checked />
               <span data-i18n="menu.view.showNodeValues"></span>
+            </label>
+            <label class="option-check" for="unitChecksInput" data-title-i18n="tooltip.view.unitChecks">
+              <input id="unitChecksInput" type="checkbox" checked />
+              <span data-i18n="viewOptions.unitChecks"></span>
             </label>
           </div>
         </section>

@@ -20,6 +20,7 @@
     "createDirectoryHandleFromPath",
     "createDirectoryHandleFromDirectoryPath",
     "getStartupLanguage",
+    "openExternalUrl",
     "readClipboardText",
     "writeClipboardText",
     "showOpenFilePicker",

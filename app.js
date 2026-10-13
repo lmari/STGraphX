@@ -96,6 +96,7 @@ const snapToGridInput = document.getElementById("snapToGridInput");
 const showGridInput = document.getElementById("showGridInput");
 const highlightNodeEdgesInput = document.getElementById("highlightNodeEdgesInput");
 const showNodeValuesInput = document.getElementById("showNodeValuesInput");
+const unitChecksInput = document.getElementById("unitChecksInput");
 const gridSizeInput = document.getElementById("gridSizeInput");
 const tooltipDelayInput = document.getElementById("tooltipDelayInput");
 const interfaceLanguageInput = document.getElementById("interfaceLanguageInput");
@@ -239,6 +240,7 @@ const expressionEditorCloseBtn = document.getElementById("expressionEditorCloseB
 const expressionEditorCancelBtn = document.getElementById("expressionEditorCancelBtn");
 const expressionEditorApplyBtn = document.getElementById("expressionEditorApplyBtn");
 const expressionEditorResizeHandle = document.getElementById("expressionEditorResizeHandle");
+const documentationHelpBtn = document.getElementById("documentationHelpBtn");
 const functionsHelpBtn = document.getElementById("functionsHelpBtn");
 const eightTupleBtn = document.getElementById("eightTupleBtn");
 const examplesHelpBtn = document.getElementById("examplesHelpBtn");
@@ -249,6 +251,14 @@ const functionsHelpDismissBtn = document.getElementById("functionsHelpDismissBtn
 const functionsHelpContent = document.getElementById("functionsHelpContent");
 const functionsHelpSearch = document.getElementById("functionsHelpSearch");
 const functionsHelpTypeFilter = document.getElementById("functionsHelpTypeFilter");
+const documentationHelpModal = document.getElementById("documentationHelpModal");
+const documentationHelpCloseBtn = document.getElementById("documentationHelpCloseBtn");
+const documentationHelpDismissBtn = document.getElementById("documentationHelpDismissBtn");
+const documentationHelpBackBtn = document.getElementById("documentationHelpBackBtn");
+const documentationHelpForwardBtn = document.getElementById("documentationHelpForwardBtn");
+const documentationHelpTitle = document.getElementById("documentationHelpTitle");
+const documentationHelpPath = document.getElementById("documentationHelpPath");
+const documentationHelpContent = document.getElementById("documentationHelpContent");
 const eightTupleModal = document.getElementById("eightTupleModal");
 const eightTupleCloseBtn = document.getElementById("eightTupleCloseBtn");
 const eightTupleDismissBtn = document.getElementById("eightTupleDismissBtn");
@@ -1014,6 +1024,7 @@ const ui = {
   showGrid: true,
   highlightNodeEdges: true,
   showNodeValues: true,
+  checkUnits: true,
   gridSize: 20,
   tooltipDelayMs: 300,
   zoom: 1,
@@ -1144,6 +1155,21 @@ const helpContentHelpers = globalThis.STGraphXHelpContent?.createHelpContentHelp
   isStateNode,
   isAlgebraicNode,
   isSubmodelNode,
+  hasExternalUrlOpener: () => hasPlatformApi("openExternalUrl"),
+  openExternalUrl: (url) => {
+    if (hasPlatformApi("openExternalUrl")) {
+      return window.STGraphXPlatform.openExternalUrl(url);
+    }
+    const popup = window.open(String(url ?? ""), "_blank", "noopener,noreferrer");
+    if (popup) popup.opener = null;
+    return Promise.resolve(Boolean(popup));
+  },
+  documentationHelpModal,
+  documentationHelpTitle,
+  documentationHelpPath,
+  documentationHelpContent,
+  documentationHelpBackBtn,
+  documentationHelpForwardBtn,
   examplesHelpModal,
   examplesHelpTitle,
   examplesHelpIntro,
@@ -1383,6 +1409,9 @@ function updateCanvasGridAppearance() {
   }
   if (showNodeValuesInput) {
     showNodeValuesInput.checked = ui.showNodeValues === true;
+  }
+  if (unitChecksInput) {
+    unitChecksInput.checked = ui.checkUnits !== false;
   }
   if (gridSizeInput && document.activeElement !== gridSizeInput) {
     gridSizeInput.value = String(ui.gridSize);
@@ -3161,7 +3190,14 @@ function analyzeModelStaticIssues() {
     delete node.unitAnalysisError;
     delete node.analysisIssue;
   });
-  ui.modelAnalysisIssues = modelAnalysisCoreHelpers.analyzeModelStaticIssues();
+  const allIssues = modelAnalysisCoreHelpers.analyzeModelStaticIssues();
+  ui.modelAnalysisIssues = ui.checkUnits === false
+    ? allIssues.filter((issue) => ![
+      "analysis.issue.invalidUnit",
+      "analysis.issue.unitMismatch",
+      "analysis.issue.unitExpressionMismatch",
+    ].includes(issue.key))
+    : allIssues;
   ui.modelAnalysisIssues.forEach((issue) => {
     if (issue.target?.type !== "node" || !["error", "warning"].includes(issue.severity)) return;
     const node = getNodeById(issue.target.id);
@@ -3201,7 +3237,7 @@ function canDeclareNodeUnit(node) {
 }
 
 function strictUnitExecutionIssue() {
-  if (!graph.execution.strictDefinitions) return null;
+  if (!graph.execution.strictDefinitions || ui.checkUnits === false) return null;
   const independentNodes = independentNodesForUnitAnalysis();
   if (!independentNodes.length || independentNodes.some((node) => !String(node.unit || "").trim())) return null;
   const issues = ui.modelAnalysisIssues || analyzeModelStaticIssues();
@@ -3843,6 +3879,14 @@ function closeExamplesHelp() {
   helpContentHelpers.closeExamplesHelp();
 }
 
+function openDocumentationHelp() {
+  helpContentHelpers.openDocumentationHelp();
+}
+
+function closeDocumentationHelp() {
+  helpContentHelpers.closeDocumentationHelp();
+}
+
 function openEightTuple() {
   helpContentHelpers.openEightTuple();
 }
@@ -4202,6 +4246,9 @@ function syncViewOptionsInputs() {
   }
   if (showNodeValuesInput) {
     showNodeValuesInput.checked = ui.showNodeValues === true;
+  }
+  if (unitChecksInput) {
+    unitChecksInput.checked = ui.checkUnits !== false;
   }
   if (gridSizeInput) {
     gridSizeInput.value = String(ui.gridSize);
@@ -8650,6 +8697,7 @@ function exportGraphData() {
       showGrid: ui.showGrid !== false,
       highlightNodeEdges: ui.highlightNodeEdges === true,
       showNodeValues: ui.showNodeValues === true,
+      checkUnits: ui.checkUnits !== false,
       gridSize: clamp(Number(ui.gridSize) || 20, 5, 100),
       tooltipDelayMs: normalizeTooltipDelayMs(ui.tooltipDelayMs),
       scrollLeft: Math.max(0, Number(graphViewport?.scrollLeft) || 0),
@@ -8878,6 +8926,7 @@ function captureCurrentModelContext(nodeName = "") {
       showGrid: ui.showGrid,
       highlightNodeEdges: ui.highlightNodeEdges,
       showNodeValues: ui.showNodeValues,
+      checkUnits: ui.checkUnits,
       gridSize: ui.gridSize,
       tooltipDelayMs: normalizeTooltipDelayMs(ui.tooltipDelayMs),
       scrollLeft: graphViewport.scrollLeft,
@@ -8906,6 +8955,7 @@ function restoreModelContext(context) {
   ui.showGrid = context.view?.showGrid !== false;
   ui.highlightNodeEdges = context.view?.highlightNodeEdges !== false;
   ui.showNodeValues = context.view?.showNodeValues !== false;
+  ui.checkUnits = context.view?.checkUnits !== false;
   ui.gridSize = clamp(Number(context.view?.gridSize) || ui.gridSize || 20, 5, 100);
   ui.tooltipDelayMs = normalizeTooltipDelayMs(context.view?.tooltipDelayMs);
   setStatus(String(context.statusMessage || t("status.ready")));
@@ -9190,6 +9240,7 @@ function applyGraphData(data) {
   ui.showGrid = savedView?.showGrid !== false;
   ui.highlightNodeEdges = savedView?.highlightNodeEdges !== false;
   ui.showNodeValues = savedView?.showNodeValues !== false;
+  ui.checkUnits = savedView?.checkUnits !== false;
   ui.gridSize = clamp(Number(savedView?.gridSize) || ui.gridSize || 20, 5, 100);
   ui.tooltipDelayMs = normalizeTooltipDelayMs(savedView?.tooltipDelayMs);
   normalizeInputNodeFlags();
@@ -11337,7 +11388,7 @@ function render(options = {}) {
     if (definitionIssue && !definitionIssue.ok) {
       g.classList.add("invalid-definition");
     }
-    if (graph.execution.strictDefinitions && node.unitAnalysisError) {
+    if (graph.execution.strictDefinitions && ui.checkUnits !== false && node.unitAnalysisError) {
       g.classList.add("invalid-unit");
     }
     if (graph.execution.strictDefinitions && visualIssue) {
@@ -12138,6 +12189,7 @@ function importGraphData(data) {
         showGrid: data.view.showGrid !== false,
         highlightNodeEdges: data.view.highlightNodeEdges !== false,
         showNodeValues: data.view.showNodeValues !== false,
+        checkUnits: data.view.checkUnits !== false,
         gridSize: clamp(Number(data.view.gridSize) || 20, 5, 100),
         tooltipDelayMs: normalizeTooltipDelayMs(data.view.tooltipDelayMs),
         scrollLeft: Math.max(0, Number(data.view.scrollLeft) || 0),
@@ -12910,6 +12962,7 @@ function resetGraphToEmptyModel() {
   };
   ui.highlightNodeEdges = true;
   ui.showNodeValues = true;
+  ui.checkUnits = true;
   nodeCounter = 1;
   edgeCounter = 1;
   widgetCounter = 1;
@@ -14526,6 +14579,15 @@ if (showNodeValuesInput) {
   });
 }
 
+if (unitChecksInput) {
+  unitChecksInput.addEventListener("change", () => {
+    ui.checkUnits = unitChecksInput.checked;
+    analyzeModelStaticIssues();
+    render();
+    scheduleFileStatusRefresh();
+  });
+}
+
 gridSizeInput.addEventListener("change", () => {
   ui.gridSize = clamp(Number(gridSizeInput.value) || 20, 5, 100);
   gridSizeInput.value = String(ui.gridSize);
@@ -15702,6 +15764,7 @@ if (expressionEditorModal) {
   }
 }
 bindModalDragHandle(functionsHelpModal, ".functions-help-card");
+bindModalDragHandle(documentationHelpModal, ".documentation-help-card");
 bindModalDragHandle(examplesHelpModal, ".examples-help-card");
 bindModalDragHandle(aboutAppModal, ".about-app-card");
 bindModalDragHandle(modelAnalysisModal, ".model-analysis-card");
@@ -15717,6 +15780,12 @@ if (functionsHelpBtn) {
   functionsHelpBtn.addEventListener("click", () => {
     closeTopMenus();
     openFunctionsHelp();
+  });
+}
+if (documentationHelpBtn) {
+  documentationHelpBtn.addEventListener("click", () => {
+    closeTopMenus();
+    openDocumentationHelp();
   });
 }
 if (eightTupleBtn) {
@@ -15754,6 +15823,12 @@ if (functionsHelpCloseBtn) {
 }
 if (functionsHelpDismissBtn) {
   functionsHelpDismissBtn.addEventListener("click", closeFunctionsHelp);
+}
+if (documentationHelpCloseBtn) {
+  documentationHelpCloseBtn.addEventListener("click", closeDocumentationHelp);
+}
+if (documentationHelpDismissBtn) {
+  documentationHelpDismissBtn.addEventListener("click", closeDocumentationHelp);
 }
 if (functionsHelpSearch) {
   functionsHelpSearch.addEventListener("input", renderFunctionsHelp);
@@ -15924,6 +15999,13 @@ if (functionsHelpModal) {
   functionsHelpModal.addEventListener("pointerdown", (evt) => {
     if (evt.target === functionsHelpModal) {
       closeFunctionsHelp();
+    }
+  });
+}
+if (documentationHelpModal) {
+  documentationHelpModal.addEventListener("pointerdown", (evt) => {
+    if (evt.target === documentationHelpModal) {
+      closeDocumentationHelp();
     }
   });
 }
@@ -16243,6 +16325,14 @@ document.addEventListener("keydown", (evt) => {
     if (evt.key === "Escape" || evt.key === "F1") {
       evt.preventDefault();
       closeFunctionsHelp();
+    }
+    return;
+  }
+
+  if (!documentationHelpModal?.classList.contains("hidden")) {
+    if (evt.key === "Escape") {
+      evt.preventDefault();
+      closeDocumentationHelp();
     }
     return;
   }
