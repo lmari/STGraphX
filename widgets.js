@@ -3676,11 +3676,141 @@ function openBackgroundContextMenu(evt) {
   ]);
 }
 
+function nodeWidgetAnchor(node) {
+  return {
+    x: Number(node?.x || 0) + Number(node?.width || 0) / 2 + 36,
+    y: Number(node?.y || 0),
+  };
+}
+
+function initializeInputWidgetFromNode(widget, node) {
+  if (!widget || !node) {
+    return;
+  }
+  const value = node.computedValue;
+  if (widget.type === "slider" && Number.isFinite(Number(value))) {
+    const numericValue = Number(value);
+    widget.min = Math.min(Number(widget.min) || 0, numericValue);
+    widget.max = Math.max(Number(widget.max) || 100, numericValue);
+    widget.value = numericValue;
+    sanitizeSliderWidgetOptions(widget);
+  } else if (widget.type === "numeric") {
+    if (Array.isArray(value) && value.every((row) => Array.isArray(row))) {
+      widget.inputRows = Math.max(1, value.length);
+      widget.inputCols = Math.max(1, ...value.map((row) => row.length));
+    } else if (Array.isArray(value)) {
+      widget.inputRows = Math.max(1, value.length);
+      widget.inputCols = 1;
+    }
+    widget.value = deepClone(value == null ? 0 : value);
+    sanitizeNumericWidgetOptions(widget);
+  } else if (widget.type === "button") {
+    widget.value = Boolean(value);
+    widget.initialValue = widget.value;
+    sanitizeButtonWidgetOptions(widget);
+  } else if (widget.type === "select" && Number.isFinite(Number(value))) {
+    const numericValue = Number(value);
+    if (!widget.options.some((option) => Number(option.value) === numericValue)) {
+      widget.options.unshift({ label: String(numericValue), value: numericValue });
+    }
+    widget.value = numericValue;
+    sanitizeSelectWidgetOptions(widget);
+  }
+}
+
+function addInputWidgetForNode(node, type) {
+  if (!node || !canBindSliderToNode(node) || hasInputWidgetBinding(node)) {
+    return false;
+  }
+  const anchor = nodeWidgetAnchor(node);
+  if (type === "slider") {
+    addSliderWidget(anchor);
+  } else if (type === "numeric") {
+    addNumericWidget(anchor);
+  } else if (type === "button") {
+    addButtonWidget(anchor);
+  } else if (type === "select") {
+    addSelectWidget(anchor);
+  } else {
+    return false;
+  }
+  const widget = graph.widgets.at(-1);
+  widget.source = node.name;
+  initializeInputWidgetFromNode(widget, node);
+  return true;
+}
+
+function addOutputWidgetForNode(node, type) {
+  if (!node || isDraftNode(node)) {
+    return false;
+  }
+  const target = getNodeById(node.id);
+  if (!target) {
+    return false;
+  }
+  target.output = true;
+  const anchor = nodeWidgetAnchor(target);
+  if (type === "led") {
+    addLedWidget(anchor);
+  } else if (type === "text") {
+    addTextWidget(anchor);
+  } else if (type === "matrix") {
+    addMatrixWidget(anchor);
+  } else if (type === "table") {
+    addTableWidget(anchor);
+  } else if (type === "xychart") {
+    addXYChartWidget(anchor);
+  } else {
+    return false;
+  }
+  const widget = graph.widgets.at(-1);
+  if (type === "table") {
+    widget.columns = [target.name];
+    widget.tableColumnFormats = { [target.name]: { align: "left", decimalDigits: null } };
+    sanitizeTableWidgetOptions(widget);
+  } else if (type === "xychart") {
+    widget.xyPairs[0].ySource = target.name;
+    sanitizeXYChartOptions(widget);
+  } else {
+    widget.source = target.name;
+    if (type === "led") sanitizeLedWidgetOptions(widget);
+    if (type === "text") sanitizeTextWidgetOptions(widget);
+    if (type === "matrix") sanitizeMatrixWidgetOptions(widget);
+  }
+  return true;
+}
+
 function openNodeContextMenu(evt, node) {
   if (isEditingUiLocked()) {
     return;
   }
   const useSelectionDelete = ui.selectedNodes.has(node.id) && ui.selectedNodes.size > 0;
+  const canCreateInputWidget = canBindSliderToNode(node) && !hasInputWidgetBinding(node);
+  const inputWidgetItems = [
+    ["slider", "menu.insert.sliderWidget", "status.widgetSliderCreated"],
+    ["numeric", "menu.insert.numericWidget", "status.widgetNumericCreated"],
+    ["button", "menu.insert.buttonWidget", "status.widgetButtonCreated"],
+    ["select", "menu.insert.selectWidget", "status.widgetSelectCreated"],
+  ].map(([type, labelKey, statusKey]) => ({
+    label: t(labelKey),
+    action: () => {
+      runAction(() => addInputWidgetForNode(node, type));
+      setStatusKey(statusKey);
+    },
+  }));
+  const outputWidgetItems = [
+    ["led", "menu.insert.ledWidget", "status.widgetLedCreated"],
+    ["text", "menu.insert.textWidget", "status.widgetTextCreated"],
+    ["matrix", "menu.insert.matrixWidget", "status.widgetMatrixCreated"],
+    ["table", "menu.insert.tableWidget", "status.widgetCreated"],
+    ["xychart", "menu.insert.xyChartWidget", "status.widgetChartCreated"],
+  ].map(([type, labelKey, statusKey]) => ({
+    label: t(labelKey),
+    action: () => {
+      runAction(() => addOutputWidgetForNode(node, type));
+      setStatusKey(statusKey);
+    },
+  }));
   showContextMenu(evt.clientX, evt.clientY, [
     {
       label: t("context.node.rename"),
@@ -3715,6 +3845,18 @@ function openNodeContextMenu(evt, node) {
         action: () => {
           void createSubmodelInterfaceNodes(node);
         },
+      }]
+      : []),
+    ...(canCreateInputWidget
+      ? [{
+        label: t("context.node.readValuesFromWidget"),
+        children: inputWidgetItems,
+      }]
+      : []),
+    ...(!isDraftNode(node)
+      ? [{
+        label: t("context.node.showValuesInWidget"),
+        children: outputWidgetItems,
       }]
       : []),
     {
@@ -4044,7 +4186,16 @@ function buildNodeTooltipText(node) {
 
 function canvasTextDisplayHtml(item) {
   if (typeof item?.markdown === "string") {
-    return globalThis.STGraphXMarkdown?.renderMarkdownToHtml(item.markdown) || "";
+    return globalThis.STGraphXMarkdown?.renderMarkdownToHtml(item.markdown, {
+      resolveVariable(name) {
+        const node = getNodeByName(name);
+        if (!node) return null;
+        if (node.computedError) {
+          return { text: localizeExpressionErrorMessage(node.computedError), error: true, title: name };
+        }
+        return { text: formatComputedValue(node.computedValue), title: name };
+      },
+    }) || "";
   }
   const sanitized = sanitizeRichTextHtml(item?.html ?? "");
   return sanitized || `<p>${t("text.defaultCanvasText")}</p>`;

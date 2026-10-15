@@ -136,6 +136,66 @@
           contextMenu.appendChild(separator);
           return;
         }
+        if (Array.isArray(item?.children)) {
+          const submenu = document.createElement("div");
+          submenu.className = "context-menu-submenu";
+          const toggle = document.createElement("button");
+          toggle.type = "button";
+          toggle.className = "context-menu-submenu-toggle";
+          toggle.disabled = Boolean(item.disabled);
+          const label = document.createElement("span");
+          label.textContent = item.label;
+          const indicator = document.createElement("span");
+          indicator.className = "context-menu-submenu-indicator";
+          indicator.setAttribute("aria-hidden", "true");
+          indicator.textContent = "›";
+          toggle.append(label, indicator);
+          const panel = document.createElement("div");
+          panel.className = "context-menu-submenu-panel";
+          (item.children || []).forEach((child) => {
+            const childButton = document.createElement("button");
+            childButton.type = "button";
+            childButton.textContent = child.label;
+            childButton.disabled = Boolean(child.disabled);
+            childButton.addEventListener("click", () => {
+              hideContextMenu();
+              child.action?.();
+            });
+            panel.appendChild(childButton);
+          });
+          const positionSubmenu = () => {
+            const toggleRect = toggle.getBoundingClientRect();
+            panel.style.left = `${Math.round(toggleRect.right - 2)}px`;
+            panel.style.right = "auto";
+            panel.style.top = `${Math.round(toggleRect.top - 5)}px`;
+            const rect = panel.getBoundingClientRect();
+            if (rect.right > window.innerWidth - 8) {
+              panel.style.left = `${Math.max(8, Math.round(toggleRect.left - rect.width + 2))}px`;
+            }
+            const positionedRect = panel.getBoundingClientRect();
+            if (positionedRect.bottom > window.innerHeight - 8) {
+              panel.style.top = `${Math.max(8, Math.round(window.innerHeight - positionedRect.height - 8))}px`;
+            }
+          };
+          const openSubmenu = () => {
+            if (toggle.disabled) {
+              return;
+            }
+            submenu.classList.add("open");
+            window.requestAnimationFrame(positionSubmenu);
+          };
+          toggle.addEventListener("click", (event) => {
+            event.stopPropagation();
+            submenu.classList.toggle("open");
+            if (submenu.classList.contains("open")) {
+              window.requestAnimationFrame(positionSubmenu);
+            }
+          });
+          submenu.addEventListener("pointerenter", openSubmenu);
+          submenu.append(toggle, panel);
+          contextMenu.appendChild(submenu);
+          return;
+        }
         const button = document.createElement("button");
         button.type = "button";
         if (item.icon) {

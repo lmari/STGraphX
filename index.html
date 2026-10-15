@@ -180,7 +180,7 @@
           </div>
           <div id="noSelection" class="hidden"></div>
           <div id="globalPanel" class="panel hidden">
-            <h3 class="config-panel-title"><span data-i18n="panel.model"></span><button class="config-panel-hide-btn" type="button" data-sidebar-hide data-i18n-aria-label="action.hidePanel" data-title-i18n="tooltip.action.hidePanel">▶</button></h3>
+            <h3 class="config-panel-title"><span data-i18n="panel.model"></span><button class="config-panel-help-btn" type="button" data-config-help="model" data-i18n-aria-label="action.help" data-title-i18n="tooltip.action.configHelp">?</button><button class="config-panel-hide-btn" type="button" data-sidebar-hide data-i18n-aria-label="action.hidePanel" data-title-i18n="tooltip.action.hidePanel">▶</button></h3>
 
             <div class="model-section">
               <label for="modelTitleInput" data-i18n="label.modelTitle" data-title-i18n="tooltip.model.title"></label>
@@ -259,7 +259,7 @@
           </div>
 
           <div id="nodePanel" class="panel hidden">
-            <h3 class="config-panel-title"><span data-i18n="panel.node"></span><button class="config-panel-hide-btn" type="button" data-sidebar-hide data-i18n-aria-label="action.hidePanel" data-title-i18n="tooltip.action.hidePanel">▶</button></h3>
+            <h3 class="config-panel-title"><span data-i18n="panel.node"></span><button class="config-panel-help-btn" type="button" data-config-help="node" data-i18n-aria-label="action.help" data-title-i18n="tooltip.action.configHelp">?</button><button class="config-panel-hide-btn" type="button" data-sidebar-hide data-i18n-aria-label="action.hidePanel" data-title-i18n="tooltip.action.hidePanel">▶</button></h3>
 
             <div class="panel-section compact-panel-section">
               <label for="nodeNameInput" data-i18n="label.name" data-title-i18n="tooltip.node.name"></label>
@@ -377,7 +377,7 @@
           </div>
 
           <div id="textPanel" class="panel hidden">
-            <h3 data-i18n="panel.text"></h3>
+            <h3 class="config-panel-title"><span data-i18n="panel.text"></span><button class="config-panel-help-btn" type="button" data-config-help="text" data-i18n-aria-label="action.help" data-title-i18n="tooltip.action.configHelp">?</button><button class="config-panel-hide-btn" type="button" data-sidebar-hide data-i18n-aria-label="action.hidePanel" data-title-i18n="tooltip.action.hidePanel">▶</button></h3>
 
             <div class="panel-section compact-panel-section">
               <div class="row2-exec">
@@ -409,7 +409,7 @@
           </div>
 
           <div id="widgetPanel" class="panel hidden">
-            <h3 class="config-panel-title"><span id="widgetPanelTitle" data-i18n="panel.widget"></span><button class="config-panel-hide-btn" type="button" data-sidebar-hide data-i18n-aria-label="action.hidePanel" data-title-i18n="tooltip.action.hidePanel">▶</button></h3>
+            <h3 class="config-panel-title"><span id="widgetPanelTitle" data-i18n="panel.widget"></span><button class="config-panel-help-btn" type="button" data-config-help="widget" data-i18n-aria-label="action.help" data-title-i18n="tooltip.action.configHelp">?</button><button class="config-panel-hide-btn" type="button" data-sidebar-hide data-i18n-aria-label="action.hidePanel" data-title-i18n="tooltip.action.hidePanel">▶</button></h3>
             <div id="widgetConfig"></div>
           </div>
 
@@ -831,6 +831,13 @@
         </div>
       </div>
     </div>
+    <div id="configHelpModal" class="modal-backdrop modal-modeless hidden">
+      <div class="modal-card config-help-card" role="dialog" aria-modal="false" aria-labelledby="configHelpTitle">
+        <div class="modal-head"><h3 id="configHelpTitle"></h3><button id="configHelpCloseBtn" class="icon-btn modal-close-btn" type="button" data-i18n-aria-label="aria.close">×</button></div>
+        <section id="configHelpContent" class="markdown-content config-help-content"></section>
+        <div class="modal-actions"><button id="configHelpDismissBtn" type="button" data-i18n="action.close"></button></div>
+      </div>
+    </div>
     <div id="textEditorModal" class="modal-backdrop modal-modeless hidden">
       <div class="modal-card text-editor-card" role="dialog" aria-modal="false" aria-labelledby="textEditorTitle">
         <div class="modal-head">
@@ -846,6 +853,7 @@
             <button type="button" class="small-btn text-tool-btn" data-text-tool="b"><strong>B</strong></button>
             <button type="button" class="small-btn text-tool-btn" data-text-tool="i"><em>I</em></button>
             <button type="button" class="small-btn text-tool-btn" data-text-tool="tex" data-title-i18n="tooltip.text.insertFormula">∑</button>
+            <button type="button" class="small-btn text-tool-btn" data-text-tool="variable" data-title-i18n="tooltip.text.insertVariable">{{}}</button>
             <button type="button" class="small-btn text-tool-btn" data-text-tool="ul">UL</button>
             <button type="button" class="small-btn text-tool-btn" data-text-tool="ol">OL</button>
             <button type="button" class="small-btn text-tool-btn" data-text-tool="hr">HR</button>

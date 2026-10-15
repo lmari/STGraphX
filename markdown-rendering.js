@@ -24,7 +24,16 @@
       return `<code class="latex-error">${escapeHtml(latex)}</code>`;
     }
   }
-  function renderInlineMarkdown(value) {
+  function resolveDynamicValueText(source, resolveVariable) {
+    if (typeof resolveVariable !== "function") return String(source ?? "");
+    return String(source ?? "").replace(/\{\{([^{}|\n]+)\}\}/g, (raw, rawName) => {
+      const name = String(rawName ?? "").trim();
+      if (!name) return raw;
+      const resolved = resolveVariable(name);
+      return resolved && typeof resolved.text === "string" ? resolved.text : raw;
+    });
+  }
+  function renderInlineMarkdown(value, options = {}) {
     const fragments = [];
     const stash = (html) => {
       const token = `\u0000M${fragments.length}\u0000`;
@@ -32,10 +41,30 @@
       return token;
     };
     let source = String(value ?? "");
+    const resolveVariable = typeof options.resolveVariable === "function" ? options.resolveVariable : null;
+    // Protect code spans before looking for inline math delimiters.
     source = source.replace(/`([^`]+)`/g, (_m, code) => stash(`<code>${escapeHtml(code)}</code>`));
+    // Resolve only the contents of formulas before passing them to KaTeX.
+    // Outside formulas the same syntax becomes a styled live-value element.
+    if (resolveVariable) {
+      source = source.replace(/\$([^$\n]+?)\$/g, (_match, latex) => (
+        `$${resolveDynamicValueText(latex, resolveVariable)}$`
+      ));
+    }
     source = source.replace(/(^|[^\\$])\$([^$\n]+?)\$/g, (_m, prefix, latex) => (
       `${prefix}${stash(renderLatex(latex, false))}`
     ));
+    if (resolveVariable) {
+      source = source.replace(/\{\{([^{}|\n]+)\}\}/g, (raw, rawName) => {
+        const name = String(rawName ?? "").trim();
+        if (!name) return raw;
+        const resolved = resolveVariable(name);
+        if (!resolved || typeof resolved.text !== "string") return raw;
+        const tone = resolved.error ? " markdown-variable-value-error" : "";
+        const title = escapeHtml(resolved.title || name);
+        return stash(`<span class="markdown-variable-value${tone}" data-stgraphx-variable="${escapeHtml(name)}" title="${title}">${escapeHtml(resolved.text)}</span>`);
+      });
+    }
     let html = escapeHtml(source);
     html = html.replace(/\[\[([^\[\]\n]+)\]\]/g, (_m, nodeSpec) => {
       const [rawName, ...rawLabel] = String(nodeSpec).split("|");
@@ -61,25 +90,25 @@
     html = html.replace(/\*\*([^*]+)\*\*/g, "<strong>$1</strong>").replace(/__([^_]+)__/g, "<strong>$1</strong>").replace(/~~([^~]+)~~/g, "<s>$1</s>").replace(/\*([^*]+)\*/g, "<em>$1</em>").replace(/_([^_]+)_/g, "<em>$1</em>");
     return html.replace(/\u0000M(\d+)\u0000/g, (_m, index) => fragments[Number(index)] || "");
   }
-  function renderMarkdownToHtml(markdown) {
+  function renderMarkdownToHtml(markdown, options = {}) {
     const lines = String(markdown ?? "").replace(/\r\n?/g, "\n").split("\n"); const output = []; let paragraph = []; let list = null; let inCode = false; let codeLines = []; let inMath = false; let mathLines = [];
-    const flushParagraph = () => { if (paragraph.length) { output.push(`<p>${paragraph.map(renderInlineMarkdown).join("<br>")}</p>`); paragraph = []; } };
-    const flushList = () => { if (list) { output.push(`<${list.type}>${list.items.map((item) => `<li>${renderInlineMarkdown(item)}</li>`).join("")}</${list.type}>`); list = null; } };
+    const flushParagraph = () => { if (paragraph.length) { output.push(`<p>${paragraph.map((item) => renderInlineMarkdown(item, options)).join("<br>")}</p>`); paragraph = []; } };
+    const flushList = () => { if (list) { output.push(`<${list.type}>${list.items.map((item) => `<li>${renderInlineMarkdown(item, options)}</li>`).join("")}</${list.type}>`); list = null; } };
     const flushCode = () => { if (inCode) { output.push(`<pre><code>${escapeHtml(codeLines.join("\n"))}</code></pre>`); inCode = false; codeLines = []; } };
-    const flushMath = () => { if (inMath) { output.push(`<div class="latex-block">${renderLatex(mathLines.join("\n"), true)}</div>`); inMath = false; mathLines = []; } };
+    const flushMath = () => { if (inMath) { output.push(`<div class="latex-block">${renderLatex(resolveDynamicValueText(mathLines.join("\n"), options.resolveVariable), true)}</div>`); inMath = false; mathLines = []; } };
     lines.forEach((line) => {
       if (inMath) { if (/^\s*\$\$\s*$/.test(line)) flushMath(); else mathLines.push(line); return; }
       if (/^```/.test(line)) { if (inCode) flushCode(); else { flushParagraph(); flushList(); inCode = true; } return; }
       if (inCode) { codeLines.push(line); return; }
       const oneLineMath = /^\s*\$\$\s*(.*?)\s*\$\$\s*$/.exec(line);
-      if (oneLineMath) { flushParagraph(); flushList(); output.push(`<div class="latex-block">${renderLatex(oneLineMath[1], true)}</div>`); return; }
+      if (oneLineMath) { flushParagraph(); flushList(); output.push(`<div class="latex-block">${renderLatex(resolveDynamicValueText(oneLineMath[1], options.resolveVariable), true)}</div>`); return; }
       if (/^\s*\$\$\s*$/.test(line)) { flushParagraph(); flushList(); inMath = true; mathLines = []; return; }
       const heading = /^(#{1,4})\s+(.+)$/.exec(line); const unordered = /^\s*[-*+]\s+(.+)$/.exec(line); const ordered = /^\s*\d+[.)]\s+(.+)$/.exec(line);
-      if (heading) { flushParagraph(); flushList(); const level = heading[1].length; output.push(`<h${level}>${renderInlineMarkdown(heading[2])}</h${level}>`); }
+      if (heading) { flushParagraph(); flushList(); const level = heading[1].length; output.push(`<h${level}>${renderInlineMarkdown(heading[2], options)}</h${level}>`); }
       else if (/^\s*(---|\*\*\*|___)\s*$/.test(line)) { flushParagraph(); flushList(); output.push("<hr>"); }
       else if (unordered || ordered) { flushParagraph(); const type = unordered ? "ul" : "ol"; if (!list || list.type !== type) { flushList(); list = { type, items: [] }; } list.items.push((unordered || ordered)[1]); }
       else if (!line.trim()) { flushParagraph(); flushList(); }
-      else if (/^>\s?/.test(line)) { flushParagraph(); flushList(); output.push(`<blockquote>${renderInlineMarkdown(line.replace(/^>\s?/, ""))}</blockquote>`); }
+      else if (/^>\s?/.test(line)) { flushParagraph(); flushList(); output.push(`<blockquote>${renderInlineMarkdown(line.replace(/^>\s?/, ""), options)}</blockquote>`); }
       else { flushList(); paragraph.push(line); }
     }); flushParagraph(); flushList(); flushCode(); flushMath(); return output.join("\n");
   }

@@ -28,6 +28,18 @@ const plainExternalLink = renderMarkdownToHtml("Apri https://example.test/guida.
 assert.match(plainExternalLink, /href="https:\/\/example\.test\/guida"/, "plain http(s) addresses must become links");
 assert.match(plainExternalLink, />https:\/\/example\.test\/guida<\//, "a plain URL label must exclude trailing punctuation");
 
+const dynamicValue = renderMarkdownToHtml("Valore: {{temperatura}}", {
+  resolveVariable: (name) => name === "temperatura" ? { text: "21.5", title: "temperatura" } : null,
+});
+assert.match(dynamicValue, /data-stgraphx-variable="temperatura"/, "dynamic variable references must be rendered");
+assert.match(dynamicValue, />21\.5<\//, "dynamic variable values must use the resolver output");
+
+const dynamicFormula = renderMarkdownToHtml("$y = {{temperatura}}x$", {
+  resolveVariable: (name) => name === "temperatura" ? { text: "21.5" } : null,
+});
+assert.match(dynamicFormula, /21\.5/, "dynamic references must be resolved before inline LaTeX rendering");
+assert.doesNotMatch(dynamicFormula, /data-stgraphx-variable/, "dynamic formula values must not be inserted as HTML inside KaTeX");
+
 const heading4 = renderMarkdownToHtml("#### Fourth-level heading");
 assert.match(heading4, /<h4>Fourth-level heading<\/h4>/, "fourth-level headings must be rendered");
 

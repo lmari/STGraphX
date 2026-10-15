@@ -1127,6 +1127,30 @@ h4 {
   line-height: 1;
 }
 
+.config-panel-help-btn {
+  flex: 0 0 auto;
+  width: 20px;
+  min-width: 20px;
+  height: 20px;
+  min-height: 20px;
+  margin: 0;
+  padding: 0;
+  border: 1px solid #9fb6c8;
+  border-radius: 50%;
+  background: #fff;
+  color: #49657a;
+  font-size: 0.75rem;
+  font-weight: 700;
+  line-height: 1;
+}
+
+.config-panel-help-btn:hover,
+.config-panel-help-btn:focus-visible {
+  border-color: #486d88;
+  background: #486d88;
+  color: #fff;
+}
+
 .config-panel-hide-btn:hover,
 .config-panel-hide-btn:focus-visible {
   color: #fff;
@@ -2009,6 +2033,22 @@ input.inferred-unit[readonly] { color: #6d7782; background: #f4f6f8; }
   width: min(470px, calc(100vw - 40px));
 }
 
+.config-help-card {
+  width: min(580px, calc(100vw - 40px));
+}
+
+.config-help-content {
+  min-height: 0;
+  max-height: min(480px, calc(100vh - 180px));
+  overflow: auto;
+  padding: 12px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: #fbfcfe;
+  color: #203246;
+  line-height: 1.45;
+}
+
 .model-close-confirm-message {
   margin: 2px 0 8px;
   color: var(--text-muted);
@@ -2593,6 +2633,8 @@ input.inferred-unit[readonly] { color: #6d7782; background: #f4f6f8; }
 .model-notes-canvas-btn:hover, .model-notes-canvas-btn:focus-visible { color: #fff; background: #3b6b8d; outline: 2px solid #83b9dc; outline-offset: 1px; }
 .model-notes-body { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 12px; min-height: 0; flex: 1; }.model-notes-pane { display: flex; flex-direction: column; gap: 5px; min-width: 0; min-height: 0; color: #617283; font-size: .86rem; }.model-notes-pane textarea { flex: 1; }.model-notes-preview { flex: 1; overflow: auto; border: 1px solid #cdd9e5; border-radius: 5px; padding: 8px; color: #203246; background: #fff; font-size: .92rem; }.markdown-content :first-child { margin-top: 0; }.markdown-content :last-child { margin-bottom: 0; }.markdown-content h1, .markdown-content h2, .markdown-content h3, .markdown-content h4 { color: #294a64; margin: .55em 0 .3em; }.markdown-content h1 { font-size: 1.28em; }.markdown-content h2 { font-size: 1.12em; }.markdown-content h3 { font-size: 1em; }.markdown-content h4 { font-size: .93em; }.markdown-content p { margin: .35em 0; }.markdown-content ul, .markdown-content ol { margin: .35em 0; padding-left: 1.35em; }.markdown-content blockquote { margin: .45em 0; padding-left: .7em; border-left: 3px solid #9ab5cb; color: #52687d; }.markdown-content pre { overflow: auto; padding: .55em; background: #f4f7fa; }.markdown-content code { font-family: ui-monospace, monospace; }.markdown-content .latex-block { overflow-x: auto; margin: .6em 0; text-align: center; }.markdown-content .latex-fallback, .markdown-content .latex-error { color: #9a4a1f; }
 .markdown-node-ref { color: #12639c; font-weight: 600; text-decoration: underline dotted; cursor: pointer; }
+.markdown-variable-value { display: inline-block; padding: 0 .22em; border-radius: 3px; color: #123f61; background: #e7f2fa; font-family: ui-monospace, monospace; font-size: .92em; font-weight: 600; white-space: pre-wrap; }
+.markdown-variable-value-error { color: #8a2732; background: #fdecef; }
 
 .model-analysis-summary {
   display: flex;
@@ -4513,6 +4555,41 @@ body.tablet-sidebar-layout .expression-editor-resize-handle {
 
 .context-menu button:disabled {
   color: #8ea0b2;
+}
+
+.context-menu-submenu {
+  position: relative;
+}
+
+.context-menu-submenu-toggle {
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.context-menu-submenu-indicator {
+  color: #5c7384;
+  font-size: 1.15rem;
+  line-height: 0.8;
+}
+
+.context-menu-submenu-panel {
+  position: fixed;
+  z-index: 1010;
+  display: none;
+  min-width: 190px;
+  max-height: calc(100vh - 16px);
+  overflow-y: auto;
+  padding: 5px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: #fff;
+  box-shadow: 0 12px 30px rgba(18, 33, 47, 0.14);
+}
+
+.context-menu-submenu:hover > .context-menu-submenu-panel,
+.context-menu-submenu:focus-within > .context-menu-submenu-panel,
+.context-menu-submenu.open > .context-menu-submenu-panel {
+  display: block;
 }
 
 @media (max-width: 940px) {

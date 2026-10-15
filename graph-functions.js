@@ -2046,6 +2046,7 @@
       log2: { kind: "math", signature: "log2(x)", descriptionKey: "expr.help.log2", insertText: "log2()", cursorOffset: 5 },
       max: { kind: "math", signature: "max(x1, x2, ...)", descriptionKey: "expr.help.max", insertText: "max()", cursorOffset: 4 },
       min: { kind: "math", signature: "min(x1, x2, ...)", descriptionKey: "expr.help.min", insertText: "min()", cursorOffset: 4 },
+      "%": { kind: "math", signature: "a % b", descriptionKey: "expr.help.modulo", insertText: " % ", cursorOffset: 3 },
       not: { kind: "math", signature: "not x", descriptionKey: "expr.help.not", insertText: "not ", cursorOffset: 4 },
       or: { kind: "math", signature: "a or b", descriptionKey: "expr.help.or", insertText: " or ", cursorOffset: 4 },
       piecewise: { kind: "math", signature: "piecewise(cx, cy, x)", descriptionKey: "expr.help.piecewise", insertText: "piecewise()", cursorOffset: 10 },

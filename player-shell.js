@@ -729,9 +729,18 @@
     return String(property?.value ?? "").trim();
   }
 
-  function canvasTextDisplayHtml(item) {
+  function canvasTextDisplayHtml(item, model, translate) {
     if (typeof item?.markdown === "string") {
-      return globalThis.STGraphXMarkdown?.renderMarkdownToHtml(item.markdown) || "";
+      return globalThis.STGraphXMarkdown?.renderMarkdownToHtml(item.markdown, {
+        resolveVariable: (name) => {
+          const node = (model?.nodes || []).find((entry) => String(entry?.name ?? "") === name);
+          if (!node) return null;
+          if (node.computedError) {
+            return { text: translate(`error.evalReason.${node.computedError || "runtime"}`), error: true, title: name };
+          }
+          return { text: formatComputedValue(node.computedValue), title: name };
+        },
+      }) || "";
     }
     const html = String(item?.html ?? "");
     return html.replace(/<script\b[^>]*>[\s\S]*?<\/script>/giu, "");
@@ -3404,7 +3413,7 @@
         const div = document.createElement("div");
         div.setAttribute("xmlns", "http://www.w3.org/1999/xhtml");
         div.className = "canvas-text-content";
-        div.innerHTML = canvasTextDisplayHtml(item);
+        div.innerHTML = canvasTextDisplayHtml(item, this._model, this.t.bind(this));
         foreignObject.appendChild(div);
         g.appendChild(frame);
         g.appendChild(foreignObject);

@@ -181,6 +181,11 @@ const textHeightInput = document.getElementById("textHeightInput");
 const textFillColorInput = document.getElementById("textFillColorInput");
 const textStrokeColorInput = document.getElementById("textStrokeColorInput");
 const textHtmlInput = document.getElementById("textHtmlInput");
+const configHelpModal = document.getElementById("configHelpModal");
+const configHelpTitle = document.getElementById("configHelpTitle");
+const configHelpContent = document.getElementById("configHelpContent");
+const configHelpCloseBtn = document.getElementById("configHelpCloseBtn");
+const configHelpDismissBtn = document.getElementById("configHelpDismissBtn");
 const textEditorModal = document.getElementById("textEditorModal");
 const textEditorCard = textEditorModal?.querySelector(".text-editor-card");
 const textEditorInput = document.getElementById("textEditorInput");
@@ -4276,6 +4281,29 @@ function openViewOptions() {
 
 function closeViewOptions() {
   viewOptionsModal?.classList.add("hidden");
+}
+
+function openConfigurationHelp(kind) {
+  const normalizedKind = ["model", "node", "widget", "text"].includes(kind) ? kind : "model";
+  if (!configHelpModal || !configHelpTitle || !configHelpContent) {
+    return;
+  }
+  let helpKey = `configHelp.${normalizedKind}`;
+  if (normalizedKind === "widget" && ui.selected?.type === "widget") {
+    const widget = getWidgetById(ui.selected.id);
+    const widgetHelpKey = widget ? `configHelp.widget.${widget.type}` : "";
+    if (widgetHelpKey && i18n[`${widgetHelpKey}.title`] && i18n[`${widgetHelpKey}.body`]) {
+      helpKey = widgetHelpKey;
+    }
+  }
+  configHelpTitle.textContent = t(`${helpKey}.title`);
+  const markdown = t(`${helpKey}.body`);
+  configHelpContent.innerHTML = globalThis.STGraphXMarkdown?.renderMarkdownToHtml(markdown) || "";
+  configHelpModal.classList.remove("hidden");
+}
+
+function closeConfigurationHelp() {
+  configHelpModal?.classList.add("hidden");
 }
 
 function createPresentationGroupFromSelection() {
@@ -15313,6 +15341,10 @@ function handleTextEditorTool(tool) {
     wrapTextSelection("$", "$", "x^2");
     return;
   }
+  if (tool === "variable") {
+    wrapTextSelection("{{", "}}", "nomeVariabile");
+    return;
+  }
   if (tool === "u") {
     return;
   }
@@ -15776,6 +15808,16 @@ bindModalDragHandle(presentationGroupsModal, ".presentation-groups-card");
 bindModalDragHandle(textEditorModal, ".text-editor-card");
 bindModalDragHandle(modelNotesModal, ".model-notes-card");
 bindModalDragHandle(viewOptionsModal, ".view-options-card", { allowCompactTouch: true });
+bindModalDragHandle(configHelpModal, ".config-help-card", { allowCompactTouch: true });
+document.querySelectorAll("[data-config-help]").forEach((button) => {
+  button.addEventListener("click", () => openConfigurationHelp(button.getAttribute("data-config-help")));
+});
+if (configHelpCloseBtn) {
+  configHelpCloseBtn.addEventListener("click", closeConfigurationHelp);
+}
+if (configHelpDismissBtn) {
+  configHelpDismissBtn.addEventListener("click", closeConfigurationHelp);
+}
 if (functionsHelpBtn) {
   functionsHelpBtn.addEventListener("click", () => {
     closeTopMenus();
@@ -16065,6 +16107,13 @@ if (viewOptionsModal) {
     }
   });
 }
+if (configHelpModal) {
+  configHelpModal.addEventListener("pointerdown", (evt) => {
+    if (evt.target === configHelpModal) {
+      closeConfigurationHelp();
+    }
+  });
+}
 if (dashboardRenameModal) {
   dashboardRenameModal.addEventListener("pointerdown", (evt) => {
     if (evt.target === dashboardRenameModal) {
@@ -16317,6 +16366,14 @@ document.addEventListener("keydown", (evt) => {
     } else if ((evt.ctrlKey || evt.metaKey) && evt.key === "Enter") {
       evt.preventDefault();
       applyExpressionEditor();
+    }
+    return;
+  }
+
+  if (!configHelpModal?.classList.contains("hidden")) {
+    if (evt.key === "Escape") {
+      evt.preventDefault();
+      closeConfigurationHelp();
     }
     return;
   }

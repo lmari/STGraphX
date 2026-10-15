@@ -1,6 +1,6 @@
 # STGraphX: Readme
 
-versione 13 ottobre 2026
+versione 15 ottobre 2026
 
 Copyright (c) 2026 Luca Mari
 
@@ -89,11 +89,11 @@ Ha un'interfaccia utente responsive, che lo rende utilizzabile anche su tablet.
 
 #### Funzionalità di interfaccia utente
 
-* Editor per espressioni, con controllo sintattico dinamico, visualizzazione dei valori attuali, help contestuale
+* Editor per espressioni, con controllo sintattico dinamico, visualizzazione dei valori attuali, help contestuale (*)
 * Visualizzazione alternata per il grafo e i widget
 * Gestione di una dashboard a più pagine per raggruppare widget (**)
 * Enfatizzazione delle frecce sul nodo selezionato
-* Editor per testi con formattazione Markdown e LaTeX basilare (**)
+* Editor per testi con formattazione Markdown, LaTeX basilare e accesso dinamico ai valori delle variabili (**)
 * Apertura dei modelli anche con drag and drop dal file system
 * Una voce di menu per esportare la serie storica dei valori delle variabili di output in un file csv (*)
 * Caricamento e salvataggio di modelli in file JSON (*)
