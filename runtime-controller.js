@@ -31,6 +31,9 @@
       clearSimulationHistory,
       onTimedExecutionStarted = null,
       onTimedExecutionStopped = null,
+      onFullExecutionStarted = null,
+      onFullExecutionStopped = null,
+      yieldToUi = null,
       hasStrictExecutionBlock = () => false,
       buildEvaluationEnv = null,
       setIntervalFn = global.setInterval?.bind(global),
@@ -261,108 +264,117 @@
         return;
       }
 
-      let continuing = execution.currentTime != null && session.hasInitializedStateSnapshot();
-      if (continuing && isExecutionEnded(cfg)) {
-        continuing = false;
-      }
+      onFullExecutionStarted?.();
+      try {
+        // Give the host a frame to present the active state before the
+        // synchronous calculation loop occupies the JavaScript thread.
+        await yieldToUi?.();
 
-      if (!continuing) {
-        execution.currentTime = null;
-        clearVisualHistory?.();
-        clearSimulationHistory?.();
-        session.clearSubmodelState();
-        session.initializeAt(cfg.t0);
-        refreshRuntimeView?.();
-      }
-
-      const execStartedAt = monotonicNowFn();
-      const maxSteps = 100000;
-      const epsilon = Math.max(1e-12, Math.abs(cfg.dt) * 1e-9);
-      const timeValues = [];
-      let current = continuing ? execution.currentTime + cfg.dt : cfg.t0;
-      for (let i = 0; i < maxSteps; i += 1) {
-        if ((cfg.dt > 0 && current > cfg.t1 + epsilon) || (cfg.dt < 0 && current < cfg.t1 - epsilon)) {
-          break;
+        let continuing = execution.currentTime != null && session.hasInitializedStateSnapshot();
+        if (continuing && isExecutionEnded(cfg)) {
+          continuing = false;
         }
-        timeValues.push(current);
-        current += cfg.dt;
-      }
 
-      if (timeValues.length === 0) {
-        setStatusKey?.("error.timeInvalid");
-        return;
-      }
-      if (timeValues.length >= maxSteps) {
-        setStatusKey?.("error.timeTooManySteps", { max: maxSteps });
-        return;
-      }
-
-      let successCount = 0;
-      let totalErrorCount = 0;
-      let firstErrorNode = null;
-      let firstErrorReason = null;
-      let firstErrorMessage = "";
-      let firstErrorTime = null;
-      let lastTime = timeValues[timeValues.length - 1];
-      let breakpointHit = false;
-      let breakpointHitResult = null;
-
-      for (let idx = 0; idx < timeValues.length; idx += 1) {
-        const timeValue = timeValues[idx];
-        if (continuing || idx > 0) {
-          session.promotePending();
-        }
-        const stepResult = session.evaluateAtTime(timeValue, evaluationEnv());
-        successCount = stepResult.successCount;
-        totalErrorCount += stepResult.errorCount;
-        if (!firstErrorNode && stepResult.firstErrorNode) {
-          firstErrorNode = stepResult.firstErrorNode;
-          firstErrorReason = stepResult.firstErrorReason;
-          firstErrorMessage = stepResult.firstErrorMessage || "";
-          firstErrorTime = timeValue;
-        }
-        lastTime = timeValue;
-        if (stepResult.errorCount > 0 && stopOnEvaluationError(execution)) {
-          break;
-        }
-        const stepBreakpointResult = evaluateBreakpointConditionAtTime?.(timeValue) || { hit: false, invalid: false };
-        if (stepBreakpointResult.invalid) {
+        if (!continuing) {
+          execution.currentTime = null;
+          clearVisualHistory?.();
+          clearSimulationHistory?.();
+          session.clearSubmodelState();
+          session.initializeAt(cfg.t0);
           refreshRuntimeView?.();
-          setStatus?.(
-            t("error.breakpointInvalid", {
-              reason: stepBreakpointResult.message || t("error.evalReason.runtime"),
-            }),
-            true,
-          );
-          openWatchDebugger?.();
+        }
+
+        const execStartedAt = monotonicNowFn();
+        const maxSteps = 100000;
+        const epsilon = Math.max(1e-12, Math.abs(cfg.dt) * 1e-9);
+        const timeValues = [];
+        let current = continuing ? execution.currentTime + cfg.dt : cfg.t0;
+        for (let i = 0; i < maxSteps; i += 1) {
+          if ((cfg.dt > 0 && current > cfg.t1 + epsilon) || (cfg.dt < 0 && current < cfg.t1 - epsilon)) {
+            break;
+          }
+          timeValues.push(current);
+          current += cfg.dt;
+        }
+
+        if (timeValues.length === 0) {
+          setStatusKey?.("error.timeInvalid");
           return;
         }
-        if (stepBreakpointResult.hit) {
-          breakpointHit = true;
-          breakpointHitResult = stepBreakpointResult;
-          break;
+        if (timeValues.length >= maxSteps) {
+          setStatusKey?.("error.timeTooManySteps", { max: maxSteps });
+          return;
         }
-      }
 
-      execution.currentTime = lastTime;
-      refreshRuntimeView?.();
+        let successCount = 0;
+        let totalErrorCount = 0;
+        let firstErrorNode = null;
+        let firstErrorReason = null;
+        let firstErrorMessage = "";
+        let firstErrorTime = null;
+        let lastTime = timeValues[timeValues.length - 1];
+        let breakpointHit = false;
+        let breakpointHitResult = null;
 
-      if (breakpointHit) {
-        presentBreakpointHit(breakpointHitResult, lastTime);
-      } else if (firstErrorNode) {
-        setStatusKey?.("error.evalFailedDetailedTime", {
-          node: firstErrorNode,
-          count: totalErrorCount,
-          reason: firstErrorMessage || evalReasonText?.(firstErrorReason),
-          time: formatNumberValue?.(Number(firstErrorTime)),
-        });
-      } else {
-        setStatusKey?.("status.evalDoneTime", {
-          count: successCount,
-          steps: timeValues.length,
-          time: formatNumberValue?.(Number(lastTime)),
-          duration: formatExecutionDuration?.(monotonicNowFn() - execStartedAt),
-        });
+        for (let idx = 0; idx < timeValues.length; idx += 1) {
+          const timeValue = timeValues[idx];
+          if (continuing || idx > 0) {
+            session.promotePending();
+          }
+          const stepResult = session.evaluateAtTime(timeValue, evaluationEnv());
+          successCount = stepResult.successCount;
+          totalErrorCount += stepResult.errorCount;
+          if (!firstErrorNode && stepResult.firstErrorNode) {
+            firstErrorNode = stepResult.firstErrorNode;
+            firstErrorReason = stepResult.firstErrorReason;
+            firstErrorMessage = stepResult.firstErrorMessage || "";
+            firstErrorTime = timeValue;
+          }
+          lastTime = timeValue;
+          if (stepResult.errorCount > 0 && stopOnEvaluationError(execution)) {
+            break;
+          }
+          const stepBreakpointResult = evaluateBreakpointConditionAtTime?.(timeValue) || { hit: false, invalid: false };
+          if (stepBreakpointResult.invalid) {
+            refreshRuntimeView?.();
+            setStatus?.(
+              t("error.breakpointInvalid", {
+                reason: stepBreakpointResult.message || t("error.evalReason.runtime"),
+              }),
+              true,
+            );
+            openWatchDebugger?.();
+            return;
+          }
+          if (stepBreakpointResult.hit) {
+            breakpointHit = true;
+            breakpointHitResult = stepBreakpointResult;
+            break;
+          }
+        }
+
+        execution.currentTime = lastTime;
+        refreshRuntimeView?.();
+
+        if (breakpointHit) {
+          presentBreakpointHit(breakpointHitResult, lastTime);
+        } else if (firstErrorNode) {
+          setStatusKey?.("error.evalFailedDetailedTime", {
+            node: firstErrorNode,
+            count: totalErrorCount,
+            reason: firstErrorMessage || evalReasonText?.(firstErrorReason),
+            time: formatNumberValue?.(Number(firstErrorTime)),
+          });
+        } else {
+          setStatusKey?.("status.evalDoneTime", {
+            count: successCount,
+            steps: timeValues.length,
+            time: formatNumberValue?.(Number(lastTime)),
+            duration: formatExecutionDuration?.(monotonicNowFn() - execStartedAt),
+          });
+        }
+      } finally {
+        onFullExecutionStopped?.();
       }
     }
 

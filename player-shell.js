@@ -894,10 +894,10 @@
       }
       const span = Math.max(1, Math.abs(autoMax - autoMin));
       if (configuredMin != null) {
-        return [configuredMin, Math.max(autoMax, configuredMin + span)];
+        return [configuredMin, autoMax > configuredMin ? autoMax : configuredMin + span];
       }
       if (configuredMax != null) {
-        return [Math.min(autoMin, configuredMax - span), configuredMax];
+        return [autoMin < configuredMax ? autoMin : configuredMax - span, configuredMax];
       }
       return [autoMin, autoMax];
     };

@@ -1,6 +1,6 @@
 /*!
  * STGraphX Embedded Player Bundle
- * Generated: 2026-10-15T07:49:21.280Z
+ * Generated: 2026-10-17T17:57:13.828Z
  */
 
 /* --- i18n-inline.js --- */
@@ -13,7 +13,7 @@
 
 window.STGraphXAppMeta = {
   author: "Luca Mari",
-  releaseDate: "2026.10.13",
+  releaseDate: "2026.10.15",
   license: "MPL-2.0",
   copyright: "Copyright (c) 2026 Luca Mari",
 };
@@ -5079,6 +5079,7 @@ window.STGraphXI18nBundles = {
   };
   const MATH_SCOPE = Object.freeze(graphFunctions.createMathScope(MATH_SCOPE_OPTIONS));
   const RANDOM_MATH_SCOPES = new WeakMap();
+  const NODE_PROPERTY_ACCESS_CACHE = new WeakMap();
   const FUNCTION_NAMES = new Set(
     Object.keys(MATH_SCOPE).filter((name) => typeof MATH_SCOPE[name] === "function"),
   );
@@ -5479,7 +5480,11 @@ window.STGraphXI18nBundles = {
         setProperty: unavailablePropertySetter,
       };
     }
-    return {
+    const cached = NODE_PROPERTY_ACCESS_CACHE.get(node);
+    if (cached) {
+      return cached;
+    }
+    const access = {
       getProperty: (key, fallback = null) => {
         const name = String(key ?? "");
         const found = node.properties.find((prop) => String(prop?.key ?? "") === name);
@@ -5500,6 +5505,8 @@ window.STGraphXI18nBundles = {
         return value;
       },
     };
+    NODE_PROPERTY_ACCESS_CACHE.set(node, access);
+    return access;
   }
 
   function rewriteThisAlias(expression) {
@@ -7585,6 +7592,35 @@ window.STGraphXI18nBundles = {
     return Boolean(node?.externalValueEnabled);
   }
 
+  function prepareAlgebraicEvaluationOrder(algebraicNodes, incoming) {
+    const algebraicIds = new Set(algebraicNodes.map((node) => node.id));
+    const pending = new Set(algebraicIds);
+    const resolved = new Set();
+    const order = [];
+    let progressed = true;
+    while (pending.size > 0 && progressed) {
+      progressed = false;
+      // Preserve the former repeated-scan order, including its deterministic
+      // order of random draws, while moving the dependency work out of steps.
+      for (const node of algebraicNodes) {
+        if (!pending.has(node.id)) {
+          continue;
+        }
+        const ready = (incoming.get(node.id) || []).every((fromId) => (
+          !algebraicIds.has(fromId) || resolved.has(fromId)
+        ));
+        if (!ready) {
+          continue;
+        }
+        pending.delete(node.id);
+        resolved.add(node.id);
+        order.push(node.id);
+        progressed = true;
+      }
+    }
+    return order;
+  }
+
   function prepareStatefulExecutionPlan(nodes, edges) {
     const executableNodes = nodes.filter((node) => !isDraftNode(node));
     const nodeById = new Map(executableNodes.map((node) => [node.id, node]));
@@ -7595,17 +7631,36 @@ window.STGraphXI18nBundles = {
         incoming.get(edge.to).push(edge.from);
       }
     });
+    const globalParameterNodes = executableNodes.filter((node) => isGlobalParameterNode(node));
+    const parameterNodes = executableNodes.filter((node) => isParameterNode(node));
+    const algebraicNodes = executableNodes.filter((node) => !isStateNode(node) && !isParameterNode(node));
+    const globalValueRefs = new Map(
+      executableNodes.map((node) => {
+        const references = collectIdentifierReferences(node.valueExpression);
+        return [
+          node.id,
+          globalParameterNodes.filter((globalNode) => globalNode.id !== node.id && references.has(globalNode.name)),
+        ];
+      }),
+    );
     return {
       nodeById,
       incoming,
+      executableNodes,
       stateNodes: executableNodes.filter((node) => isStateNode(node)),
-      globalParameterNodes: executableNodes.filter((node) => isGlobalParameterNode(node)),
+      parameterNodes,
+      algebraicNodes,
+      algebraicEvaluationOrder: prepareAlgebraicEvaluationOrder(algebraicNodes, incoming),
+      globalParameterNodes,
+      globalValueRefs,
     };
   }
 
   function evaluateStatefulGraphStep(nodes, edges, globals = {}, plan = null, options = {}) {
     const runtimePlan = plan || prepareStatefulExecutionPlan(nodes, edges);
-    const executableNodes = nodes.filter((node) => !isDraftNode(node));
+    const executableNodes = Array.isArray(runtimePlan.executableNodes)
+      ? runtimePlan.executableNodes
+      : nodes.filter((node) => !isDraftNode(node));
     const nodeById = runtimePlan.nodeById;
     const incoming = runtimePlan.incoming;
     const stateValueOverrides = options?.stateValueOverrides instanceof Map ? options.stateValueOverrides : null;
@@ -7616,13 +7671,15 @@ window.STGraphXI18nBundles = {
     const globalParameterNodes = Array.isArray(runtimePlan.globalParameterNodes)
       ? runtimePlan.globalParameterNodes
       : [];
-    const globalValueRefs = new Map(
-      executableNodes.map((node) => [
-        node.id,
-        globalParameterNodes.filter((globalNode) =>
-          globalNode.id !== node.id && collectIdentifierReferences(node.valueExpression).has(globalNode.name)),
-      ]),
-    );
+    const globalValueRefs = runtimePlan.globalValueRefs instanceof Map
+      ? runtimePlan.globalValueRefs
+      : new Map(
+        executableNodes.map((node) => [
+          node.id,
+          globalParameterNodes.filter((globalNode) =>
+            globalNode.id !== node.id && collectIdentifierReferences(node.valueExpression).has(globalNode.name)),
+        ]),
+      );
     const resolvedStateValue = (node) => {
       if (stateValueOverrides && stateValueOverrides.has(node.id)) {
         return stateValueOverrides.get(node.id);
@@ -7630,8 +7687,14 @@ window.STGraphXI18nBundles = {
       return node.computedValue;
     };
     const fixedNodes = executableNodes.filter((node) => !isStateNode(node) && hasExternalValue(node));
-    const parameterNodes = executableNodes.filter((node) => isParameterNode(node) && !hasExternalValue(node));
-    const algebraicNodes = executableNodes.filter((node) => !isStateNode(node) && !isParameterNode(node) && !hasExternalValue(node));
+    const parameterNodes = (Array.isArray(runtimePlan.parameterNodes)
+      ? runtimePlan.parameterNodes
+      : executableNodes.filter((node) => isParameterNode(node)))
+      .filter((node) => !hasExternalValue(node));
+    const algebraicNodes = (Array.isArray(runtimePlan.algebraicNodes)
+      ? runtimePlan.algebraicNodes
+      : executableNodes.filter((node) => !isStateNode(node) && !isParameterNode(node)))
+      .filter((node) => !hasExternalValue(node));
     const fixedResults = new Map();
     const stateNodes = runtimePlan.stateNodes;
     const parameterResults = new Map();
@@ -7718,10 +7781,17 @@ window.STGraphXI18nBundles = {
     };
 
     const pending = new Set(algebraicNodes.map((node) => node.id));
+    const hasFixedAlgebraicNode = fixedNodes.some((node) => !isParameterNode(node));
+    const algebraicEvaluationOrder = !hasFixedAlgebraicNode && Array.isArray(runtimePlan.algebraicEvaluationOrder)
+      ? runtimePlan.algebraicEvaluationOrder
+      : null;
     let progressed = true;
     while (pending.size > 0 && progressed) {
       progressed = false;
-      for (const nodeId of Array.from(pending)) {
+      const candidates = algebraicEvaluationOrder
+        ? algebraicEvaluationOrder.filter((nodeId) => pending.has(nodeId))
+        : Array.from(pending);
+      for (const nodeId of candidates) {
         const node = nodeById.get(nodeId);
         if (!node) {
           pending.delete(nodeId);
@@ -8299,6 +8369,43 @@ window.STGraphXI18nBundles = {
       throw new Error("STGraphXRuntimeCore requires translation and semantics dependencies");
     }
 
+    // Runtime models keep their graph structure for an entire execution. Cache
+    // the derived plan and invalidate it explicitly when a definition changes.
+    const executionPlanCache = new WeakMap();
+
+    function executionPlanForModel(model) {
+      if (!model || !Array.isArray(model.nodes) || !Array.isArray(model.edges)) {
+        return { plan: semantics.prepareStatefulExecutionPlan([], []), rk4Analyses: null };
+      }
+      const cached = executionPlanCache.get(model);
+      if (cached && cached.nodes === model.nodes && cached.edges === model.edges) {
+        return cached;
+      }
+      const entry = {
+        nodes: model.nodes,
+        edges: model.edges,
+        plan: semantics.prepareStatefulExecutionPlan(model.nodes, model.edges),
+        rk4Analyses: null,
+        localFunctions: null,
+      };
+      executionPlanCache.set(model, entry);
+      return entry;
+    }
+
+    function invalidateExecutionPlan(model) {
+      if (model && typeof model === "object") {
+        executionPlanCache.delete(model);
+      }
+    }
+
+    function localFunctionsForRuntimeModel(model) {
+      const entry = executionPlanForModel(model);
+      if (entry.localFunctions == null) {
+        entry.localFunctions = localFunctionsForSemantics(model);
+      }
+      return entry.localFunctions;
+    }
+
     const normalizeEdgeColor = typeof normalizeEdgeColorInput === "function"
       ? normalizeEdgeColorInput
       : () => "";
@@ -8599,7 +8706,7 @@ window.STGraphXI18nBundles = {
 
           const expr = String(node.valueExpression ?? "0");
           const result = semantics.evaluateValueExpression(expr, context, {
-            localFunctions: localFunctionsForSemantics(model),
+            localFunctions: localFunctionsForRuntimeModel(model),
             random: randomSourceForModel(model),
           });
           if (result.ok) {
@@ -8713,7 +8820,7 @@ window.STGraphXI18nBundles = {
             const result = semantics.evaluateValueExpression(
               expression,
               buildInitialStateContextForModel(model, node, timeValue, rootExecution, references),
-              randomEvaluationOptions(model, { localFunctions: localFunctionsForSemantics(model) }),
+              randomEvaluationOptions(model, { localFunctions: localFunctionsForRuntimeModel(model) }),
             );
             node.computedValue = result.ok ? result.value : null;
             node.computedError = result.ok ? "" : result.reason || "runtime";
@@ -8787,11 +8894,28 @@ window.STGraphXI18nBundles = {
     }
 
     function rk4IntegratedValue(currentValue, k1, k2, k3, k4, dt) {
-      const weighted = addTensorValues(
-        addTensorValues(k1, scaleTensorValue(k2, 2)),
-        addTensorValues(scaleTensorValue(k3, 2), k4),
+      const values = [currentValue, k1, k2, k3, k4];
+      const hasArray = values.some((value) => Array.isArray(value));
+      if (hasArray) {
+        if (!values.every((value) => Array.isArray(value))) {
+          throw new Error("tensor shape mismatch");
+        }
+        const length = currentValue.length;
+        if (!values.every((value) => value.length === length)) {
+          throw new Error("tensor shape mismatch");
+        }
+        return currentValue.map((_, index) => rk4IntegratedValue(
+          currentValue[index],
+          k1[index],
+          k2[index],
+          k3[index],
+          k4[index],
+          dt,
+        ));
+      }
+      return Number(currentValue) + (Number(dt) / 6) * (
+        Number(k1) + 2 * Number(k2) + 2 * Number(k3) + Number(k4)
       );
-      return addTensorValues(currentValue, scaleTensorValue(weighted, dt / 6));
     }
 
     function extractSuccessfulResultMap(entries) {
@@ -8907,7 +9031,7 @@ window.STGraphXI18nBundles = {
           return;
         }
         const result = semantics.evaluateValueExpression(expression, parentContext, {
-          localFunctions: localFunctionsForSemantics(model),
+          localFunctions: localFunctionsForRuntimeModel(model),
           random: randomSourceForModel(model),
         });
         if (!result.ok) {
@@ -9083,7 +9207,7 @@ window.STGraphXI18nBundles = {
             node.valueExpression,
             context,
             integralValuesMap.get(node.id) || [],
-            randomEvaluationOptions(model, { allowThisAlias: true, localFunctions: localFunctionsForSemantics(model) }),
+            randomEvaluationOptions(model, { allowThisAlias: true, localFunctions: localFunctionsForRuntimeModel(model) }),
           ),
         );
       });
@@ -9092,10 +9216,11 @@ window.STGraphXI18nBundles = {
 
     function evaluateModelAtTimeRecursive(model, timeValue, env, options = {}) {
       const executionGlobals = buildExecutionGlobalsForModel(model, env.rootExecution, timeValue);
-      const executionPlan = semantics.prepareStatefulExecutionPlan(model.nodes, model.edges);
+      const planEntry = executionPlanForModel(model);
+      const executionPlan = planEntry.plan;
       const stateValueOverrides = options.stateValueOverrides instanceof Map ? options.stateValueOverrides : null;
       const rk4Analyses = String(env.rootExecution?.integrator ?? "euler") === "rk4"
-        ? collectRk4IntegralStateAnalysesForModel(model)
+        ? (planEntry.rk4Analyses || (planEntry.rk4Analyses = collectRk4IntegralStateAnalysesForModel(model)))
         : new Map();
       const integralStateNodeIds = new Set(rk4Analyses.keys());
       const evalResults = semantics.evaluateStatefulGraphStep(
@@ -9105,7 +9230,7 @@ window.STGraphXI18nBundles = {
         executionPlan,
         {
           stateValueOverrides: stateValueOverrides || undefined,
-          localFunctions: localFunctionsForSemantics(model),
+          localFunctions: localFunctionsForRuntimeModel(model),
           random: randomSourceForModel(model),
           derivativeStateNodeIds: integralStateNodeIds.size > 0 ? integralStateNodeIds : undefined,
           customNodeEvaluator: createSubmodelNodeEvaluator(model, timeValue, env, {
@@ -9144,7 +9269,7 @@ window.STGraphXI18nBundles = {
             {
               derivativeStateNodeIds: integralStateNodeIds,
               stateValueOverrides: stage2StateOverrides,
-              localFunctions: localFunctionsForSemantics(model),
+              localFunctions: localFunctionsForRuntimeModel(model),
               random: randomSourceForModel(model),
               customNodeEvaluator: createSubmodelNodeEvaluator(model, timeValue + dt / 2, env, { applyResults: false }),
             },
@@ -9175,7 +9300,7 @@ window.STGraphXI18nBundles = {
               {
                 derivativeStateNodeIds: integralStateNodeIds,
               stateValueOverrides: stage3StateOverrides,
-              localFunctions: localFunctionsForSemantics(model),
+              localFunctions: localFunctionsForRuntimeModel(model),
               random: randomSourceForModel(model),
                 customNodeEvaluator: createSubmodelNodeEvaluator(model, timeValue + dt / 2, env, { applyResults: false }),
               },
@@ -9206,7 +9331,7 @@ window.STGraphXI18nBundles = {
                 {
                   derivativeStateNodeIds: integralStateNodeIds,
                   stateValueOverrides: stage4StateOverrides,
-                  localFunctions: localFunctionsForSemantics(model),
+                  localFunctions: localFunctionsForRuntimeModel(model),
                   random: randomSourceForModel(model),
                   customNodeEvaluator: createSubmodelNodeEvaluator(model, timeValue + dt, env, { applyResults: false }),
                 },
@@ -9333,6 +9458,7 @@ window.STGraphXI18nBundles = {
       extractSuccessfulAlgebraicValueMap,
       extractSuccessfulResultMap,
       firstFailedEntry,
+      invalidateExecutionPlan,
       initializeStateNodesForModel,
       promotePendingStateNodesForModel,
       readDataFromModelCache,
@@ -9630,6 +9756,9 @@ window.STGraphXI18nBundles = {
       clearSimulationHistory,
       onTimedExecutionStarted = null,
       onTimedExecutionStopped = null,
+      onFullExecutionStarted = null,
+      onFullExecutionStopped = null,
+      yieldToUi = null,
       hasStrictExecutionBlock = () => false,
       buildEvaluationEnv = null,
       setIntervalFn = global.setInterval?.bind(global),
@@ -9860,108 +9989,117 @@ window.STGraphXI18nBundles = {
         return;
       }
 
-      let continuing = execution.currentTime != null && session.hasInitializedStateSnapshot();
-      if (continuing && isExecutionEnded(cfg)) {
-        continuing = false;
-      }
+      onFullExecutionStarted?.();
+      try {
+        // Give the host a frame to present the active state before the
+        // synchronous calculation loop occupies the JavaScript thread.
+        await yieldToUi?.();
 
-      if (!continuing) {
-        execution.currentTime = null;
-        clearVisualHistory?.();
-        clearSimulationHistory?.();
-        session.clearSubmodelState();
-        session.initializeAt(cfg.t0);
-        refreshRuntimeView?.();
-      }
-
-      const execStartedAt = monotonicNowFn();
-      const maxSteps = 100000;
-      const epsilon = Math.max(1e-12, Math.abs(cfg.dt) * 1e-9);
-      const timeValues = [];
-      let current = continuing ? execution.currentTime + cfg.dt : cfg.t0;
-      for (let i = 0; i < maxSteps; i += 1) {
-        if ((cfg.dt > 0 && current > cfg.t1 + epsilon) || (cfg.dt < 0 && current < cfg.t1 - epsilon)) {
-          break;
+        let continuing = execution.currentTime != null && session.hasInitializedStateSnapshot();
+        if (continuing && isExecutionEnded(cfg)) {
+          continuing = false;
         }
-        timeValues.push(current);
-        current += cfg.dt;
-      }
 
-      if (timeValues.length === 0) {
-        setStatusKey?.("error.timeInvalid");
-        return;
-      }
-      if (timeValues.length >= maxSteps) {
-        setStatusKey?.("error.timeTooManySteps", { max: maxSteps });
-        return;
-      }
-
-      let successCount = 0;
-      let totalErrorCount = 0;
-      let firstErrorNode = null;
-      let firstErrorReason = null;
-      let firstErrorMessage = "";
-      let firstErrorTime = null;
-      let lastTime = timeValues[timeValues.length - 1];
-      let breakpointHit = false;
-      let breakpointHitResult = null;
-
-      for (let idx = 0; idx < timeValues.length; idx += 1) {
-        const timeValue = timeValues[idx];
-        if (continuing || idx > 0) {
-          session.promotePending();
-        }
-        const stepResult = session.evaluateAtTime(timeValue, evaluationEnv());
-        successCount = stepResult.successCount;
-        totalErrorCount += stepResult.errorCount;
-        if (!firstErrorNode && stepResult.firstErrorNode) {
-          firstErrorNode = stepResult.firstErrorNode;
-          firstErrorReason = stepResult.firstErrorReason;
-          firstErrorMessage = stepResult.firstErrorMessage || "";
-          firstErrorTime = timeValue;
-        }
-        lastTime = timeValue;
-        if (stepResult.errorCount > 0 && stopOnEvaluationError(execution)) {
-          break;
-        }
-        const stepBreakpointResult = evaluateBreakpointConditionAtTime?.(timeValue) || { hit: false, invalid: false };
-        if (stepBreakpointResult.invalid) {
+        if (!continuing) {
+          execution.currentTime = null;
+          clearVisualHistory?.();
+          clearSimulationHistory?.();
+          session.clearSubmodelState();
+          session.initializeAt(cfg.t0);
           refreshRuntimeView?.();
-          setStatus?.(
-            t("error.breakpointInvalid", {
-              reason: stepBreakpointResult.message || t("error.evalReason.runtime"),
-            }),
-            true,
-          );
-          openWatchDebugger?.();
+        }
+
+        const execStartedAt = monotonicNowFn();
+        const maxSteps = 100000;
+        const epsilon = Math.max(1e-12, Math.abs(cfg.dt) * 1e-9);
+        const timeValues = [];
+        let current = continuing ? execution.currentTime + cfg.dt : cfg.t0;
+        for (let i = 0; i < maxSteps; i += 1) {
+          if ((cfg.dt > 0 && current > cfg.t1 + epsilon) || (cfg.dt < 0 && current < cfg.t1 - epsilon)) {
+            break;
+          }
+          timeValues.push(current);
+          current += cfg.dt;
+        }
+
+        if (timeValues.length === 0) {
+          setStatusKey?.("error.timeInvalid");
           return;
         }
-        if (stepBreakpointResult.hit) {
-          breakpointHit = true;
-          breakpointHitResult = stepBreakpointResult;
-          break;
+        if (timeValues.length >= maxSteps) {
+          setStatusKey?.("error.timeTooManySteps", { max: maxSteps });
+          return;
         }
-      }
 
-      execution.currentTime = lastTime;
-      refreshRuntimeView?.();
+        let successCount = 0;
+        let totalErrorCount = 0;
+        let firstErrorNode = null;
+        let firstErrorReason = null;
+        let firstErrorMessage = "";
+        let firstErrorTime = null;
+        let lastTime = timeValues[timeValues.length - 1];
+        let breakpointHit = false;
+        let breakpointHitResult = null;
 
-      if (breakpointHit) {
-        presentBreakpointHit(breakpointHitResult, lastTime);
-      } else if (firstErrorNode) {
-        setStatusKey?.("error.evalFailedDetailedTime", {
-          node: firstErrorNode,
-          count: totalErrorCount,
-          reason: firstErrorMessage || evalReasonText?.(firstErrorReason),
-          time: formatNumberValue?.(Number(firstErrorTime)),
-        });
-      } else {
-        setStatusKey?.("status.evalDoneTime", {
-          count: successCount,
-          steps: timeValues.length,
-          time: formatNumberValue?.(Number(lastTime)),
-          duration: formatExecutionDuration?.(monotonicNowFn() - execStartedAt),
-        });
+        for (let idx = 0; idx < timeValues.length; idx += 1) {
+          const timeValue = timeValues[idx];
+          if (continuing || idx > 0) {
+            session.promotePending();
+          }
+          const stepResult = session.evaluateAtTime(timeValue, evaluationEnv());
+          successCount = stepResult.successCount;
+          totalErrorCount += stepResult.errorCount;
+          if (!firstErrorNode && stepResult.firstErrorNode) {
+            firstErrorNode = stepResult.firstErrorNode;
+            firstErrorReason = stepResult.firstErrorReason;
+            firstErrorMessage = stepResult.firstErrorMessage || "";
+            firstErrorTime = timeValue;
+          }
+          lastTime = timeValue;
+          if (stepResult.errorCount > 0 && stopOnEvaluationError(execution)) {
+            break;
+          }
+          const stepBreakpointResult = evaluateBreakpointConditionAtTime?.(timeValue) || { hit: false, invalid: false };
+          if (stepBreakpointResult.invalid) {
+            refreshRuntimeView?.();
+            setStatus?.(
+              t("error.breakpointInvalid", {
+                reason: stepBreakpointResult.message || t("error.evalReason.runtime"),
+              }),
+              true,
+            );
+            openWatchDebugger?.();
+            return;
+          }
+          if (stepBreakpointResult.hit) {
+            breakpointHit = true;
+            breakpointHitResult = stepBreakpointResult;
+            break;
+          }
+        }
+
+        execution.currentTime = lastTime;
+        refreshRuntimeView?.();
+
+        if (breakpointHit) {
+          presentBreakpointHit(breakpointHitResult, lastTime);
+        } else if (firstErrorNode) {
+          setStatusKey?.("error.evalFailedDetailedTime", {
+            node: firstErrorNode,
+            count: totalErrorCount,
+            reason: firstErrorMessage || evalReasonText?.(firstErrorReason),
+            time: formatNumberValue?.(Number(firstErrorTime)),
+          });
+        } else {
+          setStatusKey?.("status.evalDoneTime", {
+            count: successCount,
+            steps: timeValues.length,
+            time: formatNumberValue?.(Number(lastTime)),
+            duration: formatExecutionDuration?.(monotonicNowFn() - execStartedAt),
+          });
+        }
+      } finally {
+        onFullExecutionStopped?.();
       }
     }
 
@@ -12121,10 +12259,10 @@ window.STGraphXI18nBundles = {
       }
       const span = Math.max(1, Math.abs(autoMax - autoMin));
       if (configuredMin != null) {
-        return [configuredMin, Math.max(autoMax, configuredMin + span)];
+        return [configuredMin, autoMax > configuredMin ? autoMax : configuredMin + span];
       }
       if (configuredMax != null) {
-        return [Math.min(autoMin, configuredMax - span), configuredMax];
+        return [autoMin < configuredMax ? autoMin : configuredMax - span, configuredMax];
       }
       return [autoMin, autoMax];
     };

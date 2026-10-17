@@ -41,6 +41,43 @@
       throw new Error("STGraphXRuntimeCore requires translation and semantics dependencies");
     }
 
+    // Runtime models keep their graph structure for an entire execution. Cache
+    // the derived plan and invalidate it explicitly when a definition changes.
+    const executionPlanCache = new WeakMap();
+
+    function executionPlanForModel(model) {
+      if (!model || !Array.isArray(model.nodes) || !Array.isArray(model.edges)) {
+        return { plan: semantics.prepareStatefulExecutionPlan([], []), rk4Analyses: null };
+      }
+      const cached = executionPlanCache.get(model);
+      if (cached && cached.nodes === model.nodes && cached.edges === model.edges) {
+        return cached;
+      }
+      const entry = {
+        nodes: model.nodes,
+        edges: model.edges,
+        plan: semantics.prepareStatefulExecutionPlan(model.nodes, model.edges),
+        rk4Analyses: null,
+        localFunctions: null,
+      };
+      executionPlanCache.set(model, entry);
+      return entry;
+    }
+
+    function invalidateExecutionPlan(model) {
+      if (model && typeof model === "object") {
+        executionPlanCache.delete(model);
+      }
+    }
+
+    function localFunctionsForRuntimeModel(model) {
+      const entry = executionPlanForModel(model);
+      if (entry.localFunctions == null) {
+        entry.localFunctions = localFunctionsForSemantics(model);
+      }
+      return entry.localFunctions;
+    }
+
     const normalizeEdgeColor = typeof normalizeEdgeColorInput === "function"
       ? normalizeEdgeColorInput
       : () => "";
@@ -341,7 +378,7 @@
 
           const expr = String(node.valueExpression ?? "0");
           const result = semantics.evaluateValueExpression(expr, context, {
-            localFunctions: localFunctionsForSemantics(model),
+            localFunctions: localFunctionsForRuntimeModel(model),
             random: randomSourceForModel(model),
           });
           if (result.ok) {
@@ -455,7 +492,7 @@
             const result = semantics.evaluateValueExpression(
               expression,
               buildInitialStateContextForModel(model, node, timeValue, rootExecution, references),
-              randomEvaluationOptions(model, { localFunctions: localFunctionsForSemantics(model) }),
+              randomEvaluationOptions(model, { localFunctions: localFunctionsForRuntimeModel(model) }),
             );
             node.computedValue = result.ok ? result.value : null;
             node.computedError = result.ok ? "" : result.reason || "runtime";
@@ -529,11 +566,28 @@
     }
 
     function rk4IntegratedValue(currentValue, k1, k2, k3, k4, dt) {
-      const weighted = addTensorValues(
-        addTensorValues(k1, scaleTensorValue(k2, 2)),
-        addTensorValues(scaleTensorValue(k3, 2), k4),
+      const values = [currentValue, k1, k2, k3, k4];
+      const hasArray = values.some((value) => Array.isArray(value));
+      if (hasArray) {
+        if (!values.every((value) => Array.isArray(value))) {
+          throw new Error("tensor shape mismatch");
+        }
+        const length = currentValue.length;
+        if (!values.every((value) => value.length === length)) {
+          throw new Error("tensor shape mismatch");
+        }
+        return currentValue.map((_, index) => rk4IntegratedValue(
+          currentValue[index],
+          k1[index],
+          k2[index],
+          k3[index],
+          k4[index],
+          dt,
+        ));
+      }
+      return Number(currentValue) + (Number(dt) / 6) * (
+        Number(k1) + 2 * Number(k2) + 2 * Number(k3) + Number(k4)
       );
-      return addTensorValues(currentValue, scaleTensorValue(weighted, dt / 6));
     }
 
     function extractSuccessfulResultMap(entries) {
@@ -649,7 +703,7 @@
           return;
         }
         const result = semantics.evaluateValueExpression(expression, parentContext, {
-          localFunctions: localFunctionsForSemantics(model),
+          localFunctions: localFunctionsForRuntimeModel(model),
           random: randomSourceForModel(model),
         });
         if (!result.ok) {
@@ -825,7 +879,7 @@
             node.valueExpression,
             context,
             integralValuesMap.get(node.id) || [],
-            randomEvaluationOptions(model, { allowThisAlias: true, localFunctions: localFunctionsForSemantics(model) }),
+            randomEvaluationOptions(model, { allowThisAlias: true, localFunctions: localFunctionsForRuntimeModel(model) }),
           ),
         );
       });
@@ -834,10 +888,11 @@
 
     function evaluateModelAtTimeRecursive(model, timeValue, env, options = {}) {
       const executionGlobals = buildExecutionGlobalsForModel(model, env.rootExecution, timeValue);
-      const executionPlan = semantics.prepareStatefulExecutionPlan(model.nodes, model.edges);
+      const planEntry = executionPlanForModel(model);
+      const executionPlan = planEntry.plan;
       const stateValueOverrides = options.stateValueOverrides instanceof Map ? options.stateValueOverrides : null;
       const rk4Analyses = String(env.rootExecution?.integrator ?? "euler") === "rk4"
-        ? collectRk4IntegralStateAnalysesForModel(model)
+        ? (planEntry.rk4Analyses || (planEntry.rk4Analyses = collectRk4IntegralStateAnalysesForModel(model)))
         : new Map();
       const integralStateNodeIds = new Set(rk4Analyses.keys());
       const evalResults = semantics.evaluateStatefulGraphStep(
@@ -847,7 +902,7 @@
         executionPlan,
         {
           stateValueOverrides: stateValueOverrides || undefined,
-          localFunctions: localFunctionsForSemantics(model),
+          localFunctions: localFunctionsForRuntimeModel(model),
           random: randomSourceForModel(model),
           derivativeStateNodeIds: integralStateNodeIds.size > 0 ? integralStateNodeIds : undefined,
           customNodeEvaluator: createSubmodelNodeEvaluator(model, timeValue, env, {
@@ -886,7 +941,7 @@
             {
               derivativeStateNodeIds: integralStateNodeIds,
               stateValueOverrides: stage2StateOverrides,
-              localFunctions: localFunctionsForSemantics(model),
+              localFunctions: localFunctionsForRuntimeModel(model),
               random: randomSourceForModel(model),
               customNodeEvaluator: createSubmodelNodeEvaluator(model, timeValue + dt / 2, env, { applyResults: false }),
             },
@@ -917,7 +972,7 @@
               {
                 derivativeStateNodeIds: integralStateNodeIds,
               stateValueOverrides: stage3StateOverrides,
-              localFunctions: localFunctionsForSemantics(model),
+              localFunctions: localFunctionsForRuntimeModel(model),
               random: randomSourceForModel(model),
                 customNodeEvaluator: createSubmodelNodeEvaluator(model, timeValue + dt / 2, env, { applyResults: false }),
               },
@@ -948,7 +1003,7 @@
                 {
                   derivativeStateNodeIds: integralStateNodeIds,
                   stateValueOverrides: stage4StateOverrides,
-                  localFunctions: localFunctionsForSemantics(model),
+                  localFunctions: localFunctionsForRuntimeModel(model),
                   random: randomSourceForModel(model),
                   customNodeEvaluator: createSubmodelNodeEvaluator(model, timeValue + dt, env, { applyResults: false }),
                 },
@@ -1075,6 +1130,7 @@
       extractSuccessfulAlgebraicValueMap,
       extractSuccessfulResultMap,
       firstFailedEntry,
+      invalidateExecutionPlan,
       initializeStateNodesForModel,
       promotePendingStateNodesForModel,
       readDataFromModelCache,

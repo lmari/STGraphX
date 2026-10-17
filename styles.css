@@ -1205,6 +1205,12 @@ h4 {
   background: #f1f5f8;
 }
 
+/* A full run is synchronous, so expose its state before entering the loop. */
+body.full-execution-running,
+body.full-execution-running * {
+  cursor: wait !important;
+}
+
 #globalPanel {
   margin-top: 10px;
   padding: 4px;

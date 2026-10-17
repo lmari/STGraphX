@@ -108,6 +108,7 @@
   };
   const MATH_SCOPE = Object.freeze(graphFunctions.createMathScope(MATH_SCOPE_OPTIONS));
   const RANDOM_MATH_SCOPES = new WeakMap();
+  const NODE_PROPERTY_ACCESS_CACHE = new WeakMap();
   const FUNCTION_NAMES = new Set(
     Object.keys(MATH_SCOPE).filter((name) => typeof MATH_SCOPE[name] === "function"),
   );
@@ -508,7 +509,11 @@
         setProperty: unavailablePropertySetter,
       };
     }
-    return {
+    const cached = NODE_PROPERTY_ACCESS_CACHE.get(node);
+    if (cached) {
+      return cached;
+    }
+    const access = {
       getProperty: (key, fallback = null) => {
         const name = String(key ?? "");
         const found = node.properties.find((prop) => String(prop?.key ?? "") === name);
@@ -529,6 +534,8 @@
         return value;
       },
     };
+    NODE_PROPERTY_ACCESS_CACHE.set(node, access);
+    return access;
   }
 
   function rewriteThisAlias(expression) {
@@ -2614,6 +2621,35 @@
     return Boolean(node?.externalValueEnabled);
   }
 
+  function prepareAlgebraicEvaluationOrder(algebraicNodes, incoming) {
+    const algebraicIds = new Set(algebraicNodes.map((node) => node.id));
+    const pending = new Set(algebraicIds);
+    const resolved = new Set();
+    const order = [];
+    let progressed = true;
+    while (pending.size > 0 && progressed) {
+      progressed = false;
+      // Preserve the former repeated-scan order, including its deterministic
+      // order of random draws, while moving the dependency work out of steps.
+      for (const node of algebraicNodes) {
+        if (!pending.has(node.id)) {
+          continue;
+        }
+        const ready = (incoming.get(node.id) || []).every((fromId) => (
+          !algebraicIds.has(fromId) || resolved.has(fromId)
+        ));
+        if (!ready) {
+          continue;
+        }
+        pending.delete(node.id);
+        resolved.add(node.id);
+        order.push(node.id);
+        progressed = true;
+      }
+    }
+    return order;
+  }
+
   function prepareStatefulExecutionPlan(nodes, edges) {
     const executableNodes = nodes.filter((node) => !isDraftNode(node));
     const nodeById = new Map(executableNodes.map((node) => [node.id, node]));
@@ -2624,17 +2660,36 @@
         incoming.get(edge.to).push(edge.from);
       }
     });
+    const globalParameterNodes = executableNodes.filter((node) => isGlobalParameterNode(node));
+    const parameterNodes = executableNodes.filter((node) => isParameterNode(node));
+    const algebraicNodes = executableNodes.filter((node) => !isStateNode(node) && !isParameterNode(node));
+    const globalValueRefs = new Map(
+      executableNodes.map((node) => {
+        const references = collectIdentifierReferences(node.valueExpression);
+        return [
+          node.id,
+          globalParameterNodes.filter((globalNode) => globalNode.id !== node.id && references.has(globalNode.name)),
+        ];
+      }),
+    );
     return {
       nodeById,
       incoming,
+      executableNodes,
       stateNodes: executableNodes.filter((node) => isStateNode(node)),
-      globalParameterNodes: executableNodes.filter((node) => isGlobalParameterNode(node)),
+      parameterNodes,
+      algebraicNodes,
+      algebraicEvaluationOrder: prepareAlgebraicEvaluationOrder(algebraicNodes, incoming),
+      globalParameterNodes,
+      globalValueRefs,
     };
   }
 
   function evaluateStatefulGraphStep(nodes, edges, globals = {}, plan = null, options = {}) {
     const runtimePlan = plan || prepareStatefulExecutionPlan(nodes, edges);
-    const executableNodes = nodes.filter((node) => !isDraftNode(node));
+    const executableNodes = Array.isArray(runtimePlan.executableNodes)
+      ? runtimePlan.executableNodes
+      : nodes.filter((node) => !isDraftNode(node));
     const nodeById = runtimePlan.nodeById;
     const incoming = runtimePlan.incoming;
     const stateValueOverrides = options?.stateValueOverrides instanceof Map ? options.stateValueOverrides : null;
@@ -2645,13 +2700,15 @@
     const globalParameterNodes = Array.isArray(runtimePlan.globalParameterNodes)
       ? runtimePlan.globalParameterNodes
       : [];
-    const globalValueRefs = new Map(
-      executableNodes.map((node) => [
-        node.id,
-        globalParameterNodes.filter((globalNode) =>
-          globalNode.id !== node.id && collectIdentifierReferences(node.valueExpression).has(globalNode.name)),
-      ]),
-    );
+    const globalValueRefs = runtimePlan.globalValueRefs instanceof Map
+      ? runtimePlan.globalValueRefs
+      : new Map(
+        executableNodes.map((node) => [
+          node.id,
+          globalParameterNodes.filter((globalNode) =>
+            globalNode.id !== node.id && collectIdentifierReferences(node.valueExpression).has(globalNode.name)),
+        ]),
+      );
     const resolvedStateValue = (node) => {
       if (stateValueOverrides && stateValueOverrides.has(node.id)) {
         return stateValueOverrides.get(node.id);
@@ -2659,8 +2716,14 @@
       return node.computedValue;
     };
     const fixedNodes = executableNodes.filter((node) => !isStateNode(node) && hasExternalValue(node));
-    const parameterNodes = executableNodes.filter((node) => isParameterNode(node) && !hasExternalValue(node));
-    const algebraicNodes = executableNodes.filter((node) => !isStateNode(node) && !isParameterNode(node) && !hasExternalValue(node));
+    const parameterNodes = (Array.isArray(runtimePlan.parameterNodes)
+      ? runtimePlan.parameterNodes
+      : executableNodes.filter((node) => isParameterNode(node)))
+      .filter((node) => !hasExternalValue(node));
+    const algebraicNodes = (Array.isArray(runtimePlan.algebraicNodes)
+      ? runtimePlan.algebraicNodes
+      : executableNodes.filter((node) => !isStateNode(node) && !isParameterNode(node)))
+      .filter((node) => !hasExternalValue(node));
     const fixedResults = new Map();
     const stateNodes = runtimePlan.stateNodes;
     const parameterResults = new Map();
@@ -2747,10 +2810,17 @@
     };
 
     const pending = new Set(algebraicNodes.map((node) => node.id));
+    const hasFixedAlgebraicNode = fixedNodes.some((node) => !isParameterNode(node));
+    const algebraicEvaluationOrder = !hasFixedAlgebraicNode && Array.isArray(runtimePlan.algebraicEvaluationOrder)
+      ? runtimePlan.algebraicEvaluationOrder
+      : null;
     let progressed = true;
     while (pending.size > 0 && progressed) {
       progressed = false;
-      for (const nodeId of Array.from(pending)) {
+      const candidates = algebraicEvaluationOrder
+        ? algebraicEvaluationOrder.filter((nodeId) => pending.has(nodeId))
+        : Array.from(pending);
+      for (const nodeId of candidates) {
         const node = nodeById.get(nodeId);
         if (!node) {
           pending.delete(nodeId);

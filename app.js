@@ -1036,6 +1036,7 @@ const ui = {
   nodeNameEditStart: null,
   timedRunHandle: null,
   timedStepRunning: false,
+  fullRunRunning: false,
   timedRunStartedAt: 0,
   timedStepLastActivityAt: 0,
   submodelsPrepared: false,
@@ -9304,6 +9305,7 @@ function pushUndoState(state) {
 function invalidateExecutionPlan() {
   ui.executionPlan = null;
   ui.submodelsPrepared = false;
+  runtimeCore.invalidateExecutionPlan?.(graph);
 }
 
 function beginTransaction() {
@@ -9412,7 +9414,7 @@ function updateEditActionButtons() {
 }
 
 function isExecutionFrozen() {
-  if (ui.timedRunHandle != null || ui.timedStepRunning) {
+  if (ui.fullRunRunning || ui.timedRunHandle != null || ui.timedStepRunning) {
     return true;
   }
   if (graph.execution.currentTime == null) {
@@ -9476,7 +9478,7 @@ function isEditingUiLocked() {
   if (hasStaleTimedExecutionLock()) {
     clearTimedExecutionStateSilently();
   }
-  return ui.timedRunHandle != null || ui.timedStepRunning;
+  return ui.fullRunRunning || ui.timedRunHandle != null || ui.timedStepRunning;
 }
 
 function setControlsDisabled(root, disabled, allowedControls = []) {
@@ -13178,6 +13180,21 @@ const runtimeController = globalThis.STGraphXRuntimeController?.createRuntimeCon
     rootExecution: graph.execution,
     stack: [],
   }),
+  onFullExecutionStarted: () => {
+    ui.fullRunRunning = true;
+    document.body.classList.add("full-execution-running");
+    updateEditingLockUi();
+    render();
+  },
+  onFullExecutionStopped: () => {
+    ui.fullRunRunning = false;
+    document.body.classList.remove("full-execution-running");
+    updateEditingLockUi();
+    render();
+  },
+  yieldToUi: () => new Promise((resolve) => {
+    window.requestAnimationFrame(() => window.requestAnimationFrame(resolve));
+  }),
 });
 
 if (!runtimeController) {
@@ -14646,13 +14663,16 @@ if (graphViewport) {
 }
 
 function commitExecutionInput(inputEl, key) {
-  const parsed = Number(inputEl.value);
+  // Time values use the same invariant decimal point as expressions.
+  const rawValue = String(inputEl.value ?? "").trim();
+  const parsed = Number(rawValue.replace(",", "."));
   if (!Number.isFinite(parsed)) {
     inputEl.value = String(graph.execution[key]);
     setStatusKey("error.timeInvalid");
     return;
   }
   graph.execution[key] = parsed;
+  inputEl.value = String(parsed);
   scheduleFileStatusRefresh();
   setStatusKey("status.timeConfigUpdated");
 }
