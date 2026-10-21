@@ -1,6 +1,6 @@
 /*!
  * STGraphX Embedded Player Bundle
- * Generated: 2026-10-17T17:57:13.828Z
+ * Generated: 2026-10-21T19:14:34.452Z
  */
 
 /* --- i18n-inline.js --- */
@@ -13,7 +13,7 @@
 
 window.STGraphXAppMeta = {
   author: "Luca Mari",
-  releaseDate: "2026.10.15",
+  releaseDate: "2026.10.21",
   license: "MPL-2.0",
   copyright: "Copyright (c) 2026 Luca Mari",
 };
@@ -679,6 +679,7 @@ window.STGraphXI18nBundles = {
     "widget.axisYGridStep": "Passo Y",
     "widget.axisYLabel": "Etichetta Y",
     "widget.barColor": "Colore barre",
+    "widget.areaColor": "Colore area",
     "widget.barMode": "Barre",
     "widget.barMode.all": "Barre",
     "widget.barMode.last": "Ultima barra",
@@ -696,10 +697,12 @@ window.STGraphXI18nBundles = {
     "widget.chartTitle": "Grafico x-y {id}",
     "widget.clear": "Svuota",
     "widget.columnEmpty": "(nessuna variabile)",
+    "widget.color": "Colore",
     "widget.customTitleLabel": "Titolo",
     "widget.customTitlePlaceholder": "Lascia vuoto per titolo automatico",
     "widget.expandNonScalarValues": "Espandi valori non scalari",
     "widget.fontSize": "Font",
+    "widget.fillArea": "Area",
     "widget.ledInvalid": "Valore non booleano",
     "widget.ledSourceLabel": "Variabile",
     "widget.ledState.off": "Spento",
@@ -1135,6 +1138,7 @@ window.STGraphXI18nBundles = {
     "tooltip.widget.barColor": "Colore delle barre verticali che uniscono i punti all'asse X.",
     "tooltip.widget.barMode": "Sceglie se disegnare nessuna barra, solo l'ultima o una barra per ogni punto fino all'asse X.",
     "tooltip.widget.barWidth": "Spessore delle barre verticali, in pixel.",
+    "tooltip.widget.fillArea": "Colora l'area compresa tra la curva e l'asse X.",
     "tooltip.widget.binaryFalseLabel": "Testo sovrapposto al widget quando il valore booleano è 0 o falso. Lascia vuoto per non mostrare testo.",
     "tooltip.widget.binaryTrueLabel": "Testo sovrapposto al widget quando il valore booleano è 1 o vero. Lascia vuoto per non mostrare testo.",
     "tooltip.widget.buttonInitialValue": "Imposta il valore del pulsante al reset del modello; non modifica l'esecuzione in corso.",
@@ -1164,6 +1168,8 @@ window.STGraphXI18nBundles = {
     "tooltip.widget.matrixValueMin": "Valore inferiore della scala dei colori. Lascia vuoto per calcolarlo dai dati.",
     "tooltip.widget.matrixViewMode": "Sceglie se visualizzare la matrice come griglia di celle o come superficie prospettica.",
     "tooltip.widget.moveDown": "Sposta questa colonna una posizione verso destra.",
+    "tooltip.widget.movePairDown": "Sposta questa serie una posizione più in basso.",
+    "tooltip.widget.movePairUp": "Sposta questa serie una posizione più in alto.",
     "tooltip.widget.moveUp": "Sposta questa colonna una posizione verso sinistra.",
     "tooltip.widget.outputSource": "Variabile di output visualizzato dal widget.",
     "tooltip.widget.pointColor": "Colore usato per disegnare i punti della serie.",
@@ -2044,6 +2050,7 @@ window.STGraphXI18nBundles = {
     "widget.axisYGridStep": "Y step",
     "widget.axisYLabel": "Y label",
     "widget.barColor": "Bar color",
+    "widget.areaColor": "Area color",
     "widget.barMode": "Bars",
     "widget.barMode.all": "Bars",
     "widget.barMode.last": "Last bar",
@@ -2061,10 +2068,12 @@ window.STGraphXI18nBundles = {
     "widget.chartTitle": "x-y Chart {id}",
     "widget.clear": "Clear",
     "widget.columnEmpty": "(no variable)",
+    "widget.color": "Color",
     "widget.customTitleLabel": "Title",
     "widget.customTitlePlaceholder": "Leave empty for automatic title",
     "widget.expandNonScalarValues": "Expand non-scalar values",
     "widget.fontSize": "Font",
+    "widget.fillArea": "Area",
     "widget.ledInvalid": "Non-boolean value",
     "widget.ledSourceLabel": "Variable",
     "widget.ledState.off": "Off",
@@ -2500,6 +2509,7 @@ window.STGraphXI18nBundles = {
     "tooltip.widget.barColor": "Color of the vertical bars joining points to the X axis.",
     "tooltip.widget.barMode": "Chooses no bars, the last bar only, or one bar for every point down to the X axis.",
     "tooltip.widget.barWidth": "Width of the vertical bars, in pixels.",
+    "tooltip.widget.fillArea": "Fills the area between the curve and the X axis.",
     "tooltip.widget.binaryFalseLabel": "Text overlaid on the widget when the Boolean value is 0 or false. Leave blank to show no text.",
     "tooltip.widget.binaryTrueLabel": "Text overlaid on the widget when the Boolean value is 1 or true. Leave blank to show no text.",
     "tooltip.widget.buttonInitialValue": "Sets the button value when the model is reset; it does not change an ongoing execution.",
@@ -2529,6 +2539,8 @@ window.STGraphXI18nBundles = {
     "tooltip.widget.matrixValueMin": "Lower value of the color scale. Leave blank to calculate it from the data.",
     "tooltip.widget.matrixViewMode": "Chooses whether to display the matrix as a cell grid or a perspective surface.",
     "tooltip.widget.moveDown": "Moves this column one position to the right.",
+    "tooltip.widget.movePairDown": "Moves this series one position down.",
+    "tooltip.widget.movePairUp": "Moves this series one position up.",
     "tooltip.widget.moveUp": "Moves this column one position to the left.",
     "tooltip.widget.outputSource": "Output variable displayed by this widget.",
     "tooltip.widget.pointColor": "Color used to draw the series points.",
@@ -2767,7 +2779,7 @@ window.STGraphXI18nBundles = {
     if (!href || /^(?:javascript|data|vbscript):/iu.test(href) || href.startsWith("//")) return "";
     return /^(?:https?:|mailto:|#)/iu.test(href) || !/^[a-z][a-z0-9+.-]*:/iu.test(href) ? href : "";
   }
-  function renderLatex(source, displayMode = false) {
+  function renderLatex(source, displayMode = false, output = "htmlAndMathml") {
     const latex = String(source ?? "").trim();
     if (!latex) return "";
     if (typeof globalThis.katex?.renderToString !== "function") {
@@ -2776,6 +2788,7 @@ window.STGraphXI18nBundles = {
     try {
       return globalThis.katex.renderToString(latex, {
         displayMode,
+        output: ["html", "mathml", "htmlAndMathml"].includes(output) ? output : "htmlAndMathml",
         throwOnError: false,
         strict: "ignore",
       });
@@ -2811,7 +2824,7 @@ window.STGraphXI18nBundles = {
       ));
     }
     source = source.replace(/(^|[^\\$])\$([^$\n]+?)\$/g, (_m, prefix, latex) => (
-      `${prefix}${stash(renderLatex(latex, false))}`
+      `${prefix}${stash(renderLatex(latex, false, options.latexOutput))}`
     ));
     if (resolveVariable) {
       source = source.replace(/\{\{([^{}|\n]+)\}\}/g, (raw, rawName) => {
@@ -2854,13 +2867,13 @@ window.STGraphXI18nBundles = {
     const flushParagraph = () => { if (paragraph.length) { output.push(`<p>${paragraph.map((item) => renderInlineMarkdown(item, options)).join("<br>")}</p>`); paragraph = []; } };
     const flushList = () => { if (list) { output.push(`<${list.type}>${list.items.map((item) => `<li>${renderInlineMarkdown(item, options)}</li>`).join("")}</${list.type}>`); list = null; } };
     const flushCode = () => { if (inCode) { output.push(`<pre><code>${escapeHtml(codeLines.join("\n"))}</code></pre>`); inCode = false; codeLines = []; } };
-    const flushMath = () => { if (inMath) { output.push(`<div class="latex-block">${renderLatex(resolveDynamicValueText(mathLines.join("\n"), options.resolveVariable), true)}</div>`); inMath = false; mathLines = []; } };
+    const flushMath = () => { if (inMath) { output.push(`<div class="latex-block">${renderLatex(resolveDynamicValueText(mathLines.join("\n"), options.resolveVariable), true, options.latexOutput)}</div>`); inMath = false; mathLines = []; } };
     lines.forEach((line) => {
       if (inMath) { if (/^\s*\$\$\s*$/.test(line)) flushMath(); else mathLines.push(line); return; }
       if (/^```/.test(line)) { if (inCode) flushCode(); else { flushParagraph(); flushList(); inCode = true; } return; }
       if (inCode) { codeLines.push(line); return; }
       const oneLineMath = /^\s*\$\$\s*(.*?)\s*\$\$\s*$/.exec(line);
-      if (oneLineMath) { flushParagraph(); flushList(); output.push(`<div class="latex-block">${renderLatex(resolveDynamicValueText(oneLineMath[1], options.resolveVariable), true)}</div>`); return; }
+      if (oneLineMath) { flushParagraph(); flushList(); output.push(`<div class="latex-block">${renderLatex(resolveDynamicValueText(oneLineMath[1], options.resolveVariable), true, options.latexOutput)}</div>`); return; }
       if (/^\s*\$\$\s*$/.test(line)) { flushParagraph(); flushList(); inMath = true; mathLines = []; return; }
       const heading = /^(#{1,4})\s+(.+)$/.exec(line); const unordered = /^\s*[-*+]\s+(.+)$/.exec(line); const ordered = /^\s*\d+[.)]\s+(.+)$/.exec(line);
       if (heading) { flushParagraph(); flushList(); const level = heading[1].length; output.push(`<h${level}>${renderInlineMarkdown(heading[2], options)}</h${level}>`); }
@@ -9759,6 +9772,8 @@ window.STGraphXI18nBundles = {
       onFullExecutionStarted = null,
       onFullExecutionStopped = null,
       yieldToUi = null,
+      onExecutionProgress = null,
+      yieldForProgress = null,
       hasStrictExecutionBlock = () => false,
       buildEvaluationEnv = null,
       setIntervalFn = global.setInterval?.bind(global),
@@ -9827,6 +9842,15 @@ window.STGraphXI18nBundles = {
         return timeValue >= cfg.t1 - epsilon;
       }
       return timeValue <= cfg.t1 + epsilon;
+    }
+
+    function reportExecutionProgress(timeValue, cfg) {
+      const total = Math.abs(Number(cfg?.t1) - Number(cfg?.t0));
+      const elapsed = Math.abs(Number(timeValue) - Number(cfg?.t0));
+      const fraction = Number.isFinite(total) && total > Number.EPSILON && Number.isFinite(elapsed)
+        ? Math.max(0, Math.min(1, elapsed / total))
+        : 0;
+      onExecutionProgress?.({ time: timeValue, fraction });
     }
 
     function visualRefreshInterval(execution) {
@@ -9911,6 +9935,7 @@ window.STGraphXI18nBundles = {
 
       const stepResult = session.evaluateAtTime(nextTime, evaluationEnv());
       execution.currentTime = nextTime;
+      reportExecutionProgress(nextTime, cfg);
       const breakpointResult = evaluateBreakpointConditionAtTime?.(nextTime) || { hit: false, invalid: false };
 
       if (breakpointResult.invalid) {
@@ -9990,6 +10015,7 @@ window.STGraphXI18nBundles = {
       }
 
       onFullExecutionStarted?.();
+      reportExecutionProgress(cfg.t0, cfg);
       try {
         // Give the host a frame to present the active state before the
         // synchronous calculation loop occupies the JavaScript thread.
@@ -10040,6 +10066,7 @@ window.STGraphXI18nBundles = {
         let lastTime = timeValues[timeValues.length - 1];
         let breakpointHit = false;
         let breakpointHitResult = null;
+        let lastProgressUpdateAt = monotonicNowFn();
 
         for (let idx = 0; idx < timeValues.length; idx += 1) {
           const timeValue = timeValues[idx];
@@ -10056,6 +10083,14 @@ window.STGraphXI18nBundles = {
             firstErrorTime = timeValue;
           }
           lastTime = timeValue;
+          const now = monotonicNowFn();
+          if (idx === timeValues.length - 1 || now - lastProgressUpdateAt >= 40) {
+            reportExecutionProgress(timeValue, cfg);
+            if (typeof yieldForProgress === "function" && idx < timeValues.length - 1) {
+              await yieldForProgress();
+            }
+            lastProgressUpdateAt = monotonicNowFn();
+          }
           if (stepResult.errorCount > 0 && stopOnEvaluationError(execution)) {
             break;
           }
@@ -11910,6 +11945,8 @@ window.STGraphXI18nBundles = {
             : (pair?.barMode === "stems" || pair?.barMode === "columns" || pair?.showBars === true),
           barColor: /^#[0-9a-fA-F]{6}$/.test(String(pair?.barColor ?? "")) ? String(pair.barColor) : (/^#[0-9a-fA-F]{6}$/.test(String(pair?.color ?? "")) ? String(pair.color) : "#2d7ff9"),
           barWidth: Number.isFinite(Number(pair?.barWidth)) ? clamp(Number(pair.barWidth), 1, 40) : 2,
+          showArea: pair?.showArea === true,
+          areaColor: /^#[0-9a-fA-F]{6}$/.test(String(pair?.areaColor ?? "")) ? String(pair.areaColor) : (/^#[0-9a-fA-F]{6}$/.test(String(pair?.color ?? "")) ? String(pair.color) : "#2d7ff9"),
           pointMode: String(pair?.pointMode || "last"),
           pointSize: Number.isFinite(Number(pair?.pointSize)) ? clamp(Number(pair.pointSize), 1, 10) : 2,
           points: [],
@@ -12249,7 +12286,7 @@ window.STGraphXI18nBundles = {
     const xMax = parseAxisLimit(options.xMax);
     const yMin = parseAxisLimit(options.yMin);
     const yMax = parseAxisLimit(options.yMax);
-    if (series.some((pair) => pair.showBars)) {
+    if (series.some((pair) => pair.showBars || pair.showArea)) {
       minY = Math.min(minY, 0);
       maxY = Math.max(maxY, 0);
     }
@@ -12346,6 +12383,19 @@ window.STGraphXI18nBundles = {
       ctx.strokeStyle = pair.color || "#2d7ff9";
       ctx.lineWidth = pair.lineWidth || 2;
       ctx.setLineDash(chartLineDash(pair.lineStyle));
+      if (pair.showArea && pair.points.length > 0) {
+        const baseline = sy(0);
+        ctx.save();
+        ctx.globalAlpha = 0.22;
+        ctx.fillStyle = pair.areaColor || pair.color || "#2d7ff9";
+        ctx.beginPath();
+        ctx.moveTo(sx(pair.points[0].x), baseline);
+        pair.points.forEach((pt) => ctx.lineTo(sx(pt.x), sy(pt.y)));
+        ctx.lineTo(sx(pair.points[pair.points.length - 1].x), baseline);
+        ctx.closePath();
+        ctx.fill();
+        ctx.restore();
+      }
       if (pair.showBars) {
         ctx.strokeStyle = pair.barColor || pair.color || "#2d7ff9";
         ctx.lineWidth = pair.barWidth || 2;

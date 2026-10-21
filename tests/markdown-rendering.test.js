@@ -14,6 +14,10 @@ const block = renderMarkdownToHtml("$$\\frac{d x}{d t}=v$$");
 assert.match(block, /latex-block/, "block LaTeX must be wrapped as a display formula");
 assert.match(block, /katex-display/, "block LaTeX must use display mode");
 
+const canvasFormula = renderMarkdownToHtml("$x^2$", { latexOutput: "html" });
+assert.match(canvasFormula, /katex-html/, "HTML-only LaTeX output must retain the visual KaTeX markup");
+assert.doesNotMatch(canvasFormula, /katex-mathml/, "HTML-only LaTeX output must omit MathML for SVG foreignObject compatibility");
+
 const code = renderMarkdownToHtml("`$x^2$`");
 assert.match(code, /<code>\$x\^2\$<\/code>/, "inline code must not be interpreted as LaTeX");
 

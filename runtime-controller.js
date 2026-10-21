@@ -34,6 +34,8 @@
       onFullExecutionStarted = null,
       onFullExecutionStopped = null,
       yieldToUi = null,
+      onExecutionProgress = null,
+      yieldForProgress = null,
       hasStrictExecutionBlock = () => false,
       buildEvaluationEnv = null,
       setIntervalFn = global.setInterval?.bind(global),
@@ -102,6 +104,15 @@
         return timeValue >= cfg.t1 - epsilon;
       }
       return timeValue <= cfg.t1 + epsilon;
+    }
+
+    function reportExecutionProgress(timeValue, cfg) {
+      const total = Math.abs(Number(cfg?.t1) - Number(cfg?.t0));
+      const elapsed = Math.abs(Number(timeValue) - Number(cfg?.t0));
+      const fraction = Number.isFinite(total) && total > Number.EPSILON && Number.isFinite(elapsed)
+        ? Math.max(0, Math.min(1, elapsed / total))
+        : 0;
+      onExecutionProgress?.({ time: timeValue, fraction });
     }
 
     function visualRefreshInterval(execution) {
@@ -186,6 +197,7 @@
 
       const stepResult = session.evaluateAtTime(nextTime, evaluationEnv());
       execution.currentTime = nextTime;
+      reportExecutionProgress(nextTime, cfg);
       const breakpointResult = evaluateBreakpointConditionAtTime?.(nextTime) || { hit: false, invalid: false };
 
       if (breakpointResult.invalid) {
@@ -265,6 +277,7 @@
       }
 
       onFullExecutionStarted?.();
+      reportExecutionProgress(cfg.t0, cfg);
       try {
         // Give the host a frame to present the active state before the
         // synchronous calculation loop occupies the JavaScript thread.
@@ -315,6 +328,7 @@
         let lastTime = timeValues[timeValues.length - 1];
         let breakpointHit = false;
         let breakpointHitResult = null;
+        let lastProgressUpdateAt = monotonicNowFn();
 
         for (let idx = 0; idx < timeValues.length; idx += 1) {
           const timeValue = timeValues[idx];
@@ -331,6 +345,14 @@
             firstErrorTime = timeValue;
           }
           lastTime = timeValue;
+          const now = monotonicNowFn();
+          if (idx === timeValues.length - 1 || now - lastProgressUpdateAt >= 40) {
+            reportExecutionProgress(timeValue, cfg);
+            if (typeof yieldForProgress === "function" && idx < timeValues.length - 1) {
+              await yieldForProgress();
+            }
+            lastProgressUpdateAt = monotonicNowFn();
+          }
           if (stepResult.errorCount > 0 && stopOnEvaluationError(execution)) {
             break;
           }

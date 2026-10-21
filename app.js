@@ -7,6 +7,8 @@
 
 const svg = document.getElementById("graphCanvas");
 const graphViewport = document.getElementById("graphViewport");
+const executionProgress = document.getElementById("executionProgress");
+const executionProgressBar = document.getElementById("executionProgressBar");
 const modelNotesCanvasBtn = document.getElementById("modelNotesCanvasBtn");
 const sidebar = document.getElementById("sidebar");
 const sidebarReopenBtn = document.getElementById("sidebarReopenBtn");
@@ -423,6 +425,7 @@ const {
 } = globalThis.Widgets || {};
 
 const SVG_NS = "http://www.w3.org/2000/svg";
+const XHTML_NS = "http://www.w3.org/1999/xhtml";
 const MAX_HISTORY = 100;
 const BASE_CANVAS_WIDTH = 1200;
 const BASE_CANVAS_HEIGHT = 800;
@@ -8925,6 +8928,8 @@ function exportGraphData() {
           showBars: normalizeChartBarMode(pair?.barMode, pair?.showBars) !== "none",
           barColor: /^#[0-9a-fA-F]{6}$/.test(String(pair?.barColor ?? "")) ? String(pair.barColor) : (/^#[0-9a-fA-F]{6}$/.test(String(pair?.color ?? "")) ? String(pair.color) : defaultChartSeriesColor(idx)),
           barWidth: Number.isFinite(Number(pair?.barWidth)) ? clamp(Number(pair.barWidth), 1, 40) : 2.2,
+          showArea: pair?.showArea === true,
+          areaColor: /^#[0-9a-fA-F]{6}$/.test(String(pair?.areaColor ?? "")) ? String(pair.areaColor) : (/^#[0-9a-fA-F]{6}$/.test(String(pair?.color ?? "")) ? String(pair.color) : defaultChartSeriesColor(idx)),
           pointMode: normalizeChartPointMode(pair?.pointMode, pair?.showPoints),
           pointSize: Number.isFinite(Number(pair?.pointSize)) ? clamp(Number(pair.pointSize), 1, 12) : 2.4,
         }))
@@ -9221,6 +9226,8 @@ function applyGraphData(data) {
             showBars: normalizeChartBarMode(pair?.barMode, pair?.showBars) !== "none",
             barColor: /^#[0-9a-fA-F]{6}$/.test(String(pair?.barColor ?? "")) ? String(pair.barColor) : (/^#[0-9a-fA-F]{6}$/.test(String(pair?.color ?? "")) ? String(pair.color) : defaultChartSeriesColor(idx)),
             barWidth: Number.isFinite(Number(pair?.barWidth)) ? clamp(Number(pair.barWidth), 1, 40) : 2.2,
+            showArea: pair?.showArea === true,
+            areaColor: /^#[0-9a-fA-F]{6}$/.test(String(pair?.areaColor ?? "")) ? String(pair.areaColor) : (/^#[0-9a-fA-F]{6}$/.test(String(pair?.color ?? "")) ? String(pair.color) : defaultChartSeriesColor(idx)),
             pointMode: normalizeChartPointMode(pair?.pointMode, pair?.showPoints),
             pointSize: Number.isFinite(Number(pair?.pointSize)) ? clamp(Number(pair.pointSize), 1, 12) : 2.4,
             points: [],
@@ -9243,6 +9250,8 @@ function applyGraphData(data) {
               showBars: false,
               barColor: defaultChartSeriesColor(idx),
               barWidth: 2.2,
+              showArea: false,
+              areaColor: defaultChartSeriesColor(idx),
               pointMode: "all",
               pointSize: 2.4,
               points: [],
@@ -9430,6 +9439,35 @@ function isExecutionFrozen() {
     return false;
   }
   return !isExecutionEnded({ t0, dt, t1 });
+}
+
+function executionProgressFraction(timeValue = graph.execution.currentTime) {
+  const t0 = Number(graph.execution.t0);
+  const t1 = Number(graph.execution.t1);
+  const time = Number(timeValue);
+  if (!Number.isFinite(t0) || !Number.isFinite(t1) || !Number.isFinite(time)) {
+    return 0;
+  }
+  const span = Math.abs(t1 - t0);
+  if (span <= Number.EPSILON) {
+    return 1;
+  }
+  return clamp(Math.abs(time - t0) / span, 0, 1);
+}
+
+function updateExecutionProgress(timeValue = graph.execution.currentTime) {
+  if (!executionProgress || !executionProgressBar) {
+    return;
+  }
+  const viewportRect = graphViewport?.getBoundingClientRect();
+  if (viewportRect) {
+    const inset = 10;
+    executionProgress.style.left = `${Math.round(viewportRect.left + inset)}px`;
+    executionProgress.style.width = `${Math.max(0, Math.round(viewportRect.width - inset * 2))}px`;
+    executionProgress.style.bottom = `${Math.max(inset, Math.round(window.innerHeight - viewportRect.bottom + inset))}px`;
+  }
+  executionProgressBar.style.transform = `scaleX(${executionProgressFraction(timeValue)})`;
+  executionProgress.classList.toggle("active", isExecutionFrozen());
 }
 
 function clearTimedExecutionStateSilently() {
@@ -11860,8 +11898,9 @@ function render(options = {}) {
     foreignObject.setAttribute("width", String(item.width));
     foreignObject.setAttribute("height", String(item.height));
     foreignObject.classList.add("canvas-text-fo");
-    const div = document.createElement("div");
-    div.setAttribute("xmlns", "http://www.w3.org/1999/xhtml");
+    // Safari requires an explicit XHTML child in an SVG foreignObject.
+    const div = document.createElementNS(XHTML_NS, "div");
+    div.setAttribute("xmlns", XHTML_NS);
     div.className = "canvas-text-content";
     div.innerHTML = canvasTextDisplayHtml(item);
     div.addEventListener("dblclick", (evt) => {
@@ -11960,6 +11999,7 @@ function render(options = {}) {
   renderWatchDebugger();
   updateHistoryButtons();
   updateEditingLockUi();
+  updateExecutionProgress();
 }
 
 function isValidPoint(p) {
@@ -12173,6 +12213,8 @@ function importGraphData(data) {
             showBars: normalizeChartBarMode(pair?.barMode, pair?.showBars) !== "none",
             barColor: /^#[0-9a-fA-F]{6}$/.test(String(pair?.barColor ?? "")) ? String(pair.barColor) : (/^#[0-9a-fA-F]{6}$/.test(String(pair?.color ?? "")) ? String(pair.color) : defaultChartSeriesColor(idx)),
             barWidth: Number.isFinite(Number(pair?.barWidth)) ? clamp(Number(pair.barWidth), 1, 40) : 2.2,
+            showArea: pair?.showArea === true,
+            areaColor: /^#[0-9a-fA-F]{6}$/.test(String(pair?.areaColor ?? "")) ? String(pair.areaColor) : (/^#[0-9a-fA-F]{6}$/.test(String(pair?.color ?? "")) ? String(pair.color) : defaultChartSeriesColor(idx)),
             pointMode: normalizeChartPointMode(pair?.pointMode, pair?.showPoints),
             pointSize: Number.isFinite(Number(pair?.pointSize)) ? clamp(Number(pair.pointSize), 1, 12) : 2.4,
             points: [],
@@ -12195,6 +12237,8 @@ function importGraphData(data) {
               showBars: false,
               barColor: defaultChartSeriesColor(idx),
               barWidth: 2.2,
+              showArea: false,
+              areaColor: defaultChartSeriesColor(idx),
               pointMode: "all",
               pointSize: 2.4,
               points: [],
@@ -13183,18 +13227,22 @@ const runtimeController = globalThis.STGraphXRuntimeController?.createRuntimeCon
   onFullExecutionStarted: () => {
     ui.fullRunRunning = true;
     document.body.classList.add("full-execution-running");
+    updateExecutionProgress();
     updateEditingLockUi();
     render();
   },
   onFullExecutionStopped: () => {
     ui.fullRunRunning = false;
     document.body.classList.remove("full-execution-running");
+    updateExecutionProgress();
     updateEditingLockUi();
     render();
   },
   yieldToUi: () => new Promise((resolve) => {
     window.requestAnimationFrame(() => window.requestAnimationFrame(resolve));
   }),
+  onExecutionProgress: ({ time }) => updateExecutionProgress(time),
+  yieldForProgress: () => new Promise((resolve) => window.requestAnimationFrame(resolve)),
 });
 
 if (!runtimeController) {
@@ -16693,6 +16741,7 @@ window.addEventListener("pointerdown", (evt) => {
 window.addEventListener("resize", () => {
   updateCanvasSize();
   applyResponsiveUiState();
+  updateExecutionProgress();
   const openMenuRoot = menuRoots.find((root) => root.classList.contains("open"));
   if (openMenuRoot) {
     positionCompactTopMenu(openMenuRoot);

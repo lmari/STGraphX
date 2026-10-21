@@ -311,6 +311,8 @@ function addXYChartWidget(at = null) {
         showBars: false,
         barColor: defaultChartSeriesColor(0),
         barWidth: 2.2,
+        showArea: false,
+        areaColor: defaultChartSeriesColor(0),
         pointMode: "all",
         pointSize: 2.4,
         points: [],
@@ -535,6 +537,8 @@ function sanitizeWidgetXYPairs(widget) {
       showBars: normalizeChartBarMode(pair?.barMode, pair?.showBars) !== "none",
       barColor: /^#[0-9a-fA-F]{6}$/.test(String(pair?.barColor ?? "")) ? String(pair.barColor) : (/^#[0-9a-fA-F]{6}$/.test(String(pair?.color ?? "")) ? String(pair.color) : defaultChartSeriesColor(idx)),
       barWidth: Number.isFinite(Number(pair?.barWidth)) ? clamp(Number(pair.barWidth), 1, 40) : 2.2,
+      showArea: pair?.showArea === true,
+      areaColor: /^#[0-9a-fA-F]{6}$/.test(String(pair?.areaColor ?? "")) ? String(pair.areaColor) : (/^#[0-9a-fA-F]{6}$/.test(String(pair?.color ?? "")) ? String(pair.color) : defaultChartSeriesColor(idx)),
       pointMode: normalizeChartPointMode(pair?.pointMode, pair?.showPoints),
       pointSize: Number.isFinite(Number(pair?.pointSize)) ? clamp(Number(pair.pointSize), 1, 12) : 2.4,
       seriesData: Array.isArray(pair?.seriesData)
@@ -1001,6 +1005,8 @@ function drawXYChart(canvas, seriesList = [], options = null) {
       showBars: normalizeChartBarMode(s?.barMode, s?.showBars) !== "none",
       barColor: /^#[0-9a-fA-F]{6}$/.test(String(s?.barColor ?? "")) ? String(s.barColor) : (/^#[0-9a-fA-F]{6}$/.test(String(s?.color ?? "")) ? String(s.color) : defaultChartSeriesColor(idx)),
       barWidth: Number.isFinite(Number(s?.barWidth)) ? clamp(Number(s.barWidth), 1, 40) : 2.2,
+      showArea: s?.showArea === true,
+      areaColor: /^#[0-9a-fA-F]{6}$/.test(String(s?.areaColor ?? "")) ? String(s.areaColor) : (/^#[0-9a-fA-F]{6}$/.test(String(s?.color ?? "")) ? String(s.color) : defaultChartSeriesColor(idx)),
       pointMode: normalizeChartPointMode(s?.pointMode, s?.showPoints),
       pointSize: Number.isFinite(Number(s?.pointSize)) ? clamp(Number(s.pointSize), 1, 12) : 2.4,
       // Series points are normalized when the widget is loaded or edited.
@@ -1008,7 +1014,7 @@ function drawXYChart(canvas, seriesList = [], options = null) {
       // refresh makes a long chart needlessly expensive.
       points: Array.isArray(s?.points) ? s.points : [],
     }))
-    .filter((s) => s.points.length > 0 && (s.showLine || s.showBars || s.pointMode !== "none"));
+    .filter((s) => s.points.length > 0 && (s.showLine || s.showBars || s.showArea || s.pointMode !== "none"));
 
   if (activeSeries.length < 1) {
     return;
@@ -1060,7 +1066,7 @@ function drawXYChart(canvas, seriesList = [], options = null) {
       maxY = Math.max(maxY, p.y);
     });
   });
-  if (activeSeries.some((series) => series.showBars)) {
+  if (activeSeries.some((series) => series.showBars || series.showArea)) {
     minY = Math.min(minY, 0);
     maxY = Math.max(maxY, 0);
   }
@@ -1241,7 +1247,20 @@ function drawXYChart(canvas, seriesList = [], options = null) {
     // Decimation is appropriate for a continuous path. Dense scatter plots
     // instead use a pixel representation, which retains the distribution
     // without discarding the underlying samples.
-    const linePoints = series.showLine ? sampleSeriesPoints(series.points) : [];
+    const linePoints = (series.showLine || series.showArea) ? sampleSeriesPoints(series.points) : [];
+    if (series.showArea && linePoints.length > 0) {
+      const baseline = sy(0);
+      ctx.save();
+      ctx.globalAlpha = 0.22;
+      ctx.fillStyle = series.areaColor || color;
+      ctx.beginPath();
+      ctx.moveTo(sx(linePoints[0].x), baseline);
+      linePoints.forEach((p) => ctx.lineTo(sx(p.x), sy(p.y)));
+      ctx.lineTo(sx(linePoints[linePoints.length - 1].x), baseline);
+      ctx.closePath();
+      ctx.fill();
+      ctx.restore();
+    }
     if (series.showBars) {
       ctx.strokeStyle = series.barColor || color;
       ctx.lineWidth = series.barWidth;
@@ -2489,6 +2508,8 @@ function refreshChartWidgetRuntimeBody(root, widget, nodeMap = buildNodeNameMap(
         showBars: pair.showBars,
         barColor: pair.barColor,
         barWidth: pair.barWidth,
+        showArea: pair.showArea,
+        areaColor: pair.areaColor,
         pointMode: pair.pointMode,
         pointSize: pair.pointSize,
         points: series.points || [],
@@ -2509,6 +2530,8 @@ function refreshChartWidgetRuntimeBody(root, widget, nodeMap = buildNodeNameMap(
         showBars: pair.showBars,
         barColor: pair.barColor,
         barWidth: pair.barWidth,
+        showArea: pair.showArea,
+        areaColor: pair.areaColor,
         pointMode: pair.pointMode === "last" ? "all" : pair.pointMode,
         pointSize: pair.pointSize,
         points: series.points || [],
@@ -2957,6 +2980,8 @@ function renderWidgets() {
             showBars: pair.showBars,
             barColor: pair.barColor,
             barWidth: pair.barWidth,
+            showArea: pair.showArea,
+            areaColor: pair.areaColor,
             pointMode: pair.pointMode,
             pointSize: pair.pointSize,
             points: series.points || [],
@@ -2977,6 +3002,8 @@ function renderWidgets() {
             showBars: pair.showBars,
             barColor: pair.barColor,
             barWidth: pair.barWidth,
+            showArea: pair.showArea,
+            areaColor: pair.areaColor,
             pointMode: pair.pointMode === "last" ? "all" : pair.pointMode,
             pointSize: pair.pointSize,
             points: series.points || [],
@@ -4187,6 +4214,9 @@ function buildNodeTooltipText(node) {
 function canvasTextDisplayHtml(item) {
   if (typeof item?.markdown === "string") {
     return globalThis.STGraphXMarkdown?.renderMarkdownToHtml(item.markdown, {
+      // Safari is more reliable with KaTeX's HTML-only output inside the
+      // SVG foreignObject used for canvas text items.
+      latexOutput: "html",
       resolveVariable(name) {
         const node = getNodeByName(name);
         if (!node) return null;
@@ -4480,7 +4510,7 @@ function refreshWidgetConfigPanel(widget) {
   titleRow.appendChild(titleBarLabel);
   mainSection.appendChild(titleRow);
   mainSection.appendChild(titleInput);
-  if (widget.type !== "matrix") {
+  if (widget.type !== "matrix" && widget.type !== "xychart" && widget.type !== "table") {
     const fontRow = document.createElement("div");
     fontRow.className = "widget-font-row";
     const fontLabel = document.createElement("span");
@@ -5197,16 +5227,30 @@ function refreshWidgetConfigPanel(widget) {
   if (widget.type === "table") {
     sanitizeWidgetColumns(widget);
     sanitizeTableWidgetOptions(widget);
+
+    const tableOptionsSection = createWidgetSection(true);
+    const fontRow = document.createElement("div");
+    fontRow.className = "widget-font-row";
+    const fontLabel = document.createElement("span");
+    fontLabel.textContent = t("widget.fontSize");
+    fontRow.appendChild(fontLabel);
+    fontRow.appendChild(fontSizeInput);
+    setConfigTooltip(fontRow, "tooltip.widget.fontSize");
+    tableOptionsSection.appendChild(fontRow);
+
     const tableSection = createWidgetSection();
     const list = document.createElement("div");
     list.className = "props-list";
     const tableChoices = ["time", ...nodeNames];
     widget.columns.forEach((colName, idx) => {
       const columnEntry = document.createElement("div");
-      columnEntry.className = "props-list";
+      columnEntry.className = "props-list table-column-entry";
+      if (idx > 0) {
+        columnEntry.classList.add("table-column-entry-separated");
+      }
       columnEntry.style.gap = "3px";
       const sourceRow = document.createElement("div");
-      sourceRow.className = "prop-row";
+      sourceRow.className = "prop-row table-column-source-row";
       sourceRow.style.gridTemplateColumns = "minmax(0, 1fr) auto auto auto";
       const sel = document.createElement("select");
       tableChoices.forEach((name) => {
@@ -5270,6 +5314,7 @@ function refreshWidgetConfigPanel(widget) {
       });
       const del = document.createElement("button");
       del.type = "button";
+      del.className = "table-column-action-btn";
       del.textContent = "-";
       setConfigTooltip(del, "tooltip.widget.removeColumn");
       del.addEventListener("click", () => {
@@ -5281,6 +5326,7 @@ function refreshWidgetConfigPanel(widget) {
       });
       const upBtn = document.createElement("button");
       upBtn.type = "button";
+      upBtn.className = "table-column-action-btn";
       upBtn.textContent = "↑";
       setConfigTooltip(upBtn, "tooltip.widget.moveUp");
       upBtn.disabled = idx === 0;
@@ -5296,6 +5342,7 @@ function refreshWidgetConfigPanel(widget) {
       });
       const downBtn = document.createElement("button");
       downBtn.type = "button";
+      downBtn.className = "table-column-action-btn";
       downBtn.textContent = "↓";
       setConfigTooltip(downBtn, "tooltip.widget.moveDown");
       downBtn.disabled = idx >= widget.columns.length - 1;
@@ -5336,10 +5383,7 @@ function refreshWidgetConfigPanel(widget) {
       });
     });
     tableSection.appendChild(list);
-    tableSection.appendChild(add);
-    if (widget.columns.length === 0) {
-      return;
-    }
+    tableSection.insertBefore(add, list);
     const modeLabel = document.createElement("label");
     modeLabel.className = "menu-check compact-bool";
     const modeInput = document.createElement("input");
@@ -5380,9 +5424,8 @@ function refreshWidgetConfigPanel(widget) {
     expandLabel.appendChild(expandInput);
     expandLabel.appendChild(expandText);
     setConfigTooltip(expandLabel, "tooltip.widget.expandNonScalarValues");
-    const tableModeSection = createWidgetSection(true);
-    tableModeSection.appendChild(modeLabel);
-    tableModeSection.appendChild(expandLabel);
+    tableOptionsSection.appendChild(modeLabel);
+    tableOptionsSection.appendChild(expandLabel);
 
     return;
   }
@@ -5423,6 +5466,42 @@ function refreshWidgetConfigPanel(widget) {
       refreshWidgetConfigPanel(widget);
     });
 
+    const upBtn = document.createElement("button");
+    upBtn.type = "button";
+    upBtn.textContent = "↑";
+    upBtn.className = "chart-pair-order-btn";
+    upBtn.disabled = idx === 0;
+    setConfigTooltip(upBtn, "tooltip.widget.movePairUp");
+    upBtn.addEventListener("click", () => {
+      runAction(() => {
+        if (idx <= 0 || idx >= widget.xyPairs.length) {
+          return;
+        }
+        const previous = widget.xyPairs[idx - 1];
+        widget.xyPairs[idx - 1] = widget.xyPairs[idx];
+        widget.xyPairs[idx] = previous;
+        ui.activeChartPairByWidgetId.set(widget.id, idx - 1);
+      });
+    });
+
+    const downBtn = document.createElement("button");
+    downBtn.type = "button";
+    downBtn.textContent = "↓";
+    downBtn.className = "chart-pair-order-btn";
+    downBtn.disabled = idx >= widget.xyPairs.length - 1;
+    setConfigTooltip(downBtn, "tooltip.widget.movePairDown");
+    downBtn.addEventListener("click", () => {
+      runAction(() => {
+        if (idx < 0 || idx >= widget.xyPairs.length - 1) {
+          return;
+        }
+        const next = widget.xyPairs[idx + 1];
+        widget.xyPairs[idx + 1] = widget.xyPairs[idx];
+        widget.xyPairs[idx] = next;
+        ui.activeChartPairByWidgetId.set(widget.id, idx + 1);
+      });
+    });
+
     const del = document.createElement("button");
     del.type = "button";
     del.textContent = "-";
@@ -5443,6 +5522,8 @@ function refreshWidgetConfigPanel(widget) {
     });
 
     row.appendChild(selectBtn);
+    row.appendChild(upBtn);
+    row.appendChild(downBtn);
     row.appendChild(del);
     pairList.appendChild(row);
   });
@@ -5470,6 +5551,8 @@ function refreshWidgetConfigPanel(widget) {
           showBars: false,
           barColor: defaultChartSeriesColor(widget.xyPairs.length),
           barWidth: 2.2,
+          showArea: false,
+          areaColor: defaultChartSeriesColor(widget.xyPairs.length),
           pointMode: "all",
           pointSize: 2.4,
           points: [],
@@ -5477,7 +5560,7 @@ function refreshWidgetConfigPanel(widget) {
       ui.activeChartPairByWidgetId.set(widget.id, widget.xyPairs.length - 1);
     });
   });
-  chartPairsSection.appendChild(addBtn);
+  chartPairsSection.insertBefore(addBtn, pairList);
 
   if (activePairIndex >= 0 && widget.xyPairs[activePairIndex]) {
     const activePairSection = createWidgetSection(true);
@@ -5615,6 +5698,35 @@ function refreshWidgetConfigPanel(widget) {
       });
     });
 
+    const areaInput = document.createElement("input");
+    areaInput.type = "checkbox";
+    areaInput.checked = pair.showArea === true;
+    const areaLabel = document.createElement("label");
+    areaLabel.className = "menu-check compact-bool";
+    areaLabel.appendChild(areaInput);
+    const areaText = document.createElement("span");
+    areaText.textContent = t("widget.fillArea");
+    areaLabel.appendChild(areaText);
+    setConfigTooltip(areaLabel, "tooltip.widget.fillArea");
+    areaInput.addEventListener("change", () => {
+      runAction(() => {
+        widget.xyPairs[activePairIndex].showArea = areaInput.checked;
+      });
+      updateSeriesStyleControls();
+    });
+
+    const areaColorInput = document.createElement("input");
+    areaColorInput.type = "color";
+    areaColorInput.value = /^#[0-9a-fA-F]{6}$/.test(String(pair.areaColor ?? ""))
+      ? String(pair.areaColor)
+      : lineColorInput.value;
+    setTooltipText(areaColorInput, t("widget.areaColor"));
+    areaColorInput.addEventListener("change", () => {
+      runAction(() => {
+        widget.xyPairs[activePairIndex].areaColor = areaColorInput.value;
+      });
+    });
+
     const pointsSelect = document.createElement("select");
     setTooltipText(pointsSelect, t("widget.seriesPoints"));
     ["none", "last", "all"].forEach((mode) => {
@@ -5718,6 +5830,7 @@ function refreshWidgetConfigPanel(widget) {
       pointColorInput.disabled = pointsDisabled;
       barColorInput.disabled = barsDisabled;
       barWidthInput.disabled = barsDisabled;
+      areaColorInput.disabled = !areaInput.checked;
     };
 
     const primaryStyleRow = document.createElement("div");
@@ -5734,12 +5847,20 @@ function refreshWidgetConfigPanel(widget) {
     barControls.appendChild(createCompactField("widget.barMode", barModeSelect));
     barControls.appendChild(createCompactField("widget.barWidthShort", barWidthInput));
     primaryStyleRow.appendChild(barControls);
+    primaryStyleRow.appendChild(areaLabel);
 
     const secondaryStyleRow = document.createElement("div");
     secondaryStyleRow.className = "chart-pair-style-secondary";
-    secondaryStyleRow.appendChild(createCompactField("widget.lineColor", lineColorInput));
-    secondaryStyleRow.appendChild(createCompactField("widget.pointColor", pointColorInput));
-    secondaryStyleRow.appendChild(createCompactField("widget.barColor", barColorInput));
+    const colorsRow = document.createElement("div");
+    colorsRow.className = "chart-pair-colors";
+    const colorsLabel = document.createElement("span");
+    colorsLabel.textContent = t("widget.color");
+    colorsRow.appendChild(colorsLabel);
+    colorsRow.appendChild(lineColorInput);
+    colorsRow.appendChild(pointColorInput);
+    colorsRow.appendChild(barColorInput);
+    colorsRow.appendChild(areaColorInput);
+    secondaryStyleRow.appendChild(colorsRow);
 
     updateSeriesStyleControls();
 
@@ -5755,6 +5876,15 @@ function refreshWidgetConfigPanel(widget) {
 
   const chartAxisSection = createWidgetSection(true);
   appendWidgetSectionTitle(chartAxisSection, "widget.axisLimitsLabel");
+
+  const fontRow = document.createElement("div");
+  fontRow.className = "widget-font-row";
+  const fontLabel = document.createElement("span");
+  fontLabel.textContent = t("widget.fontSize");
+  fontRow.appendChild(fontLabel);
+  fontRow.appendChild(fontSizeInput);
+  setConfigTooltip(fontRow, "tooltip.widget.fontSize");
+  chartAxisSection.appendChild(fontRow);
 
   const parseLimitInput = (text) => {
     const trimmed = String(text ?? "").trim();

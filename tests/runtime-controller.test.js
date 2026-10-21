@@ -165,6 +165,51 @@ async function run() {
   assert.equal(semanticOutcome.breakpointHit, true);
   assert.equal(semanticMessage, "all agents are satisfied");
   assert.equal(watchOpened, false, "a semantic message replaces the generic Watch window");
+
+  const fullProgress = [];
+  let fullStarted = 0;
+  let fullStopped = 0;
+  const fullExecution = {
+    t0: 0,
+    dt: 1,
+    t1: 2,
+    currentTime: null,
+  };
+  let fullInitialized = false;
+  const fullController = globalThis.STGraphXRuntimeController.createRuntimeController({
+    session: {
+      hasInitializedStateSnapshot: () => fullInitialized,
+      clearSubmodelState: () => {},
+      initializeAt: () => { fullInitialized = true; },
+      promotePending: () => {},
+      evaluateAtTime: () => ({ successCount: 1, errorCount: 0 }),
+    },
+    getExecution: () => fullExecution,
+    timedState: { timedRunHandle: null, timedStepRunning: false },
+    t: (key) => key,
+    enforceStrictDefinitions: () => true,
+    ensureBreakpointReady: () => true,
+    prepareForExecution: async () => true,
+    isExecutionEnded: () => false,
+    refreshRuntimeView: () => {},
+    render: () => {},
+    updateEditingLockUi: () => {},
+    setStatusKey: () => {},
+    setStatus: () => {},
+    formatNumberValue: (value) => String(value),
+    formatExecutionDuration: () => "0 ms",
+    evaluateBreakpointConditionAtTime: () => ({ hit: false, invalid: false }),
+    clearVisualHistory: () => {},
+    clearSimulationHistory: () => {},
+    onFullExecutionStarted: () => { fullStarted += 1; },
+    onFullExecutionStopped: () => { fullStopped += 1; },
+    onExecutionProgress: ({ fraction }) => fullProgress.push(fraction),
+  });
+  await fullController.executeAll();
+  assert.equal(fullStarted, 1, "a full execution announces its start");
+  assert.equal(fullStopped, 1, "a full execution announces its end");
+  assert.equal(fullProgress[0], 0, "a full execution starts progress at zero");
+  assert.equal(fullProgress.at(-1), 1, "a full execution completes progress at one");
   console.log("runtime-controller.test.js: ok");
 }
 

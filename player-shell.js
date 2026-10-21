@@ -545,6 +545,8 @@
             : (pair?.barMode === "stems" || pair?.barMode === "columns" || pair?.showBars === true),
           barColor: /^#[0-9a-fA-F]{6}$/.test(String(pair?.barColor ?? "")) ? String(pair.barColor) : (/^#[0-9a-fA-F]{6}$/.test(String(pair?.color ?? "")) ? String(pair.color) : "#2d7ff9"),
           barWidth: Number.isFinite(Number(pair?.barWidth)) ? clamp(Number(pair.barWidth), 1, 40) : 2,
+          showArea: pair?.showArea === true,
+          areaColor: /^#[0-9a-fA-F]{6}$/.test(String(pair?.areaColor ?? "")) ? String(pair.areaColor) : (/^#[0-9a-fA-F]{6}$/.test(String(pair?.color ?? "")) ? String(pair.color) : "#2d7ff9"),
           pointMode: String(pair?.pointMode || "last"),
           pointSize: Number.isFinite(Number(pair?.pointSize)) ? clamp(Number(pair.pointSize), 1, 10) : 2,
           points: [],
@@ -884,7 +886,7 @@
     const xMax = parseAxisLimit(options.xMax);
     const yMin = parseAxisLimit(options.yMin);
     const yMax = parseAxisLimit(options.yMax);
-    if (series.some((pair) => pair.showBars)) {
+    if (series.some((pair) => pair.showBars || pair.showArea)) {
       minY = Math.min(minY, 0);
       maxY = Math.max(maxY, 0);
     }
@@ -981,6 +983,19 @@
       ctx.strokeStyle = pair.color || "#2d7ff9";
       ctx.lineWidth = pair.lineWidth || 2;
       ctx.setLineDash(chartLineDash(pair.lineStyle));
+      if (pair.showArea && pair.points.length > 0) {
+        const baseline = sy(0);
+        ctx.save();
+        ctx.globalAlpha = 0.22;
+        ctx.fillStyle = pair.areaColor || pair.color || "#2d7ff9";
+        ctx.beginPath();
+        ctx.moveTo(sx(pair.points[0].x), baseline);
+        pair.points.forEach((pt) => ctx.lineTo(sx(pt.x), sy(pt.y)));
+        ctx.lineTo(sx(pair.points[pair.points.length - 1].x), baseline);
+        ctx.closePath();
+        ctx.fill();
+        ctx.restore();
+      }
       if (pair.showBars) {
         ctx.strokeStyle = pair.barColor || pair.color || "#2d7ff9";
         ctx.lineWidth = pair.barWidth || 2;

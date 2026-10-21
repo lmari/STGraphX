@@ -8,7 +8,7 @@
     if (!href || /^(?:javascript|data|vbscript):/iu.test(href) || href.startsWith("//")) return "";
     return /^(?:https?:|mailto:|#)/iu.test(href) || !/^[a-z][a-z0-9+.-]*:/iu.test(href) ? href : "";
   }
-  function renderLatex(source, displayMode = false) {
+  function renderLatex(source, displayMode = false, output = "htmlAndMathml") {
     const latex = String(source ?? "").trim();
     if (!latex) return "";
     if (typeof globalThis.katex?.renderToString !== "function") {
@@ -17,6 +17,7 @@
     try {
       return globalThis.katex.renderToString(latex, {
         displayMode,
+        output: ["html", "mathml", "htmlAndMathml"].includes(output) ? output : "htmlAndMathml",
         throwOnError: false,
         strict: "ignore",
       });
@@ -52,7 +53,7 @@
       ));
     }
     source = source.replace(/(^|[^\\$])\$([^$\n]+?)\$/g, (_m, prefix, latex) => (
-      `${prefix}${stash(renderLatex(latex, false))}`
+      `${prefix}${stash(renderLatex(latex, false, options.latexOutput))}`
     ));
     if (resolveVariable) {
       source = source.replace(/\{\{([^{}|\n]+)\}\}/g, (raw, rawName) => {
@@ -95,13 +96,13 @@
     const flushParagraph = () => { if (paragraph.length) { output.push(`<p>${paragraph.map((item) => renderInlineMarkdown(item, options)).join("<br>")}</p>`); paragraph = []; } };
     const flushList = () => { if (list) { output.push(`<${list.type}>${list.items.map((item) => `<li>${renderInlineMarkdown(item, options)}</li>`).join("")}</${list.type}>`); list = null; } };
     const flushCode = () => { if (inCode) { output.push(`<pre><code>${escapeHtml(codeLines.join("\n"))}</code></pre>`); inCode = false; codeLines = []; } };
-    const flushMath = () => { if (inMath) { output.push(`<div class="latex-block">${renderLatex(resolveDynamicValueText(mathLines.join("\n"), options.resolveVariable), true)}</div>`); inMath = false; mathLines = []; } };
+    const flushMath = () => { if (inMath) { output.push(`<div class="latex-block">${renderLatex(resolveDynamicValueText(mathLines.join("\n"), options.resolveVariable), true, options.latexOutput)}</div>`); inMath = false; mathLines = []; } };
     lines.forEach((line) => {
       if (inMath) { if (/^\s*\$\$\s*$/.test(line)) flushMath(); else mathLines.push(line); return; }
       if (/^```/.test(line)) { if (inCode) flushCode(); else { flushParagraph(); flushList(); inCode = true; } return; }
       if (inCode) { codeLines.push(line); return; }
       const oneLineMath = /^\s*\$\$\s*(.*?)\s*\$\$\s*$/.exec(line);
-      if (oneLineMath) { flushParagraph(); flushList(); output.push(`<div class="latex-block">${renderLatex(resolveDynamicValueText(oneLineMath[1], options.resolveVariable), true)}</div>`); return; }
+      if (oneLineMath) { flushParagraph(); flushList(); output.push(`<div class="latex-block">${renderLatex(resolveDynamicValueText(oneLineMath[1], options.resolveVariable), true, options.latexOutput)}</div>`); return; }
       if (/^\s*\$\$\s*$/.test(line)) { flushParagraph(); flushList(); inMath = true; mathLines = []; return; }
       const heading = /^(#{1,4})\s+(.+)$/.exec(line); const unordered = /^\s*[-*+]\s+(.+)$/.exec(line); const ordered = /^\s*\d+[.)]\s+(.+)$/.exec(line);
       if (heading) { flushParagraph(); flushList(); const level = heading[1].length; output.push(`<h${level}>${renderInlineMarkdown(heading[2], options)}</h${level}>`); }

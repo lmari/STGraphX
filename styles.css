@@ -491,6 +491,35 @@ body.sidebar-hidden .canvas-wrap {
   right: 0;
 }
 
+.execution-progress {
+  position: fixed;
+  left: 0;
+  right: auto;
+  bottom: 0;
+  z-index: 900;
+  height: 5px;
+  overflow: hidden;
+  pointer-events: none;
+  opacity: 0;
+  background: rgba(58, 93, 121, 0.16);
+  border-radius: 999px;
+  box-shadow: 0 1px 4px rgba(24, 58, 82, 0.22);
+  transition: opacity 140ms ease;
+}
+
+.execution-progress.active {
+  opacity: 1;
+}
+
+.execution-progress-bar {
+  width: 100%;
+  height: 100%;
+  transform: scaleX(0);
+  transform-origin: left center;
+  background: linear-gradient(90deg, #2779a8, #5da8ca);
+  transition: transform 90ms linear;
+}
+
 .sidebar-reopen-btn {
   position: absolute;
   right: 16px;
@@ -1696,6 +1725,21 @@ input.inferred-unit[readonly] { color: #6d7782; background: #f4f6f8; }
   background: #fff4f6;
 }
 
+.table-column-entry-separated {
+  margin-top: 8px;
+  padding-top: 8px;
+  border-top: 1px solid #d8e2eb;
+}
+
+.table-column-source-row .table-column-action-btn {
+  align-self: end;
+  min-width: 26px;
+  min-height: 28px;
+  height: 28px;
+  padding: 0 5px;
+  line-height: 1;
+}
+
 .empty-props {
   padding: 5px 6px;
   border: 1px dashed #c7d5e2;
@@ -1858,16 +1902,21 @@ input.inferred-unit[readonly] { color: #6d7782; background: #f4f6f8; }
 
 .chart-pair-list-row {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) auto;
+  grid-template-columns: minmax(0, 1fr) auto auto auto;
   gap: 4px;
 }
 
 .chart-pair-select-btn,
+.chart-pair-order-btn,
 .chart-pair-delete-btn {
   margin-top: 0;
   padding: 4px 6px;
   font-size: 0.76rem;
   line-height: 1.1;
+}
+
+.chart-pair-order-btn {
+  min-width: 26px;
 }
 
 .chart-pair-select-btn {
@@ -1905,6 +1954,27 @@ input.inferred-unit[readonly] { color: #6d7782; background: #f4f6f8; }
   gap: 4px;
   align-items: center;
   min-width: 0;
+}
+
+.chart-pair-colors {
+  display: grid;
+  grid-template-columns: auto repeat(4, 28px);
+  gap: 4px;
+  align-items: center;
+  min-width: 0;
+}
+
+.chart-pair-colors > span {
+  color: #4e6072;
+  font-size: 0.76rem;
+}
+
+.chart-pair-colors input[type="color"] {
+  width: 28px;
+  min-width: 28px;
+  height: 25px;
+  margin: 0;
+  padding: 2px;
 }
 
 .chart-axis-toggles {
