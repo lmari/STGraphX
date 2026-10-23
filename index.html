@@ -448,6 +448,40 @@
         </div>
         <div class="expression-editor-layout">
           <div id="expressionEditorMain" class="expression-editor-main">
+            <div id="expressionNodeIdentity" class="expression-node-identity hidden">
+              <div class="expression-node-identity-row">
+                <label class="expression-node-field" for="expressionNodeNameInput" data-title-i18n="tooltip.node.name">
+                  <span data-i18n="label.name"></span>
+                  <input id="expressionNodeNameInput" type="text" data-title-i18n="tooltip.node.name" />
+                </label>
+                <label class="expression-node-field" for="expressionNodeShapeInput" data-title-i18n="tooltip.node.type">
+                  <span data-i18n="label.shape"></span>
+                  <select id="expressionNodeShapeInput" data-title-i18n="tooltip.node.type">
+                    <option value="ellipse" data-i18n="shape.ellipse"></option>
+                    <option value="rect" data-i18n="shape.rect"></option>
+                    <option value="diamond" data-i18n="shape.diamond"></option>
+                  </select>
+                </label>
+              </div>
+              <div class="expression-node-options-row">
+                <label id="expressionNodeInputLabel" class="menu-check compact-bool" for="expressionNodeInputInput" data-title-i18n="tooltip.node.input">
+                  <input id="expressionNodeInputInput" type="checkbox" />
+                  <span data-i18n="label.input"></span>
+                </label>
+                <label id="expressionNodeOutputLabel" class="menu-check compact-bool" for="expressionNodeOutputInput" data-title-i18n="tooltip.node.output">
+                  <input id="expressionNodeOutputInput" type="checkbox" />
+                  <span data-i18n="label.output"></span>
+                </label>
+                <label id="expressionNodeGlobalLabel" class="menu-check compact-bool" for="expressionNodeGlobalInput" data-title-i18n="tooltip.node.global">
+                  <input id="expressionNodeGlobalInput" type="checkbox" />
+                  <span data-i18n="label.global"></span>
+                </label>
+                <label id="expressionNodeUnitLabel" class="expression-node-field expression-node-unit-field" for="expressionNodeUnitInput" data-title-i18n="tooltip.node.unit">
+                  <span data-i18n="label.unit"></span>
+                  <input id="expressionNodeUnitInput" type="text" placeholder="m/s" data-title-i18n="tooltip.node.unit" />
+                </label>
+              </div>
+            </div>
             <div id="expressionEditorCore" class="expression-editor-core">
             <div id="expressionStateInitialBlock" class="expression-state-initial hidden">
               <div class="expression-field-head">

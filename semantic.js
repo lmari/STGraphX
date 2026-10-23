@@ -109,6 +109,8 @@
   const MATH_SCOPE = Object.freeze(graphFunctions.createMathScope(MATH_SCOPE_OPTIONS));
   const RANDOM_MATH_SCOPES = new WeakMap();
   const NODE_PROPERTY_ACCESS_CACHE = new WeakMap();
+  const EMPTY_LOCAL_FUNCTIONS = new Map();
+  const EVALUATION_MATH_SCOPE = Symbol("stgraphxEvaluationMathScope");
   const FUNCTION_NAMES = new Set(
     Object.keys(MATH_SCOPE).filter((name) => typeof MATH_SCOPE[name] === "function"),
   );
@@ -127,7 +129,10 @@
 
   function normalizeLocalFunctionDefinitions(definitions = []) {
     if (!Array.isArray(definitions)) {
-      return new Map();
+      return EMPTY_LOCAL_FUNCTIONS;
+    }
+    if (definitions.length === 0) {
+      return EMPTY_LOCAL_FUNCTIONS;
     }
     const out = new Map();
     definitions.forEach((definition) => {
@@ -805,23 +810,21 @@
         if (!Array.isArray(row)) {
           return evaluateAstNode(
             compiled.ast,
-            {
-              ...baseScope,
+            createDerivedEvaluationScope(baseScope, {
               self: row,
               $i: rowIndex,
               $j: Object.prototype.hasOwnProperty.call(baseScope || {}, "$j") ? baseScope.$j : 0,
-            },
+            }),
             hooks,
           );
         }
         return row.map((item, colIndex) => evaluateAstNode(
           compiled.ast,
-          {
-            ...baseScope,
+          createDerivedEvaluationScope(baseScope, {
             self: item,
             $i: rowIndex,
             $j: colIndex,
-          },
+          }),
           hooks,
         ));
       });
@@ -829,24 +832,22 @@
     if (Array.isArray(selfVector)) {
       return selfVector.map((item, index) => evaluateAstNode(
         compiled.ast,
-        {
-          ...baseScope,
+        createDerivedEvaluationScope(baseScope, {
           self: item,
           $i: index,
-        },
+        }),
         hooks,
       ));
     }
     return evaluateAstNode(
       compiled.ast,
-      {
-        ...baseScope,
+      createDerivedEvaluationScope(baseScope, {
         self: Object.prototype.hasOwnProperty.call(baseScope || {}, "__self") ? baseScope.__self : undefined,
         $i: Object.prototype.hasOwnProperty.call(baseScope || {}, "$i") ? baseScope.$i : 0,
         ...(Object.prototype.hasOwnProperty.call(baseScope || {}, "$j")
           ? { $j: baseScope.$j }
           : {}),
-      },
+      }),
       hooks,
     );
   }
@@ -859,6 +860,33 @@
       return { ...explicit };
     }
     return collectAgentFieldAliasesFromContext(context);
+  }
+
+  function createEvaluationScope(options, context = {}, extra = null) {
+    const scope = {};
+    if (extra && typeof extra === "object") {
+      Object.assign(scope, extra);
+    }
+    if (context && typeof context === "object") {
+      Object.assign(scope, context);
+    }
+    scope[EVALUATION_MATH_SCOPE] = mathScopeForEvaluation(options);
+    return scope;
+  }
+
+  function createDerivedEvaluationScope(baseScope, values = {}) {
+    return { ...(baseScope || {}), ...values };
+  }
+
+  function lookupEvaluationScopeValue(scope, name) {
+    if (Object.prototype.hasOwnProperty.call(scope || {}, name)) {
+      return { found: true, value: scope[name] };
+    }
+    const mathScope = scope?.[EVALUATION_MATH_SCOPE];
+    if (mathScope && Object.prototype.hasOwnProperty.call(mathScope, name)) {
+      return { found: true, value: mathScope[name] };
+    }
+    return { found: false, value: undefined };
   }
 
   function collectAgentFieldNamesFromAst(node, out = new Set()) {
@@ -1761,13 +1789,16 @@
       case "array":
         return node.elements.map((item) => evaluateAstNode(item, scope, hooks));
       case "identifier":
-        if (!Object.prototype.hasOwnProperty.call(scope, node.name)) {
+        {
+          const resolved = lookupEvaluationScopeValue(scope, node.name);
+          if (resolved.found) {
+            return resolved.value;
+          }
           if (hooks?.agentFieldAliases && Object.prototype.hasOwnProperty.call(hooks.agentFieldAliases, node.name)) {
             return hooks.agentFieldAliases[node.name];
           }
           throw new ReferenceError(`${node.name} is not defined`);
         }
-        return scope[node.name];
       case "member": {
         const target = evaluateAstNode(node.target, scope, hooks);
         if (target == null || (typeof target !== "object" && !Array.isArray(target))) {
@@ -2110,10 +2141,11 @@
             localFunctionStack: [...stack, node.name],
           });
         }
-        if (!Object.prototype.hasOwnProperty.call(scope, node.name)) {
+        const functionResult = lookupEvaluationScopeValue(scope, node.name);
+        if (!functionResult.found) {
           throw new ReferenceError(`${node.name} is not defined`);
         }
-        const fn = scope[node.name];
+        const fn = functionResult.value;
         if (typeof fn !== "function") {
           throw new Error(`${node.name} is not callable`);
         }
@@ -2198,7 +2230,7 @@
     try {
       raw = evaluateAstWithLocalSelf(
         compiled,
-        { ...mathScopeForEvaluation(options), ...context },
+        createEvaluationScope(options, context),
         {
           ...(options?.hooks && typeof options.hooks === "object" ? options.hooks : {}),
           agentFieldAliases: normalizeAgentFieldAliasMap(options, context),
@@ -2272,7 +2304,7 @@
     try {
       raw = evaluateAstWithLocalSelf(
         { ...compiled, ast: derivativeAst },
-        { ...mathScopeForEvaluation(options), integral: unavailableIntegral, ...context },
+        createEvaluationScope(options, context, { integral: unavailableIntegral }),
         {
           ...(options?.hooks && typeof options.hooks === "object" ? options.hooks : {}),
           agentFieldAliases: normalizeAgentFieldAliasMap(options, context),
@@ -2316,7 +2348,7 @@
       for (const derivativeAst of compiled.integralArgAsts || []) {
         const raw = evaluateAstWithLocalSelf(
           { ...compiled, ast: derivativeAst },
-          { ...mathScopeForEvaluation(options), integral: unavailableIntegral, ...context },
+          createEvaluationScope(options, context, { integral: unavailableIntegral }),
           {
             ...(options?.hooks && typeof options.hooks === "object" ? options.hooks : {}),
             agentFieldAliases: normalizeAgentFieldAliasMap(options, context),
@@ -2362,7 +2394,7 @@
       const baseHooks = options?.hooks && typeof options.hooks === "object" ? options.hooks : null;
       raw = evaluateAstWithLocalSelf(
         compiled,
-        { ...mathScopeForEvaluation(options), integral: unavailableIntegral, ...context },
+        createEvaluationScope(options, context, { integral: unavailableIntegral }),
         {
           ...(baseHooks || {}),
           agentFieldAliases: normalizeAgentFieldAliasMap(options, context),

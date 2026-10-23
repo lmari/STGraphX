@@ -13,6 +13,18 @@ const platform = createElectronPlatform({ ipcRenderer });
 
 exposePlatformInMainWorld(contextBridge, platform);
 
+function dialogOptionsPayload(options = {}) {
+  // File and directory handles contain methods and cannot cross Electron's
+  // context bridge. Pass only the serializable native path to the main process.
+  const defaultPath = String(options.defaultPath || options.startIn?.path || "").trim();
+  return {
+    title: String(options.title || ""),
+    multiple: Boolean(options.multiple),
+    suggestedName: String(options.suggestedName || ""),
+    defaultPath: defaultPath || undefined,
+  };
+}
+
 // Keep desktop file paths as plain data across the context bridge. Chromium's
 // native File System Access handles do not expose a parent directory, which is
 // needed to reopen models and their relative submodels reliably.
@@ -29,11 +41,11 @@ contextBridge.exposeInMainWorld("STGraphXElectronFiles", {
     return Number.isInteger(result?.response) ? result.response : -1;
   },
   async showOpenFilePaths(options = {}) {
-    const result = await ipcRenderer.invoke("stgraphx:show-open-dialog", options);
+    const result = await ipcRenderer.invoke("stgraphx:show-open-dialog", dialogOptionsPayload(options));
     return result?.canceled ? [] : (result?.filePaths || []);
   },
   async showSaveFilePath(options = {}) {
-    const result = await ipcRenderer.invoke("stgraphx:show-save-dialog", options);
+    const result = await ipcRenderer.invoke("stgraphx:show-save-dialog", dialogOptionsPayload(options));
     return result?.canceled ? "" : String(result?.filePath || "");
   },
   async readTextFile(filePath) {

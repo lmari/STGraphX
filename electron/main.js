@@ -178,6 +178,7 @@ app.whenReady().then(() => {
     const win = BrowserWindow.fromWebContents(event.sender);
     return dialog.showOpenDialog(win, {
       title: options.title || 'Open JSON',
+      defaultPath: options.defaultPath || undefined,
       properties: options.multiple ? ['openFile', 'multiSelections'] : ['openFile'],
       filters: [{ name: 'JSON', extensions: ['json'] }],
     });

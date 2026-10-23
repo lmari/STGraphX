@@ -44,6 +44,7 @@
     // Runtime models keep their graph structure for an entire execution. Cache
     // the derived plan and invalidate it explicitly when a definition changes.
     const executionPlanCache = new WeakMap();
+    const EMPTY_NODE_ID_SET = new Set();
 
     function executionPlanForModel(model) {
       if (!model || !Array.isArray(model.nodes) || !Array.isArray(model.edges)) {
@@ -58,6 +59,7 @@
         edges: model.edges,
         plan: semantics.prepareStatefulExecutionPlan(model.nodes, model.edges),
         rk4Analyses: null,
+        rk4StateNodeIds: null,
         localFunctions: null,
       };
       executionPlanCache.set(model, entry);
@@ -886,15 +888,59 @@
       return results;
     }
 
+    function buildRkStageStateOverrides(
+      model,
+      timeValue,
+      env,
+      executionPlan,
+      integralStateIds,
+      integralValuesMap,
+      algebraicValueMap,
+      stateValueOverrides,
+      currentStateMap,
+      rk4Analyses,
+    ) {
+      const overrides = new Map();
+      const nonPureIntegralIds = new Set();
+      integralStateIds.forEach((nodeId) => {
+        const values = integralValuesMap.get(nodeId);
+        if (rk4Analyses.get(nodeId)?.pureIntegral && Array.isArray(values) && values.length === 1) {
+          // For integral(f), the stage value is already x + factor * f.
+          overrides.set(nodeId, values[0]);
+          return;
+        }
+        nonPureIntegralIds.add(nodeId);
+      });
+      if (nonPureIntegralIds.size > 0) {
+        const evaluated = evaluateTransitionResultsWithIntegralValuesForModel(
+          model,
+          timeValue,
+          env,
+          executionPlan,
+          nonPureIntegralIds,
+          integralValuesMap,
+          algebraicValueMap,
+          stateValueOverrides,
+        );
+        nonPureIntegralIds.forEach((nodeId) => {
+          overrides.set(nodeId, evaluated.get(nodeId)?.value ?? currentStateMap.get(nodeId));
+        });
+      }
+      return overrides;
+    }
+
     function evaluateModelAtTimeRecursive(model, timeValue, env, options = {}) {
       const executionGlobals = buildExecutionGlobalsForModel(model, env.rootExecution, timeValue);
       const planEntry = executionPlanForModel(model);
       const executionPlan = planEntry.plan;
       const stateValueOverrides = options.stateValueOverrides instanceof Map ? options.stateValueOverrides : null;
-      const rk4Analyses = String(env.rootExecution?.integrator ?? "euler") === "rk4"
+      const usesRk4 = String(env.rootExecution?.integrator ?? "euler") === "rk4";
+      const rk4Analyses = usesRk4
         ? (planEntry.rk4Analyses || (planEntry.rk4Analyses = collectRk4IntegralStateAnalysesForModel(model)))
         : new Map();
-      const integralStateNodeIds = new Set(rk4Analyses.keys());
+      const integralStateNodeIds = usesRk4
+        ? (planEntry.rk4StateNodeIds || (planEntry.rk4StateNodeIds = new Set(rk4Analyses.keys())))
+        : EMPTY_NODE_ID_SET;
       const evalResults = semantics.evaluateStatefulGraphStep(
         model.nodes,
         model.edges,
@@ -920,7 +966,7 @@
           const k1 = extractSuccessfulResultMap(evalResults.stateTransitions);
           const dt = Number(env.rootExecution.dt);
           const stage2IntegralValues = buildStageIntegralValuesMap(currentStateMap, k1, dt / 2);
-          const stage2TransitionValues = evaluateTransitionResultsWithIntegralValuesForModel(
+          const stage2StateOverrides = buildRkStageStateOverrides(
             model,
             timeValue + dt / 2,
             env,
@@ -929,9 +975,8 @@
             stage2IntegralValues,
             algebraicValueMap,
             stateValueOverrides,
-          );
-          const stage2StateOverrides = new Map(
-            [...integralStateNodeIds].map((nodeId) => [nodeId, stage2TransitionValues.get(nodeId)?.value ?? currentStateMap.get(nodeId)]),
+            currentStateMap,
+            rk4Analyses,
           );
           const stage2 = semantics.evaluateStatefulGraphStep(
             model.nodes,
@@ -951,7 +996,7 @@
             const stage2AlgebraicValueMap = extractSuccessfulAlgebraicValueMap(stage2.algebraic);
             const k2 = extractSuccessfulResultMap(stage2.stateTransitions);
             const stage3IntegralValues = buildStageIntegralValuesMap(currentStateMap, k2, dt / 2);
-            const stage3TransitionValues = evaluateTransitionResultsWithIntegralValuesForModel(
+            const stage3StateOverrides = buildRkStageStateOverrides(
               model,
               timeValue + dt / 2,
               env,
@@ -960,9 +1005,8 @@
               stage3IntegralValues,
               stage2AlgebraicValueMap,
               stage2StateOverrides,
-            );
-            const stage3StateOverrides = new Map(
-              [...integralStateNodeIds].map((nodeId) => [nodeId, stage3TransitionValues.get(nodeId)?.value ?? currentStateMap.get(nodeId)]),
+              currentStateMap,
+              rk4Analyses,
             );
             const stage3 = semantics.evaluateStatefulGraphStep(
               model.nodes,
@@ -971,9 +1015,9 @@
               executionPlan,
               {
                 derivativeStateNodeIds: integralStateNodeIds,
-              stateValueOverrides: stage3StateOverrides,
-              localFunctions: localFunctionsForRuntimeModel(model),
-              random: randomSourceForModel(model),
+                stateValueOverrides: stage3StateOverrides,
+                localFunctions: localFunctionsForRuntimeModel(model),
+                random: randomSourceForModel(model),
                 customNodeEvaluator: createSubmodelNodeEvaluator(model, timeValue + dt / 2, env, { applyResults: false }),
               },
             );
@@ -982,7 +1026,7 @@
               const stage3AlgebraicValueMap = extractSuccessfulAlgebraicValueMap(stage3.algebraic);
               const k3 = extractSuccessfulResultMap(stage3.stateTransitions);
               const stage4IntegralValues = buildStageIntegralValuesMap(currentStateMap, k3, dt);
-              const stage4TransitionValues = evaluateTransitionResultsWithIntegralValuesForModel(
+              const stage4StateOverrides = buildRkStageStateOverrides(
                 model,
                 timeValue + dt,
                 env,
@@ -991,9 +1035,8 @@
                 stage4IntegralValues,
                 stage3AlgebraicValueMap,
                 stage3StateOverrides,
-              );
-              const stage4StateOverrides = new Map(
-                [...integralStateNodeIds].map((nodeId) => [nodeId, stage4TransitionValues.get(nodeId)?.value ?? currentStateMap.get(nodeId)]),
+                currentStateMap,
+                rk4Analyses,
               );
               const stage4 = semantics.evaluateStatefulGraphStep(
                 model.nodes,
@@ -1025,6 +1068,10 @@
                     k4List[idx],
                     dt,
                   ));
+                  if (rk4Analyses.get(nodeId)?.pureIntegral && integratedValues.length === 1) {
+                    rk4Results.set(nodeId, { ok: true, value: integratedValues[0] });
+                    return;
+                  }
                   rk4Results.set(
                     nodeId,
                     evaluateTransitionResultsWithIntegralValuesForModel(

@@ -7,6 +7,7 @@
     "showGrid": true,
     "highlightNodeEdges": false,
     "showNodeValues": false,
+    "checkUnits": true,
     "gridSize": 20,
     "tooltipDelayMs": 300,
     "scrollLeft": 40,
@@ -19,23 +20,25 @@
     "breakpointMessage": ""
   },
   "modelProperties": [],
-  "nodeCounter": 19,
-  "edgeCounter": 27,
-  "widgetCounter": 5,
-  "textItemCounter": 4,
-  "presentationGroupCounter": 3,
+  "nodeCounter": 20,
+  "edgeCounter": 28,
+  "widgetCounter": 6,
+  "textItemCounter": 5,
+  "presentationGroupCounter": 4,
   "presentationGroups": [],
   "dashboard": null,
   "execution": {
     "t0": 0,
     "dt": 1,
+    "timeUnit": "s",
     "t1": 10000,
     "delayMs": 1,
-    "renderEverySteps": 1,
+    "renderEverySteps": 10,
     "decimals": 3,
     "integrator": "euler",
     "strictDefinitions": false,
-    "stopOnRuntimeError": false
+    "stopOnRuntimeError": false,
+    "randomSeed": null
   },
   "nodes": [
     {
@@ -50,13 +53,14 @@
       "height": 45,
       "fillColor": "#ffffff",
       "strokeColor": "#000000",
+      "unit": "",
       "properties": [
         {
-          "key": "note formula",
+          "key": "formula notes",
           "value": ""
         },
         {
-          "key": "descrizione",
+          "key": "description",
           "value": ""
         }
       ],
@@ -74,13 +78,14 @@
       "height": 45,
       "fillColor": "#ffffff",
       "strokeColor": "#000000",
+      "unit": "",
       "properties": [
         {
-          "key": "note formula",
+          "key": "formula notes",
           "value": ""
         },
         {
-          "key": "descrizione",
+          "key": "description",
           "value": ""
         }
       ],
@@ -98,13 +103,14 @@
       "height": 45,
       "fillColor": "#ffffff",
       "strokeColor": "#000000",
+      "unit": "",
       "properties": [
         {
-          "key": "note formula",
+          "key": "formula notes",
           "value": ""
         },
         {
-          "key": "descrizione",
+          "key": "description",
           "value": ""
         }
       ],
@@ -123,13 +129,14 @@
       "height": 45,
       "fillColor": "#ffffff",
       "strokeColor": "#000000",
+      "unit": "",
       "properties": [
         {
-          "key": "note formula",
+          "key": "formula notes",
           "value": ""
         },
         {
-          "key": "descrizione",
+          "key": "description",
           "value": ""
         }
       ],
@@ -148,13 +155,14 @@
       "height": 45,
       "fillColor": "#ffffff",
       "strokeColor": "#000000",
+      "unit": "",
       "properties": [
         {
-          "key": "note formula",
+          "key": "formula notes",
           "value": ""
         },
         {
-          "key": "descrizione",
+          "key": "description",
           "value": ""
         }
       ],
@@ -172,13 +180,14 @@
       "height": 30,
       "fillColor": "#00ffff",
       "strokeColor": "#00ff00",
+      "unit": "",
       "properties": [
         {
-          "key": "note formula",
+          "key": "formula notes",
           "value": ""
         },
         {
-          "key": "descrizione",
+          "key": "description",
           "value": ""
         }
       ],
@@ -197,13 +206,14 @@
       "height": 45,
       "fillColor": "#ffffff",
       "strokeColor": "#000000",
+      "unit": "",
       "properties": [
         {
-          "key": "note formula",
+          "key": "formula notes",
           "value": ""
         },
         {
-          "key": "descrizione",
+          "key": "description",
           "value": ""
         }
       ],
@@ -222,13 +232,14 @@
       "height": 45,
       "fillColor": "#ffffff",
       "strokeColor": "#000000",
+      "unit": "",
       "properties": [
         {
-          "key": "note formula",
+          "key": "formula notes",
           "value": ""
         },
         {
-          "key": "descrizione",
+          "key": "description",
           "value": ""
         }
       ],
@@ -247,13 +258,14 @@
       "height": 45,
       "fillColor": "#ffffff",
       "strokeColor": "#000000",
+      "unit": "",
       "properties": [
         {
-          "key": "note formula",
+          "key": "formula notes",
           "value": ""
         },
         {
-          "key": "descrizione",
+          "key": "description",
           "value": ""
         }
       ],
@@ -272,13 +284,14 @@
       "height": 30,
       "fillColor": "#00ffff",
       "strokeColor": "#00ff00",
+      "unit": "",
       "properties": [
         {
-          "key": "note formula",
+          "key": "formula notes",
           "value": ""
         },
         {
-          "key": "descrizione",
+          "key": "description",
           "value": ""
         }
       ],
@@ -297,13 +310,14 @@
       "height": 45,
       "fillColor": "#ffffff",
       "strokeColor": "#000000",
+      "unit": "",
       "properties": [
         {
-          "key": "note formula",
+          "key": "formula notes",
           "value": ""
         },
         {
-          "key": "descrizione",
+          "key": "description",
           "value": ""
         }
       ],
@@ -322,13 +336,14 @@
       "height": 45,
       "fillColor": "#ffffff",
       "strokeColor": "#000000",
+      "unit": "",
       "properties": [
         {
-          "key": "note formula",
+          "key": "formula notes",
           "value": ""
         },
         {
-          "key": "descrizione",
+          "key": "description",
           "value": ""
         }
       ],
@@ -347,13 +362,14 @@
       "height": 45,
       "fillColor": "#ffffff",
       "strokeColor": "#000000",
+      "unit": "",
       "properties": [
         {
-          "key": "note formula",
+          "key": "formula notes",
           "value": ""
         },
         {
-          "key": "descrizione",
+          "key": "description",
           "value": ""
         }
       ],
@@ -372,13 +388,14 @@
       "height": 30,
       "fillColor": "#00ffff",
       "strokeColor": "#00ff00",
+      "unit": "",
       "properties": [
         {
-          "key": "note formula",
+          "key": "formula notes",
           "value": ""
         },
         {
-          "key": "descrizione",
+          "key": "description",
           "value": ""
         }
       ],
@@ -397,13 +414,14 @@
       "height": 45,
       "fillColor": "#ffffff",
       "strokeColor": "#000000",
+      "unit": "",
       "properties": [
         {
-          "key": "note formula",
+          "key": "formula notes",
           "value": ""
         },
         {
-          "key": "descrizione",
+          "key": "description",
           "value": ""
         }
       ],
@@ -621,6 +639,9 @@
       "controlPoints": []
     }
   ],
+  "notes": {
+    "markdown": ""
+  },
   "textItems": [],
   "widgets": [
     {
@@ -645,6 +666,10 @@
       "xMax": "auto",
       "yMin": "auto",
       "yMax": "auto",
+      "xGridStep": null,
+      "yGridStep": null,
+      "xAxisLabel": "",
+      "yAxisLabel": "",
       "showGrid": false,
       "showAxes": false,
       "legendPosition": "none",
@@ -687,6 +712,8 @@
           "showBars": false,
           "barColor": "#0e7ac4",
           "barWidth": 2.2,
+          "showArea": false,
+          "areaColor": "#0e7ac4",
           "pointMode": "all",
           "pointSize": 2.4
         },
@@ -704,6 +731,8 @@
           "showBars": false,
           "barColor": "#e67e22",
           "barWidth": 2.2,
+          "showArea": false,
+          "areaColor": "#e67e22",
           "pointMode": "last",
           "pointSize": 3
         }

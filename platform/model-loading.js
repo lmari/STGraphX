@@ -43,6 +43,12 @@
     const supportsOpenFilePicker = typeof options.supportsOpenFilePicker === "function"
       ? options.supportsOpenFilePicker
       : () => false;
+    const getCurrentModelDirectoryHandle = typeof options.getCurrentModelDirectoryHandle === "function"
+      ? options.getCurrentModelDirectoryHandle
+      : () => null;
+    const getCurrentModelFileHandle = typeof options.getCurrentModelFileHandle === "function"
+      ? options.getCurrentModelFileHandle
+      : () => null;
     const showOpenFilePickerCompat = typeof options.showOpenFilePickerCompat === "function"
       ? options.showOpenFilePickerCompat
       : async () => [];
@@ -200,8 +206,17 @@
       if (!supportsOpenFilePicker()) {
         return false;
       }
+      // Reopen in the active model's folder when the platform supports it.
+      // This is also useful for opening a second, related model in a new tab.
+      const startIn = getCurrentModelDirectoryHandle() || undefined;
+      const activeFilePath = String(getCurrentModelFileHandle()?.path || "").trim();
+      const directoryPath = String(startIn?.path || "").trim();
       const handles = await showOpenFilePickerCompat({
         multiple: true,
+        startIn,
+        // Electron's Linux dialog reliably honors a full file path; browsers
+        // ignore this extension and use startIn instead.
+        defaultPath: activeFilePath || directoryPath || undefined,
         types: [
           {
             description: "JSON",

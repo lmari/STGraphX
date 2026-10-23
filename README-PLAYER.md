@@ -98,14 +98,12 @@ In questa modalita devono essere disponibili anche `vendor/katex/katex.min.css` 
 
 Il file `player-demo.html` mostra un esempio minimo funzionante.
 
-Per i test manuali più mirati ci sono anche:
+Per esempi manuali più completi, consultare:
 
-* `tests/index.html`
-* `tests/player_smoke_widgets.html`
-* `tests/player_matrix_smoke.html`
-* `tests/player_abm_space_smoke.html`
+* `examples-player/oscillatore.html`
+* `examples-player/lotka-volterra.html`
+* `examples-player/schelling.html`
 
-con i relativi modelli JSON nella cartella `tests/`.
 
 ## Bundle singolo
 
@@ -144,22 +142,21 @@ Otterrai anche:
 
 Il loader `player-runtime-loader.js` la userà automaticamente se presente.
 
-## Test del player
+## Esempi del player
 
-I test manuali del player sono nella cartella `tests/`.
+Gli esempi manuali del player sono nella cartella `examples-player/`.
 
 ### Modelli disponibili
 
-* `tests/player_smoke_widgets.json`
-* `tests/player_matrix_smoke.json`
-* `tests/player_abm_space_smoke.json`
+* `examples-player/oscillatore.json`
+* `examples-player/lotka-volterra.json`
+* `examples-player/schelling.json`
 
 ### Pagine HTML disponibili
 
-* `tests/index.html`
-* `tests/player_smoke_widgets.html`
-* `tests/player_matrix_smoke.html`
-* `tests/player_abm_space_smoke.html`
+* `examples-player/oscillatore.html`
+* `examples-player/lotka-volterra.html`
+* `examples-player/schelling.html`
 
 ### Flusso consigliato
 
@@ -178,10 +175,9 @@ npm run start:web
 3. apri nel browser una delle pagine:
 
 ```txt
-http://localhost:8080/tests/index.html
-http://localhost:8080/tests/player_smoke_widgets.html
-http://localhost:8080/tests/player_matrix_smoke.html
-http://localhost:8080/tests/player_abm_space_smoke.html
+http://localhost:8000/examples-player/oscillatore.html
+http://localhost:8000/examples-player/lotka-volterra.html
+http://localhost:8000/examples-player/schelling.html
 ```
 
 Se il bundle non è presente, le pagine continuano comunque a funzionare grazie al fallback ai file sorgente.
@@ -601,12 +597,12 @@ La callback riceve un oggetto con:
 
 Nel repository c'è anche uno script pronto:
 
-* `tests/headless-demo.js`
+* `examples-headless/run-oscillator.js`
 
 Esecuzione:
 
 ```bash
-node tests/headless-demo.js
+node examples-headless/run-oscillator.js
 ```
 
 Lo script mostra:

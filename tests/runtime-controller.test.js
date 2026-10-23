@@ -8,6 +8,7 @@ async function run() {
   let intervalCallback = null;
   let initialized = false;
   let refreshCount = 0;
+  const timedProgress = [];
   const batchingStates = [];
   const execution = {
     t0: 0,
@@ -50,6 +51,7 @@ async function run() {
     evaluateBreakpointConditionAtTime: () => ({ hit: false, invalid: false }),
     clearVisualHistory: () => {},
     clearSimulationHistory: () => {},
+    onExecutionProgress: ({ time }) => timedProgress.push(time),
     setIntervalFn: (callback) => {
       intervalCallback = callback;
       return 1;
@@ -64,9 +66,11 @@ async function run() {
   assert.deepEqual(batchingStates, [true, true, true], "all calculations in a timed batch defer visual refresh");
   assert.equal(timedState.batchingVisualRefresh, false, "the visual batch marker is cleared before rendering");
   assert.equal(refreshCount, 2, "each timed tick refreshes the view once");
+  assert.deepEqual(timedProgress, [2], "a timed batch reports progress after its visual refresh");
   await intervalCallback();
   assert.equal(execution.currentTime, 5, "subsequent timed ticks retain the same step batch size");
   assert.equal(refreshCount, 3, "the visual refresh cadence remains the timer delay");
+  assert.deepEqual(timedProgress, [2, 5], "each visual batch publishes its final progress");
   controller.stopTimedExecution(false);
 
   const errorExecution = {

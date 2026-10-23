@@ -7,7 +7,7 @@
 
 window.STGraphXAppMeta = {
   author: "Luca Mari",
-  releaseDate: "2026.10.21",
+  releaseDate: "2026.10.23",
   license: "MPL-2.0",
   copyright: "Copyright (c) 2026 Luca Mari",
 };

@@ -1,6 +1,6 @@
 # STGraphX: Readme
 
-versione 21 ottobre 2026
+versione 23 ottobre 2026
 
 Copyright (c) 2026 Luca Mari
 
@@ -37,10 +37,12 @@ STGraphX è un'applicazione JavaScript con tre opzioni di uso:
 
 Ha un'interfaccia utente responsive, che lo rende utilizzabile anche su tablet.
 
-### Implementati (senza librerie esterne)
+### Implementati
 
 (*): funzionalità già presente in STGraph ma migliorata in modo significativo  
 (**): funzionalità assente in STGraph e introdotta qui
+
+(a differenza di STGraph che è basato su varie librerie open source, l'unica libreria esterna usata in STGraphX è KaTeX, https://katex.org)
 
 #### Funzionalità generali
 

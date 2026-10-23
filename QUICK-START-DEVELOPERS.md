@@ -311,7 +311,7 @@ npm run build:player
 npm run start:web
 ```
 
-Apri `http://127.0.0.1:8000/player-demo.html` oppure `http://127.0.0.1:8000/tests/index.html`.
+Apri `http://127.0.0.1:8000/player-demo.html` oppure `http://127.0.0.1:8000/examples-player/oscillatore.html`.
 
 ## 4. API JavaScript
 
@@ -537,7 +537,7 @@ npm run start:web
 ### API Headless
 
 ```bash
-node tests/headless-demo.js
+node examples-headless/run-oscillator.js
 ```
 
 ## 7. Versione e data di rilascio

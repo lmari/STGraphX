@@ -154,7 +154,11 @@
       return validateTimeConfig();
     }
 
-    async function executeOneStep(restartIfEnded = true, { refreshView = true, notifyBreakpoint = true } = {}) {
+    async function executeOneStep(restartIfEnded = true, {
+      refreshView = true,
+      notifyBreakpoint = true,
+      reportProgress = true,
+    } = {}) {
       const execution = getExecution();
       const cfg = await ensureExecutionReady();
       if (!cfg) {
@@ -197,7 +201,9 @@
 
       const stepResult = session.evaluateAtTime(nextTime, evaluationEnv());
       execution.currentTime = nextTime;
-      reportExecutionProgress(nextTime, cfg);
+      if (reportProgress) {
+        reportExecutionProgress(nextTime, cfg);
+      }
       const breakpointResult = evaluateBreakpointConditionAtTime?.(nextTime) || { hit: false, invalid: false };
 
       if (breakpointResult.invalid) {
@@ -474,7 +480,11 @@
           timedState.batchingVisualRefresh = true;
           try {
             for (let step = 0; step < stepsPerRefresh; step += 1) {
-              outcome = await executeOneStep(false, { refreshView: false, notifyBreakpoint: false });
+              outcome = await executeOneStep(false, {
+                refreshView: false,
+                notifyBreakpoint: false,
+                reportProgress: false,
+              });
               if (!outcome?.ok || outcome.completed || outcome.breakpointHit) {
                 break;
               }
@@ -488,6 +498,9 @@
             refreshRuntimeView?.({
               force: !outcome.ok || outcome.completed || outcome.breakpointHit,
             });
+            // The browser can paint only between visual batches. Reporting
+            // here keeps the progress indicator in sync with that cadence.
+            reportExecutionProgress(execution.currentTime, cfg);
           }
           if (!outcome || !outcome.ok) {
             stopTimedExecution(false, outcome?.completed ? "completed" : "stopped");

@@ -3,3 +3,4 @@ node_modules/
 .codex/
 dist/
 src-tauri/target/
+examples-headless/output/

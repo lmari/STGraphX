@@ -247,6 +247,17 @@ const expressionEditorCloseBtn = document.getElementById("expressionEditorCloseB
 const expressionEditorCancelBtn = document.getElementById("expressionEditorCancelBtn");
 const expressionEditorApplyBtn = document.getElementById("expressionEditorApplyBtn");
 const expressionEditorResizeHandle = document.getElementById("expressionEditorResizeHandle");
+const expressionNodeIdentity = document.getElementById("expressionNodeIdentity");
+const expressionNodeNameInput = document.getElementById("expressionNodeNameInput");
+const expressionNodeShapeInput = document.getElementById("expressionNodeShapeInput");
+const expressionNodeInputLabel = document.getElementById("expressionNodeInputLabel");
+const expressionNodeInputInput = document.getElementById("expressionNodeInputInput");
+const expressionNodeOutputLabel = document.getElementById("expressionNodeOutputLabel");
+const expressionNodeOutputInput = document.getElementById("expressionNodeOutputInput");
+const expressionNodeGlobalLabel = document.getElementById("expressionNodeGlobalLabel");
+const expressionNodeGlobalInput = document.getElementById("expressionNodeGlobalInput");
+const expressionNodeUnitLabel = document.getElementById("expressionNodeUnitLabel");
+const expressionNodeUnitInput = document.getElementById("expressionNodeUnitInput");
 const documentationHelpBtn = document.getElementById("documentationHelpBtn");
 const functionsHelpBtn = document.getElementById("functionsHelpBtn");
 const eightTupleBtn = document.getElementById("eightTupleBtn");
@@ -632,6 +643,8 @@ const modelLoadingHelpers = globalThis.STGraphXModelLoading?.createModelLoadingH
   resolveRecentModelSnapshot,
   supportsOpenFilePicker,
   showOpenFilePickerCompat,
+  getCurrentModelDirectoryHandle: () => currentModelDirectoryHandle,
+  getCurrentModelFileHandle: () => currentFileHandle,
   pickSubmodelFilesWithInput,
   notifyMissingRecentModelEntry,
   removeRecentModelEntry(entry) {
@@ -3494,6 +3507,65 @@ function syncExpressionEditorToSelectedNode() {
   refreshExpressionEditorValidation();
 }
 
+function syncExpressionEditorNodeIdentity(node) {
+  const visible = Boolean(
+    node
+    && ui.expressionEditor?.fieldKey !== "__custom__"
+    && !isDraftNode(node)
+    && !isSubmodelNode(node),
+  );
+  expressionNodeIdentity?.classList.toggle("hidden", !visible);
+  expressionNodeIdentity?.classList.toggle("state-node-identity", Boolean(visible && isStateNode(node)));
+  if (!visible) {
+    return;
+  }
+
+  const editable = !isEditingUiLocked();
+  if (expressionNodeNameInput && document.activeElement !== expressionNodeNameInput) {
+    expressionNodeNameInput.value = String(node.name ?? "");
+  }
+  if (expressionNodeShapeInput) {
+    expressionNodeShapeInput.value = ["ellipse", "rect", "diamond"].includes(node.shape)
+      ? node.shape
+      : "ellipse";
+    expressionNodeShapeInput.disabled = !editable;
+    Array.from(expressionNodeShapeInput.options).forEach((option) => {
+      option.title = t(`tooltip.node.type.${option.value}`);
+    });
+    setTooltipText(expressionNodeShapeInput, t(`tooltip.node.type.${expressionNodeShapeInput.value}`));
+  }
+
+  const canSetInput = canMarkNodeAsInput(node);
+  const canSetGlobal = canMarkNodeAsGlobal(node);
+  expressionNodeInputLabel?.classList.toggle("hidden", !canSetInput);
+  expressionNodeGlobalLabel?.classList.toggle("hidden", !canSetGlobal);
+  expressionNodeOutputLabel?.classList.remove("hidden");
+  if (expressionNodeInputInput) {
+    expressionNodeInputInput.checked = Boolean(node.input);
+    expressionNodeInputInput.disabled = !editable || !canSetInput;
+  }
+  if (expressionNodeOutputInput) {
+    expressionNodeOutputInput.checked = Boolean(node.output);
+    expressionNodeOutputInput.disabled = !editable;
+  }
+  if (expressionNodeGlobalInput) {
+    expressionNodeGlobalInput.checked = Boolean(node.global);
+    expressionNodeGlobalInput.disabled = !editable || !canSetGlobal;
+  }
+
+  const declaredUnit = String(node.unit ?? "").trim();
+  const unitMayBeDeclared = canDeclareNodeUnit(node);
+  expressionNodeUnitLabel?.classList.toggle("hidden", false);
+  if (expressionNodeUnitInput) {
+    if (document.activeElement !== expressionNodeUnitInput) {
+      expressionNodeUnitInput.value = declaredUnit || (unitMayBeDeclared ? "" : String(node.inferredUnit ?? ""));
+    }
+    expressionNodeUnitInput.readOnly = !declaredUnit && Boolean(node.inferredUnit) && !unitMayBeDeclared;
+    expressionNodeUnitInput.disabled = !editable;
+    expressionNodeUnitInput.classList.toggle("inferred-unit", expressionNodeUnitInput.readOnly);
+  }
+}
+
 function syncExpressionEditorFormulaNotes() {
   const node = ui.expressionEditor?.nodeId ? getNodeById(ui.expressionEditor.nodeId) : null;
   const visible = Boolean(node && ui.expressionEditor?.fieldKey !== "__custom__");
@@ -3534,6 +3606,7 @@ function syncExpressionEditorFormulaNotes() {
   }
   expressionEditorCard?.classList.toggle("state-node-editor", stateVisible);
   expressionEditorMain?.classList.toggle("state-node-editor", stateVisible);
+  syncExpressionEditorNodeIdentity(node);
 }
 
 function expressionDocMap() {
@@ -9464,7 +9537,10 @@ function updateExecutionProgress(timeValue = graph.execution.currentTime) {
     const inset = 10;
     executionProgress.style.left = `${Math.round(viewportRect.left + inset)}px`;
     executionProgress.style.width = `${Math.max(0, Math.round(viewportRect.width - inset * 2))}px`;
-    executionProgress.style.bottom = `${Math.max(inset, Math.round(window.innerHeight - viewportRect.bottom + inset))}px`;
+    // Keep the indicator away from the horizontal scrollbar at the bottom of
+    // a scrollable canvas. The top edge remains visible in every viewport.
+    executionProgress.style.top = `${Math.max(inset, Math.round(viewportRect.top + inset))}px`;
+    executionProgress.style.bottom = "auto";
   }
   executionProgressBar.style.transform = `scaleX(${executionProgressFraction(timeValue)})`;
   executionProgress.classList.toggle("active", isExecutionFrozen());
@@ -12984,14 +13060,13 @@ if (graphViewport) {
 async function openGraphJson() {
   if (supportsOpenFilePicker()) {
     try {
-      const opened = await modelLoadingHelpers.openGraphJson();
-      if (opened) {
-        return;
-      }
+      await modelLoadingHelpers.openGraphJson();
+      return;
     } catch (err) {
       if (err && err.name === "AbortError") {
         return;
       }
+      return;
     }
   }
   loadJsonInput.multiple = true;
@@ -14942,19 +15017,17 @@ nodeNameInput.addEventListener("keydown", (evt) => {
   }
 });
 
-nodeShapeInput.addEventListener("change", () => {
-  if (ui.selectedNodes.size !== 1) {
-    return;
+function changeNodeShape(node, nextShape) {
+  if (!node || !["draft", "rect", "ellipse", "diamond", "submodel"].includes(nextShape)) {
+    return false;
   }
-  const nodeId = [...ui.selectedNodes][0];
-  const node = getNodeById(nodeId);
-  if (!node) {
-    return;
+  if (node.shape === nextShape) {
+    return true;
   }
   runAction(() => {
     const wasSliderBindable = canBindSliderToNode(node);
     const wasDraft = isDraftNode(node);
-    node.shape = nodeShapeInput.value;
+    node.shape = nextShape;
     if (isDraftNode(node)) {
       node.input = false;
       node.output = false;
@@ -15004,6 +15077,19 @@ nodeShapeInput.addEventListener("change", () => {
     }
   });
   recalculateAfterNodeDefinitionChange();
+  return true;
+}
+
+nodeShapeInput.addEventListener("change", () => {
+  if (ui.selectedNodes.size !== 1) {
+    return;
+  }
+  const nodeId = [...ui.selectedNodes][0];
+  const node = getNodeById(nodeId);
+  if (!node) {
+    return;
+  }
+  changeNodeShape(node, nodeShapeInput.value);
 });
 
 if (nodeModelPathInput) {
@@ -15228,6 +15314,102 @@ nodeOutputInput.addEventListener("change", () => {
   });
   recalculateAfterNodeDefinitionChange();
   nodeOutputInput.indeterminate = false;
+});
+
+function expressionEditorCurrentNode() {
+  return ui.expressionEditor?.nodeId ? getNodeById(ui.expressionEditor.nodeId) : null;
+}
+
+function applyPendingExpressionEditorDefinition() {
+  if (!expressionEditorHasUnsavedChanges()) {
+    return true;
+  }
+  return commitExpressionEditorValue(false);
+}
+
+expressionNodeNameInput?.addEventListener("change", () => {
+  const node = expressionEditorCurrentNode();
+  if (!node || isEditingUiLocked()) return;
+  const attempt = semantics.validateNodeName(graph.nodes, expressionNodeNameInput.value, node.id);
+  if (!attempt.ok) {
+    expressionNodeNameInput.classList.add("invalid");
+    expressionNodeNameInput.value = node.name;
+    return;
+  }
+  if (!applyPendingExpressionEditorDefinition()) {
+    expressionNodeNameInput.value = node.name;
+    return;
+  }
+  expressionNodeNameInput.classList.remove("invalid");
+  if (attempt.name === node.name) return;
+  const oldName = node.name;
+  node.name = attempt.name;
+  propagateNodeRenameInExpressions(oldName, node.name);
+  ui.expressionEditor.baseTitle = expressionEditorBaseTitleForNode(node);
+  analyzeModelStaticIssues();
+  scheduleNodeDefinitionRecalculation();
+  refreshExpressionEditorValidation();
+  render();
+});
+
+expressionNodeShapeInput?.addEventListener("change", () => {
+  const node = expressionEditorCurrentNode();
+  if (!node || isEditingUiLocked()) return;
+  if (!applyPendingExpressionEditorDefinition() || !changeNodeShape(node, expressionNodeShapeInput.value)) {
+    expressionNodeShapeInput.value = node.shape;
+    return;
+  }
+  ui.expressionEditor.baseTitle = expressionEditorBaseTitleForNode(node);
+  syncExpressionEditorFormulaNotes();
+  refreshExpressionEditorValidation();
+});
+
+expressionNodeInputInput?.addEventListener("change", () => {
+  const node = expressionEditorCurrentNode();
+  if (!node || !canMarkNodeAsInput(node) || isEditingUiLocked()) return;
+  runAction(() => {
+    const wasInput = Boolean(node.input);
+    node.input = expressionNodeInputInput.checked;
+    if (wasInput && !node.input) {
+      removeNodeFromInputWidgetBindings(node.name);
+    }
+  });
+  recalculateAfterNodeDefinitionChange();
+  syncExpressionEditorNodeIdentity(node);
+});
+
+expressionNodeOutputInput?.addEventListener("change", () => {
+  const node = expressionEditorCurrentNode();
+  if (!node || isSubmodelNode(node) || isEditingUiLocked()) return;
+  runAction(() => {
+    const wasOutput = Boolean(node.output);
+    node.output = expressionNodeOutputInput.checked;
+    if (wasOutput && !node.output) {
+      removeNodeFromAllWidgetDisplays(node.name);
+    }
+  });
+  recalculateAfterNodeDefinitionChange();
+  syncExpressionEditorNodeIdentity(node);
+});
+
+expressionNodeGlobalInput?.addEventListener("change", () => {
+  const node = expressionEditorCurrentNode();
+  if (!node || !canMarkNodeAsGlobal(node) || isEditingUiLocked()) return;
+  runAction(() => {
+    node.global = expressionNodeGlobalInput.checked;
+  });
+  recalculateAfterNodeDefinitionChange();
+  syncExpressionEditorNodeIdentity(node);
+});
+
+expressionNodeUnitInput?.addEventListener("input", () => {
+  const node = expressionEditorCurrentNode();
+  if (!node || isEditingUiLocked() || expressionNodeUnitInput.readOnly) return;
+  node.unit = String(expressionNodeUnitInput.value ?? "").trim();
+  analyzeModelStaticIssues();
+  scheduleNodeDefinitionRecalculation();
+  scheduleFileStatusRefresh();
+  render();
 });
 
 if (nodeFillColorInput) {

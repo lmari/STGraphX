@@ -1,6 +1,6 @@
 /*!
  * STGraphX Embedded Player Bundle
- * Generated: 2026-10-21T19:14:34.452Z
+ * Generated: 2026-10-23T20:33:45.789Z
  */
 
 /* --- i18n-inline.js --- */
@@ -13,7 +13,7 @@
 
 window.STGraphXAppMeta = {
   author: "Luca Mari",
-  releaseDate: "2026.10.21",
+  releaseDate: "2026.10.23",
   license: "MPL-2.0",
   copyright: "Copyright (c) 2026 Luca Mari",
 };
@@ -1040,7 +1040,7 @@ window.STGraphXI18nBundles = {
     "configHelp.model.title": "Configurazione del modello",
     "configHelp.model.body": "Il modello raccoglie le variabili, le frecce e i widget. Qui puoi definirne il **titolo**, la base dei tempi (`t0`, `t1`, `delta t`), l'integratore, il ritardo di esecuzione e la frequenza di aggiornamento della vista.\n\nLe proprietà libere servono per documentare il modello; gli appunti del modello sono invece un testo Markdown separato.",
     "configHelp.node.title": "Configurazione della variabile",
-    "configHelp.node.body": "Una variabile ha un **nome** e un tipo: parametro, algebrica, di stato, sottomodello o bozza. Le frecce definiscono le dipendenze della sua formula.\n\nLe opzioni **input**, **output** e **globale** ne definiscono l'interazione con widget, risultati e altre formule. Colori, bordo, descrizione, unità e proprietà servono alla presentazione e alla documentazione.",
+    "configHelp.node.body": "Una variabile ha un **nome** e un **tipo**: parametro, algebrica, di stato, sottomodello o bozza. Le frecce definiscono le dipendenze della sua formula.\n\nLe opzioni **input**, **output** e **globale** ne definiscono l'interazione con widget, risultati e altre formule. Colori, bordo, descrizione, unità e proprietà servono alla presentazione e alla documentazione.",
     "configHelp.widget.title": "Configurazione del widget",
     "configHelp.widget.body": "I widget mostrano risultati o consentono di modificare variabili di input. Titolo, dimensioni e font controllano la presentazione; le altre opzioni dipendono dal tipo di widget.\n\nUn widget di input controlla una sola variabile alla volta. Durante l'esecuzione i parametri restano protetti quando la loro modifica non è consentita.",
     "configHelp.widget.slider.title": "Widget slider",
@@ -5093,6 +5093,8 @@ window.STGraphXI18nBundles = {
   const MATH_SCOPE = Object.freeze(graphFunctions.createMathScope(MATH_SCOPE_OPTIONS));
   const RANDOM_MATH_SCOPES = new WeakMap();
   const NODE_PROPERTY_ACCESS_CACHE = new WeakMap();
+  const EMPTY_LOCAL_FUNCTIONS = new Map();
+  const EVALUATION_MATH_SCOPE = Symbol("stgraphxEvaluationMathScope");
   const FUNCTION_NAMES = new Set(
     Object.keys(MATH_SCOPE).filter((name) => typeof MATH_SCOPE[name] === "function"),
   );
@@ -5111,7 +5113,10 @@ window.STGraphXI18nBundles = {
 
   function normalizeLocalFunctionDefinitions(definitions = []) {
     if (!Array.isArray(definitions)) {
-      return new Map();
+      return EMPTY_LOCAL_FUNCTIONS;
+    }
+    if (definitions.length === 0) {
+      return EMPTY_LOCAL_FUNCTIONS;
     }
     const out = new Map();
     definitions.forEach((definition) => {
@@ -5789,23 +5794,21 @@ window.STGraphXI18nBundles = {
         if (!Array.isArray(row)) {
           return evaluateAstNode(
             compiled.ast,
-            {
-              ...baseScope,
+            createDerivedEvaluationScope(baseScope, {
               self: row,
               $i: rowIndex,
               $j: Object.prototype.hasOwnProperty.call(baseScope || {}, "$j") ? baseScope.$j : 0,
-            },
+            }),
             hooks,
           );
         }
         return row.map((item, colIndex) => evaluateAstNode(
           compiled.ast,
-          {
-            ...baseScope,
+          createDerivedEvaluationScope(baseScope, {
             self: item,
             $i: rowIndex,
             $j: colIndex,
-          },
+          }),
           hooks,
         ));
       });
@@ -5813,24 +5816,22 @@ window.STGraphXI18nBundles = {
     if (Array.isArray(selfVector)) {
       return selfVector.map((item, index) => evaluateAstNode(
         compiled.ast,
-        {
-          ...baseScope,
+        createDerivedEvaluationScope(baseScope, {
           self: item,
           $i: index,
-        },
+        }),
         hooks,
       ));
     }
     return evaluateAstNode(
       compiled.ast,
-      {
-        ...baseScope,
+      createDerivedEvaluationScope(baseScope, {
         self: Object.prototype.hasOwnProperty.call(baseScope || {}, "__self") ? baseScope.__self : undefined,
         $i: Object.prototype.hasOwnProperty.call(baseScope || {}, "$i") ? baseScope.$i : 0,
         ...(Object.prototype.hasOwnProperty.call(baseScope || {}, "$j")
           ? { $j: baseScope.$j }
           : {}),
-      },
+      }),
       hooks,
     );
   }
@@ -5843,6 +5844,33 @@ window.STGraphXI18nBundles = {
       return { ...explicit };
     }
     return collectAgentFieldAliasesFromContext(context);
+  }
+
+  function createEvaluationScope(options, context = {}, extra = null) {
+    const scope = {};
+    if (extra && typeof extra === "object") {
+      Object.assign(scope, extra);
+    }
+    if (context && typeof context === "object") {
+      Object.assign(scope, context);
+    }
+    scope[EVALUATION_MATH_SCOPE] = mathScopeForEvaluation(options);
+    return scope;
+  }
+
+  function createDerivedEvaluationScope(baseScope, values = {}) {
+    return { ...(baseScope || {}), ...values };
+  }
+
+  function lookupEvaluationScopeValue(scope, name) {
+    if (Object.prototype.hasOwnProperty.call(scope || {}, name)) {
+      return { found: true, value: scope[name] };
+    }
+    const mathScope = scope?.[EVALUATION_MATH_SCOPE];
+    if (mathScope && Object.prototype.hasOwnProperty.call(mathScope, name)) {
+      return { found: true, value: mathScope[name] };
+    }
+    return { found: false, value: undefined };
   }
 
   function collectAgentFieldNamesFromAst(node, out = new Set()) {
@@ -6745,13 +6773,16 @@ window.STGraphXI18nBundles = {
       case "array":
         return node.elements.map((item) => evaluateAstNode(item, scope, hooks));
       case "identifier":
-        if (!Object.prototype.hasOwnProperty.call(scope, node.name)) {
+        {
+          const resolved = lookupEvaluationScopeValue(scope, node.name);
+          if (resolved.found) {
+            return resolved.value;
+          }
           if (hooks?.agentFieldAliases && Object.prototype.hasOwnProperty.call(hooks.agentFieldAliases, node.name)) {
             return hooks.agentFieldAliases[node.name];
           }
           throw new ReferenceError(`${node.name} is not defined`);
         }
-        return scope[node.name];
       case "member": {
         const target = evaluateAstNode(node.target, scope, hooks);
         if (target == null || (typeof target !== "object" && !Array.isArray(target))) {
@@ -7094,10 +7125,11 @@ window.STGraphXI18nBundles = {
             localFunctionStack: [...stack, node.name],
           });
         }
-        if (!Object.prototype.hasOwnProperty.call(scope, node.name)) {
+        const functionResult = lookupEvaluationScopeValue(scope, node.name);
+        if (!functionResult.found) {
           throw new ReferenceError(`${node.name} is not defined`);
         }
-        const fn = scope[node.name];
+        const fn = functionResult.value;
         if (typeof fn !== "function") {
           throw new Error(`${node.name} is not callable`);
         }
@@ -7182,7 +7214,7 @@ window.STGraphXI18nBundles = {
     try {
       raw = evaluateAstWithLocalSelf(
         compiled,
-        { ...mathScopeForEvaluation(options), ...context },
+        createEvaluationScope(options, context),
         {
           ...(options?.hooks && typeof options.hooks === "object" ? options.hooks : {}),
           agentFieldAliases: normalizeAgentFieldAliasMap(options, context),
@@ -7256,7 +7288,7 @@ window.STGraphXI18nBundles = {
     try {
       raw = evaluateAstWithLocalSelf(
         { ...compiled, ast: derivativeAst },
-        { ...mathScopeForEvaluation(options), integral: unavailableIntegral, ...context },
+        createEvaluationScope(options, context, { integral: unavailableIntegral }),
         {
           ...(options?.hooks && typeof options.hooks === "object" ? options.hooks : {}),
           agentFieldAliases: normalizeAgentFieldAliasMap(options, context),
@@ -7300,7 +7332,7 @@ window.STGraphXI18nBundles = {
       for (const derivativeAst of compiled.integralArgAsts || []) {
         const raw = evaluateAstWithLocalSelf(
           { ...compiled, ast: derivativeAst },
-          { ...mathScopeForEvaluation(options), integral: unavailableIntegral, ...context },
+          createEvaluationScope(options, context, { integral: unavailableIntegral }),
           {
             ...(options?.hooks && typeof options.hooks === "object" ? options.hooks : {}),
             agentFieldAliases: normalizeAgentFieldAliasMap(options, context),
@@ -7346,7 +7378,7 @@ window.STGraphXI18nBundles = {
       const baseHooks = options?.hooks && typeof options.hooks === "object" ? options.hooks : null;
       raw = evaluateAstWithLocalSelf(
         compiled,
-        { ...mathScopeForEvaluation(options), integral: unavailableIntegral, ...context },
+        createEvaluationScope(options, context, { integral: unavailableIntegral }),
         {
           ...(baseHooks || {}),
           agentFieldAliases: normalizeAgentFieldAliasMap(options, context),
@@ -8385,6 +8417,7 @@ window.STGraphXI18nBundles = {
     // Runtime models keep their graph structure for an entire execution. Cache
     // the derived plan and invalidate it explicitly when a definition changes.
     const executionPlanCache = new WeakMap();
+    const EMPTY_NODE_ID_SET = new Set();
 
     function executionPlanForModel(model) {
       if (!model || !Array.isArray(model.nodes) || !Array.isArray(model.edges)) {
@@ -8399,6 +8432,7 @@ window.STGraphXI18nBundles = {
         edges: model.edges,
         plan: semantics.prepareStatefulExecutionPlan(model.nodes, model.edges),
         rk4Analyses: null,
+        rk4StateNodeIds: null,
         localFunctions: null,
       };
       executionPlanCache.set(model, entry);
@@ -9227,15 +9261,59 @@ window.STGraphXI18nBundles = {
       return results;
     }
 
+    function buildRkStageStateOverrides(
+      model,
+      timeValue,
+      env,
+      executionPlan,
+      integralStateIds,
+      integralValuesMap,
+      algebraicValueMap,
+      stateValueOverrides,
+      currentStateMap,
+      rk4Analyses,
+    ) {
+      const overrides = new Map();
+      const nonPureIntegralIds = new Set();
+      integralStateIds.forEach((nodeId) => {
+        const values = integralValuesMap.get(nodeId);
+        if (rk4Analyses.get(nodeId)?.pureIntegral && Array.isArray(values) && values.length === 1) {
+          // For integral(f), the stage value is already x + factor * f.
+          overrides.set(nodeId, values[0]);
+          return;
+        }
+        nonPureIntegralIds.add(nodeId);
+      });
+      if (nonPureIntegralIds.size > 0) {
+        const evaluated = evaluateTransitionResultsWithIntegralValuesForModel(
+          model,
+          timeValue,
+          env,
+          executionPlan,
+          nonPureIntegralIds,
+          integralValuesMap,
+          algebraicValueMap,
+          stateValueOverrides,
+        );
+        nonPureIntegralIds.forEach((nodeId) => {
+          overrides.set(nodeId, evaluated.get(nodeId)?.value ?? currentStateMap.get(nodeId));
+        });
+      }
+      return overrides;
+    }
+
     function evaluateModelAtTimeRecursive(model, timeValue, env, options = {}) {
       const executionGlobals = buildExecutionGlobalsForModel(model, env.rootExecution, timeValue);
       const planEntry = executionPlanForModel(model);
       const executionPlan = planEntry.plan;
       const stateValueOverrides = options.stateValueOverrides instanceof Map ? options.stateValueOverrides : null;
-      const rk4Analyses = String(env.rootExecution?.integrator ?? "euler") === "rk4"
+      const usesRk4 = String(env.rootExecution?.integrator ?? "euler") === "rk4";
+      const rk4Analyses = usesRk4
         ? (planEntry.rk4Analyses || (planEntry.rk4Analyses = collectRk4IntegralStateAnalysesForModel(model)))
         : new Map();
-      const integralStateNodeIds = new Set(rk4Analyses.keys());
+      const integralStateNodeIds = usesRk4
+        ? (planEntry.rk4StateNodeIds || (planEntry.rk4StateNodeIds = new Set(rk4Analyses.keys())))
+        : EMPTY_NODE_ID_SET;
       const evalResults = semantics.evaluateStatefulGraphStep(
         model.nodes,
         model.edges,
@@ -9261,7 +9339,7 @@ window.STGraphXI18nBundles = {
           const k1 = extractSuccessfulResultMap(evalResults.stateTransitions);
           const dt = Number(env.rootExecution.dt);
           const stage2IntegralValues = buildStageIntegralValuesMap(currentStateMap, k1, dt / 2);
-          const stage2TransitionValues = evaluateTransitionResultsWithIntegralValuesForModel(
+          const stage2StateOverrides = buildRkStageStateOverrides(
             model,
             timeValue + dt / 2,
             env,
@@ -9270,9 +9348,8 @@ window.STGraphXI18nBundles = {
             stage2IntegralValues,
             algebraicValueMap,
             stateValueOverrides,
-          );
-          const stage2StateOverrides = new Map(
-            [...integralStateNodeIds].map((nodeId) => [nodeId, stage2TransitionValues.get(nodeId)?.value ?? currentStateMap.get(nodeId)]),
+            currentStateMap,
+            rk4Analyses,
           );
           const stage2 = semantics.evaluateStatefulGraphStep(
             model.nodes,
@@ -9292,7 +9369,7 @@ window.STGraphXI18nBundles = {
             const stage2AlgebraicValueMap = extractSuccessfulAlgebraicValueMap(stage2.algebraic);
             const k2 = extractSuccessfulResultMap(stage2.stateTransitions);
             const stage3IntegralValues = buildStageIntegralValuesMap(currentStateMap, k2, dt / 2);
-            const stage3TransitionValues = evaluateTransitionResultsWithIntegralValuesForModel(
+            const stage3StateOverrides = buildRkStageStateOverrides(
               model,
               timeValue + dt / 2,
               env,
@@ -9301,9 +9378,8 @@ window.STGraphXI18nBundles = {
               stage3IntegralValues,
               stage2AlgebraicValueMap,
               stage2StateOverrides,
-            );
-            const stage3StateOverrides = new Map(
-              [...integralStateNodeIds].map((nodeId) => [nodeId, stage3TransitionValues.get(nodeId)?.value ?? currentStateMap.get(nodeId)]),
+              currentStateMap,
+              rk4Analyses,
             );
             const stage3 = semantics.evaluateStatefulGraphStep(
               model.nodes,
@@ -9312,9 +9388,9 @@ window.STGraphXI18nBundles = {
               executionPlan,
               {
                 derivativeStateNodeIds: integralStateNodeIds,
-              stateValueOverrides: stage3StateOverrides,
-              localFunctions: localFunctionsForRuntimeModel(model),
-              random: randomSourceForModel(model),
+                stateValueOverrides: stage3StateOverrides,
+                localFunctions: localFunctionsForRuntimeModel(model),
+                random: randomSourceForModel(model),
                 customNodeEvaluator: createSubmodelNodeEvaluator(model, timeValue + dt / 2, env, { applyResults: false }),
               },
             );
@@ -9323,7 +9399,7 @@ window.STGraphXI18nBundles = {
               const stage3AlgebraicValueMap = extractSuccessfulAlgebraicValueMap(stage3.algebraic);
               const k3 = extractSuccessfulResultMap(stage3.stateTransitions);
               const stage4IntegralValues = buildStageIntegralValuesMap(currentStateMap, k3, dt);
-              const stage4TransitionValues = evaluateTransitionResultsWithIntegralValuesForModel(
+              const stage4StateOverrides = buildRkStageStateOverrides(
                 model,
                 timeValue + dt,
                 env,
@@ -9332,9 +9408,8 @@ window.STGraphXI18nBundles = {
                 stage4IntegralValues,
                 stage3AlgebraicValueMap,
                 stage3StateOverrides,
-              );
-              const stage4StateOverrides = new Map(
-                [...integralStateNodeIds].map((nodeId) => [nodeId, stage4TransitionValues.get(nodeId)?.value ?? currentStateMap.get(nodeId)]),
+                currentStateMap,
+                rk4Analyses,
               );
               const stage4 = semantics.evaluateStatefulGraphStep(
                 model.nodes,
@@ -9366,6 +9441,10 @@ window.STGraphXI18nBundles = {
                     k4List[idx],
                     dt,
                   ));
+                  if (rk4Analyses.get(nodeId)?.pureIntegral && integratedValues.length === 1) {
+                    rk4Results.set(nodeId, { ok: true, value: integratedValues[0] });
+                    return;
+                  }
                   rk4Results.set(
                     nodeId,
                     evaluateTransitionResultsWithIntegralValuesForModel(

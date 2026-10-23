@@ -60,9 +60,11 @@ function createElectronPlatform({ ipcRenderer, clipboard = null }) {
       return ipcRenderer.invoke("stgraphx:write-clipboard-text", normalized);
     },
     async showOpenFilePicker(options = {}) {
+      const defaultPath = String(options.defaultPath || options.startIn?.path || "");
       const result = await ipcRenderer.invoke("stgraphx:show-open-dialog", {
         multiple: Boolean(options.multiple),
         title: options.title || "",
+        defaultPath: defaultPath || undefined,
       });
       if (result.canceled) {
         return [];

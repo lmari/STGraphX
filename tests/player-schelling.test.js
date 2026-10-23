@@ -6,7 +6,7 @@ const path = require("path");
 const { loadHeadlessRuntimeFromObject } = require("../headless-runtime.js");
 
 async function run() {
-  const model = JSON.parse(fs.readFileSync(path.join(__dirname, "..", "player", "schelling.json"), "utf8"));
+  const model = JSON.parse(fs.readFileSync(path.join(__dirname, "..", "examples-player", "schelling.json"), "utf8"));
   const runtime = await loadHeadlessRuntimeFromObject(model, { lang: "en" });
   assert.equal(
     runtime._runtimeModel.execution.renderEverySteps,
