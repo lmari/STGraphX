@@ -24,6 +24,7 @@ Il player:
 * supporta più istanze nella stessa pagina caricando gli script una sola volta;
 * mostra:
   * grafo del modello;
+  * equazioni dei nodi, con l'attributo `show-formulas="true"`;
   * widget;
   * dashboard con pagine a tab, se definita nel modello;
   * controlli di esecuzione;
@@ -38,12 +39,6 @@ Il player:
   * `readData(...)`;
   * breakpoint definiti nel modello; se il breakpoint ha un messaggio semantico, arresta l'esecuzione e lo mostra in una finestra del player;
   * localizzazione `it`, `en`.
-
-In più è disponibile anche un runtime headless JavaScript, utilizzabile:
-
-* in una pagina web;
-* da script JS senza UI;
-* in ambiente Node.js.
 
 Non include invece:
 
@@ -70,12 +65,7 @@ Il loader prova in quest'ordine:
 2. `build/player/stgraphx-player.js`
 3. fallback ai singoli file sorgente
 
-Questa è la soluzione più pratica sia per i test sia per l'embed reale.
-
-Carica anche:
-
-* il custom element `stgraphx-player`;
-* il runtime headless `STGraphXHeadlessRuntime`.
+Questa è la soluzione più pratica sia per i test sia per l'embed reale e registra il custom element `stgraphx-player`.
 
 ### Strada esplicita: file sorgente separati
 
@@ -172,43 +162,34 @@ npm run build:player
 npm run start:web
 ```
 
-3. apri nel browser una delle pagine:
+3. apri nel browser una pagina, per esempio:
 
 ```txt
-http://localhost:8000/examples-player/oscillatore.html
 http://localhost:8000/examples-player/lotka-volterra.html
-http://localhost:8000/examples-player/schelling.html
 ```
 
 Se il bundle non è presente, le pagine continuano comunque a funzionare grazie al fallback ai file sorgente.
 
 ## Licenza
 
-Il player embedded, il runtime headless e i file sorgente correlati di STGraphX sono distribuiti sotto licenza Mozilla Public License 2.0 (`MPL-2.0`).
+Il player embedded e i file sorgente correlati di STGraphX sono distribuiti sotto licenza Mozilla Public License 2.0 (`MPL-2.0`).
 
 Il testo completo della licenza è disponibile nel file `LICENSE` del progetto.
 
 ## Uso minimo
 
 ```html
-<stgraphx-player src="examples/newtonian_system.json"></stgraphx-player>
+<stgraphx-player src="lotka-volterra.json"></stgraphx-player>
 ```
 
-Esempio con due modelli nella stessa pagina:
+Esempio:
 
 ```html
 <stgraphx-player
-  src="examples/newtonian_system.json"
+  src="lotka-volterra.json"
   lang="it"
   zoom="0.9"
   controls="full">
-</stgraphx-player>
-
-<stgraphx-player
-  src="examples/life.json"
-  lang="en"
-  zoom="0.8"
-  controls="minimal">
 </stgraphx-player>
 ```
 
@@ -221,7 +202,7 @@ Percorso del file JSON del modello da caricare.
 Esempio:
 
 ```html
-<stgraphx-player src="models/sir.json"></stgraphx-player>
+<stgraphx-player src="lotka-volterra.json"></stgraphx-player>
 ```
 
 ### `lang`
@@ -240,7 +221,7 @@ Fattore di zoom iniziale.
 Esempio:
 
 ```html
-<stgraphx-player src="m.json" zoom="0.85"></stgraphx-player>
+<stgraphx-player src="lotka-volterra.json" zoom="0.85"></stgraphx-player>
 ```
 
 Se assente, il player usa:
@@ -255,7 +236,7 @@ Se presente, avvia automaticamente l'esecuzione dopo il caricamento.
 Esempio:
 
 ```html
-<stgraphx-player src="m.json" autostart></stgraphx-player>
+<stgraphx-player src="lotka-volterra.json" autostart></stgraphx-player>
 ```
 
 ### `controls`
@@ -272,7 +253,7 @@ Definisce il livello dei controlli visibili:
 Esempio:
 
 ```html
-<stgraphx-player src="m.json" controls="minimal"></stgraphx-player>
+<stgraphx-player src="lotka-volterra.json" controls="minimal"></stgraphx-player>
 ```
 
 ### `show-graph`
@@ -282,7 +263,17 @@ Se impostato a `false`, nasconde il grafo.
 Esempio:
 
 ```html
-<stgraphx-player src="m.json" show-graph="false"></stgraphx-player>
+<stgraphx-player src="lotka-volterra.json" show-graph="false"></stgraphx-player>
+```
+
+### `show-formulas`
+
+Se impostato a `true`, visualizza sotto ogni nodo l'equazione che lo definisce. Per le variabili di stato sono riportati stato iniziale e stato successivo. L'opzione ha effetto solo quando il grafo e visibile.
+
+Le formule lunghe sono abbreviate nel canvas; passando il puntatore sul testo viene mostrata la formula completa.
+
+```html
+<stgraphx-player src="lotka-volterra.json" show-formulas="true"></stgraphx-player>
 ```
 
 ### `show-widgets`
@@ -292,7 +283,7 @@ Se impostato a `false`, nasconde i widget.
 Esempio:
 
 ```html
-<stgraphx-player src="m.json" show-widgets="false"></stgraphx-player>
+<stgraphx-player src="lotka-volterra.json" show-widgets="false"></stgraphx-player>
 ```
 
 ## API JavaScript
@@ -433,185 +424,9 @@ Esempio più completo, con un pulsante HTML per avanzare di un passo e un elemen
 </script>
 ```
 
-## Runtime headless
+## API headless
 
-Il runtime headless è esposto come:
-
-```js
-STGraphXHeadlessRuntime
-```
-
-oppure, in Node.js:
-
-```js
-const { STGraphXHeadlessRuntime } = require("./headless-runtime.js");
-```
-
-Sono disponibili anche due helper espliciti:
-
-```js
-const {
-  loadHeadlessRuntimeFromObject,
-  loadHeadlessRuntimeFromJsonText
-} = require("./headless-runtime.js");
-```
-
-### Caricamento
-
-```js
-const runtime = await STGraphXHeadlessRuntime.load({
-  src: "examples/sir.json",
-  lang: "it"
-});
-```
-
-In alternativa puoi caricare direttamente un oggetto JSON:
-
-```js
-const runtime = await STGraphXHeadlessRuntime.load({
-  data: modelJson,
-  basePath: "./examples",
-  lang: "en"
-});
-```
-
-Se usi `data`, `basePath` o `baseUrl` servono per risolvere correttamente:
-
-* sottomodelli;
-* file letti tramite `readData(...)`.
-
-Equivalentemente:
-
-```js
-const runtime = await STGraphXHeadlessRuntime.loadFromObject(modelJson, {
-  basePath: "./examples",
-  lang: "en"
-});
-```
-
-oppure:
-
-```js
-const runtime = await STGraphXHeadlessRuntime.loadFromJsonText(modelText, {
-  basePath: "./examples",
-  lang: "en"
-});
-```
-
-### Metodi principali
-
-* `reload()`
-* `evaluate()`
-* `step()`
-* `run()`
-* `runUntil(time)`
-* `reset()`
-* `setValue(name, value[, options])`
-* `setValues(values[, options])`
-* `getValue(name)`
-* `getValues(names)`
-* `getOutputs()`
-* `getOutputHistory()`
-* `getOutputHistoryCsv([options])`
-* `writeOutputHistoryCsv(path[, options])`
-* `getTime()`
-* `getStatus()`
-* `getSettableNames()`
-* `setProgressCallback(fn)`
-
-### Esempio completo
-
-```js
-const runtime = await STGraphXHeadlessRuntime.load({
-  src: "examples/sir.json",
-  lang: "it"
-});
-
-await runtime.setValues({
-  beta: 0.4,
-  gamma: 0.2
-}, { evaluate: true });
-
-await runtime.run();
-
-console.log(runtime.getOutputs());
-console.log(runtime.getOutputHistory());
-console.log(runtime.getOutputHistoryCsv());
-```
-
-### Export CSV della history
-
-Per ottenere la history degli output in formato CSV:
-
-```js
-const csv = runtime.getOutputHistoryCsv();
-```
-
-Per limitare le colonne:
-
-```js
-const csv = runtime.getOutputHistoryCsv({
-  names: ["S", "I", "R"]
-});
-```
-
-Per scrivere direttamente il CSV su file in Node.js:
-
-```js
-const filePath = await runtime.writeOutputHistoryCsv("./out/sir.csv", {
-  names: ["S", "I", "R"]
-});
-```
-
-### Callback di avanzamento
-
-Puoi passare una callback già al caricamento:
-
-```js
-const runtime = await STGraphXHeadlessRuntime.load({
-  src: "examples/sir.json",
-  lang: "it",
-  onProgress(info) {
-    console.log(info.phase, info.time, info.historyLength);
-  }
-});
-```
-
-oppure impostarla dopo:
-
-```js
-runtime.setProgressCallback((info) => {
-  console.log(info.outputs);
-});
-```
-
-La callback riceve un oggetto con:
-
-* `phase`
-* `time`
-* `outputs`
-* `historyLength`
-* `status`
-
-## Script demo headless
-
-Nel repository c'è anche uno script pronto:
-
-* `examples-headless/run-oscillator.js`
-
-Esecuzione:
-
-```bash
-node examples-headless/run-oscillator.js
-```
-
-Lo script mostra:
-
-* caricamento di un modello headless;
-* impostazione di input;
-* esecuzione con `runUntil(...)`;
-* callback di avanzamento;
-* scrittura della history CSV su file.
+Per eseguire modelli senza interfaccia grafica, si veda `README-HEADLESS.md`.
 
 ## Eventi emessi verso la pagina host
 

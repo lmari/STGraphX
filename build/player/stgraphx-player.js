@@ -1,6 +1,6 @@
 /*!
  * STGraphX Embedded Player Bundle
- * Generated: 2026-10-23T20:33:45.789Z
+ * Generated: 2026-10-25T11:13:59.852Z
  */
 
 /* --- i18n-inline.js --- */
@@ -9971,7 +9971,11 @@ window.STGraphXI18nBundles = {
       return validateTimeConfig();
     }
 
-    async function executeOneStep(restartIfEnded = true, { refreshView = true, notifyBreakpoint = true } = {}) {
+    async function executeOneStep(restartIfEnded = true, {
+      refreshView = true,
+      notifyBreakpoint = true,
+      reportProgress = true,
+    } = {}) {
       const execution = getExecution();
       const cfg = await ensureExecutionReady();
       if (!cfg) {
@@ -10014,7 +10018,9 @@ window.STGraphXI18nBundles = {
 
       const stepResult = session.evaluateAtTime(nextTime, evaluationEnv());
       execution.currentTime = nextTime;
-      reportExecutionProgress(nextTime, cfg);
+      if (reportProgress) {
+        reportExecutionProgress(nextTime, cfg);
+      }
       const breakpointResult = evaluateBreakpointConditionAtTime?.(nextTime) || { hit: false, invalid: false };
 
       if (breakpointResult.invalid) {
@@ -10291,7 +10297,11 @@ window.STGraphXI18nBundles = {
           timedState.batchingVisualRefresh = true;
           try {
             for (let step = 0; step < stepsPerRefresh; step += 1) {
-              outcome = await executeOneStep(false, { refreshView: false, notifyBreakpoint: false });
+              outcome = await executeOneStep(false, {
+                refreshView: false,
+                notifyBreakpoint: false,
+                reportProgress: false,
+              });
               if (!outcome?.ok || outcome.completed || outcome.breakpointHit) {
                 break;
               }
@@ -10305,6 +10315,9 @@ window.STGraphXI18nBundles = {
             refreshRuntimeView?.({
               force: !outcome.ok || outcome.completed || outcome.breakpointHit,
             });
+            // The browser can paint only between visual batches. Reporting
+            // here keeps the progress indicator in sync with that cadence.
+            reportExecutionProgress(execution.currentTime, cfg);
           }
           if (!outcome || !outcome.ok) {
             stopTimedExecution(false, outcome?.completed ? "completed" : "stopped");
@@ -11810,6 +11823,32 @@ window.STGraphXI18nBundles = {
     return prefix;
   }
 
+  function abbreviatedFormulaText(expression, maxLength = 42) {
+    const text = String(expression ?? "").replace(/\s+/gu, " ").trim();
+    if (text.length <= maxLength) {
+      return text;
+    }
+    return `${text.slice(0, Math.max(1, maxLength - 1)).trimEnd()}…`;
+  }
+
+  function nodeFormulaLines(node) {
+    if (!node || node.type === "draft" || node.type === "submodel") {
+      return [];
+    }
+    if (node.type === "state") {
+      // Serialized models use initialState/stateTransition; the internal
+      // runtime representation uses the Expression variants.
+      const initial = String(node.initialState ?? node.initialStateExpression ?? "").trim();
+      const transition = String(node.stateTransition ?? node.valueExpression ?? "").trim();
+      return [
+        initial ? { text: `t0: ${initial}`, fullText: `t0: ${initial}` } : null,
+        transition ? { text: `t+: ${transition}`, fullText: `t+: ${transition}` } : null,
+      ].filter(Boolean);
+    }
+    const expression = String(node.valueExpression ?? "").trim();
+    return expression ? [{ text: expression, fullText: expression }] : [];
+  }
+
   function tableColumnFormat(widget, columnName) {
     const format = widget?.tableColumnFormats?.[columnName] || {};
     const hasDecimalDigits = Object.prototype.hasOwnProperty.call(format, "decimalDigits");
@@ -12777,7 +12816,7 @@ window.STGraphXI18nBundles = {
 
   class STGraphXPlayer extends HTMLElement {
     static get observedAttributes() {
-      return ["src", "lang", "zoom", "autostart", "controls", "show-graph", "show-widgets"];
+      return ["src", "lang", "zoom", "autostart", "controls", "show-graph", "show-formulas", "show-widgets"];
     }
 
     constructor() {
@@ -12805,6 +12844,7 @@ window.STGraphXI18nBundles = {
       this._view = {
         controls: "full",
         showGraph: true,
+        showFormulas: false,
         showWidgets: true,
         autostart: false,
       };
@@ -12846,7 +12886,7 @@ window.STGraphXI18nBundles = {
         this.renderAll();
         return;
       }
-      if (name === "autostart" || name === "controls" || name === "show-graph" || name === "show-widgets") {
+      if (name === "autostart" || name === "controls" || name === "show-graph" || name === "show-formulas" || name === "show-widgets") {
         this.syncViewOptionsFromAttributes();
         this.renderAll();
         return;
@@ -12865,6 +12905,7 @@ window.STGraphXI18nBundles = {
       this._view.controls = ["full", "minimal", "none"].includes(controls) ? controls : "full";
       this._view.autostart = this.hasAttribute("autostart");
       this._view.showGraph = this.getAttribute("show-graph") !== "false";
+      this._view.showFormulas = this.getAttribute("show-formulas") === "true";
       this._view.showWidgets = this.getAttribute("show-widgets") !== "false";
     }
 
@@ -13289,6 +13330,13 @@ window.STGraphXI18nBundles = {
             dominant-baseline: middle;
           }
           .node-runtime-value-error { fill: #d46312; }
+          .node-formula {
+            fill: #526575;
+            font-family: ui-monospace, "SFMono-Regular", Consolas, monospace;
+            font-size: 9px;
+            text-anchor: middle;
+            pointer-events: none;
+          }
           .node-shape {
             fill: var(--node-fill, #fcfdff);
             stroke: var(--node-stroke, #2f4a62);
@@ -14517,7 +14565,10 @@ window.STGraphXI18nBundles = {
         minX = Math.min(minX, x - w / 2 - 40);
         minY = Math.min(minY, y - h / 2 - 40);
         maxX = Math.max(maxX, x + w / 2 + 40);
-        maxY = Math.max(maxY, y + h / 2 + 40);
+        const formulaHeight = this._view.showGraph && this._view.showFormulas
+          ? nodeFormulaLines(node).length * 13
+          : 0;
+        maxY = Math.max(maxY, y + h / 2 + 40 + formulaHeight);
       });
       (model?.widgets || []).forEach((widget) => {
         if (!this.isDashboardItemVisible(widget)) return;
@@ -14877,6 +14928,21 @@ window.STGraphXI18nBundles = {
           valueLabel.setAttribute("y", submodelIcon ? node.y + (node.height || 70) / 2 + 29 : node.y + 11);
           valueLabel.textContent = runtimeValue.text;
           g.appendChild(valueLabel);
+        }
+        if (this._view.showFormulas) {
+          const formulaLines = nodeFormulaLines(node);
+          const formulaStartY = node.y + (node.height || 70) / 2 + 16;
+          formulaLines.forEach((formula, index) => {
+            const formulaLabel = document.createElementNS(SVG_NS, "text");
+            formulaLabel.setAttribute("class", "node-formula");
+            formulaLabel.setAttribute("x", node.x);
+            formulaLabel.setAttribute("y", formulaStartY + index * 13);
+            formulaLabel.textContent = abbreviatedFormulaText(formula.text);
+            const title = document.createElementNS(SVG_NS, "title");
+            title.textContent = formula.fullText;
+            formulaLabel.appendChild(title);
+            g.appendChild(formulaLabel);
+          });
         }
         this.$svg.appendChild(g);
       });

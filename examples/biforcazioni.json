@@ -1,0 +1,222 @@
+{
+  "version": 1,
+  "modelTitle": "",
+  "localFunctions": [],
+  "view": {
+    "zoom": 1,
+    "showGrid": true,
+    "highlightNodeEdges": true,
+    "showNodeValues": true,
+    "checkUnits": true,
+    "gridSize": 20,
+    "tooltipDelayMs": 300,
+    "scrollLeft": 180,
+    "scrollTop": 180
+  },
+  "debug": {
+    "watches": [],
+    "breakpointEnabled": false,
+    "breakpointExpression": "",
+    "breakpointMessage": ""
+  },
+  "modelProperties": [],
+  "nodeCounter": 4,
+  "edgeCounter": 3,
+  "widgetCounter": 3,
+  "textItemCounter": 1,
+  "presentationGroupCounter": 1,
+  "presentationGroups": [],
+  "dashboard": null,
+  "execution": {
+    "t0": 0,
+    "dt": 1,
+    "timeUnit": "s",
+    "t1": 200,
+    "delayMs": 100,
+    "renderEverySteps": 1,
+    "decimals": 3,
+    "integrator": "euler",
+    "strictDefinitions": false,
+    "stopOnRuntimeError": false,
+    "randomSeed": null
+  },
+  "nodes": [
+    {
+      "id": 1,
+      "name": "x",
+      "output": true,
+      "global": false,
+      "type": "state",
+      "x": 340,
+      "y": 160,
+      "width": 120,
+      "height": 70,
+      "fillColor": "",
+      "strokeColor": "",
+      "unit": "",
+      "properties": [
+        {
+          "key": "note formula",
+          "value": ""
+        },
+        {
+          "key": "descrizione",
+          "value": ""
+        }
+      ],
+      "stateTransition": "this+(1-this)*k*this",
+      "initialState": "array(size(k),0.01)"
+    },
+    {
+      "id": 2,
+      "name": "k",
+      "output": true,
+      "global": false,
+      "type": "algebraic",
+      "x": 140,
+      "y": 160,
+      "width": 120,
+      "height": 70,
+      "fillColor": "",
+      "strokeColor": "",
+      "unit": "",
+      "properties": [
+        {
+          "key": "note formula",
+          "value": ""
+        },
+        {
+          "key": "descrizione",
+          "value": ""
+        }
+      ],
+      "input": false,
+      "valueExpression": "range(1.6,3.0,0.001)"
+    },
+    {
+      "id": 3,
+      "name": "xx",
+      "output": true,
+      "global": false,
+      "type": "algebraic",
+      "x": 540,
+      "y": 160,
+      "width": 120,
+      "height": 70,
+      "fillColor": "",
+      "strokeColor": "",
+      "unit": "",
+      "properties": [
+        {
+          "key": "note formula",
+          "value": ""
+        },
+        {
+          "key": "descrizione",
+          "value": ""
+        }
+      ],
+      "input": false,
+      "valueExpression": "if(time<100,0,x)"
+    }
+  ],
+  "edges": [
+    {
+      "id": 1,
+      "from": 2,
+      "to": 1,
+      "color": "",
+      "influence": "none",
+      "controlPoints": []
+    },
+    {
+      "id": 2,
+      "from": 1,
+      "to": 3,
+      "color": "",
+      "influence": "none",
+      "controlPoints": []
+    }
+  ],
+  "notes": {
+    "markdown": ""
+  },
+  "textItems": [],
+  "widgets": [
+    {
+      "id": 2,
+      "type": "xychart",
+      "customTitle": "diagramma delle biforcazioni",
+      "x": 60,
+      "y": 220,
+      "width": 660,
+      "height": 480,
+      "dashboardPageId": null,
+      "minimized": false,
+      "showTitleBar": true,
+      "fontSize": 13,
+      "outputOnly": false,
+      "showHistory": false,
+      "expandNonScalarValues": false,
+      "tableTextAlign": "left",
+      "tableDecimalDigits": null,
+      "tableColumnFormats": {},
+      "xMin": "auto",
+      "xMax": "auto",
+      "yMin": "auto",
+      "yMax": "auto",
+      "xGridStep": null,
+      "yGridStep": null,
+      "xAxisLabel": "parametro",
+      "yAxisLabel": "punti di convergenza",
+      "showGrid": true,
+      "showAxes": true,
+      "legendPosition": "none",
+      "source": "",
+      "showNumericValues": true,
+      "showIndices": true,
+      "autoFitCells": true,
+      "cellSize": 28,
+      "valueMin": "auto",
+      "valueMax": "auto",
+      "displayRows": null,
+      "displayCols": null,
+      "colorScheme": "blue",
+      "viewMode": "grid",
+      "surfaceStyle": "solid",
+      "surfaceAzimuth": 45,
+      "surfaceElevation": 32,
+      "surfaceHeightScale": 1,
+      "min": 0,
+      "max": 100,
+      "step": 1,
+      "value": 0,
+      "falseLabel": "",
+      "trueLabel": "",
+      "options": [],
+      "mappings": [],
+      "columns": [],
+      "xyPairs": [
+        {
+          "xSource": "k",
+          "ySource": "xx",
+          "showTimeSeries": true,
+          "showInstantProfile": false,
+          "color": "#0e7ac4",
+          "pointColor": "#1a5fb4",
+          "showLine": false,
+          "lineWidth": 2.2,
+          "lineStyle": "solid",
+          "barMode": "none",
+          "showBars": false,
+          "barColor": "#0e7ac4",
+          "barWidth": 2.2,
+          "showArea": false,
+          "areaColor": "#0e7ac4",
+          "pointMode": "all",
+          "pointSize": 1
+        }
+      ]
+    }
+  ]
+}

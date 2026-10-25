@@ -133,7 +133,9 @@ Ha un'interfaccia utente responsive, che lo rende utilizzabile anche su tablet.
 
 Per l'architettura tecnica e per le istruzioni su come sviluppare il progetto, si veda `README-ARCHITECTURE.md`.
 
-Per l'uso del player e dell'API JavaScript, si veda `README-PLAYER.md`.
+Per l'uso del player incorporabile, si veda `README-PLAYER.md`.
+
+Per l'API JavaScript headless, si veda `README-HEADLESS.md`.
 
 Per l'uso di funzioni nei modelli, si veda `README-USAGE.md`.
 
