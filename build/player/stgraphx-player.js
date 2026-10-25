@@ -1,6 +1,6 @@
 /*!
  * STGraphX Embedded Player Bundle
- * Generated: 2026-10-25T11:13:59.852Z
+ * Generated: 2026-10-25T11:18:51.062Z
  */
 
 /* --- i18n-inline.js --- */
@@ -13,7 +13,7 @@
 
 window.STGraphXAppMeta = {
   author: "Luca Mari",
-  releaseDate: "2026.10.23",
+  releaseDate: "2026.10.25",
   license: "MPL-2.0",
   copyright: "Copyright (c) 2026 Luca Mari",
 };
@@ -12438,14 +12438,6 @@ window.STGraphXI18nBundles = {
     const xAxisLabel = String(options.xAxisLabel ?? "").trim();
     const yAxisLabel = String(options.yAxisLabel ?? "").trim();
     const labelFontSize = Math.max(8, fontSize);
-    const leftPad = showAxes ? 28 + (yAxisLabel ? labelFontSize + 8 : 0) : 10;
-    const rightPad = showAxes ? 18 : 10;
-    const topPad = showAxes ? 18 : 10;
-    const bottomPad = showAxes ? 26 + (xAxisLabel ? labelFontSize + 12 : 0) : 10;
-    const plotW = Math.max(10, width - leftPad - rightPad);
-    const plotH = Math.max(10, height - topPad - bottomPad);
-    const sx = (x) => leftPad + ((x - minX) / (maxX - minX)) * plotW;
-    const sy = (y) => topPad + plotH - ((y - minY) / (maxY - minY)) * plotH;
     const niceStep = (span) => {
       const raw = Math.abs(span) / 5;
       if (!Number.isFinite(raw) || raw <= 0) return 1;
@@ -12467,6 +12459,23 @@ window.STGraphXI18nBundles = {
     };
     const xTicks = buildTicks(minX, maxX, xGridStep);
     const yTicks = buildTicks(minY, maxY, yGridStep);
+    ctx.font = `${labelFontSize}px sans-serif`;
+    const yTickLabelWidth = Math.max(
+      0,
+      ...yTicks.map((tick) => ctx.measureText(formatNumberValue(execution, tick)).width),
+    );
+    // The Y title and tick values have distinct reserved areas. A fixed left
+    // margin overlaps as soon as a tick has several digits or a minus sign.
+    const leftPad = showAxes
+      ? Math.ceil(yTickLabelWidth) + 8 + (yAxisLabel ? labelFontSize + 18 : 8)
+      : 10;
+    const rightPad = showAxes ? 18 : 10;
+    const topPad = showAxes ? 18 : 10;
+    const bottomPad = showAxes ? 26 + (xAxisLabel ? labelFontSize + 12 : 0) : 10;
+    const plotW = Math.max(10, width - leftPad - rightPad);
+    const plotH = Math.max(10, height - topPad - bottomPad);
+    const sx = (x) => leftPad + ((x - minX) / (maxX - minX)) * plotW;
+    const sy = (y) => topPad + plotH - ((y - minY) / (maxY - minY)) * plotH;
 
     if (showGrid) {
       ctx.strokeStyle = "#e4ebf2";
@@ -12582,9 +12591,10 @@ window.STGraphXI18nBundles = {
       }
       if (yAxisLabel) {
         ctx.save();
-        ctx.translate(labelFontSize, topPad + plotH / 2);
+        ctx.translate(labelFontSize + 2, topPad + plotH / 2);
         ctx.rotate(-Math.PI / 2);
         ctx.textAlign = "center";
+        ctx.textBaseline = "middle";
         ctx.fillText(yAxisLabel, 0, 0);
         ctx.restore();
       }
