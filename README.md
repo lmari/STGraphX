@@ -1,6 +1,6 @@
 # STGraphX: Readme
 
-versione 25 ottobre 2026
+versione 29 ottobre 2026
 
 Copyright (c) 2026 Luca Mari
 
@@ -77,6 +77,7 @@ Ha un'interfaccia utente responsive, che lo rende utilizzabile anche su tablet.
 * Una prima gestione di unità di misura per le variabili, con inferenza sull'unità delle variabili derivate (**)
 * Un primo debugger, con gestione di watch e breakpoint, anche con messaggio semantico (**)
 * Possibilità di assegnare un random seed per i generatori di numeri pseudo-casuali (**)
+* Strumento per analisi di sensibilità (**, su idea di Francesco Bertolotti)
 
 #### Funzionalità del linguaggio
 

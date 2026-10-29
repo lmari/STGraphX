@@ -29,6 +29,7 @@ const files = [
   "watch-debugger-ui.js",
   "runtime-shared.js",
   "runtime-core.js",
+  "sensitivity-analysis-core.js",
   "runtime-loader.js",
   "runtime-session.js",
   "runtime-controller.js",

@@ -63,6 +63,7 @@ const runEvalBtn = document.getElementById("runEvalBtn");
 const runStepBtn = document.getElementById("runStepBtn");
 const runTimedToggleBtn = document.getElementById("runTimedToggleBtn");
 const runResetBtn = document.getElementById("runResetBtn");
+const sensitivityAnalysisBtn = document.getElementById("sensitivityAnalysisBtn");
 const analyzeModelBtn = document.getElementById("analyzeModelBtn");
 const watchDebuggerBtn = document.getElementById("watchDebuggerBtn");
 const topRunEvalBtn = document.getElementById("topRunEvalBtn");
@@ -338,6 +339,19 @@ const feedbackLoopsShowFocusBtn = document.getElementById("feedbackLoopsShowFocu
 const feedbackLoopsClearFocusBtn = document.getElementById("feedbackLoopsClearFocusBtn");
 const feedbackLoopsSummary = document.getElementById("feedbackLoopsSummary");
 const feedbackLoopsContent = document.getElementById("feedbackLoopsContent");
+const sensitivityAnalysisModal = document.getElementById("sensitivityAnalysisModal");
+const sensitivityAnalysisCloseBtn = document.getElementById("sensitivityAnalysisCloseBtn");
+const sensitivityInputSelect = document.getElementById("sensitivityInputSelect");
+const sensitivityOutputSelect = document.getElementById("sensitivityOutputSelect");
+const sensitivityMinInput = document.getElementById("sensitivityMinInput");
+const sensitivityMaxInput = document.getElementById("sensitivityMaxInput");
+const sensitivitySamplesInput = document.getElementById("sensitivitySamplesInput");
+const sensitivityRunBtn = document.getElementById("sensitivityRunBtn");
+const sensitivityExportBtn = document.getElementById("sensitivityExportBtn");
+const sensitivityImageExportBtn = document.getElementById("sensitivityImageExportBtn");
+const sensitivityAnalysisStatus = document.getElementById("sensitivityAnalysisStatus");
+const sensitivityAnalysisResults = document.getElementById("sensitivityAnalysisResults");
+const sensitivityAnalysisChart = document.getElementById("sensitivityAnalysisChart");
 const presentationGroupsModal = document.getElementById("presentationGroupsModal");
 const presentationGroupsCloseBtn = document.getElementById("presentationGroupsCloseBtn");
 const presentationGroupsDismissBtn = document.getElementById("presentationGroupsDismissBtn");
@@ -1053,6 +1067,10 @@ const ui = {
   timedRunHandle: null,
   timedStepRunning: false,
   fullRunRunning: false,
+  sensitivityRunning: false,
+  sensitivityStopRequested: false,
+  sensitivityProgressFraction: 0,
+  sensitivityCompletedSamples: 0,
   timedRunStartedAt: 0,
   timedStepLastActivityAt: 0,
   submodelsPrepared: false,
@@ -1090,6 +1108,7 @@ const ui = {
   analysisFocus: null,
   feedbackLoopSelection: null,
   feedbackLoopFocus: null,
+  sensitivityAnalysis: null,
   watchPreviousSnapshot: new Map(),
   breakpointLastResult: null,
   localFunctionsEditor: null,
@@ -3205,6 +3224,335 @@ function openFeedbackLoops() {
 function closeFeedbackLoops() {
   feedbackLoopsModal?.classList.add("hidden");
   clearFeedbackLoopFocus();
+}
+
+function sensitivityRangeForNode(node) {
+  const current = Number(node?.externalValueEnabled ? node.externalValue : node?.computedValue);
+  if (!Number.isFinite(current) || current === 0) return { min: -1, max: 1 };
+  const delta = Math.abs(current) * 0.2;
+  return { min: current - delta, max: current + delta };
+}
+
+function formatSensitivityInputValue(value) {
+  if (!Number.isFinite(Number(value))) return "";
+  // Avoid exposing binary floating-point artifacts in numeric input fields.
+  return String(Number(Number(value).toPrecision(12)));
+}
+
+function setSensitivityStatus(message = "", isError = false) {
+  if (!sensitivityAnalysisStatus) return;
+  sensitivityAnalysisStatus.textContent = String(message ?? "");
+  sensitivityAnalysisStatus.classList.toggle("error", Boolean(isError));
+}
+
+function setSensitivityAnalysisRunning(running) {
+  ui.sensitivityRunning = Boolean(running);
+  if (!running) ui.sensitivityStopRequested = false;
+  if (sensitivityRunBtn) {
+    sensitivityRunBtn.disabled = false;
+    sensitivityRunBtn.textContent = t(running ? "sensitivity.stop" : "sensitivity.run");
+  }
+  [sensitivityInputSelect, sensitivityOutputSelect, sensitivityMinInput, sensitivityMaxInput, sensitivitySamplesInput]
+    .forEach((control) => {
+      if (control) control.disabled = Boolean(running);
+    });
+  if (sensitivityExportBtn) sensitivityExportBtn.disabled = running || !ui.sensitivityAnalysis?.rows?.length;
+  if (sensitivityImageExportBtn) sensitivityImageExportBtn.disabled = running || !sensitivityAnalysisChart?.querySelector("svg");
+  updateExecutionProgress();
+}
+
+function requestSensitivityAnalysisStop() {
+  if (!ui.sensitivityRunning) return;
+  ui.sensitivityStopRequested = true;
+  if (sensitivityRunBtn) sensitivityRunBtn.disabled = true;
+  setSensitivityStatus(t("sensitivity.stopping"));
+}
+
+function renderSensitivityChart(rows, inputName, outputName) {
+  if (!sensitivityAnalysisChart) return;
+  sensitivityAnalysisChart.innerHTML = "";
+  const points = (rows || []).filter((row) => !row.error
+    && Number.isFinite(Number(row.inputValue))
+    && Number.isFinite(Number(row.outputValue)));
+  if (!points.length) {
+    sensitivityAnalysisChart.classList.add("hidden");
+    if (sensitivityImageExportBtn) sensitivityImageExportBtn.disabled = true;
+    return;
+  }
+  sensitivityAnalysisChart.classList.remove("hidden");
+  const width = 640;
+  const height = 300;
+  const margin = { top: 22, right: 24, bottom: 48, left: 64 };
+  let minX = Math.min(...points.map((point) => Number(point.inputValue)));
+  let maxX = Math.max(...points.map((point) => Number(point.inputValue)));
+  let minY = Math.min(...points.map((point) => Number(point.outputValue)));
+  let maxY = Math.max(...points.map((point) => Number(point.outputValue)));
+  if (minX === maxX) { minX -= 1; maxX += 1; }
+  if (minY === maxY) { minY -= 1; maxY += 1; }
+  const x = (value) => margin.left + ((Number(value) - minX) / (maxX - minX)) * (width - margin.left - margin.right);
+  const y = (value) => height - margin.bottom - ((Number(value) - minY) / (maxY - minY)) * (height - margin.top - margin.bottom);
+  const svg = document.createElementNS(SVG_NS, "svg");
+  svg.setAttribute("viewBox", `0 0 ${width} ${height}`);
+  svg.setAttribute("role", "img");
+  svg.setAttribute("aria-label", t("sensitivity.chart.aria", { input: inputName, output: outputName }));
+  const add = (tag, attributes = {}, text = "") => {
+    const element = document.createElementNS(SVG_NS, tag);
+    Object.entries(attributes).forEach(([key, value]) => element.setAttribute(key, String(value)));
+    if (text) element.textContent = text;
+    svg.appendChild(element);
+    return element;
+  };
+  for (let index = 0; index <= 4; index += 1) {
+    const value = minY + ((maxY - minY) * index) / 4;
+    const chartY = y(value);
+    add("line", { x1: margin.left, x2: width - margin.right, y1: chartY, y2: chartY, class: "sensitivity-chart-grid" });
+    add("text", { x: margin.left - 10, y: chartY + 4, class: "sensitivity-chart-tick", "text-anchor": "end" }, formatNumberValue(value));
+  }
+  add("line", { x1: margin.left, x2: width - margin.right, y1: height - margin.bottom, y2: height - margin.bottom, class: "sensitivity-chart-axis" });
+  add("line", { x1: margin.left, x2: margin.left, y1: margin.top, y2: height - margin.bottom, class: "sensitivity-chart-axis" });
+  [minX, (minX + maxX) / 2, maxX].forEach((value) => {
+    const chartX = x(value);
+    add("line", { x1: chartX, x2: chartX, y1: height - margin.bottom, y2: height - margin.bottom + 5, class: "sensitivity-chart-axis" });
+    add("text", { x: chartX, y: height - margin.bottom + 20, class: "sensitivity-chart-tick", "text-anchor": "middle" }, formatNumberValue(value));
+  });
+  add("path", {
+    d: points.slice().sort((left, right) => Number(left.inputValue) - Number(right.inputValue))
+      .map((point, index) => `${index ? "L" : "M"}${x(point.inputValue)},${y(point.outputValue)}`).join(" "),
+    class: "sensitivity-chart-line",
+  });
+  points.forEach((point) => {
+    const circle = add("circle", { cx: x(point.inputValue), cy: y(point.outputValue), r: 3.5, class: "sensitivity-chart-point" });
+    const title = document.createElementNS(SVG_NS, "title");
+    title.textContent = `${inputName}: ${formatNumberValue(Number(point.inputValue))}; ${outputName}: ${formatNumberValue(Number(point.outputValue))}`;
+    circle.appendChild(title);
+  });
+  add("text", { x: (margin.left + width - margin.right) / 2, y: height - 10, class: "sensitivity-chart-label", "text-anchor": "middle" }, inputName);
+  add("text", { x: 16, y: (margin.top + height - margin.bottom) / 2, class: "sensitivity-chart-label", "text-anchor": "middle", transform: `rotate(-90 16 ${(margin.top + height - margin.bottom) / 2})` }, outputName);
+  sensitivityAnalysisChart.appendChild(svg);
+  if (sensitivityImageExportBtn) sensitivityImageExportBtn.disabled = false;
+}
+
+function sensitivityErrorText(error) {
+  if (error === "nonNumeric") return t("sensitivity.error.nonNumeric");
+  if (["selection", "range", "time"].includes(error)) return t(`sensitivity.error.${error}`);
+  return evalReasonText(error);
+}
+
+function renderSensitivityResults(rows, inputName, outputName) {
+  if (!sensitivityAnalysisResults) return;
+  sensitivityAnalysisResults.innerHTML = "";
+  if (!rows?.length) {
+    sensitivityAnalysisResults.textContent = t("sensitivity.empty");
+    renderSensitivityChart();
+    if (sensitivityExportBtn) sensitivityExportBtn.disabled = true;
+    if (sensitivityImageExportBtn) sensitivityImageExportBtn.disabled = true;
+    return;
+  }
+  const table = document.createElement("table");
+  const headerRow = document.createElement("tr");
+  [t("sensitivity.results.input", { name: inputName }), t("sensitivity.results.output", { name: outputName })].forEach((label) => {
+    const cell = document.createElement("th");
+    cell.textContent = label;
+    headerRow.appendChild(cell);
+  });
+  const header = document.createElement("thead");
+  header.appendChild(headerRow);
+  table.appendChild(header);
+  const body = document.createElement("tbody");
+  rows.forEach((row) => {
+    const tableRow = document.createElement("tr");
+    const inputCell = document.createElement("td");
+    inputCell.textContent = formatNumberValue(row.inputValue);
+    const outputCell = document.createElement("td");
+    outputCell.textContent = row.error ? sensitivityErrorText(row.error) : formatNumberValue(row.outputValue);
+    if (row.error) outputCell.classList.add("error");
+    tableRow.append(inputCell, outputCell);
+    body.appendChild(tableRow);
+  });
+  table.appendChild(body);
+  sensitivityAnalysisResults.appendChild(table);
+  renderSensitivityChart(rows, inputName, outputName);
+  if (sensitivityExportBtn) sensitivityExportBtn.disabled = false;
+}
+
+function populateSensitivityChoices({ preserveSelection = true } = {}) {
+  if (!sensitivityAnalysisCore || !sensitivityInputSelect || !sensitivityOutputSelect) return;
+  const previousInput = preserveSelection ? sensitivityInputSelect.value : "";
+  const previousOutput = preserveSelection ? sensitivityOutputSelect.value : "";
+  const populate = (select, nodes, previous) => {
+    select.innerHTML = "";
+    const empty = document.createElement("option");
+    empty.value = "";
+    empty.textContent = t("sensitivity.choose");
+    select.appendChild(empty);
+    nodes.slice().sort((left, right) => String(left.name).localeCompare(String(right.name), undefined, { sensitivity: "base" })).forEach((node) => {
+      const option = document.createElement("option");
+      option.value = node.name;
+      option.textContent = node.name;
+      select.appendChild(option);
+    });
+    if (nodes.some((node) => node.name === previous)) select.value = previous;
+    else if (nodes.length === 1) select.value = nodes[0].name;
+  };
+  const inputs = sensitivityAnalysisCore.sensitivityInputs(graph);
+  const outputs = sensitivityAnalysisCore.sensitivityOutputs(graph);
+  populate(sensitivityInputSelect, inputs, previousInput);
+  populate(sensitivityOutputSelect, outputs, previousOutput);
+  const selectedInput = inputs.find((node) => node.name === sensitivityInputSelect.value);
+  if (selectedInput && !preserveSelection) {
+    const range = sensitivityRangeForNode(selectedInput);
+    sensitivityMinInput.value = formatSensitivityInputValue(range.min);
+    sensitivityMaxInput.value = formatSensitivityInputValue(range.max);
+  }
+}
+
+function updateSensitivityRangeFromSelection() {
+  const selected = sensitivityAnalysisCore?.sensitivityInputs(graph).find((node) => node.name === sensitivityInputSelect?.value);
+  if (!selected || !sensitivityMinInput || !sensitivityMaxInput) return;
+  const range = sensitivityRangeForNode(selected);
+  sensitivityMinInput.value = formatSensitivityInputValue(range.min);
+  sensitivityMaxInput.value = formatSensitivityInputValue(range.max);
+}
+
+function openSensitivityAnalysis() {
+  if (!sensitivityAnalysisModal) return;
+  applyWidgetDrivenNodeValues();
+  populateSensitivityChoices({ preserveSelection: false });
+  ui.sensitivityAnalysis = null;
+  setSensitivityStatus();
+  renderSensitivityResults();
+  sensitivityAnalysisModal.classList.remove("hidden");
+  window.setTimeout(() => sensitivityInputSelect?.focus(), 0);
+}
+
+function closeSensitivityAnalysis() {
+  sensitivityAnalysisModal?.classList.add("hidden");
+}
+
+function exportSensitivityAnalysis() {
+  const result = ui.sensitivityAnalysis;
+  if (!result?.rows?.length || !sensitivityAnalysisCore) return;
+  downloadTextFile("sensitivity-analysis.csv", sensitivityAnalysisCore.sensitivityCsv(result.rows, result.inputName, result.outputName), "text/csv;charset=utf-8");
+  setSensitivityStatus(t("sensitivity.exported"));
+}
+
+function exportSensitivityChart() {
+  const source = sensitivityAnalysisChart?.querySelector("svg");
+  if (!source) return;
+  const chart = source.cloneNode(true);
+  chart.setAttribute("xmlns", SVG_NS);
+  chart.setAttribute("width", "640");
+  chart.setAttribute("height", "300");
+  const rootStyle = getComputedStyle(document.documentElement);
+  const font = getComputedStyle(document.body).fontFamily;
+  const style = document.createElementNS(SVG_NS, "style");
+  style.textContent = [
+    `.sensitivity-chart-grid{stroke:${rootStyle.getPropertyValue("--line")};stroke-width:1}`,
+    `.sensitivity-chart-axis{stroke:${rootStyle.getPropertyValue("--muted")};stroke-width:1.25}`,
+    `.sensitivity-chart-line{fill:none;stroke:${rootStyle.getPropertyValue("--accent")};stroke-width:2.25}`,
+    `.sensitivity-chart-point{fill:#fff;stroke:${rootStyle.getPropertyValue("--accent")};stroke-width:2}`,
+    `.sensitivity-chart-tick{fill:${rootStyle.getPropertyValue("--muted")};font:12px ${font}}`,
+    `.sensitivity-chart-label{fill:${rootStyle.getPropertyValue("--text")};font:600 12px ${font}}`,
+  ].join("");
+  const background = document.createElementNS(SVG_NS, "rect");
+  background.setAttribute("x", "0");
+  background.setAttribute("y", "0");
+  background.setAttribute("width", "640");
+  background.setAttribute("height", "300");
+  background.setAttribute("fill", "#fff");
+  background.setAttribute("fill-opacity", "1");
+  chart.insertBefore(style, chart.firstChild);
+  chart.insertBefore(background, style);
+  downloadTextFile("sensitivity-analysis.svg", new XMLSerializer().serializeToString(chart), "image/svg+xml;charset=utf-8");
+  setSensitivityStatus(t("sensitivity.exportedImage"));
+}
+
+async function runSensitivityAnalysis() {
+  if (ui.sensitivityRunning) {
+    requestSensitivityAnalysisStop();
+    return;
+  }
+  if (!sensitivityAnalysisCore || isEditingUiLocked()) {
+    setSensitivityStatus(t("sensitivity.error.running"), true);
+    return;
+  }
+  const options = {
+    inputName: sensitivityInputSelect?.value || "",
+    outputName: sensitivityOutputSelect?.value || "",
+    min: sensitivityMinInput?.value,
+    max: sensitivityMaxInput?.value,
+    samples: sensitivitySamplesInput?.value,
+  };
+  if (!options.inputName || !options.outputName) {
+    setSensitivityStatus(t("sensitivity.error.selection"), true);
+    return;
+  }
+  if (!sensitivityAnalysisCore.sampleValues(options.min, options.max, options.samples)) {
+    setSensitivityStatus(t("sensitivity.error.range"), true);
+    return;
+  }
+  ui.sensitivityAnalysis = null;
+  renderSensitivityResults();
+  ui.sensitivityStopRequested = false;
+  ui.sensitivityProgressFraction = 0;
+  ui.sensitivityCompletedSamples = 0;
+  setSensitivityAnalysisRunning(true);
+  setSensitivityStatus(t("sensitivity.running"));
+  try {
+    if (!await prepareSubmodelsForExecution()) {
+      setSensitivityStatus(t("sensitivity.error.preparation"), true);
+      return;
+    }
+    applyWidgetDrivenNodeValues();
+    await new Promise((resolve) => window.requestAnimationFrame(resolve));
+    let lastSensitivityUiYield = performance.now();
+    const sampleCount = sensitivityAnalysisCore.sampleValues(options.min, options.max, options.samples).length;
+    const result = await sensitivityAnalysisCore.runSensitivityAsync(graph, {
+      ...options,
+      shouldCancel: () => ui.sensitivityStopRequested === true,
+      // Yield only often enough to keep the interface responsive; yielding on
+      // every few simulation steps makes otherwise fast analyses unusable.
+      shouldYield: () => performance.now() - lastSensitivityUiYield >= 50,
+      yieldToUi: () => new Promise((resolve) => window.requestAnimationFrame(() => {
+        lastSensitivityUiYield = performance.now();
+        resolve();
+      })),
+      yieldEverySteps: 64,
+      onProgress: ({ completed, total }) => {
+        if (!(Number(total) > 0) || sampleCount <= 0) return;
+        const completedSamples = Math.min(
+          sampleCount,
+          Math.floor((Number(completed) * sampleCount) / Number(total)),
+        );
+        if (completedSamples === ui.sensitivityCompletedSamples) return;
+        ui.sensitivityCompletedSamples = completedSamples;
+        ui.sensitivityProgressFraction = completedSamples / sampleCount;
+        updateExecutionProgress();
+      },
+    });
+    if (result.error === "cancelled") {
+      if (result.rows.length) {
+        ui.sensitivityAnalysis = { rows: result.rows, inputName: options.inputName, outputName: options.outputName };
+        renderSensitivityResults(result.rows, options.inputName, options.outputName);
+      }
+      setSensitivityStatus(t("sensitivity.interrupted"));
+      return;
+    }
+    if (!result.ok) {
+      setSensitivityStatus(t(`sensitivity.error.${result.error}`), true);
+      return;
+    }
+    ui.sensitivityAnalysis = { rows: result.rows, inputName: options.inputName, outputName: options.outputName };
+    renderSensitivityResults(result.rows, options.inputName, options.outputName);
+    setSensitivityStatus(t("sensitivity.summary", { count: result.rows.length }));
+  } catch (_err) {
+    setSensitivityStatus(t("error.evalReason.runtime"), true);
+  } finally {
+    setSensitivityAnalysisRunning(false);
+    ui.sensitivityProgressFraction = 0;
+    ui.sensitivityCompletedSamples = 0;
+    updateExecutionProgress();
+  }
 }
 
 function analyzeModelStaticIssues() {
@@ -9515,6 +9863,9 @@ function isExecutionFrozen() {
 }
 
 function executionProgressFraction(timeValue = graph.execution.currentTime) {
+  if (ui.sensitivityRunning) {
+    return clamp(Number(ui.sensitivityProgressFraction) || 0, 0, 1);
+  }
   const t0 = Number(graph.execution.t0);
   const t1 = Number(graph.execution.t1);
   const time = Number(timeValue);
@@ -9543,7 +9894,7 @@ function updateExecutionProgress(timeValue = graph.execution.currentTime) {
     executionProgress.style.bottom = "auto";
   }
   executionProgressBar.style.transform = `scaleX(${executionProgressFraction(timeValue)})`;
-  executionProgress.classList.toggle("active", isExecutionFrozen());
+  executionProgress.classList.toggle("active", isExecutionFrozen() || ui.sensitivityRunning);
 }
 
 function clearTimedExecutionStateSilently() {
@@ -10175,6 +10526,13 @@ function getSmartCanvasInsertionPoint({ width, height, anchor = null } = {}) {
     x: clamp(centerX - itemWidth / 2, minX, maxX),
     y: clamp(centerY - itemHeight / 2, minY, maxY),
   };
+  const snapTopLeft = (x, y) => {
+    if (!ui.snapToGrid) return { x, y };
+    return {
+      x: clamp(snap(x + itemWidth / 2) - itemWidth / 2, minX, maxX),
+      y: clamp(snap(y + itemHeight / 2) - itemHeight / 2, minY, maxY),
+    };
+  };
   const obstacles = visibleCanvasObstacles();
   const step = Math.max(24, ui.gridSize || 20);
   const offsets = [{ x: 0, y: 0 }];
@@ -10191,9 +10549,13 @@ function getSmartCanvasInsertionPoint({ width, height, anchor = null } = {}) {
   const seen = new Set();
   let leastObstructed = null;
   for (const offset of offsets) {
+    const topLeft = snapTopLeft(
+      clamp(initial.x + offset.x * step, minX, maxX),
+      clamp(initial.y + offset.y * step, minY, maxY),
+    );
     const candidate = {
-      x: clamp(snap(clamp(initial.x + offset.x * step, minX, maxX)), minX, maxX),
-      y: clamp(snap(clamp(initial.y + offset.y * step, minY, maxY)), minY, maxY),
+      x: topLeft.x,
+      y: topLeft.y,
       width: itemWidth,
       height: itemHeight,
     };
@@ -10214,10 +10576,7 @@ function getSmartCanvasInsertionPoint({ width, height, anchor = null } = {}) {
   if (leastObstructed) {
     return { x: leastObstructed.x, y: leastObstructed.y };
   }
-  return {
-    x: clamp(snap(initial.x), minX, maxX),
-    y: clamp(snap(initial.y), minY, maxY),
-  };
+  return snapTopLeft(initial.x, initial.y);
 }
 
 function addNode(shape, atPoint = null) {
@@ -13220,6 +13579,17 @@ if (!runtimeCore) {
   throw new Error("STGraphX runtime core is unavailable");
 }
 
+const sensitivityAnalysisCore = globalThis.STGraphXSensitivityAnalysisCore?.createSensitivityAnalysisCore({
+  cloneRuntimeModel: (model) => runtimeCore.cloneRuntimeModel(model),
+  initializeStateNodesForModel: (model, timeValue, execution) => runtimeCore.initializeStateNodesForModel(model, timeValue, execution),
+  promotePendingStateNodesForModel: (model) => runtimeCore.promotePendingStateNodesForModel(model),
+  evaluateModelAtTimeRecursive: (model, timeValue, env) => runtimeCore.evaluateModelAtTimeRecursive(model, timeValue, env),
+});
+
+if (!sensitivityAnalysisCore) {
+  throw new Error("STGraphX sensitivity analysis core is unavailable");
+}
+
 const runtimeLoader = globalThis.STGraphXRuntimeLoader?.createRuntimeLoader({
   t,
   normalizeReadDataPath,
@@ -16051,6 +16421,7 @@ bindModalDragHandle(examplesHelpModal, ".examples-help-card");
 bindModalDragHandle(aboutAppModal, ".about-app-card");
 bindModalDragHandle(modelAnalysisModal, ".model-analysis-card");
 bindModalDragHandle(feedbackLoopsModal, ".feedback-loops-card");
+bindModalDragHandle(sensitivityAnalysisModal, ".sensitivity-analysis-card");
 bindModalDragHandle(eightTupleModal, ".eight-tuple-card");
 bindModalDragHandle(watchDebuggerModal, ".watch-debugger-card");
 bindModalDragHandle(localFunctionsModal, ".local-functions-card");
@@ -16108,6 +16479,12 @@ if (watchDebuggerBtn) {
   watchDebuggerBtn.addEventListener("click", () => {
     closeTopMenus();
     openWatchDebugger();
+  });
+}
+if (sensitivityAnalysisBtn) {
+  sensitivityAnalysisBtn.addEventListener("click", () => {
+    closeTopMenus();
+    openSensitivityAnalysis();
   });
 }
 if (functionsHelpCloseBtn) {
@@ -16180,6 +16557,31 @@ if (feedbackLoopsShowFocusBtn) {
 }
 if (feedbackLoopsClearFocusBtn) {
   feedbackLoopsClearFocusBtn.addEventListener("click", clearFeedbackLoopFocus);
+}
+if (sensitivityAnalysisCloseBtn) {
+  sensitivityAnalysisCloseBtn.addEventListener("click", closeSensitivityAnalysis);
+}
+if (sensitivityInputSelect) {
+  sensitivityInputSelect.addEventListener("change", () => {
+    updateSensitivityRangeFromSelection();
+    setSensitivityStatus();
+    renderSensitivityResults();
+  });
+}
+if (sensitivityOutputSelect) {
+  sensitivityOutputSelect.addEventListener("change", () => {
+    setSensitivityStatus();
+    renderSensitivityResults();
+  });
+}
+if (sensitivityRunBtn) {
+  sensitivityRunBtn.addEventListener("click", () => { void runSensitivityAnalysis(); });
+}
+if (sensitivityExportBtn) {
+  sensitivityExportBtn.addEventListener("click", exportSensitivityAnalysis);
+}
+if (sensitivityImageExportBtn) {
+  sensitivityImageExportBtn.addEventListener("click", exportSensitivityChart);
 }
 if (watchDebuggerCloseBtn) {
   watchDebuggerCloseBtn.addEventListener("click", closeWatchDebugger);
@@ -16334,6 +16736,11 @@ if (feedbackLoopsModal) {
     if (evt.target === feedbackLoopsModal) {
       closeFeedbackLoops();
     }
+  });
+}
+if (sensitivityAnalysisModal) {
+  sensitivityAnalysisModal.addEventListener("pointerdown", (evt) => {
+    if (evt.target === sensitivityAnalysisModal) closeSensitivityAnalysis();
   });
 }
 if (localFunctionsModal) {
