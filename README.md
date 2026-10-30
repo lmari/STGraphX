@@ -78,6 +78,7 @@ Ha un'interfaccia utente responsive, che lo rende utilizzabile anche su tablet.
 * Un primo debugger, con gestione di watch e breakpoint, anche con messaggio semantico (**)
 * Possibilità di assegnare un random seed per i generatori di numeri pseudo-casuali (**)
 * Strumento per analisi di sensibilità (**, su idea di Francesco Bertolotti)
+* Strumento per gestione di scenari (**, su idea di Francesco Bertolotti)
 
 #### Funzionalità del linguaggio
 

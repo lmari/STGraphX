@@ -20,11 +20,70 @@
     "breakpointMessage": ""
   },
   "modelProperties": [],
-  "nodeCounter": 13,
-  "edgeCounter": 13,
-  "widgetCounter": 9,
-  "textItemCounter": 2,
-  "presentationGroupCounter": 2,
+  "unitDefinitions": [],
+  "scenarios": [
+    {
+      "id": "scenario-1793362752336-mnj0uhzvb59",
+      "name": "uno",
+      "values": [
+        {
+          "name": "a",
+          "valueExpression": "1.0"
+        },
+        {
+          "name": "b",
+          "valueExpression": "-0.01"
+        },
+        {
+          "name": "c",
+          "valueExpression": "-0.5"
+        },
+        {
+          "name": "d",
+          "valueExpression": "0.004"
+        }
+      ],
+      "execution": {
+        "t0": 0,
+        "dt": 0.01,
+        "t1": 900,
+        "integrator": "rk4"
+      }
+    },
+    {
+      "id": "scenario-1793362785874-v1qjkmk3x4",
+      "name": "due",
+      "values": [
+        {
+          "name": "a",
+          "valueExpression": "1.1"
+        },
+        {
+          "name": "b",
+          "valueExpression": "-0.01"
+        },
+        {
+          "name": "c",
+          "valueExpression": "-0.5"
+        },
+        {
+          "name": "d",
+          "valueExpression": "0.004"
+        }
+      ],
+      "execution": {
+        "t0": 0,
+        "dt": 0.01,
+        "t1": 100,
+        "integrator": "rk4"
+      }
+    }
+  ],
+  "nodeCounter": 15,
+  "edgeCounter": 15,
+  "widgetCounter": 11,
+  "textItemCounter": 4,
+  "presentationGroupCounter": 4,
   "presentationGroups": [],
   "dashboard": null,
   "execution": {
@@ -327,6 +386,8 @@
           "showBars": false,
           "barColor": "#0e7ac4",
           "barWidth": 2.2,
+          "showArea": false,
+          "areaColor": "#0e7ac4",
           "pointMode": "none",
           "pointSize": 2.4
         },
@@ -344,6 +405,8 @@
           "showBars": false,
           "barColor": "#e67e22",
           "barWidth": 2.2,
+          "showArea": false,
+          "areaColor": "#e67e22",
           "pointMode": "none",
           "pointSize": 2.4
         }
@@ -417,6 +480,8 @@
           "showBars": false,
           "barColor": "#0e7ac4",
           "barWidth": 2.2,
+          "showArea": false,
+          "areaColor": "#0e7ac4",
           "pointMode": "last",
           "pointSize": 10
         }

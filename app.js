@@ -65,6 +65,7 @@ const runStepBtn = document.getElementById("runStepBtn");
 const runTimedToggleBtn = document.getElementById("runTimedToggleBtn");
 const runResetBtn = document.getElementById("runResetBtn");
 const sensitivityAnalysisBtn = document.getElementById("sensitivityAnalysisBtn");
+const scenarioManagerBtn = document.getElementById("scenarioManagerBtn");
 const analyzeModelBtn = document.getElementById("analyzeModelBtn");
 const watchDebuggerBtn = document.getElementById("watchDebuggerBtn");
 const topRunEvalBtn = document.getElementById("topRunEvalBtn");
@@ -1017,6 +1018,7 @@ const graph = {
   notes: { markdown: "" },
   properties: [],
   unitDefinitions: [],
+  scenarios: [],
   localFunctions: [],
   nodes: [],
   edges: [],
@@ -7438,6 +7440,314 @@ function normalizeExecutionConfig(raw) {
   return runtimeShared.normalizeExecutionConfig(raw);
 }
 
+function createScenarioId() {
+  return `scenario-${Date.now()}-${Math.random().toString(36).slice(2)}`;
+}
+
+function normalizeScenarios(entries) {
+  return Array.isArray(entries) ? entries.map((entry) => ({
+    id: String(entry?.id || createScenarioId()),
+    name: String(entry?.name ?? "").trim().slice(0, 120),
+    values: Array.isArray(entry?.values) ? entry.values.map((value) => ({
+      name: String(value?.name ?? "").trim(),
+      valueExpression: String(value?.valueExpression ?? ""),
+      widgetValue: value?.widgetValue === undefined ? undefined : deepClone(value.widgetValue),
+    })).filter((value) => value.name) : [],
+    execution: entry?.execution && typeof entry.execution === "object" ? {
+      t0: Number.isFinite(Number(entry.execution.t0)) ? Number(entry.execution.t0) : null,
+      dt: Number.isFinite(Number(entry.execution.dt)) ? Number(entry.execution.dt) : null,
+      t1: Number.isFinite(Number(entry.execution.t1)) ? Number(entry.execution.t1) : null,
+      integrator: ["euler", "rk4"].includes(String(entry.execution.integrator)) ? String(entry.execution.integrator) : null,
+    } : null,
+  })).filter((entry) => entry.name) : [];
+}
+
+function scenarioInputWidget(nodeName) {
+  return graph.widgets.find((widget) => ["slider", "numeric", "button", "select"].includes(widget?.type)
+    && String(widget.source ?? "") === String(nodeName ?? "")) || null;
+}
+
+function scenarioTargetNodes() {
+  return graph.nodes.filter((node) => node?.shape === "diamond" || (node?.shape === "ellipse" && node.input));
+}
+
+function scenarioWidgetValueText(widget, value) {
+  if (Array.isArray(value)) return JSON.stringify(value);
+  if (widget?.type === "button") return value ? "1" : "0";
+  return String(value ?? "");
+}
+
+function scenarioWidgetValueFromText(widget, rawValue) {
+  const text = String(rawValue ?? "").trim();
+  if (widget?.type === "numeric") {
+    if (text.startsWith("[")) {
+      try { return JSON.parse(text); } catch { return deepClone(widget.value); }
+    }
+    const number = Number(text);
+    return Number.isFinite(number) ? number : deepClone(widget.value);
+  }
+  if (widget?.type === "button") {
+    return text === "1" || text.toLowerCase() === "true";
+  }
+  const number = Number(text);
+  return Number.isFinite(number) ? number : deepClone(widget?.value);
+}
+
+function currentScenarioValues() {
+  return scenarioTargetNodes().map((node) => {
+    const widget = scenarioInputWidget(node.name);
+    return {
+      name: node.name,
+      valueExpression: String(node.valueExpression ?? ""),
+      widgetValue: widget ? deepClone(widget.value) : undefined,
+    };
+  });
+}
+
+function currentScenarioExecution() {
+  return {
+    t0: Number(graph.execution.t0),
+    dt: Number(graph.execution.dt),
+    t1: Number(graph.execution.t1),
+    integrator: String(graph.execution.integrator ?? "euler"),
+  };
+}
+
+function applyScenario(scenario) {
+  const values = new Map((scenario?.values || []).map((value) => [String(value.name), value]));
+  runAction(() => {
+    const execution = scenario?.execution;
+    if (execution) {
+      ["t0", "dt", "t1"].forEach((key) => {
+        if (Number.isFinite(Number(execution[key]))) graph.execution[key] = Number(execution[key]);
+      });
+      if (["euler", "rk4"].includes(String(execution.integrator))) {
+        graph.execution.integrator = String(execution.integrator);
+      }
+      graph.execution.currentTime = null;
+    }
+    scenarioTargetNodes().forEach((node) => {
+      const saved = values.get(node.name);
+      if (!saved) return;
+      const widget = scenarioInputWidget(node.name);
+      if (widget && saved.widgetValue !== undefined) {
+        widget.value = deepClone(saved.widgetValue);
+      } else {
+        node.valueExpression = String(saved.valueExpression ?? "");
+      }
+    });
+    applyWidgetDrivenNodeValues();
+  });
+  analyzeModelStaticIssues();
+  void resetExecution();
+}
+
+function openScenarioEditor(initialScenario, onSave) {
+  const scenario = initialScenario || { id: "", name: "", values: currentScenarioValues(), execution: currentScenarioExecution() };
+  const saved = new Map((scenario.values || []).map((value) => [String(value.name), value]));
+  const backdrop = document.createElement("div");
+  backdrop.className = "modal-backdrop scenario-editor-backdrop";
+  const card = document.createElement("div");
+  card.className = "modal-card scenario-editor-card";
+  card.setAttribute("role", "dialog");
+  card.setAttribute("aria-modal", "true");
+  const head = document.createElement("div");
+  head.className = "modal-head";
+  const title = document.createElement("h3");
+  title.textContent = t("scenarios.editorTitle");
+  const close = document.createElement("button");
+  close.type = "button";
+  close.className = "icon-btn modal-close-btn";
+  close.textContent = "×";
+  close.setAttribute("aria-label", t("aria.close"));
+  head.append(title, close);
+  const body = document.createElement("div");
+  body.className = "scenario-editor-body";
+  const nameLabel = document.createElement("label");
+  nameLabel.className = "compact-field";
+  const nameCaption = document.createElement("span");
+  nameCaption.textContent = t("scenarios.name");
+  const nameInput = document.createElement("input");
+  nameInput.type = "text";
+  nameInput.maxLength = 120;
+  nameInput.value = String(scenario.name ?? "");
+  nameInput.placeholder = t("scenarios.namePlaceholder");
+  nameLabel.append(nameCaption, nameInput);
+  body.appendChild(nameLabel);
+  const executionTitle = document.createElement("h4");
+  executionTitle.className = "scenario-execution-title";
+  executionTitle.textContent = t("scenarios.timeBase");
+  body.appendChild(executionTitle);
+  const execution = scenario.execution || currentScenarioExecution();
+  [
+    ["t0", t("label.timeStart")],
+    ["dt", t("label.timeStep")],
+    ["t1", t("label.timeEnd")],
+  ].forEach(([key, labelText]) => {
+    const label = document.createElement("label");
+    label.className = "compact-field";
+    const caption = document.createElement("span");
+    caption.textContent = labelText;
+    const input = document.createElement("input");
+    input.type = "text";
+    input.inputMode = "decimal";
+    input.dataset.executionKey = key;
+    input.value = String(execution[key] ?? graph.execution[key]);
+    label.append(caption, input);
+    body.appendChild(label);
+  });
+  const integratorLabel = document.createElement("label");
+  integratorLabel.className = "compact-field";
+  const integratorCaption = document.createElement("span");
+  integratorCaption.textContent = t("label.integrator");
+  const integrator = document.createElement("select");
+  integrator.dataset.executionKey = "integrator";
+  ["euler", "rk4"].forEach((value) => {
+    const option = document.createElement("option");
+    option.value = value;
+    option.textContent = t(`integrator.${value}`);
+    integrator.appendChild(option);
+  });
+  integrator.value = ["euler", "rk4"].includes(String(execution.integrator)) ? String(execution.integrator) : "euler";
+  integratorLabel.append(integratorCaption, integrator);
+  body.appendChild(integratorLabel);
+  scenarioTargetNodes().forEach((node) => {
+    const widget = scenarioInputWidget(node.name);
+    const stored = saved.get(node.name);
+    const label = document.createElement("label");
+    label.className = "compact-field";
+    const caption = document.createElement("span");
+    caption.textContent = node.name;
+    const input = document.createElement("input");
+    input.type = "text";
+    input.dataset.nodeName = node.name;
+    input.dataset.widget = widget ? "true" : "false";
+    input.value = widget
+      ? scenarioWidgetValueText(widget, stored?.widgetValue ?? widget.value)
+      : String(stored?.valueExpression ?? node.valueExpression ?? "");
+    label.append(caption, input);
+    body.appendChild(label);
+  });
+  const actions = document.createElement("div");
+  actions.className = "modal-actions";
+  const cancel = document.createElement("button");
+  cancel.type = "button";
+  cancel.textContent = t("scenarios.cancel");
+  const save = document.createElement("button");
+  save.type = "button";
+  save.textContent = t("scenarios.save");
+  actions.append(cancel, save);
+  const dismiss = () => backdrop.remove();
+  close.addEventListener("click", dismiss);
+  cancel.addEventListener("click", dismiss);
+  backdrop.addEventListener("pointerdown", (event) => { if (event.target === backdrop) dismiss(); });
+  save.addEventListener("click", () => {
+    const name = String(nameInput.value ?? "").trim();
+    if (!name) { nameInput.focus(); return; }
+    const values = Array.from(body.querySelectorAll("input[data-node-name]")).map((input) => {
+      const node = graph.nodes.find((candidate) => candidate.name === input.dataset.nodeName);
+      const widget = node ? scenarioInputWidget(node.name) : null;
+      return {
+        name: String(input.dataset.nodeName),
+        valueExpression: widget ? String(node?.valueExpression ?? "") : String(input.value ?? ""),
+        widgetValue: widget ? scenarioWidgetValueFromText(widget, input.value) : undefined,
+      };
+    });
+    const scenarioExecution = {};
+    body.querySelectorAll("[data-execution-key]").forEach((input) => {
+      const key = String(input.dataset.executionKey);
+      scenarioExecution[key] = key === "integrator" ? String(input.value) : Number(String(input.value ?? "").replace(",", "."));
+    });
+    if (![scenarioExecution.t0, scenarioExecution.dt, scenarioExecution.t1].every(Number.isFinite)) return;
+    onSave({ id: scenario.id || createScenarioId(), name, values, execution: scenarioExecution });
+    dismiss();
+  });
+  card.append(head, body, actions);
+  backdrop.appendChild(card);
+  document.body.appendChild(backdrop);
+  window.setTimeout(() => nameInput.focus(), 0);
+}
+
+function openScenarioManager() {
+  const backdrop = document.createElement("div");
+  backdrop.className = "modal-backdrop modal-modeless scenario-manager-backdrop";
+  const card = document.createElement("div");
+  card.className = "modal-card scenario-manager-card";
+  card.setAttribute("role", "dialog");
+  card.setAttribute("aria-modal", "true");
+  const head = document.createElement("div");
+  head.className = "modal-head";
+  const title = document.createElement("h3");
+  title.textContent = t("scenarios.title");
+  const close = document.createElement("button");
+  close.type = "button";
+  close.className = "icon-btn modal-close-btn";
+  close.textContent = "×";
+  close.setAttribute("aria-label", t("aria.close"));
+  head.append(title, close);
+  const list = document.createElement("div");
+  list.className = "scenario-manager-list";
+  const actions = document.createElement("div");
+  actions.className = "modal-actions";
+  const saveCurrent = document.createElement("button");
+  saveCurrent.type = "button";
+  saveCurrent.textContent = t("scenarios.saveCurrent");
+  actions.appendChild(saveCurrent);
+  const dismiss = () => backdrop.remove();
+  close.addEventListener("click", dismiss);
+  backdrop.addEventListener("pointerdown", (event) => { if (event.target === backdrop) dismiss(); });
+  const renderList = () => {
+    list.innerHTML = "";
+    if (!graph.scenarios.length) {
+      const empty = document.createElement("div");
+      empty.className = "empty-props";
+      empty.textContent = t("scenarios.empty");
+      list.appendChild(empty);
+      return;
+    }
+    graph.scenarios.forEach((scenario, index) => {
+      const row = document.createElement("div");
+      row.className = "scenario-manager-row";
+      const name = document.createElement("strong");
+      name.textContent = scenario.name;
+      const buttons = document.createElement("div");
+      buttons.className = "scenario-manager-actions";
+      const add = (key, callback) => {
+        const button = document.createElement("button");
+        button.type = "button";
+        button.textContent = t(key);
+        button.addEventListener("click", callback);
+        buttons.appendChild(button);
+      };
+      add("scenarios.apply", () => applyScenario(scenario));
+      add("scenarios.edit", () => openScenarioEditor(scenario, (updated) => {
+        runAction(() => { graph.scenarios[index] = updated; });
+        renderList();
+      }));
+      add("scenarios.duplicate", () => openScenarioEditor({ ...deepClone(scenario), id: "", name: `${scenario.name} 2` }, (copy) => {
+        runAction(() => { graph.scenarios.push(copy); });
+        renderList();
+      }));
+      add("action.delete", () => {
+        runAction(() => { graph.scenarios.splice(index, 1); });
+        renderList();
+      });
+      row.append(name, buttons);
+      list.appendChild(row);
+    });
+  };
+  saveCurrent.addEventListener("click", () => openScenarioEditor(null, (scenario) => {
+    runAction(() => { graph.scenarios.push(scenario); });
+    renderList();
+  }));
+  renderList();
+  card.append(head, list, actions);
+  backdrop.appendChild(card);
+  document.body.appendChild(backdrop);
+  bindModalDragHandle(backdrop, ".scenario-manager-card", { allowCompactTouch: true });
+  window.setTimeout(() => saveCurrent.focus(), 0);
+}
+
 function renderUnitDefinitionsEditor() {
   if (!unitDefinitionsList) {
     return;
@@ -9250,6 +9560,7 @@ function exportGraphData() {
     unitDefinitions: graph.unitDefinitions
       .map((definition) => ({ symbol: String(definition?.symbol ?? "").trim(), expression: String(definition?.expression ?? "").trim() }))
       .filter((definition) => definition.symbol || definition.expression),
+    scenarios: normalizeScenarios(graph.scenarios),
     nodeCounter,
     edgeCounter,
     widgetCounter,
@@ -9537,6 +9848,7 @@ function applyGraphData(data) {
   graph.unitDefinitions = Array.isArray(data?.unitDefinitions)
     ? data.unitDefinitions.map((definition) => ({ symbol: String(definition?.symbol ?? definition?.name ?? "").trim(), expression: String(definition?.expression ?? definition?.value ?? "").trim() }))
     : [];
+  graph.scenarios = normalizeScenarios(data?.scenarios);
   graph.localFunctions = Array.isArray(data?.localFunctions)
     ? data.localFunctions.map((definition) => sanitizeLocalFunctionDefinition(definition))
     : [];
@@ -12801,6 +13113,7 @@ function importGraphData(data) {
     unitDefinitions: Array.isArray(data.unitDefinitions)
       ? data.unitDefinitions.map((definition) => ({ symbol: String(definition?.symbol ?? definition?.name ?? "").trim(), expression: String(definition?.expression ?? definition?.value ?? "").trim() }))
       : [],
+    scenarios: normalizeScenarios(data?.scenarios),
     debug: {
       watches: Array.isArray(data?.debug?.watches) ? data.debug.watches.map((name) => String(name ?? "")) : [],
       breakpointEnabled: Boolean(data?.debug?.breakpointEnabled),
@@ -13530,6 +13843,7 @@ function resetGraphToEmptyModel() {
   graph.notes = { markdown: "" };
   graph.properties = [];
   graph.unitDefinitions = [];
+  graph.scenarios = [];
   graph.localFunctions = [];
   graph.nodes = [];
   graph.edges = [];
@@ -16597,6 +16911,12 @@ if (sensitivityAnalysisBtn) {
   sensitivityAnalysisBtn.addEventListener("click", () => {
     closeTopMenus();
     openSensitivityAnalysis();
+  });
+}
+if (scenarioManagerBtn) {
+  scenarioManagerBtn.addEventListener("click", () => {
+    closeTopMenus();
+    openScenarioManager();
   });
 }
 if (functionsHelpCloseBtn) {
