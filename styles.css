@@ -1571,6 +1571,23 @@ button:disabled {
 
 input.inferred-unit[readonly] { color: #6d7782; background: #f4f6f8; }
 
+.unit-definitions-card { width: min(620px, calc(100vw - 32px)); max-height: min(720px, calc(100vh - 32px)); overflow: auto; }
+.unit-definitions-card h4 { margin: 0 0 5px; font-size: 0.84rem; color: #4e6072; }
+.unit-definitions-intro { margin: 0 0 12px; color: #536779; line-height: 1.4; }
+.unit-definitions-builtins,
+.unit-definitions-custom { padding: 9px; border: 1px solid #dbe4ec; border-radius: 8px; background: #fff; }
+.unit-definitions-custom { margin-top: 10px; }
+.si-unit-definitions-list { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 3px 14px; }
+.si-unit-definition-row { min-width: 0; color: #40566a; font-family: var(--mono-font, ui-monospace, monospace); font-size: 0.84rem; }
+.unit-definitions-list { display: grid; gap: 4px; }
+.unit-definition-row { display: grid; grid-template-columns: minmax(48px, 0.55fr) minmax(80px, 1fr) auto; gap: 4px; align-items: center; }
+.unit-definition-row input { min-width: 0; }
+.unit-definition-remove { min-width: 26px; min-height: 26px; padding: 2px 6px; }
+
+@media (max-width: 620px) {
+  .si-unit-definitions-list { grid-template-columns: minmax(0, 1fr); }
+}
+
 #nodePanel h4,
 #textPanel h4,
 #widgetPanel h4 {

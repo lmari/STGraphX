@@ -393,6 +393,17 @@
         graph.nodes.forEach((node) => { delete node.inferredUnit; });
         const units = new Map();
         const declarations = new Map();
+        const preparedDefinitions = typeof unitAnalysis.prepareDefinitions === "function"
+          ? unitAnalysis.prepareDefinitions(graph.unitDefinitions)
+          : { definitions: new Map(), errors: [] };
+        preparedDefinitions.errors.forEach((definition) => {
+          pushAnalysisIssue(issues, "warning", "analysis.issue.invalidUnitDefinition", {
+            symbol: definition.symbol || "?",
+            expression: definition.expression || "?",
+            reason: t(`analysis.unitDefinitionReason.${definition.reason || "syntax"}`),
+          }, { type: "model" });
+        });
+        const parseUnit = (source) => unitAnalysis.parseUnit(source, { definitions: preparedDefinitions.definitions });
         const reportedUnitIssues = new Set();
         const reportUnitIssue = (key, vars, target) => {
           const id = `${key}:${target?.id || "model"}:${vars?.expression || ""}:${vars?.reason || ""}:${vars?.expected || ""}:${vars?.actual || ""}`;
@@ -403,7 +414,7 @@
         graph.nodes.forEach((node) => {
           const raw = String(node.unit || "").trim();
           if (!raw || isDraftNode(node) || isSubmodelNode(node)) return;
-          const parsed = unitAnalysis.parseUnit(raw);
+          const parsed = parseUnit(raw);
           if (!parsed.ok) {
             pushAnalysisIssue(issues, "warning", "analysis.issue.invalidUnit", { name: node.name, unit: raw }, { type: "node", id: node.id, name: node.name });
             return;
@@ -414,9 +425,11 @@
         const infer = (node, expression, expected, expressionKind) => {
           if (!String(expression || "").trim()) return;
           try {
+            const timeUnit = parseUnit(graph.execution?.timeUnit || "s").value;
             const value = unitAnalysis.inferAst(parseExpressionAst(expression), {
+              timeUnit,
               resolve: (name) => name === "time" || name === "dt" || name === "t0" || name === "t1"
-                ? unitAnalysis.parseUnit(graph.execution?.timeUnit || "s").value : (name === "this" ? expected || unitAnalysis.unknown() : (units.get(name) || unitAnalysis.unknown())),
+                ? timeUnit : (name === "this" ? expected || unitAnalysis.unknown() : (units.get(name) || unitAnalysis.unknown())),
             });
             // A literal assigned to a declared source (for example 1000 euro)
             // carries that declaration rather than becoming dimensionless.

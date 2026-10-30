@@ -100,7 +100,6 @@
             <button id="toggleGraphItem" class="menu-command" type="button" data-i18n="menu.view.toggleGraph" data-title-i18n="tooltip.menu.view.toggleGraph"></button>
             <button id="toggleWidgetsItem" class="menu-command" type="button" data-i18n="menu.view.toggleWidgets" data-title-i18n="tooltip.menu.view.toggleWidgets"></button>
             <button id="manageDashboardItem" class="menu-command" type="button" data-i18n="menu.view.dashboard"></button>
-            <button id="modelNotesItem" class="menu-command" type="button" data-i18n="menu.view.modelNotes" data-title-i18n="tooltip.menu.view.modelNotes"></button>
             <button id="managePresentationGroupsItem" class="menu-command" type="button" data-i18n="menu.view.presentationGroups"></button>
             <button id="feedbackLoopsItem" class="menu-command" type="button" data-i18n="menu.view.feedbackLoops" data-title-i18n="tooltip.menu.view.feedbackLoops"></button>
             <hr class="menu-sep" />
@@ -131,6 +130,9 @@
         <div class="menu-root">
           <button class="menu-title" type="button" data-menu="toolsMenu" data-i18n="menu.tools" data-title-i18n="tooltip.menu.tools"></button>
           <div class="menu-panel" id="toolsMenu">
+            <button id="modelNotesItem" class="menu-command" type="button" data-i18n="menu.tools.modelNotes" data-title-i18n="tooltip.menu.tools.modelNotes"></button>
+            <button id="unitDefinitionsItem" class="menu-command" type="button" data-i18n="menu.tools.unitDefinitions" data-title-i18n="tooltip.menu.tools.unitDefinitions"></button>
+            <hr class="menu-sep" />
             <button id="sensitivityAnalysisBtn" class="menu-command" type="button" data-i18n="menu.tools.sensitivity" data-title-i18n="tooltip.menu.tools.sensitivity"></button>
           </div>
         </div>
@@ -211,7 +213,6 @@
                 </div>
               </div>
               <div class="model-compact-row model-time-unit-row"><label for="timeUnitInput" data-i18n="label.timeUnit"></label><input id="timeUnitInput" type="text" placeholder="s" /></div>
-
               <div class="row3-exec model-compact-row model-execution-settings tablet-advanced-details">
                 <div>
                   <label for="timeDelayInput" data-i18n="label.timeDelayMs" data-title-i18n="tooltip.model.delay"></label>
@@ -742,6 +743,14 @@
         </div>
         <div id="sensitivityAnalysisChart" class="sensitivity-analysis-chart" aria-live="polite"></div>
         <div id="sensitivityAnalysisResults" class="sensitivity-analysis-results" aria-live="polite"></div>
+      </div>
+    </div>
+    <div id="unitDefinitionsModal" class="modal-backdrop modal-modeless hidden">
+      <div class="modal-card unit-definitions-card" role="dialog" aria-modal="false" aria-labelledby="unitDefinitionsTitle">
+        <div class="modal-head"><h3 id="unitDefinitionsTitle" data-i18n="units.title"></h3><button id="unitDefinitionsCloseBtn" class="icon-btn modal-close-btn" type="button" data-i18n-aria-label="aria.close">×</button></div>
+        <p class="unit-definitions-intro" data-i18n="units.intro"></p>
+        <section class="unit-definitions-builtins"><h4 data-i18n="units.si"></h4><div id="siUnitDefinitionsList" class="si-unit-definitions-list"></div></section>
+        <section class="unit-definitions-custom"><h4 data-i18n="units.custom"></h4><div id="unitDefinitionsList" class="unit-definitions-list"></div><button id="addUnitDefinitionBtn" class="small-btn" type="button" data-i18n="action.addUnitDefinition"></button></section>
       </div>
     </div>
     <div id="watchDebuggerModal" class="modal-backdrop modal-modeless hidden">

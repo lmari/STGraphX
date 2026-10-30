@@ -56,6 +56,7 @@ const zoomResetItem = document.getElementById("zoomResetItem");
 const toggleGraphItem = document.getElementById("toggleGraphItem");
 const toggleWidgetsItem = document.getElementById("toggleWidgetsItem");
 const modelNotesItem = document.getElementById("modelNotesItem");
+const unitDefinitionsItem = document.getElementById("unitDefinitionsItem");
 const viewOptionsItem = document.getElementById("viewOptionsItem");
 const toggleGraphBtn = document.getElementById("toggleGraphBtn");
 const toggleWidgetsBtn = document.getElementById("toggleWidgetsBtn");
@@ -114,6 +115,11 @@ const modelTitleInput = document.getElementById("modelTitleInput");
 const timeStartInput = document.getElementById("timeStartInput");
 const timeStepInput = document.getElementById("timeStepInput");
 const timeUnitInput = document.getElementById("timeUnitInput");
+const unitDefinitionsList = document.getElementById("unitDefinitionsList");
+const addUnitDefinitionBtn = document.getElementById("addUnitDefinitionBtn");
+const unitDefinitionsModal = document.getElementById("unitDefinitionsModal");
+const unitDefinitionsCloseBtn = document.getElementById("unitDefinitionsCloseBtn");
+const siUnitDefinitionsList = document.getElementById("siUnitDefinitionsList");
 const timeEndInput = document.getElementById("timeEndInput");
 const timeDelayInput = document.getElementById("timeDelayInput");
 const renderEveryStepsInput = document.getElementById("renderEveryStepsInput");
@@ -1010,6 +1016,7 @@ const graph = {
   modelTitle: "",
   notes: { markdown: "" },
   properties: [],
+  unitDefinitions: [],
   localFunctions: [],
   nodes: [],
   edges: [],
@@ -7431,6 +7438,83 @@ function normalizeExecutionConfig(raw) {
   return runtimeShared.normalizeExecutionConfig(raw);
 }
 
+function renderUnitDefinitionsEditor() {
+  if (!unitDefinitionsList) {
+    return;
+  }
+  unitDefinitionsList.innerHTML = "";
+  graph.unitDefinitions.forEach((definition, index) => {
+    const row = document.createElement("div");
+    row.className = "unit-definition-row";
+    const symbol = document.createElement("input");
+    symbol.type = "text";
+    symbol.value = String(definition?.symbol ?? "");
+    symbol.placeholder = "N";
+    symbol.setAttribute("aria-label", t("label.unitDefinitionSymbol"));
+    symbol.title = t("label.unitDefinitionSymbol");
+    const expression = document.createElement("input");
+    expression.type = "text";
+    expression.value = String(definition?.expression ?? "");
+    expression.placeholder = "kg*m/s^2";
+    expression.setAttribute("aria-label", t("label.unitDefinitionExpression"));
+    expression.title = t("label.unitDefinitionExpression");
+    const update = () => {
+      if (!graph.unitDefinitions[index]) return;
+      graph.unitDefinitions[index].symbol = String(symbol.value ?? "").trim();
+      graph.unitDefinitions[index].expression = String(expression.value ?? "").trim();
+      analyzeModelStaticIssues();
+      scheduleFileStatusRefresh();
+    };
+    symbol.addEventListener("input", update);
+    expression.addEventListener("input", update);
+    const remove = document.createElement("button");
+    remove.type = "button";
+    remove.className = "unit-definition-remove";
+    remove.textContent = "×";
+    remove.setAttribute("aria-label", t("action.delete"));
+    remove.title = t("action.delete");
+    remove.addEventListener("click", () => {
+      graph.unitDefinitions.splice(index, 1);
+      analyzeModelStaticIssues();
+      scheduleFileStatusRefresh();
+      refreshSidebar();
+    });
+    row.append(symbol, expression, remove);
+    unitDefinitionsList.appendChild(row);
+  });
+}
+
+function renderSiUnitDefinitions() {
+  if (!siUnitDefinitionsList) return;
+  const baseSymbols = ["m", "kg", "s", "A", "K", "mol", "cd"];
+  const derived = globalThis.STGraphXUnitAnalysisCore?.siUnitDefinitions || [];
+  siUnitDefinitionsList.innerHTML = "";
+  baseSymbols.forEach((symbol) => {
+    const row = document.createElement("div");
+    row.className = "si-unit-definition-row";
+    row.textContent = `${symbol} — ${t("units.base")}`;
+    siUnitDefinitionsList.appendChild(row);
+  });
+  derived.forEach((definition) => {
+    const row = document.createElement("div");
+    row.className = "si-unit-definition-row";
+    row.textContent = `${definition.symbol} = ${definition.expression}`;
+    siUnitDefinitionsList.appendChild(row);
+  });
+}
+
+function openUnitDefinitions() {
+  if (!unitDefinitionsModal) return;
+  renderSiUnitDefinitions();
+  renderUnitDefinitionsEditor();
+  unitDefinitionsModal.classList.remove("hidden");
+  window.setTimeout(() => unitDefinitionsList?.querySelector("input")?.focus(), 0);
+}
+
+function closeUnitDefinitions() {
+  unitDefinitionsModal?.classList.add("hidden");
+}
+
 function normalizeEdgeInfluence(value) {
   return runtimeShared.normalizeEdgeInfluence(value);
 }
@@ -9163,6 +9247,9 @@ function exportGraphData() {
       breakpointMessage: String(ensureDebugConfig(graph).breakpointMessage ?? ""),
     },
     modelProperties: graph.properties.map((p) => ({ key: String(p.key), value: String(p.value) })),
+    unitDefinitions: graph.unitDefinitions
+      .map((definition) => ({ symbol: String(definition?.symbol ?? "").trim(), expression: String(definition?.expression ?? "").trim() }))
+      .filter((definition) => definition.symbol || definition.expression),
     nodeCounter,
     edgeCounter,
     widgetCounter,
@@ -9446,6 +9533,9 @@ function applyGraphData(data) {
   graph.notes = normalizeModelNotes(data?.notes);
   graph.properties = Array.isArray(data?.modelProperties)
     ? data.modelProperties.map((p) => ({ key: String(p?.key ?? ""), value: String(p?.value ?? "") }))
+    : [];
+  graph.unitDefinitions = Array.isArray(data?.unitDefinitions)
+    ? data.unitDefinitions.map((definition) => ({ symbol: String(definition?.symbol ?? definition?.name ?? "").trim(), expression: String(definition?.expression ?? definition?.value ?? "").trim() }))
     : [];
   graph.localFunctions = Array.isArray(data?.localFunctions)
     ? data.localFunctions.map((definition) => sanitizeLocalFunctionDefinition(definition))
@@ -12708,6 +12798,9 @@ function importGraphData(data) {
     modelProperties: Array.isArray(data.modelProperties)
       ? data.modelProperties.map((p) => ({ key: String(p?.key ?? ""), value: String(p?.value ?? "") }))
       : [],
+    unitDefinitions: Array.isArray(data.unitDefinitions)
+      ? data.unitDefinitions.map((definition) => ({ symbol: String(definition?.symbol ?? definition?.name ?? "").trim(), expression: String(definition?.expression ?? definition?.value ?? "").trim() }))
+      : [],
     debug: {
       watches: Array.isArray(data?.debug?.watches) ? data.debug.watches.map((name) => String(name ?? "")) : [],
       breakpointEnabled: Boolean(data?.debug?.breakpointEnabled),
@@ -13436,6 +13529,7 @@ function resetGraphToEmptyModel() {
   graph.modelTitle = "";
   graph.notes = { markdown: "" };
   graph.properties = [];
+  graph.unitDefinitions = [];
   graph.localFunctions = [];
   graph.nodes = [];
   graph.edges = [];
@@ -14957,6 +15051,12 @@ if (modelNotesItem) {
     openModelNotes();
   });
 }
+if (unitDefinitionsItem) {
+  unitDefinitionsItem.addEventListener("click", () => {
+    closeTopMenus();
+    openUnitDefinitions();
+  });
+}
 toggleGraphItem.addEventListener("click", () => {
   toggleGraphVisibility();
 });
@@ -15173,6 +15273,12 @@ function commitExecutionInput(inputEl, key) {
 timeStartInput.addEventListener("change", () => commitExecutionInput(timeStartInput, "t0"));
 timeStepInput.addEventListener("change", () => commitExecutionInput(timeStepInput, "dt"));
 timeUnitInput?.addEventListener("change", () => { graph.execution.timeUnit = String(timeUnitInput.value ?? "").trim() || "s"; timeUnitInput.value = graph.execution.timeUnit; analyzeModelStaticIssues(); scheduleFileStatusRefresh(); });
+addUnitDefinitionBtn?.addEventListener("click", () => {
+  graph.unitDefinitions.push({ symbol: "", expression: "" });
+  scheduleFileStatusRefresh();
+  refreshSidebar();
+  unitDefinitionsList?.querySelector(".unit-definition-row:last-child input")?.focus();
+});
 timeEndInput.addEventListener("change", () => commitExecutionInput(timeEndInput, "t1"));
 timeDelayInput.addEventListener("change", () => {
   const parsed = Number(timeDelayInput.value);
@@ -16079,6 +16185,12 @@ if (modelNotesInsertStructureBtn) {
 }
 if (modelNotesCloseBtn) modelNotesCloseBtn.addEventListener("click", closeModelNotes);
 if (modelNotesDismissBtn) modelNotesDismissBtn.addEventListener("click", closeModelNotes);
+if (unitDefinitionsCloseBtn) unitDefinitionsCloseBtn.addEventListener("click", closeUnitDefinitions);
+if (unitDefinitionsModal) {
+  unitDefinitionsModal.addEventListener("pointerdown", (evt) => {
+    if (evt.target === unitDefinitionsModal) closeUnitDefinitions();
+  });
+}
 
 manualStepBtn.addEventListener("click", () => {
   void runManualStep();
