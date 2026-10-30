@@ -1817,6 +1817,70 @@
     return [bestRow, bestColumn];
   }
 
+  function frequencyTable(values, bins, mode) {
+    if (!Array.isArray(values) || values.length === 0 || values.some((value) => Array.isArray(value) || !Number.isFinite(value))) {
+      throw new Error("frequency expects a non-empty numeric vector");
+    }
+
+    if (arguments.length === 1) {
+      const categories = [...new Set(values)].sort((left, right) => left - right);
+      return categories.map((category) => [category, values.reduce((count, value) => count + (value === category ? 1 : 0), 0)]);
+    }
+
+    if (Number.isInteger(bins) && bins > 0 && mode == null) {
+      let min = Math.min(...values);
+      let max = Math.max(...values);
+      // A constant vector still needs a non-zero interval to produce distinct bins.
+      if (min === max) {
+        min -= 0.5;
+        max += 0.5;
+      }
+      const width = (max - min) / bins;
+      const counts = Array(bins).fill(0);
+      values.forEach((value) => {
+        const index = Math.min(bins - 1, Math.floor((value - min) / width));
+        counts[index] += 1;
+      });
+      return counts.map((count, index) => [min + (index + 0.5) * width, count]);
+    }
+
+    if (!Array.isArray(bins)) {
+      throw new Error("frequency expects a positive integer bin count or a vector of categories or edges");
+    }
+    if (mode !== "categories" && mode !== "edges") {
+      throw new Error("frequency requires mode 'categories' or 'edges' when bins is a vector");
+    }
+    if (bins.some((value) => Array.isArray(value) || !Number.isFinite(value))) {
+      throw new Error("frequency categories or edges must be finite numbers");
+    }
+
+    if (mode === "categories") {
+      if (new Set(bins).size !== bins.length) {
+        throw new Error("frequency categories must be distinct");
+      }
+      return bins.map((category) => [category, values.reduce((count, value) => count + (value === category ? 1 : 0), 0)]);
+    }
+
+    if (bins.length < 2 || bins.some((edge, index) => index > 0 && edge <= bins[index - 1])) {
+      throw new Error("frequency edges must contain at least two strictly increasing values");
+    }
+    const counts = Array(bins.length - 1).fill(0);
+    values.forEach((value) => {
+      if (value < bins[0] || value > bins[bins.length - 1]) {
+        return;
+      }
+      let index = bins.length - 2;
+      for (let candidate = 0; candidate < bins.length - 1; candidate += 1) {
+        if (value < bins[candidate + 1] || candidate === bins.length - 2) {
+          index = candidate;
+          break;
+        }
+      }
+      counts[index] += 1;
+    });
+    return counts.map((count, index) => [(bins[index] + bins[index + 1]) / 2, count]);
+  }
+
   function createMathScope(options = {}) {
     const randomSource = typeof options.random === "function" ? options.random : Math.random;
     const scope = {
@@ -1896,6 +1960,7 @@
       argmin: (value) => extremumIndex(value, false, "argmin"),
       coords: coordsFromGrid,
       flatten: flattenMatrixValues,
+      frequency: frequencyTable,
       grid: gridFromCoordinates,
       indicesWhere: indicesWhereValues,
       intersection: intersectArrayValues,
@@ -2000,6 +2065,7 @@
       coords: { kind: "array", signature: "coords(matrix[, value])", descriptionKey: "expr.help.coords", insertText: "coords()", cursorOffset: 7 },
       filter: { kind: "array", signature: "filter(cond, array[, mode])", descriptionKey: "expr.help.filter", insertText: "filter()", cursorOffset: 7 },
       flatten: { kind: "array", signature: "flatten(matrix)", descriptionKey: "expr.help.flatten", insertText: "flatten()", cursorOffset: 8 },
+      frequency: { kind: "array", signature: "frequency(vector[, n|bins, mode])", descriptionKey: "expr.help.frequency", insertText: "frequency()", cursorOffset: 10 },
       grid: { kind: "array", signature: "grid(rows, cols[, [nRows, nCols][, collisions[, value]]])", descriptionKey: "expr.help.grid", insertText: "grid()", cursorOffset: 5 },
       indicesWhere: { kind: "array", signature: "indicesWhere(array) | indicesWhere(cond, array)", descriptionKey: "expr.help.indicesWhere", insertText: "indicesWhere()", cursorOffset: 13 },
       intersection: { kind: "array", signature: "intersection(vectorA, vectorB)", descriptionKey: "expr.help.intersection", insertText: "intersection()", cursorOffset: 13 },

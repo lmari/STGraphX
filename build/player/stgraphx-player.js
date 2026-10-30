@@ -1,6 +1,6 @@
 /*!
  * STGraphX Embedded Player Bundle
- * Generated: 2026-10-25T11:18:51.062Z
+ * Generated: 2026-10-30T10:39:38.702Z
  */
 
 /* --- i18n-inline.js --- */
@@ -13,7 +13,7 @@
 
 window.STGraphXAppMeta = {
   author: "Luca Mari",
-  releaseDate: "2026.10.25",
+  releaseDate: "2026.10.29",
   license: "MPL-2.0",
   copyright: "Copyright (c) 2026 Luca Mari",
 };
@@ -180,6 +180,8 @@ window.STGraphXI18nBundles = {
     "menu.run": "Esegui",
     "menu.run.analyze": "Analizza modello...",
     "menu.run.execute": "Completo",
+    "menu.tools": "Strumenti",
+    "menu.tools.sensitivity": "Analisi di sensibilità...",
     "menu.run.reset": "Reset",
     "menu.run.step": "Un passo",
     "menu.run.strictDefinitions": "Definizioni rigorose",
@@ -373,6 +375,7 @@ window.STGraphXI18nBundles = {
     "expr.help.filter": "Selezione da un vettore o una matrice. Con modo omesso o 'elements' mantiene gli elementi per cui la condizione è vera. Con modo='rows' filtra le righe di una matrice, dove $value è la riga corrente e $0 il suo indice. Con modo='cols' filtra le colonne, dove $value è la colonna corrente e $0 il suo indice. Esempi: filter($value>0, [-2,0,3]) ; filter($0===$1, [[1,2],[3,4]]) ; filter(griglia[$value]==1, coordinate, 'rows').",
     "expr.help.filterAgents": "La sotto-popolazione degli agenti che soddisfano la condizione. Nella condizione self è la riga dell'agente corrente e $i il suo indice. Esempio: `filterAgents(self[ENERGY] > 0, agents)`.",
     "expr.help.flatten": "Matrice trasformata in vettore concatenando le righe. Esempio: flatten([[1,2],[3,4]]) -> [1,2,3,4].",
+    "expr.help.frequency": "Matrice a due colonne `[centro, frequenza]` calcolata da un vettore numerico. Senza altri argomenti usa come categorie i valori distinti, in ordine crescente. Con `n` intero costruisce n bin uniformi fra minimo e massimo. Con `mode='categories'` il vettore indica le categorie; con `mode='edges'` indica i limiti crescenti degli intervalli, chiusi a sinistra e aperti a destra salvo l'ultimo. Esempi: `frequency([1,2,2,3])` ; `frequency([1,2,2,3], 2)` ; `frequency([0,10,10,20], [0,10,20], \"categories\")` ; `frequency([0.2,0.8,1.1], [0,1,2], \"edges\")`.",
     "expr.help.floor": "Arrotondamento per difetto di `x`. Esempio: `floor(1.8) -> 1`.",
     "expr.help.gaussian": "Distribuzione di probabilità gaussiana (parametri di default: `mu=0`, `sigma=1`). Se `x` manca, estrae un campione. Con `mode=0` calcola la pdf, con `mode=1` la cdf, con `mode=2` la icdf. Esempi: gaussian() ; gaussian([0,1]) ; gaussian([0,1], 0, 0) ; gaussian([0,1], 0.95, 2).",
     "expr.help.getModelProperty": "Una proprietà custom del modello. Esempio: `getModelProperty(\"title\", \"untitled\")`.",
@@ -982,6 +985,8 @@ window.STGraphXI18nBundles = {
     "tooltip.menu.insert.text": "Inserisce un testo formattato nel canvas.",
     "tooltip.menu.insert.textWidget": "Inserisce un widget testo per visualizzare etichette o stati qualitativi.",
     "tooltip.menu.run": "Controlli di esecuzione del modello.",
+    "tooltip.menu.tools": "Strumenti di analisi del modello.",
+    "tooltip.menu.tools.sensitivity": "Varia sistematicamente un input o parametro e misura l'effetto su un output.",
     "tooltip.menu.run.analyze": "Esegue controlli statici sul modello e mostra un report dei problemi trovati.",
     "tooltip.menu.run.execute": "Esegue il modello fino a t1 o completa l'esecuzione già avviata.",
     "tooltip.menu.run.reset": "Reimposta l'esecuzione a t0 e pulisce i risultati dinamici.",
@@ -1330,6 +1335,34 @@ window.STGraphXI18nBundles = {
     "watch.previous": "Valore precedente",
     "watch.summary": "{count} variabili osservate",
     "watch.title": "Watch e Breakpoint",
+    "sensitivity.title": "Analisi di sensibilità",
+    "sensitivity.intro": "Varia un solo input o parametro alla volta e osserva il valore finale di un output. Il modello aperto non viene modificato.",
+    "sensitivity.input": "Input o parametro",
+    "sensitivity.output": "Output",
+    "sensitivity.min": "Valore minimo",
+    "sensitivity.max": "Valore massimo",
+    "sensitivity.samples": "Numero di prove",
+    "sensitivity.choose": "Seleziona...",
+    "sensitivity.run": "Esegui analisi",
+    "sensitivity.stop": "Interrompi",
+    "sensitivity.export": "Scarica CSV",
+    "sensitivity.exportImage": "Scarica SVG",
+    "sensitivity.exported": "CSV dell'analisi scaricato.",
+    "sensitivity.exportedImage": "Grafico dell'analisi scaricato.",
+    "sensitivity.running": "Analisi in corso...",
+    "sensitivity.stopping": "Interruzione dell'analisi in corso...",
+    "sensitivity.interrupted": "Analisi interrotta.",
+    "sensitivity.empty": "Scegli input, output e intervallo, quindi esegui l'analisi.",
+    "sensitivity.results.input": "Valore di {name}",
+    "sensitivity.results.output": "Valore finale di {name}",
+    "sensitivity.summary": "Analizzati {count} valori.",
+    "sensitivity.error.selection": "Seleziona un input o parametro e un output.",
+    "sensitivity.error.range": "Usa un minimo minore del massimo e almeno due campioni.",
+    "sensitivity.error.time": "La configurazione temporale del modello non è valida.",
+    "sensitivity.error.preparation": "Impossibile preparare il modello per l'analisi.",
+    "sensitivity.error.running": "Ferma prima l'esecuzione temporizzata.",
+    "sensitivity.error.nonNumeric": "Output non numerico",
+    "sensitivity.chart.aria": "Grafico di sensibilità: {output} in funzione di {input}",
 
     // Errors
     "error.breakpointInvalid": "Condizione di breakpoint non valida: {reason}",
@@ -1551,6 +1584,8 @@ window.STGraphXI18nBundles = {
     "menu.run": "Run",
     "menu.run.analyze": "Analyze model...",
     "menu.run.execute": "Full",
+    "menu.tools": "Tools",
+    "menu.tools.sensitivity": "Sensitivity analysis...",
     "menu.run.reset": "Reset",
     "menu.run.step": "One step",
     "menu.run.strictDefinitions": "Strict definitions",
@@ -1744,6 +1779,7 @@ window.STGraphXI18nBundles = {
     "expr.help.filter": "Selection from a vector or matrix. With omitted mode or 'elements' it keeps the elements for which the condition is true. With mode='rows' it filters matrix rows, where $value is the current row and $0 its index. With mode='cols' it filters matrix columns, where $value is the current column and $0 its index. Examples: filter($value>0, [-2,0,3]) ; filter($0===$1, [[1,2],[3,4]]) ; filter(grid[$value]==1, coordinates, 'rows').",
     "expr.help.filterAgents": "The sub-population of agents satisfying the condition. Inside the condition self is the current agent row and $i its index. Example: `filterAgents(self[ENERGY] > 0, agents)`.",
     "expr.help.flatten": "Turns a matrix into a vector by concatenating its rows. Example: flatten([[1,2],[3,4]]) -> [1,2,3,4].",
+    "expr.help.frequency": "A two-column `[center, frequency]` matrix computed from a numeric vector. Without further arguments it uses distinct values as categories, in increasing order. With integer `n`, it builds n uniform bins from the minimum to the maximum. With `mode='categories'`, the vector supplies categories; with `mode='edges'`, it supplies increasing interval boundaries, left-closed and right-open except for the last interval. Examples: `frequency([1,2,2,3])` ; `frequency([1,2,2,3], 2)` ; `frequency([0,10,10,20], [0,10,20], \"categories\")` ; `frequency([0.2,0.8,1.1], [0,1,2], \"edges\")`.",
     "expr.help.floor": "Round down. Example: `floor(1.8) -> 1`.",
     "expr.help.gaussian": "Normal distribution; mu defaults to 0 and sigma to 1. If x is omitted it samples a value. With mode=0 it computes the pdf, with mode=1 the cdf, with mode=2 the icdf. Examples: gaussian() ; gaussian([0,1]) ; gaussian([0,1], 0, 0) ; gaussian([0,1], 0.95, 2).",
     "expr.help.getModelProperty": "A custom model property. Example: `getModelProperty(\"title\", \"untitled\")`.",
@@ -2353,6 +2389,8 @@ window.STGraphXI18nBundles = {
     "tooltip.menu.insert.text": "Inserts formatted text into the canvas.",
     "tooltip.menu.insert.textWidget": "Inserts a text widget to display labels or qualitative states.",
     "tooltip.menu.run": "Model execution controls.",
+    "tooltip.menu.tools": "Model analysis tools.",
+    "tooltip.menu.tools.sensitivity": "Systematically varies one input or parameter and measures its effect on an output.",
     "tooltip.menu.run.analyze": "Runs static checks on the model and shows a report of the detected issues.",
     "tooltip.menu.run.execute": "Runs the model up to t1 or completes an execution already in progress.",
     "tooltip.menu.run.reset": "Resets execution to t0 and clears dynamic results.",
@@ -2701,6 +2739,34 @@ window.STGraphXI18nBundles = {
     "watch.previous": "Previous value",
     "watch.summary": "{count} watched variables",
     "watch.title": "Watch and Breakpoint",
+    "sensitivity.title": "Sensitivity analysis",
+    "sensitivity.intro": "Vary one input or parameter at a time and observe an output's final value. The open model is not modified.",
+    "sensitivity.input": "Input or parameter",
+    "sensitivity.output": "Output",
+    "sensitivity.min": "Minimum value",
+    "sensitivity.max": "Maximum value",
+    "sensitivity.samples": "Number of trials",
+    "sensitivity.choose": "Select...",
+    "sensitivity.run": "Run analysis",
+    "sensitivity.stop": "Stop",
+    "sensitivity.export": "Download CSV",
+    "sensitivity.exportImage": "Download SVG",
+    "sensitivity.exported": "Sensitivity-analysis CSV downloaded.",
+    "sensitivity.exportedImage": "Sensitivity chart downloaded.",
+    "sensitivity.running": "Analysis running...",
+    "sensitivity.stopping": "Stopping analysis...",
+    "sensitivity.interrupted": "Analysis stopped.",
+    "sensitivity.empty": "Select an input, output, and range, then run the analysis.",
+    "sensitivity.results.input": "Value of {name}",
+    "sensitivity.results.output": "Final value of {name}",
+    "sensitivity.summary": "Analysed {count} values.",
+    "sensitivity.error.selection": "Select an input or parameter and an output.",
+    "sensitivity.error.range": "Use a minimum lower than the maximum and at least two samples.",
+    "sensitivity.error.time": "The model time configuration is not valid.",
+    "sensitivity.error.preparation": "The model could not be prepared for analysis.",
+    "sensitivity.error.running": "Stop the timed execution first.",
+    "sensitivity.error.nonNumeric": "Non-numeric output",
+    "sensitivity.chart.aria": "Sensitivity chart: {output} by {input}",
 
     // Errors
     "error.breakpointInvalid": "Invalid breakpoint condition: {reason}",
@@ -4714,6 +4780,70 @@ window.STGraphXI18nBundles = {
     return [bestRow, bestColumn];
   }
 
+  function frequencyTable(values, bins, mode) {
+    if (!Array.isArray(values) || values.length === 0 || values.some((value) => Array.isArray(value) || !Number.isFinite(value))) {
+      throw new Error("frequency expects a non-empty numeric vector");
+    }
+
+    if (arguments.length === 1) {
+      const categories = [...new Set(values)].sort((left, right) => left - right);
+      return categories.map((category) => [category, values.reduce((count, value) => count + (value === category ? 1 : 0), 0)]);
+    }
+
+    if (Number.isInteger(bins) && bins > 0 && mode == null) {
+      let min = Math.min(...values);
+      let max = Math.max(...values);
+      // A constant vector still needs a non-zero interval to produce distinct bins.
+      if (min === max) {
+        min -= 0.5;
+        max += 0.5;
+      }
+      const width = (max - min) / bins;
+      const counts = Array(bins).fill(0);
+      values.forEach((value) => {
+        const index = Math.min(bins - 1, Math.floor((value - min) / width));
+        counts[index] += 1;
+      });
+      return counts.map((count, index) => [min + (index + 0.5) * width, count]);
+    }
+
+    if (!Array.isArray(bins)) {
+      throw new Error("frequency expects a positive integer bin count or a vector of categories or edges");
+    }
+    if (mode !== "categories" && mode !== "edges") {
+      throw new Error("frequency requires mode 'categories' or 'edges' when bins is a vector");
+    }
+    if (bins.some((value) => Array.isArray(value) || !Number.isFinite(value))) {
+      throw new Error("frequency categories or edges must be finite numbers");
+    }
+
+    if (mode === "categories") {
+      if (new Set(bins).size !== bins.length) {
+        throw new Error("frequency categories must be distinct");
+      }
+      return bins.map((category) => [category, values.reduce((count, value) => count + (value === category ? 1 : 0), 0)]);
+    }
+
+    if (bins.length < 2 || bins.some((edge, index) => index > 0 && edge <= bins[index - 1])) {
+      throw new Error("frequency edges must contain at least two strictly increasing values");
+    }
+    const counts = Array(bins.length - 1).fill(0);
+    values.forEach((value) => {
+      if (value < bins[0] || value > bins[bins.length - 1]) {
+        return;
+      }
+      let index = bins.length - 2;
+      for (let candidate = 0; candidate < bins.length - 1; candidate += 1) {
+        if (value < bins[candidate + 1] || candidate === bins.length - 2) {
+          index = candidate;
+          break;
+        }
+      }
+      counts[index] += 1;
+    });
+    return counts.map((count, index) => [(bins[index] + bins[index + 1]) / 2, count]);
+  }
+
   function createMathScope(options = {}) {
     const randomSource = typeof options.random === "function" ? options.random : Math.random;
     const scope = {
@@ -4793,6 +4923,7 @@ window.STGraphXI18nBundles = {
       argmin: (value) => extremumIndex(value, false, "argmin"),
       coords: coordsFromGrid,
       flatten: flattenMatrixValues,
+      frequency: frequencyTable,
       grid: gridFromCoordinates,
       indicesWhere: indicesWhereValues,
       intersection: intersectArrayValues,
@@ -4897,6 +5028,7 @@ window.STGraphXI18nBundles = {
       coords: { kind: "array", signature: "coords(matrix[, value])", descriptionKey: "expr.help.coords", insertText: "coords()", cursorOffset: 7 },
       filter: { kind: "array", signature: "filter(cond, array[, mode])", descriptionKey: "expr.help.filter", insertText: "filter()", cursorOffset: 7 },
       flatten: { kind: "array", signature: "flatten(matrix)", descriptionKey: "expr.help.flatten", insertText: "flatten()", cursorOffset: 8 },
+      frequency: { kind: "array", signature: "frequency(vector[, n|bins, mode])", descriptionKey: "expr.help.frequency", insertText: "frequency()", cursorOffset: 10 },
       grid: { kind: "array", signature: "grid(rows, cols[, [nRows, nCols][, collisions[, value]]])", descriptionKey: "expr.help.grid", insertText: "grid()", cursorOffset: 5 },
       indicesWhere: { kind: "array", signature: "indicesWhere(array) | indicesWhere(cond, array)", descriptionKey: "expr.help.indicesWhere", insertText: "indicesWhere()", cursorOffset: 13 },
       intersection: { kind: "array", signature: "intersection(vectorA, vectorB)", descriptionKey: "expr.help.intersection", insertText: "intersection()", cursorOffset: 13 },
