@@ -46,20 +46,11 @@ impl Tensor {
     fn map(&self, operation: impl Fn(f64) -> f64) -> Self {
         Self {
             shape: self.shape.clone(),
-            elements: self
-                .elements
-                .iter()
-                .copied()
-                .map(operation)
-                .collect(),
+            elements: self.elements.iter().copied().map(operation).collect(),
         }
     }
 
-    fn zip_map(
-        &self,
-        other: &Self,
-        operation: impl Fn(f64, f64) -> f64,
-    ) -> Result<Self, String> {
+    fn zip_map(&self, other: &Self, operation: impl Fn(f64, f64) -> f64) -> Result<Self, String> {
         if self.shape != other.shape {
             return Err("operator arguments must have matching shapes".to_string());
         }
@@ -145,7 +136,9 @@ impl Value {
                 let mut data = Vec::with_capacity(elements.len());
                 for element in elements {
                     let Self::Scalar(value) = element else {
-                        return Err("array literal must have a rectangular numeric shape".to_string());
+                        return Err(
+                            "array literal must have a rectangular numeric shape".to_string()
+                        );
                     };
                     data.push(value);
                 }
@@ -158,10 +151,14 @@ impl Value {
                 let count = elements.len();
                 for element in elements {
                     let Self::Tensor(tensor) = element else {
-                        return Err("array literal must have a rectangular numeric shape".to_string());
+                        return Err(
+                            "array literal must have a rectangular numeric shape".to_string()
+                        );
                     };
                     if tensor.shape != child_shape {
-                        return Err("array literal must have a rectangular numeric shape".to_string());
+                        return Err(
+                            "array literal must have a rectangular numeric shape".to_string()
+                        );
                     }
                     data.extend(tensor.elements);
                 }
@@ -186,9 +183,7 @@ impl Value {
         operation: impl Fn(f64, f64) -> f64 + Copy,
     ) -> Result<Self, String> {
         match (self, other) {
-            (Self::Scalar(left), Self::Scalar(right)) => {
-                Ok(Self::Scalar(operation(*left, *right)))
-            }
+            (Self::Scalar(left), Self::Scalar(right)) => Ok(Self::Scalar(operation(*left, *right))),
             (Self::Tensor(left), Self::Tensor(right)) => {
                 left.zip_map(right, operation).map(Self::Tensor)
             }
@@ -203,9 +198,7 @@ impl Value {
 
     pub(crate) fn euler_integrate(&self, derivative: &Self, dt: f64) -> Result<Self, String> {
         match (self, derivative) {
-            (Self::Scalar(current), Self::Scalar(delta)) => {
-                Ok(Self::Scalar(current + delta * dt))
-            }
+            (Self::Scalar(current), Self::Scalar(delta)) => Ok(Self::Scalar(current + delta * dt)),
             (Self::Tensor(current), Self::Tensor(delta)) => current
                 .zip_map(delta, |value, derivative| value + derivative * dt)
                 .map(Self::Tensor),
@@ -256,7 +249,10 @@ mod tests {
             .expect("broadcast should succeed");
 
         assert_eq!(
-            result.as_tensor().expect("result should be a tensor").elements(),
+            result
+                .as_tensor()
+                .expect("result should be a tensor")
+                .elements(),
             &[11.0, 12.0]
         );
     }
