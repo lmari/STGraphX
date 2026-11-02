@@ -5,8 +5,9 @@ da zero e indipendente dall'interfaccia utente.
 
 ## Stato
 
-Il workspace è per ora soltanto uno scaffold. Non esegue ancora modelli e non
-è collegato all'applicazione JavaScript.
+Il workspace esegue il primo sottoinsieme minimale di modelli: parametri e nodi
+algebrici scalari con espressioni aritmetiche elementari e dipendenze esplicite.
+Non è ancora collegato all'applicazione JavaScript.
 
 Il motore JavaScript attuale rimane quindi l'unico motore usato da STGraphX e
 il comportamento dell'applicazione non viene modificato.
@@ -29,6 +30,28 @@ il comportamento dell'applicazione non viene modificato.
 
 Il codice Tauri esistente in `../src-tauri` è una shell desktop distinta e non
 fa parte del motore.
+
+## Primo sottoinsieme eseguibile
+
+Sono supportati:
+
+- documenti JSON STGraphX con `version: 1`;
+- nodi `parameter` con espressioni numeriche costanti;
+- nodi `algebraic` scalari;
+- operatori `+`, `-`, `*`, `/`, `%`, `^` e `**`;
+- dipendenze dichiarate mediante gli archi del modello;
+- ordinamento topologico deterministico;
+- diagnostica per nomi e identificativi duplicati, riferimenti mancanti,
+  archi incoerenti e cicli algebrici.
+
+Non sono ancora supportati nodi di stato, funzioni, valori non scalari,
+variabili di sistema, sottomodelli o input esterni.
+
+La CLI può eseguire un modello compatibile:
+
+```bash
+cargo run -p stgraphx-cli -- stgraphx-engine/tests/fixtures/scalar-algebraic.json
+```
 
 ## Verifica
 

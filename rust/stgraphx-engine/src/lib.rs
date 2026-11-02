@@ -6,6 +6,15 @@
 #![forbid(unsafe_code)]
 #![doc = "Platform-independent execution engine for STGraphX."]
 
+mod document;
+mod error;
+mod expression;
+mod model;
+
+pub use document::{EdgeDocument, ModelDocument, NodeDocument};
+pub use error::EngineError;
+pub use model::{compile_json, CompiledModel, Evaluation, NodeKind, NodeValue};
+
 /// Information exposed by the engine before model execution is implemented.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct EngineInfo {
@@ -21,7 +30,11 @@ pub const fn engine_info() -> EngineInfo {
         name: "STGraphX Rust engine",
         version: env!("CARGO_PKG_VERSION"),
         api_version: 1,
-        capabilities: &[],
+        capabilities: &[
+            "scalar-parameters",
+            "scalar-algebraic-nodes",
+            "arithmetic-expressions",
+        ],
     }
 }
 
@@ -30,11 +43,11 @@ mod tests {
     use super::*;
 
     #[test]
-    fn scaffold_exposes_identity_without_claiming_capabilities() {
+    fn engine_exposes_identity_and_first_capabilities() {
         let info = engine_info();
 
         assert_eq!(info.name, "STGraphX Rust engine");
         assert_eq!(info.api_version, 1);
-        assert!(info.capabilities.is_empty());
+        assert!(info.capabilities.contains(&"scalar-algebraic-nodes"));
     }
 }

@@ -1,0 +1,40 @@
+{
+  "version": 1,
+  "nodes": [
+    {
+      "id": 1,
+      "name": "a",
+      "type": "parameter",
+      "valueExpression": "2"
+    },
+    {
+      "id": 2,
+      "name": "b",
+      "type": "parameter",
+      "valueExpression": "3"
+    },
+    {
+      "id": 3,
+      "name": "total",
+      "type": "algebraic",
+      "valueExpression": "a+b"
+    },
+    {
+      "id": 4,
+      "name": "result",
+      "type": "algebraic",
+      "valueExpression": "total^2-1"
+    },
+    {
+      "id": 5,
+      "name": "precedence",
+      "type": "algebraic",
+      "valueExpression": "-2^2+2^3^2"
+    }
+  ],
+  "edges": [
+    { "id": 1, "from": 1, "to": 3 },
+    { "id": 2, "from": 2, "to": 3 },
+    { "id": 3, "from": 3, "to": 4 }
+  ]
+}
