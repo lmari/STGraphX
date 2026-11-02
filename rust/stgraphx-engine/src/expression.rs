@@ -219,7 +219,11 @@ fn tokenize(source: &str) -> Result<Vec<Token>, String> {
                 }
                 TokenKind::Identifier(source[start..index].to_string())
             }
-            _ => return Err(format!("unexpected token '{current}' at position {position}")),
+            _ => {
+                return Err(format!(
+                    "unexpected token '{current}' at position {position}"
+                ))
+            }
         };
         tokens.push(Token { kind, position });
     }

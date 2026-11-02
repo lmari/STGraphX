@@ -61,8 +61,8 @@ impl Evaluation {
 
 /// Loads and compiles a model from the current STGraphX JSON representation.
 pub fn compile_json(source: &str) -> Result<CompiledModel, EngineError> {
-    let document: ModelDocument =
-        serde_json::from_str(source).map_err(|error| EngineError::InvalidJson(error.to_string()))?;
+    let document: ModelDocument = serde_json::from_str(source)
+        .map_err(|error| EngineError::InvalidJson(error.to_string()))?;
     CompiledModel::compile(document)
 }
 
@@ -125,12 +125,11 @@ impl CompiledModel {
             if source.is_empty() {
                 return Err(EngineError::EmptyExpression(node.name.clone()));
             }
-            let expression = expression::parse(source).map_err(|message| {
-                EngineError::ExpressionSyntax {
+            let expression =
+                expression::parse(source).map_err(|message| EngineError::ExpressionSyntax {
                     node: node.name.clone(),
                     message,
-                }
-            })?;
+                })?;
             let references = expression.references();
             if kind == NodeKind::Parameter {
                 if let Some(reference) = references.into_iter().next() {
@@ -191,12 +190,13 @@ impl CompiledModel {
 
         for index in &self.evaluation_order {
             let node = &self.nodes[*index];
-            let value = node.expression.evaluate(&computed).map_err(|message| {
-                EngineError::Evaluation {
-                    node: node.name.clone(),
-                    message,
-                }
-            })?;
+            let value =
+                node.expression
+                    .evaluate(&computed)
+                    .map_err(|message| EngineError::Evaluation {
+                        node: node.name.clone(),
+                        message,
+                    })?;
             if !value.is_finite() {
                 return Err(EngineError::NonFiniteValue(node.name.clone()));
             }

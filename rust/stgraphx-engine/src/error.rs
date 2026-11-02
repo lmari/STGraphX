@@ -14,37 +14,16 @@ pub enum EngineError {
     DuplicateNodeId(i64),
     DuplicateNodeName(String),
     InvalidNodeName(String),
-    UnsupportedNodeType {
-        node: String,
-        node_type: String,
-    },
+    UnsupportedNodeType { node: String, node_type: String },
     EmptyExpression(String),
-    ExpressionSyntax {
-        node: String,
-        message: String,
-    },
-    ParameterReference {
-        node: String,
-        reference: String,
-    },
-    UnknownEdgeEndpoint {
-        edge_id: i64,
-        node_id: i64,
-    },
+    ExpressionSyntax { node: String, message: String },
+    ParameterReference { node: String, reference: String },
+    UnknownEdgeEndpoint { edge_id: i64, node_id: i64 },
     IncomingEdgeToParameter(String),
-    UnknownReference {
-        node: String,
-        reference: String,
-    },
-    MissingDependencyEdge {
-        node: String,
-        reference: String,
-    },
+    UnknownReference { node: String, reference: String },
+    MissingDependencyEdge { node: String, reference: String },
     DependencyCycle(Vec<String>),
-    Evaluation {
-        node: String,
-        message: String,
-    },
+    Evaluation { node: String, message: String },
     NonFiniteValue(String),
 }
 
@@ -60,9 +39,14 @@ impl fmt::Display for EngineError {
             Self::DuplicateNodeName(name) => write!(formatter, "duplicate node name '{name}'"),
             Self::InvalidNodeName(name) => write!(formatter, "invalid node name '{name}'"),
             Self::UnsupportedNodeType { node, node_type } => {
-                write!(formatter, "node '{node}' has unsupported type '{node_type}'")
+                write!(
+                    formatter,
+                    "node '{node}' has unsupported type '{node_type}'"
+                )
             }
-            Self::EmptyExpression(node) => write!(formatter, "node '{node}' has an empty expression"),
+            Self::EmptyExpression(node) => {
+                write!(formatter, "node '{node}' has an empty expression")
+            }
             Self::ExpressionSyntax { node, message } => {
                 write!(formatter, "invalid expression for node '{node}': {message}")
             }
@@ -78,7 +62,10 @@ impl fmt::Display for EngineError {
                 write!(formatter, "parameter '{node}' cannot have incoming edges")
             }
             Self::UnknownReference { node, reference } => {
-                write!(formatter, "node '{node}' refers to unknown node '{reference}'")
+                write!(
+                    formatter,
+                    "node '{node}' refers to unknown node '{reference}'"
+                )
             }
             Self::MissingDependencyEdge { node, reference } => write!(
                 formatter,

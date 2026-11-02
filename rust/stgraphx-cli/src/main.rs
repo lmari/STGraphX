@@ -3,8 +3,8 @@
 // file, You can obtain one at https://mozilla.org/MPL/2.0/.
 // Copyright (c) 2026 Luca Mari
 
-use stgraphx_engine::engine_info;
 use stgraphx_engine::compile_json;
+use stgraphx_engine::engine_info;
 
 fn run() -> Result<(), String> {
     let mut arguments = std::env::args().skip(1);
@@ -18,8 +18,8 @@ fn run() -> Result<(), String> {
         return Err("expected exactly one model path".to_string());
     }
 
-    let source = std::fs::read_to_string(&path)
-        .map_err(|error| format!("cannot read '{path}': {error}"))?;
+    let source =
+        std::fs::read_to_string(&path).map_err(|error| format!("cannot read '{path}': {error}"))?;
     let model = compile_json(&source).map_err(|error| error.to_string())?;
     let evaluation = model.evaluate().map_err(|error| error.to_string())?;
 
