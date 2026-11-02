@@ -9,6 +9,7 @@ use std::collections::{BTreeSet, HashMap};
 pub(crate) enum Expression {
     Number(f64),
     Identifier(String),
+    Integral(Box<Expression>),
     Unary {
         operator: UnaryOperator,
         argument: Box<Expression>,
@@ -49,6 +50,7 @@ impl Expression {
             Self::Identifier(name) => {
                 references.insert(name.clone());
             }
+            Self::Integral(argument) => argument.collect_references(references),
             Self::Unary { argument, .. } => argument.collect_references(references),
             Self::Binary { left, right, .. } => {
                 left.collect_references(references);
@@ -57,15 +59,56 @@ impl Expression {
         }
     }
 
-    pub(crate) fn evaluate(&self, values: &HashMap<String, f64>) -> Result<f64, String> {
+    pub(crate) fn uses_integral(&self) -> bool {
+        match self {
+            Self::Integral(_) => true,
+            Self::Unary { argument, .. } => argument.uses_integral(),
+            Self::Binary { left, right, .. } => left.uses_integral() || right.uses_integral(),
+            Self::Number(_) | Self::Identifier(_) => false,
+        }
+    }
+
+    pub(crate) fn uses_identifier(&self, expected: &str) -> bool {
+        match self {
+            Self::Identifier(name) => name == expected,
+            Self::Integral(argument) | Self::Unary { argument, .. } => {
+                argument.uses_identifier(expected)
+            }
+            Self::Binary { left, right, .. } => {
+                left.uses_identifier(expected) || right.uses_identifier(expected)
+            }
+            Self::Number(_) => false,
+        }
+    }
+
+    pub(crate) fn evaluate(&self, context: &EvaluationContext<'_>) -> Result<f64, String> {
         match self {
             Self::Number(value) => Ok(*value),
-            Self::Identifier(name) => values
-                .get(name)
-                .copied()
-                .ok_or_else(|| format!("'{name}' has no computed value")),
+            Self::Identifier(name) => match name.as_str() {
+                "time" => Ok(context.time),
+                "t0" => Ok(context.t0),
+                "t1" => Ok(context.t1),
+                "dt" => Ok(context.dt),
+                "this" => context
+                    .self_value
+                    .ok_or_else(|| "'this' is only available in state transitions".to_string()),
+                _ => context
+                    .values
+                    .get(name)
+                    .copied()
+                    .ok_or_else(|| format!("'{name}' has no computed value")),
+            },
+            Self::Integral(argument) => {
+                if !context.allow_integral {
+                    return Err("'integral' is only available in state transitions".to_string());
+                }
+                let current = context.self_value.ok_or_else(|| {
+                    "'integral' requires the current value of a state node".to_string()
+                })?;
+                Ok(current + argument.evaluate(context)? * context.dt)
+            }
             Self::Unary { operator, argument } => {
-                let value = argument.evaluate(values)?;
+                let value = argument.evaluate(context)?;
                 Ok(match operator {
                     UnaryOperator::Plus => value,
                     UnaryOperator::Minus => -value,
@@ -76,8 +119,8 @@ impl Expression {
                 left,
                 right,
             } => {
-                let left = left.evaluate(values)?;
-                let right = right.evaluate(values)?;
+                let left = left.evaluate(context)?;
+                let right = right.evaluate(context)?;
                 Ok(match operator {
                     BinaryOperator::Add => left + right,
                     BinaryOperator::Subtract => left - right,
@@ -89,6 +132,16 @@ impl Expression {
             }
         }
     }
+}
+
+pub(crate) struct EvaluationContext<'a> {
+    pub(crate) values: &'a HashMap<String, f64>,
+    pub(crate) time: f64,
+    pub(crate) t0: f64,
+    pub(crate) t1: f64,
+    pub(crate) dt: f64,
+    pub(crate) self_value: Option<f64>,
+    pub(crate) allow_integral: bool,
 }
 
 #[derive(Debug, Clone, PartialEq)]
@@ -354,7 +407,22 @@ impl Parser {
         let token = self.advance();
         match token.kind {
             TokenKind::Number(value) => Ok(Expression::Number(value)),
-            TokenKind::Identifier(name) => Ok(Expression::Identifier(name)),
+            TokenKind::Identifier(name) => {
+                if !self.consume(&TokenKind::LeftParen) {
+                    return Ok(Expression::Identifier(name));
+                }
+                if name != "integral" {
+                    return Err(format!(
+                        "unsupported function '{name}' at position {}",
+                        token.position
+                    ));
+                }
+                let argument = self.parse_additive()?;
+                if !self.consume(&TokenKind::RightParen) {
+                    return Err(format!("expected ')' at position {}", self.peek().position));
+                }
+                Ok(Expression::Integral(Box::new(argument)))
+            }
             TokenKind::LeftParen => {
                 let expression = self.parse_additive()?;
                 if !self.consume(&TokenKind::RightParen) {
@@ -373,9 +441,18 @@ mod tests {
     use super::*;
 
     fn evaluate(source: &str) -> f64 {
+        let values = HashMap::new();
         parse(source)
             .expect("expression should parse")
-            .evaluate(&HashMap::new())
+            .evaluate(&EvaluationContext {
+                values: &values,
+                time: 0.0,
+                t0: 0.0,
+                t1: 10.0,
+                dt: 1.0,
+                self_value: None,
+                allow_integral: false,
+            })
             .expect("expression should evaluate")
     }
 
@@ -397,5 +474,26 @@ mod tests {
             expression.references().into_iter().collect::<Vec<_>>(),
             vec!["alpha".to_string(), "beta".to_string()]
         );
+    }
+
+    #[test]
+    fn state_context_and_euler_integral_are_supported() {
+        let values = HashMap::from([("rate".to_string(), 2.0)]);
+        let expression = parse("integral(rate)+time+this").expect("expression should parse");
+        let value = expression
+            .evaluate(&EvaluationContext {
+                values: &values,
+                time: 0.5,
+                t0: 0.0,
+                t1: 1.0,
+                dt: 0.25,
+                self_value: Some(3.0),
+                allow_integral: true,
+            })
+            .expect("state expression should evaluate");
+
+        assert_eq!(value, 7.0);
+        assert!(expression.uses_integral());
+        assert!(expression.uses_identifier("this"));
     }
 }

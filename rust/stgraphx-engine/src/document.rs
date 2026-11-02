@@ -9,6 +9,43 @@ fn default_model_version() -> u32 {
     1
 }
 
+fn default_time_step() -> f64 {
+    1.0
+}
+
+fn default_end_time() -> f64 {
+    10.0
+}
+
+fn default_integrator() -> String {
+    "euler".to_string()
+}
+
+/// Time configuration read from an STGraphX model document.
+#[derive(Debug, Clone, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ExecutionDocument {
+    #[serde(default)]
+    pub t0: f64,
+    #[serde(default = "default_time_step")]
+    pub dt: f64,
+    #[serde(default = "default_end_time")]
+    pub t1: f64,
+    #[serde(default = "default_integrator")]
+    pub integrator: String,
+}
+
+impl Default for ExecutionDocument {
+    fn default() -> Self {
+        Self {
+            t0: 0.0,
+            dt: default_time_step(),
+            t1: default_end_time(),
+            integrator: default_integrator(),
+        }
+    }
+}
+
 /// Minimal part of an STGraphX model document needed by the first engine slice.
 #[derive(Debug, Clone, Deserialize)]
 pub struct ModelDocument {
@@ -18,6 +55,8 @@ pub struct ModelDocument {
     pub nodes: Vec<NodeDocument>,
     #[serde(default)]
     pub edges: Vec<EdgeDocument>,
+    #[serde(default)]
+    pub execution: ExecutionDocument,
 }
 
 /// Node data read from the current STGraphX JSON format.
@@ -30,6 +69,10 @@ pub struct NodeDocument {
     pub node_type: String,
     #[serde(default)]
     pub value_expression: String,
+    #[serde(default)]
+    pub initial_state: String,
+    #[serde(default)]
+    pub state_transition: String,
 }
 
 /// Directed dependency stored in an STGraphX model document.

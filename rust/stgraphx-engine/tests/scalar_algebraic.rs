@@ -69,22 +69,26 @@ fn reports_an_algebraic_dependency_cycle() {
 }
 
 #[test]
-fn rejects_node_types_outside_the_first_slice() {
+fn rejects_an_integrator_not_yet_supported_for_state_nodes() {
     let source = r#"
     {
       "version": 1,
+      "execution": { "t0": 0, "dt": 1, "t1": 1, "integrator": "rk4" },
       "nodes": [
-        { "id": 1, "name": "state", "type": "state", "valueExpression": "1" }
+        {
+          "id": 1,
+          "name": "state",
+          "type": "state",
+          "initialState": "1",
+          "stateTransition": "this+1"
+        }
       ],
       "edges": []
     }
     "#;
 
     assert_eq!(
-        compile_json(source).expect_err("state nodes are not supported yet"),
-        EngineError::UnsupportedNodeType {
-            node: "state".to_string(),
-            node_type: "state".to_string(),
-        }
+        compile_json(source).expect_err("RK4 is not supported yet"),
+        EngineError::UnsupportedIntegrator("rk4".to_string())
     );
 }

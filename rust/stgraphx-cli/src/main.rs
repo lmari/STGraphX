@@ -21,10 +21,20 @@ fn run() -> Result<(), String> {
     let source =
         std::fs::read_to_string(&path).map_err(|error| format!("cannot read '{path}': {error}"))?;
     let model = compile_json(&source).map_err(|error| error.to_string())?;
-    let evaluation = model.evaluate().map_err(|error| error.to_string())?;
-
-    for node in evaluation.values() {
-        println!("{}={}", node.name, node.value);
+    if model.has_state_nodes() {
+        let simulation = model.simulate().map_err(|error| error.to_string())?;
+        let final_snapshot = simulation
+            .final_snapshot()
+            .ok_or_else(|| "the simulation produced no snapshots".to_string())?;
+        println!("time={}", final_snapshot.time());
+        for node in final_snapshot.evaluation().values() {
+            println!("{}={}", node.name, node.value);
+        }
+    } else {
+        let evaluation = model.evaluate().map_err(|error| error.to_string())?;
+        for node in evaluation.values() {
+            println!("{}={}", node.name, node.value);
+        }
     }
     Ok(())
 }

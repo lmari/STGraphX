@@ -5,9 +5,10 @@ da zero e indipendente dall'interfaccia utente.
 
 ## Stato
 
-Il workspace esegue il primo sottoinsieme minimale di modelli: parametri e nodi
-algebrici scalari con espressioni aritmetiche elementari e dipendenze esplicite.
-Non è ancora collegato all'applicazione JavaScript.
+Il workspace esegue un primo sottoinsieme verticale di modelli: parametri, nodi
+algebrici e nodi di stato scalari con espressioni aritmetiche elementari,
+dipendenze esplicite e simulazione temporale mediante Eulero. Non è ancora
+collegato all'applicazione JavaScript.
 
 Il motore JavaScript attuale rimane quindi l'unico motore usato da STGraphX e
 il comportamento dell'applicazione non viene modificato.
@@ -31,21 +32,26 @@ il comportamento dell'applicazione non viene modificato.
 Il codice Tauri esistente in `../src-tauri` è una shell desktop distinta e non
 fa parte del motore.
 
-## Primo sottoinsieme eseguibile
+## Sottoinsieme eseguibile
 
 Sono supportati:
 
 - documenti JSON STGraphX con `version: 1`;
 - nodi `parameter` con espressioni numeriche costanti;
 - nodi `algebraic` scalari;
+- nodi `state` scalari con `initialState` e `stateTransition`;
 - operatori `+`, `-`, `*`, `/`, `%`, `^` e `**`;
+- variabili di esecuzione `time`, `t0`, `t1` e `dt`;
+- alias `this` nelle transizioni di stato;
+- transizioni discrete e `integral(...)` con metodo di Eulero;
+- serie temporali da `t0` a `t1`, con aggiornamento simultaneo degli stati;
 - dipendenze dichiarate mediante gli archi del modello;
 - ordinamento topologico deterministico;
 - diagnostica per nomi e identificativi duplicati, riferimenti mancanti,
   archi incoerenti e cicli algebrici.
 
-Non sono ancora supportati nodi di stato, funzioni, valori non scalari,
-variabili di sistema, sottomodelli o input esterni.
+Non sono ancora supportati RK4, funzioni diverse da `integral`, valori non
+scalari, sottomodelli o input esterni.
 
 La CLI può eseguire un modello compatibile:
 

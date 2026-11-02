@@ -1,0 +1,45 @@
+{
+  "version": 1,
+  "execution": {
+    "t0": 0,
+    "dt": 0.5,
+    "t1": 1.5,
+    "integrator": "euler"
+  },
+  "nodes": [
+    {
+      "id": 1,
+      "name": "rate",
+      "type": "parameter",
+      "valueExpression": "2"
+    },
+    {
+      "id": 2,
+      "name": "stock",
+      "type": "state",
+      "output": true,
+      "initialState": "rate/2",
+      "stateTransition": "integral(rate)"
+    },
+    {
+      "id": 3,
+      "name": "counter",
+      "type": "state",
+      "output": true,
+      "initialState": "10",
+      "stateTransition": "this+1"
+    },
+    {
+      "id": 4,
+      "name": "observed",
+      "type": "algebraic",
+      "output": true,
+      "valueExpression": "stock+counter+time"
+    }
+  ],
+  "edges": [
+    { "id": 1, "from": 1, "to": 2 },
+    { "id": 2, "from": 2, "to": 4 },
+    { "id": 3, "from": 3, "to": 4 }
+  ]
+}

@@ -11,9 +11,12 @@ mod error;
 mod expression;
 mod model;
 
-pub use document::{EdgeDocument, ModelDocument, NodeDocument};
+pub use document::{EdgeDocument, ExecutionDocument, ModelDocument, NodeDocument};
 pub use error::EngineError;
-pub use model::{compile_json, CompiledModel, Evaluation, NodeKind, NodeValue};
+pub use model::{
+    compile_json, CompiledModel, Evaluation, ExecutionConfig, Integrator, NodeKind, NodeValue,
+    Simulation, SimulationSnapshot,
+};
 
 /// Information exposed by the engine before model execution is implemented.
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -34,6 +37,10 @@ pub const fn engine_info() -> EngineInfo {
             "scalar-parameters",
             "scalar-algebraic-nodes",
             "arithmetic-expressions",
+            "scalar-state-nodes",
+            "discrete-state-transitions",
+            "euler-integration",
+            "time-series-simulation",
         ],
     }
 }
@@ -49,5 +56,6 @@ mod tests {
         assert_eq!(info.name, "STGraphX Rust engine");
         assert_eq!(info.api_version, 1);
         assert!(info.capabilities.contains(&"scalar-algebraic-nodes"));
+        assert!(info.capabilities.contains(&"scalar-state-nodes"));
     }
 }
