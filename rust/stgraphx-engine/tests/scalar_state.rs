@@ -21,8 +21,7 @@ fn simulates_scalar_state_nodes_with_euler_and_direct_transitions() {
         (1.0, 3.0, 12.0, 16.0),
         (1.5, 4.0, 13.0, 18.5),
     ];
-    for (snapshot, (time, stock, counter, observed)) in
-        simulation.snapshots().iter().zip(expected)
+    for (snapshot, (time, stock, counter, observed)) in simulation.snapshots().iter().zip(expected)
     {
         assert_eq!(snapshot.time(), time);
         assert_eq!(snapshot.value("stock"), Some(stock));

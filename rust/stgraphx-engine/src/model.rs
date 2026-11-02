@@ -350,8 +350,7 @@ impl CompiledModel {
         let mut state_values = self.initialize_state_values()?;
         let mut snapshots = Vec::with_capacity(times.len());
         for time in times {
-            let (evaluation, next_state_values) =
-                self.evaluate_snapshot(&state_values, time)?;
+            let (evaluation, next_state_values) = self.evaluate_snapshot(&state_values, time)?;
             snapshots.push(SimulationSnapshot { time, evaluation });
             state_values = next_state_values;
         }
@@ -480,10 +479,7 @@ fn parse_required_expression(
     })
 }
 
-fn reject_transition_only_features(
-    node: &str,
-    expression: &Expression,
-) -> Result<(), EngineError> {
+fn reject_transition_only_features(node: &str, expression: &Expression) -> Result<(), EngineError> {
     if expression.uses_integral() {
         return Err(EngineError::IntegralOutsideStateTransition(
             node.to_string(),
