@@ -5,10 +5,13 @@
 
 use std::collections::{BTreeSet, HashMap};
 
+use crate::value::Value;
+
 #[derive(Debug, Clone, PartialEq)]
 pub(crate) enum Expression {
     Number(f64),
     Identifier(String),
+    Array(Vec<Expression>),
     Integral(Box<Expression>),
     Unary {
         operator: UnaryOperator,
@@ -50,6 +53,11 @@ impl Expression {
             Self::Identifier(name) => {
                 references.insert(name.clone());
             }
+            Self::Array(elements) => {
+                for element in elements {
+                    element.collect_references(references);
+                }
+            }
             Self::Integral(argument) => argument.collect_references(references),
             Self::Unary { argument, .. } => argument.collect_references(references),
             Self::Binary { left, right, .. } => {
@@ -62,6 +70,7 @@ impl Expression {
     pub(crate) fn uses_integral(&self) -> bool {
         match self {
             Self::Integral(_) => true,
+            Self::Array(elements) => elements.iter().any(Self::uses_integral),
             Self::Unary { argument, .. } => argument.uses_integral(),
             Self::Binary { left, right, .. } => left.uses_integral() || right.uses_integral(),
             Self::Number(_) | Self::Identifier(_) => false,
@@ -71,6 +80,9 @@ impl Expression {
     pub(crate) fn uses_identifier(&self, expected: &str) -> bool {
         match self {
             Self::Identifier(name) => name == expected,
+            Self::Array(elements) => elements
+                .iter()
+                .any(|element| element.uses_identifier(expected)),
             Self::Integral(argument) | Self::Unary { argument, .. } => {
                 argument.uses_identifier(expected)
             }
@@ -81,23 +93,31 @@ impl Expression {
         }
     }
 
-    pub(crate) fn evaluate(&self, context: &EvaluationContext<'_>) -> Result<f64, String> {
+    pub(crate) fn evaluate(&self, context: &EvaluationContext<'_>) -> Result<Value, String> {
         match self {
-            Self::Number(value) => Ok(*value),
+            Self::Number(value) => Ok(Value::scalar(*value)),
             Self::Identifier(name) => match name.as_str() {
-                "time" => Ok(context.time),
-                "t0" => Ok(context.t0),
-                "t1" => Ok(context.t1),
-                "dt" => Ok(context.dt),
+                "time" => Ok(Value::scalar(context.time)),
+                "t0" => Ok(Value::scalar(context.t0)),
+                "t1" => Ok(Value::scalar(context.t1)),
+                "dt" => Ok(Value::scalar(context.dt)),
                 "this" => context
                     .self_value
+                    .cloned()
                     .ok_or_else(|| "'this' is only available in state transitions".to_string()),
                 _ => context
                     .values
                     .get(name)
-                    .copied()
+                    .cloned()
                     .ok_or_else(|| format!("'{name}' has no computed value")),
             },
+            Self::Array(elements) => {
+                let values = elements
+                    .iter()
+                    .map(|element| element.evaluate(context))
+                    .collect::<Result<Vec<_>, _>>()?;
+                Value::from_array_elements(values)
+            }
             Self::Integral(argument) => {
                 if !context.allow_integral {
                     return Err("'integral' is only available in state transitions".to_string());
@@ -105,13 +125,13 @@ impl Expression {
                 let current = context.self_value.ok_or_else(|| {
                     "'integral' requires the current value of a state node".to_string()
                 })?;
-                Ok(current + argument.evaluate(context)? * context.dt)
+                current.euler_integrate(&argument.evaluate(context)?, context.dt)
             }
             Self::Unary { operator, argument } => {
                 let value = argument.evaluate(context)?;
                 Ok(match operator {
                     UnaryOperator::Plus => value,
-                    UnaryOperator::Minus => -value,
+                    UnaryOperator::Minus => value.unary(|item| -item),
                 })
             }
             Self::Binary {
@@ -121,26 +141,26 @@ impl Expression {
             } => {
                 let left = left.evaluate(context)?;
                 let right = right.evaluate(context)?;
-                Ok(match operator {
-                    BinaryOperator::Add => left + right,
-                    BinaryOperator::Subtract => left - right,
-                    BinaryOperator::Multiply => left * right,
-                    BinaryOperator::Divide => left / right,
-                    BinaryOperator::Remainder => left % right,
-                    BinaryOperator::Power => left.powf(right),
-                })
+                match operator {
+                    BinaryOperator::Add => left.binary(&right, |left, right| left + right),
+                    BinaryOperator::Subtract => left.binary(&right, |left, right| left - right),
+                    BinaryOperator::Multiply => left.binary(&right, |left, right| left * right),
+                    BinaryOperator::Divide => left.binary(&right, |left, right| left / right),
+                    BinaryOperator::Remainder => left.binary(&right, |left, right| left % right),
+                    BinaryOperator::Power => left.binary(&right, |left, right| left.powf(right)),
+                }
             }
         }
     }
 }
 
 pub(crate) struct EvaluationContext<'a> {
-    pub(crate) values: &'a HashMap<String, f64>,
+    pub(crate) values: &'a HashMap<String, Value>,
     pub(crate) time: f64,
     pub(crate) t0: f64,
     pub(crate) t1: f64,
     pub(crate) dt: f64,
-    pub(crate) self_value: Option<f64>,
+    pub(crate) self_value: Option<&'a Value>,
     pub(crate) allow_integral: bool,
 }
 
@@ -156,6 +176,9 @@ enum TokenKind {
     Power,
     LeftParen,
     RightParen,
+    LeftBracket,
+    RightBracket,
+    Comma,
     End,
 }
 
@@ -219,6 +242,18 @@ fn tokenize(source: &str) -> Result<Vec<Token>, String> {
             ')' => {
                 index += 1;
                 TokenKind::RightParen
+            }
+            '[' => {
+                index += 1;
+                TokenKind::LeftBracket
+            }
+            ']' => {
+                index += 1;
+                TokenKind::RightBracket
+            }
+            ',' => {
+                index += 1;
+                TokenKind::Comma
             }
             '0'..='9' | '.' => {
                 let start = index;
@@ -423,6 +458,19 @@ impl Parser {
                 }
                 Ok(Expression::Integral(Box::new(argument)))
             }
+            TokenKind::LeftBracket => {
+                if self.consume(&TokenKind::RightBracket) {
+                    return Ok(Expression::Array(Vec::new()));
+                }
+                let mut elements = vec![self.parse_additive()?];
+                while self.consume(&TokenKind::Comma) {
+                    elements.push(self.parse_additive()?);
+                }
+                if !self.consume(&TokenKind::RightBracket) {
+                    return Err(format!("expected ']' at position {}", self.peek().position));
+                }
+                Ok(Expression::Array(elements))
+            }
             TokenKind::LeftParen => {
                 let expression = self.parse_additive()?;
                 if !self.consume(&TokenKind::RightParen) {
@@ -454,6 +502,8 @@ mod tests {
                 allow_integral: false,
             })
             .expect("expression should evaluate")
+            .as_scalar()
+            .expect("expression should be scalar")
     }
 
     #[test]
@@ -478,7 +528,8 @@ mod tests {
 
     #[test]
     fn state_context_and_euler_integral_are_supported() {
-        let values = HashMap::from([("rate".to_string(), 2.0)]);
+        let values = HashMap::from([("rate".to_string(), Value::scalar(2.0))]);
+        let self_value = Value::scalar(3.0);
         let expression = parse("integral(rate)+time+this").expect("expression should parse");
         let value = expression
             .evaluate(&EvaluationContext {
@@ -487,13 +538,52 @@ mod tests {
                 t0: 0.0,
                 t1: 1.0,
                 dt: 0.25,
-                self_value: Some(3.0),
+                self_value: Some(&self_value),
                 allow_integral: true,
             })
             .expect("state expression should evaluate");
 
-        assert_eq!(value, 7.0);
+        assert_eq!(value.as_scalar(), Some(7.0));
         assert!(expression.uses_integral());
         assert!(expression.uses_identifier("this"));
+    }
+
+    #[test]
+    fn array_literals_and_broadcast_arithmetic_are_supported() {
+        let values = HashMap::new();
+        let expression = parse("[1,2]*2+[[10,20],[30,40]]").expect("expression should parse");
+        let error = expression
+            .evaluate(&EvaluationContext {
+                values: &values,
+                time: 0.0,
+                t0: 0.0,
+                t1: 1.0,
+                dt: 1.0,
+                self_value: None,
+                allow_integral: false,
+            })
+            .expect_err("mismatched shapes should fail");
+
+        assert_eq!(error, "operator arguments must have matching shapes");
+
+        let vector = parse("[1,2]*2+10")
+            .expect("expression should parse")
+            .evaluate(&EvaluationContext {
+                values: &values,
+                time: 0.0,
+                t0: 0.0,
+                t1: 1.0,
+                dt: 1.0,
+                self_value: None,
+                allow_integral: false,
+            })
+            .expect("vector expression should evaluate");
+        assert_eq!(
+            vector
+                .as_tensor()
+                .expect("result should be a tensor")
+                .elements(),
+            &[12.0, 14.0]
+        );
     }
 }

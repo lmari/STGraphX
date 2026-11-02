@@ -17,11 +17,11 @@ fn compiles_and_evaluates_a_scalar_algebraic_model() {
         model.evaluation_order().collect::<Vec<_>>(),
         vec!["a", "b", "total", "result", "precedence"]
     );
-    assert_eq!(evaluation.value("a"), Some(2.0));
-    assert_eq!(evaluation.value("b"), Some(3.0));
-    assert_eq!(evaluation.value("total"), Some(5.0));
-    assert_eq!(evaluation.value("result"), Some(24.0));
-    assert_eq!(evaluation.value("precedence"), Some(508.0));
+    assert_eq!(evaluation.scalar("a"), Some(2.0));
+    assert_eq!(evaluation.scalar("b"), Some(3.0));
+    assert_eq!(evaluation.scalar("total"), Some(5.0));
+    assert_eq!(evaluation.scalar("result"), Some(24.0));
+    assert_eq!(evaluation.scalar("precedence"), Some(508.0));
 }
 
 #[test]

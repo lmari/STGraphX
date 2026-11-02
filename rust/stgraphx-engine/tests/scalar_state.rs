@@ -24,9 +24,9 @@ fn simulates_scalar_state_nodes_with_euler_and_direct_transitions() {
     for (snapshot, (time, stock, counter, observed)) in simulation.snapshots().iter().zip(expected)
     {
         assert_eq!(snapshot.time(), time);
-        assert_eq!(snapshot.value("stock"), Some(stock));
-        assert_eq!(snapshot.value("counter"), Some(counter));
-        assert_eq!(snapshot.value("observed"), Some(observed));
+        assert_eq!(snapshot.scalar("stock"), Some(stock));
+        assert_eq!(snapshot.scalar("counter"), Some(counter));
+        assert_eq!(snapshot.scalar("observed"), Some(observed));
     }
 }
 
@@ -58,7 +58,7 @@ fn state_values_break_instantaneous_feedback_cycles() {
     let values = simulation
         .snapshots()
         .iter()
-        .map(|snapshot| snapshot.value("stock"))
+        .map(|snapshot| snapshot.scalar("stock"))
         .collect::<Vec<_>>();
 
     assert_eq!(values, vec![Some(1.0), Some(3.0), Some(9.0)]);

@@ -8,6 +8,7 @@ use std::collections::{HashMap, HashSet};
 use crate::document::{ExecutionDocument, ModelDocument};
 use crate::error::EngineError;
 use crate::expression::{self, EvaluationContext, Expression};
+use crate::value::Value;
 
 const MAX_SIMULATION_STEPS: usize = 100_000;
 
@@ -71,12 +72,12 @@ pub struct CompiledModel {
     execution: ExecutionConfig,
 }
 
-/// Scalar value produced for one node.
+/// Numeric value produced for one node.
 #[derive(Debug, Clone, PartialEq)]
 pub struct NodeValue {
     pub id: i64,
     pub name: String,
-    pub value: f64,
+    pub value: Value,
 }
 
 /// Values produced by one evaluation of a compiled model.
@@ -90,11 +91,15 @@ impl Evaluation {
         &self.values
     }
 
-    pub fn value(&self, name: &str) -> Option<f64> {
+    pub fn value(&self, name: &str) -> Option<&Value> {
         self.values
             .iter()
             .find(|node| node.name == name)
-            .map(|node| node.value)
+            .map(|node| &node.value)
+    }
+
+    pub fn scalar(&self, name: &str) -> Option<f64> {
+        self.value(name).and_then(Value::as_scalar)
     }
 }
 
@@ -114,8 +119,12 @@ impl SimulationSnapshot {
         &self.evaluation
     }
 
-    pub fn value(&self, name: &str) -> Option<f64> {
+    pub fn value(&self, name: &str) -> Option<&Value> {
         self.evaluation.value(name)
+    }
+
+    pub fn scalar(&self, name: &str) -> Option<f64> {
+        self.evaluation.scalar(name)
     }
 }
 
@@ -357,7 +366,7 @@ impl CompiledModel {
         Ok(Simulation { snapshots })
     }
 
-    fn initialize_state_values(&self) -> Result<Vec<Option<f64>>, EngineError> {
+    fn initialize_state_values(&self) -> Result<Vec<Option<Value>>, EngineError> {
         let mut computed = HashMap::with_capacity(self.nodes.len());
         let mut state_values = vec![None; self.nodes.len()];
 
@@ -372,7 +381,7 @@ impl CompiledModel {
                 None,
                 false,
             )?;
-            computed.insert(node.name.clone(), value);
+            computed.insert(node.name.clone(), value.clone());
             if node.kind == NodeKind::State {
                 state_values[*index] = Some(value);
             }
@@ -382,17 +391,19 @@ impl CompiledModel {
 
     fn evaluate_snapshot(
         &self,
-        state_values: &[Option<f64>],
+        state_values: &[Option<Value>],
         time: f64,
-    ) -> Result<(Evaluation, Vec<Option<f64>>), EngineError> {
+    ) -> Result<(Evaluation, Vec<Option<Value>>), EngineError> {
         let mut computed = HashMap::with_capacity(self.nodes.len());
         let mut values_by_index = vec![None; self.nodes.len()];
 
         for index in &self.state_indices {
             let node = &self.nodes[*index];
             let value = state_values[*index]
+                .as_ref()
+                .cloned()
                 .expect("initialized simulations must contain every state value");
-            computed.insert(node.name.clone(), value);
+            computed.insert(node.name.clone(), value.clone());
             values_by_index[*index] = Some(value);
         }
 
@@ -400,7 +411,7 @@ impl CompiledModel {
             let node = &self.nodes[*index];
             let value =
                 self.evaluate_expression(node, &node.expression, &computed, time, None, false)?;
-            computed.insert(node.name.clone(), value);
+            computed.insert(node.name.clone(), value.clone());
             values_by_index[*index] = Some(value);
         }
 
@@ -408,6 +419,7 @@ impl CompiledModel {
         for index in &self.state_indices {
             let node = &self.nodes[*index];
             let current = values_by_index[*index]
+                .as_ref()
                 .expect("the current state value must have been inserted before transitions");
             let next = self.evaluate_expression(
                 node,
@@ -428,6 +440,8 @@ impl CompiledModel {
                 id: node.id,
                 name: node.name.clone(),
                 value: values_by_index[index]
+                    .as_ref()
+                    .cloned()
                     .expect("every compiled node must have a value in a snapshot"),
             })
             .collect();
@@ -438,11 +452,11 @@ impl CompiledModel {
         &self,
         node: &CompiledNode,
         expression: &Expression,
-        computed: &HashMap<String, f64>,
+        computed: &HashMap<String, Value>,
         time: f64,
-        self_value: Option<f64>,
+        self_value: Option<&Value>,
         allow_integral: bool,
-    ) -> Result<f64, EngineError> {
+    ) -> Result<Value, EngineError> {
         let value = expression
             .evaluate(&EvaluationContext {
                 values: computed,

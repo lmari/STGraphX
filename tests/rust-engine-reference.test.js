@@ -49,10 +49,43 @@ async function checkScalarStateEuler(rootDir) {
   ]);
 }
 
+async function checkTensorStateEuler(rootDir) {
+  const runtime = await loadFixture(rootDir, "tensor-state-euler.json");
+
+  await runtime.run();
+  assert.deepStrictEqual(runtime.getOutputHistory(), [
+    {
+      time: 0,
+      values: {
+        position: [0, 1],
+        shifted: [10, 22],
+        lattice: [[1, 2], [3, 4]],
+      },
+    },
+    {
+      time: 0.5,
+      values: {
+        position: [1, 0.5],
+        shifted: [12, 21],
+        lattice: [[2, 3], [4, 5]],
+      },
+    },
+    {
+      time: 1,
+      values: {
+        position: [2, 0],
+        shifted: [14, 20],
+        lattice: [[3, 4], [5, 6]],
+      },
+    },
+  ]);
+}
+
 async function main() {
   const rootDir = path.resolve(__dirname, "..");
   await checkScalarAlgebraic(rootDir);
   await checkScalarStateEuler(rootDir);
+  await checkTensorStateEuler(rootDir);
   console.log("rust-engine-reference.test.js: ok");
 }
 

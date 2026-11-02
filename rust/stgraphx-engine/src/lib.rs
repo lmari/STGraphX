@@ -10,6 +10,7 @@ mod document;
 mod error;
 mod expression;
 mod model;
+mod value;
 
 pub use document::{EdgeDocument, ExecutionDocument, ModelDocument, NodeDocument};
 pub use error::EngineError;
@@ -17,6 +18,7 @@ pub use model::{
     compile_json, CompiledModel, Evaluation, ExecutionConfig, Integrator, NodeKind, NodeValue,
     Simulation, SimulationSnapshot,
 };
+pub use value::{Tensor, Value};
 
 /// Information exposed by the engine before model execution is implemented.
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -41,6 +43,8 @@ pub const fn engine_info() -> EngineInfo {
             "discrete-state-transitions",
             "euler-integration",
             "time-series-simulation",
+            "numeric-tensors",
+            "vector-matrix-arithmetic",
         ],
     }
 }

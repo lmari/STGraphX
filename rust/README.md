@@ -6,9 +6,9 @@ da zero e indipendente dall'interfaccia utente.
 ## Stato
 
 Il workspace esegue un primo sottoinsieme verticale di modelli: parametri, nodi
-algebrici e nodi di stato scalari con espressioni aritmetiche elementari,
-dipendenze esplicite e simulazione temporale mediante Eulero. Non è ancora
-collegato all'applicazione JavaScript.
+algebrici e nodi di stato scalari o tensoriali con espressioni aritmetiche
+elementari, dipendenze esplicite e simulazione temporale mediante Eulero. Non è
+ancora collegato all'applicazione JavaScript.
 
 Il motore JavaScript attuale rimane quindi l'unico motore usato da STGraphX e
 il comportamento dell'applicazione non viene modificato.
@@ -40,18 +40,22 @@ Sono supportati:
 - nodi `parameter` con espressioni numeriche costanti;
 - nodi `algebraic` scalari;
 - nodi `state` scalari con `initialState` e `stateTransition`;
+- valori numerici scalari, vettoriali, matriciali e tensoriali rettangolari;
+- letterali come `[1,2]` e `[[1,2],[3,4]]`;
+- aritmetica elemento per elemento, con diffusione di uno scalare su un tensore;
 - operatori `+`, `-`, `*`, `/`, `%`, `^` e `**`;
 - variabili di esecuzione `time`, `t0`, `t1` e `dt`;
 - alias `this` nelle transizioni di stato;
-- transizioni discrete e `integral(...)` con metodo di Eulero;
+- transizioni discrete e `integral(...)` scalare o tensoriale con metodo di
+  Eulero;
 - serie temporali da `t0` a `t1`, con aggiornamento simultaneo degli stati;
 - dipendenze dichiarate mediante gli archi del modello;
 - ordinamento topologico deterministico;
 - diagnostica per nomi e identificativi duplicati, riferimenti mancanti,
   archi incoerenti e cicli algebrici.
 
-Non sono ancora supportati RK4, funzioni diverse da `integral`, valori non
-scalari, sottomodelli o input esterni.
+Non sono ancora supportati RK4, funzioni diverse da `integral`, indicizzazione
+dei tensori, sottomodelli o input esterni.
 
 La CLI può eseguire un modello compatibile:
 
