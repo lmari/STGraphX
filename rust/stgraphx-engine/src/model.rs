@@ -176,8 +176,7 @@ impl CompiledModel {
             }
         }
 
-        let local_functions =
-            compile_local_functions(&document.local_functions, &name_to_index)?;
+        let local_functions = compile_local_functions(&document.local_functions, &name_to_index)?;
 
         let mut incoming = vec![Vec::new(); document.nodes.len()];
         for edge in &document.edges {
@@ -544,12 +543,11 @@ fn compile_local_functions(
                 message: "the expression is empty".to_string(),
             });
         }
-        let expression = expression::parse(source).map_err(|message| {
-            EngineError::InvalidLocalFunction {
+        let expression =
+            expression::parse(source).map_err(|message| EngineError::InvalidLocalFunction {
                 name: document.name.clone(),
                 message,
-            }
-        })?;
+            })?;
         if expression.uses_integral() || expression.uses_identifier("this") {
             return Err(EngineError::InvalidLocalFunction {
                 name: document.name.clone(),

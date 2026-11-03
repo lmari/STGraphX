@@ -55,7 +55,10 @@ impl fmt::Display for EngineError {
                 write!(formatter, "duplicate local function name '{name}'")
             }
             Self::LocalFunctionNodeConflict(name) => {
-                write!(formatter, "local function '{name}' conflicts with a node name")
+                write!(
+                    formatter,
+                    "local function '{name}' conflicts with a node name"
+                )
             }
             Self::InvalidLocalFunction { name, message } => {
                 write!(formatter, "invalid local function '{name}': {message}")

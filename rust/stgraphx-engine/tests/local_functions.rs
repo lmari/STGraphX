@@ -26,12 +26,7 @@ fn local_functions_accept_and_return_scalar_and_tensor_values() {
     assert_eq!(evaluation.scalar("sampleNorm"), Some(13.0));
     assert_eq!(evaluation.scalar("separation"), Some(5.0));
     assert_tensor(&evaluation, "sampleTail", &[2], &[0.0, 3.0]);
-    assert_tensor(
-        &evaluation,
-        "shiftedMatrix",
-        &[2, 2],
-        &[3.0, 5.0, 7.0, 9.0],
-    );
+    assert_tensor(&evaluation, "shiftedMatrix", &[2, 2], &[3.0, 5.0, 7.0, 9.0]);
     assert_eq!(evaluation.scalar("lastRowNorm"), Some(25.0));
 }
 
