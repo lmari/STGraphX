@@ -43,6 +43,10 @@ jobs:
         working-directory: .
         run: node tests/rust-engine-reference.test.js
 
+      - name: Install JavaScript dependencies
+        working-directory: .
+        run: npm ci
+
       - name: Check JavaScript integration
         working-directory: .
         run: npm run check
