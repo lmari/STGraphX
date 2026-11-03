@@ -482,8 +482,7 @@ mod tests {
     fn range_matches_stgraphx_sequence_rules() {
         assert_eq!(
             evaluate("range", &[Value::scalar(4.0)]).expect("single argument should work"),
-            Value::tensor(vec![4], vec![0.0, 1.0, 2.0, 3.0])
-                .expect("tensor should be valid")
+            Value::tensor(vec![4], vec![0.0, 1.0, 2.0, 3.0]).expect("tensor should be valid")
         );
         assert_eq!(
             evaluate("range", &[Value::scalar(3.0), Value::scalar(0.0)])
@@ -493,24 +492,15 @@ mod tests {
         assert_eq!(
             evaluate(
                 "range",
-                &[
-                    Value::scalar(0.0),
-                    Value::scalar(0.31),
-                    Value::scalar(0.1),
-                ],
+                &[Value::scalar(0.0), Value::scalar(0.31), Value::scalar(0.1),],
             )
             .expect("fractional range should work"),
-            Value::tensor(vec![4], vec![0.0, 0.1, 0.2, 0.3])
-                .expect("tensor should be valid")
+            Value::tensor(vec![4], vec![0.0, 0.1, 0.2, 0.3]).expect("tensor should be valid")
         );
         assert_eq!(
             evaluate(
                 "range",
-                &[
-                    Value::scalar(0.0),
-                    Value::scalar(1.0),
-                    Value::scalar(-0.1),
-                ],
+                &[Value::scalar(0.0), Value::scalar(1.0), Value::scalar(-0.1),],
             )
             .expect_err("wrong direction should fail"),
             "range step does not reach the end value"

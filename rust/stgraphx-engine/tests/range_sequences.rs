@@ -23,25 +23,10 @@ fn evaluates_increasing_decreasing_and_fractional_ranges() {
     let model = compile_json(FIXTURE).expect("fixture should compile");
     let evaluation = model.evaluate().expect("fixture should evaluate");
 
-    assert_tensor(
-        &evaluation,
-        "singleArgument",
-        &[4],
-        &[0.0, 1.0, 2.0, 3.0],
-    );
-    assert_tensor(
-        &evaluation,
-        "ascending",
-        &[5],
-        &[1.0, 2.0, 3.0, 4.0, 5.0],
-    );
+    assert_tensor(&evaluation, "singleArgument", &[4], &[0.0, 1.0, 2.0, 3.0]);
+    assert_tensor(&evaluation, "ascending", &[5], &[1.0, 2.0, 3.0, 4.0, 5.0]);
     assert_tensor(&evaluation, "descending", &[3], &[3.0, 2.0, 1.0]);
-    assert_tensor(
-        &evaluation,
-        "fractional",
-        &[4],
-        &[0.0, 0.1, 0.2, 0.3],
-    );
+    assert_tensor(&evaluation, "fractional", &[4], &[0.0, 0.1, 0.2, 0.3]);
     assert_tensor(
         &evaluation,
         "valueAndIndex",
