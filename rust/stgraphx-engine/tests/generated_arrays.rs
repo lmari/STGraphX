@@ -75,12 +75,7 @@ fn bounded_oscillator_example_compiles_and_evaluates() {
 
     assert_evaluation_tensor(&evaluation, "p", &[2], &[0.1, 0.29]);
     assert_evaluation_tensor(&evaluation, "v", &[2], &[0.0, 0.0]);
-    assert_tensor_close(
-        evaluation.value("d"),
-        &[3],
-        &[0.1, 0.19, 0.71],
-        1e-14,
-    );
+    assert_tensor_close(evaluation.value("d"), &[3], &[0.1, 0.19, 0.71], 1e-14);
 
     let acceleration = evaluation
         .value("a")
