@@ -32,18 +32,8 @@ fn evaluates_generated_arrays_append_and_global_parameters() {
 
     assert_evaluation_tensor(&evaluation, "indices", &[3], &[0.0, 1.0, 2.0]);
     assert_evaluation_tensor(&evaluation, "selected", &[2], &[2.0, 5.0]);
-    assert_evaluation_tensor(
-        &evaluation,
-        "generatedGrid",
-        &[2, 2],
-        &[2.0, 5.0, 4.0, 7.0],
-    );
-    assert_evaluation_tensor(
-        &evaluation,
-        "joined",
-        &[5],
-        &[-1.0, 0.0, 1.0, 2.0, 3.0],
-    );
+    assert_evaluation_tensor(&evaluation, "generatedGrid", &[2, 2], &[2.0, 5.0, 4.0, 7.0]);
+    assert_evaluation_tensor(&evaluation, "joined", &[5], &[-1.0, 0.0, 1.0, 2.0, 3.0]);
     assert_evaluation_tensor(
         &evaluation,
         "rows",
@@ -62,11 +52,7 @@ fn evaluates_generated_arrays_append_and_global_parameters() {
     let final_snapshot = simulation
         .final_snapshot()
         .expect("simulation should produce snapshots");
-    assert_tensor(
-        final_snapshot.value("position"),
-        &[3],
-        &[0.5, 0.5, 0.5],
-    );
+    assert_tensor(final_snapshot.value("position"), &[3], &[0.5, 0.5, 0.5]);
 }
 
 #[test]

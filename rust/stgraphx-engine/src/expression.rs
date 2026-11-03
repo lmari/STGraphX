@@ -516,13 +516,7 @@ fn evaluate_generated_array(
             let mut nested_values = local_values.clone();
             nested_values.insert(format!("${level}"), Value::scalar(value));
             nested_values.insert(format!("$i{level}"), Value::scalar(index as f64));
-            elements.push(build(
-                axes,
-                level + 1,
-                body,
-                context,
-                &nested_values,
-            )?);
+            elements.push(build(axes, level + 1, body, context, &nested_values)?);
         }
         Value::from_array_elements(elements)
     }

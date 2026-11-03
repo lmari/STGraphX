@@ -67,9 +67,7 @@ fn append(arguments: &[Value]) -> Result<Value, String> {
         return Err("append expects at least 2 arguments".to_string());
     }
 
-    let has_matrix_before_last = arguments[..arguments.len() - 1]
-        .iter()
-        .any(is_matrix);
+    let has_matrix_before_last = arguments[..arguments.len() - 1].iter().any(is_matrix);
     let mut axis = 0usize;
     let mut values = arguments;
     if has_matrix_before_last && arguments.len() >= 3 {
@@ -101,9 +99,7 @@ fn append(arguments: &[Value]) -> Result<Value, String> {
 }
 
 fn is_matrix(value: &Value) -> bool {
-    value
-        .as_tensor()
-        .is_some_and(|tensor| tensor.rank() == 2)
+    value.as_tensor().is_some_and(|tensor| tensor.rank() == 2)
 }
 
 fn append_flat_values(target: Value, value: &Value) -> Result<Value, String> {
@@ -119,9 +115,7 @@ fn append_flat_values(target: Value, value: &Value) -> Result<Value, String> {
             elements.push(*last);
             Value::tensor(vec![elements.len()], elements)
         }
-        (Value::Tensor(left), Value::Tensor(right))
-            if left.rank() == 1 && right.rank() == 1 =>
-        {
+        (Value::Tensor(left), Value::Tensor(right)) if left.rank() == 1 && right.rank() == 1 => {
             let mut elements = Vec::with_capacity(left.elements().len() + right.elements().len());
             elements.extend_from_slice(left.elements());
             elements.extend_from_slice(right.elements());
@@ -399,15 +393,13 @@ mod tests {
                 &[Value::scalar(0.0), vector.clone(), Value::scalar(3.0)]
             )
             .expect("vectors should append"),
-            Value::tensor(vec![4], vec![0.0, 1.0, 2.0, 3.0])
-                .expect("tensor should be valid")
+            Value::tensor(vec![4], vec![0.0, 1.0, 2.0, 3.0]).expect("tensor should be valid")
         );
 
         let matrix =
             Value::tensor(vec![2, 2], vec![1.0, 2.0, 3.0, 4.0]).expect("matrix should be valid");
         assert_eq!(
-            evaluate("append", &[matrix.clone(), vector.clone()])
-                .expect("row should append"),
+            evaluate("append", &[matrix.clone(), vector.clone()]).expect("row should append"),
             Value::tensor(vec![3, 2], vec![1.0, 2.0, 3.0, 4.0, 1.0, 2.0])
                 .expect("tensor should be valid")
         );
