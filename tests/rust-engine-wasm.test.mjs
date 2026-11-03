@@ -15,6 +15,9 @@ await init({ module_or_path: bytes });
 const info = JSON.parse(engineInfoJson());
 assert.equal(info.name, "STGraphX Rust engine");
 assert.equal(info.apiVersion, 1);
+assert.ok(info.capabilities.includes("generated-arrays"));
+assert.ok(info.capabilities.includes("tensor-append"));
+assert.ok(info.capabilities.includes("global-parameters"));
 
 const fixture = fs.readFileSync(
   new URL("../rust/stgraphx-engine/tests/fixtures/rk4-state.json", import.meta.url),
@@ -24,5 +27,15 @@ const result = JSON.parse(executeModelJson(fixture));
 assert.equal(result.schemaVersion, 1);
 assert.equal(result.snapshots.length, 11);
 assert.ok(Math.abs(result.snapshots.at(-1).values.decay - Math.exp(-1)) < 1e-6);
+
+const generatedArraysFixture = fs.readFileSync(
+  new URL("../rust/stgraphx-engine/tests/fixtures/generated-arrays.json", import.meta.url),
+  "utf8",
+);
+const generatedArraysResult = JSON.parse(executeModelJson(generatedArraysFixture));
+assert.deepEqual(generatedArraysResult.snapshots[0].values.indices, [0, 1, 2]);
+assert.deepEqual(generatedArraysResult.snapshots[0].values.generatedGrid, [[2, 5], [4, 7]]);
+assert.deepEqual(generatedArraysResult.snapshots[0].values.joined, [-1, 0, 1, 2, 3]);
+assert.deepEqual(generatedArraysResult.snapshots[0].values.columns, [[1, 2, 5], [3, 4, 6]]);
 
 process.stdout.write("rust-engine-wasm.test.mjs: ok\n");
