@@ -253,11 +253,7 @@ impl Accessor {
     fn expressions(&self) -> impl Iterator<Item = &Expression> {
         let expressions: [Option<&Expression>; 3] = match self {
             Self::Index(index) => [Some(index), None, None],
-            Self::Slice { start, end, step } => [
-                start.as_deref(),
-                end.as_deref(),
-                step.as_deref(),
-            ],
+            Self::Slice { start, end, step } => [start.as_deref(), end.as_deref(), step.as_deref()],
         };
         expressions.into_iter().flatten()
     }
@@ -278,19 +274,18 @@ impl Accessor {
     }
 
     fn evaluate(&self, context: &EvaluationContext<'_>) -> Result<TensorAccessor, String> {
-        let scalar = |expression: &Option<Box<Expression>>,
-                      error: &str|
-         -> Result<Option<f64>, String> {
-            expression
-                .as_deref()
-                .map(|expression| {
-                    expression
-                        .evaluate(context)?
-                        .as_scalar()
-                        .ok_or_else(|| error.to_string())
-                })
-                .transpose()
-        };
+        let scalar =
+            |expression: &Option<Box<Expression>>, error: &str| -> Result<Option<f64>, String> {
+                expression
+                    .as_deref()
+                    .map(|expression| {
+                        expression
+                            .evaluate(context)?
+                            .as_scalar()
+                            .ok_or_else(|| error.to_string())
+                    })
+                    .transpose()
+            };
         match self {
             Self::Index(index) => Ok(TensorAccessor::Index(index.evaluate(context)?)),
             Self::Slice { start, end, step } => Ok(TensorAccessor::Slice {
@@ -812,10 +807,7 @@ impl Parser {
         self.parse_slice_tail(Some(Box::new(first)))
     }
 
-    fn parse_slice_tail(
-        &mut self,
-        start: Option<Box<Expression>>,
-    ) -> Result<Accessor, String> {
+    fn parse_slice_tail(&mut self, start: Option<Box<Expression>>) -> Result<Accessor, String> {
         let (end, step) = if self.consume(&TokenKind::Colon) {
             (None, self.parse_optional_slice_component()?)
         } else if self.at_accessor_end() {

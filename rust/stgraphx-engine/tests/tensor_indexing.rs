@@ -24,12 +24,7 @@ fn evaluates_scalar_vector_matrix_and_advanced_indices() {
     assert_eq!(evaluation.scalar("second"), Some(20.0));
     assert_eq!(evaluation.scalar("last"), Some(40.0));
     assert_tensor(&evaluation, "strideSlice", &[2], &[20.0, 40.0]);
-    assert_tensor(
-        &evaluation,
-        "reversed",
-        &[4],
-        &[40.0, 30.0, 20.0, 10.0],
-    );
+    assert_tensor(&evaluation, "reversed", &[4], &[40.0, 30.0, 20.0, 10.0]);
     assert_tensor(&evaluation, "middleRow", &[3], &[4.0, 5.0, 6.0]);
     assert_eq!(evaluation.scalar("cell"), Some(6.0));
     assert_tensor(&evaluation, "middleColumn", &[3], &[2.0, 5.0, 8.0]);

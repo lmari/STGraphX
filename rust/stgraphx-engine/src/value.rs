@@ -290,9 +290,7 @@ impl Tensor {
                 if indices.shape() == [2] {
                     let row = normalize_index(indices.elements()[0], self.shape[0], 0, 2)?;
                     let column = normalize_index(indices.elements()[1], self.shape[1], 1, 2)?;
-                    return Ok(Value::scalar(
-                        self.elements[row * self.shape[1] + column],
-                    ));
+                    return Ok(Value::scalar(self.elements[row * self.shape[1] + column]));
                 }
                 if indices.rank() == 2 && indices.shape()[1] == 2 {
                     let mut selected = Vec::with_capacity(indices.shape()[0]);
@@ -322,12 +320,7 @@ impl Tensor {
                             .elements()
                             .iter()
                             .map(|index| {
-                                normalize_index(
-                                    *index,
-                                    self.shape[axis],
-                                    axis,
-                                    self.rank(),
-                                )
+                                normalize_index(*index, self.shape[axis], axis, self.rank())
                             })
                             .collect::<Result<Vec<_>, _>>()?;
                         output_shape.push(selected.len());
@@ -433,7 +426,11 @@ fn normalize_index(value: f64, length: usize, axis: usize, rank: usize) -> Resul
     Ok(index as usize)
 }
 
-fn normalize_slice_bound(value: Option<f64>, length: usize, fallback: isize) -> Result<isize, String> {
+fn normalize_slice_bound(
+    value: Option<f64>,
+    length: usize,
+    fallback: isize,
+) -> Result<isize, String> {
     let Some(value) = value else {
         return Ok(fallback);
     };
