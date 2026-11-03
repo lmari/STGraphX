@@ -55,6 +55,21 @@ async function main() {
   assert.strictEqual(receivedModel.version, 1);
   assert.strictEqual(result.snapshots[1].values.vector[1], 4);
 
+  let desktopInit = null;
+  const desktopAdapter = context.STGraphXRustEngine.createRustEngineAdapter({
+    moduleLoader: async () => ({
+      async default(options) {
+        desktopInit = options;
+      },
+      engineInfoJson: fakeModule.engineInfoJson,
+      executeModelJson: fakeModule.executeModelJson,
+    }),
+    wasmBinaryLoader: async () => new Uint8Array([0, 97, 115, 109]),
+  });
+  await desktopAdapter.load();
+  assert.ok(desktopInit?.module_or_path instanceof Uint8Array);
+  assert.deepStrictEqual(Array.from(desktopInit.module_or_path), [0, 97, 115, 109]);
+
   assert.throws(
     () => context.STGraphXRustEngine.normalizeExecutionResult(JSON.stringify({ schemaVersion: 2 })),
     /unsupported result schema/u,

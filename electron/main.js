@@ -140,6 +140,18 @@ function createWindow() {
 app.whenReady().then(() => {
   app.setName('STGraphX');
   ipcMain.handle('stgraphx:read-clipboard-text', () => clipboard.readText());
+  ipcMain.handle('stgraphx:read-rust-engine-wasm', async () => {
+    try {
+      const bytes = await fs.readFile(path.join(__dirname, '..', 'rust-engine-wasm', 'stgraphx_wasm_bg.wasm'));
+      return { ok: true, bytes };
+    } catch (err) {
+      return {
+        ok: false,
+        code: String(err?.code || 'READ_ERROR'),
+        message: String(err?.message || 'Unable to read Rust engine WebAssembly module'),
+      };
+    }
+  });
   ipcMain.handle('stgraphx:write-clipboard-text', (_event, text) => {
     clipboard.writeText(String(text ?? ''));
     return true;

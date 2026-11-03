@@ -12,6 +12,12 @@ Il collegamento sperimentale all'applicazione JavaScript usa un binding
 WebAssembly a grana grossa: il browser invia un modello completo e riceve tutti
 gli snapshot della simulazione.
 
+Nell'interfaccia il comando `Completo con motore Rust`, nel menu `Esegui`, è
+separato dai controlli ordinari. Carica il modulo WebAssembly solo al primo uso
+e aggiorna valori, tabelle, grafici e storico CSV con gli snapshot restituiti.
+Il motore JavaScript rimane il percorso predefinito per l'esecuzione completa,
+manuale e temporizzata.
+
 Il motore JavaScript attuale rimane quindi l'unico motore usato da STGraphX e
 il comportamento dell'applicazione non viene modificato.
 

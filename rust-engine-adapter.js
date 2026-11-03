@@ -70,13 +70,21 @@
     const moduleLoader = typeof options.moduleLoader === "function"
       ? options.moduleLoader
       : (url) => import(url);
+    const wasmBinaryLoader = typeof options.wasmBinaryLoader === "function"
+      ? options.wasmBinaryLoader
+      : global.STGraphXElectronFiles?.readRustEngineWasm;
     let loadedModulePromise = null;
 
     async function load() {
       if (!loadedModulePromise) {
         loadedModulePromise = Promise.resolve(moduleLoader(moduleUrl)).then(async (module) => {
           if (typeof module?.default === "function") {
-            await module.default();
+            if (typeof wasmBinaryLoader === "function") {
+              const bytes = await wasmBinaryLoader();
+              await module.default({ module_or_path: bytes });
+            } else {
+              await module.default();
+            }
           }
           return normalizeModule(module);
         });

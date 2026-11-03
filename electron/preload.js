@@ -29,6 +29,23 @@ function dialogOptionsPayload(options = {}) {
 // native File System Access handles do not expose a parent directory, which is
 // needed to reopen models and their relative submodels reliably.
 contextBridge.exposeInMainWorld("STGraphXElectronFiles", {
+  async readRustEngineWasm() {
+    const result = await ipcRenderer.invoke("stgraphx:read-rust-engine-wasm");
+    if (result?.ok && result.bytes != null) {
+      if (result.bytes instanceof Uint8Array) {
+        return result.bytes;
+      }
+      if (result.bytes instanceof ArrayBuffer) {
+        return new Uint8Array(result.bytes);
+      }
+      if (Array.isArray(result.bytes?.data)) {
+        return new Uint8Array(result.bytes.data);
+      }
+    }
+    const err = new Error(String(result?.message || "Unable to read Rust engine WebAssembly module"));
+    err.code = String(result?.code || "READ_ERROR");
+    throw err;
+  },
   getPathForFile(file) {
     try {
       return String(webUtils.getPathForFile(file) || "");
