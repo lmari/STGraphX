@@ -64,6 +64,7 @@ Sono supportati:
   selezioni multiple di righe o colonne;
 - generazione di tensori con `array(...)`, inclusi assi vettoriali e variabili
   locali `$0`, `$1`, ... e `$i0`, `$i1`, ...;
+- generazione di sequenze numeriche crescenti o decrescenti con `range(...)`;
 - concatenazione di vettori e matrici con `append(...)`;
 - parametri globali utilizzabili senza una freccia di dipendenza esplicita;
 - funzioni locali definite dal modello, componibili e non ricorsive, con

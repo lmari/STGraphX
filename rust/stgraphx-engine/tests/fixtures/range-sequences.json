@@ -1,0 +1,49 @@
+{
+  "version": 1,
+  "nodes": [
+    {
+      "id": 1,
+      "name": "singleArgument",
+      "type": "parameter",
+      "output": true,
+      "valueExpression": "range(4)"
+    },
+    {
+      "id": 2,
+      "name": "ascending",
+      "type": "parameter",
+      "output": true,
+      "valueExpression": "range(1,6)"
+    },
+    {
+      "id": 3,
+      "name": "descending",
+      "type": "parameter",
+      "output": true,
+      "valueExpression": "range(3,0)"
+    },
+    {
+      "id": 4,
+      "name": "fractional",
+      "type": "parameter",
+      "output": true,
+      "valueExpression": "range(0,0.31,0.1)"
+    },
+    {
+      "id": 5,
+      "name": "axisValues",
+      "type": "parameter",
+      "valueExpression": "range(-2,3)"
+    },
+    {
+      "id": 6,
+      "name": "valueAndIndex",
+      "type": "algebraic",
+      "output": true,
+      "valueExpression": "array(axisValues,[$0,$i0])"
+    }
+  ],
+  "edges": [
+    { "id": 1, "from": 5, "to": 6 }
+  ]
+}

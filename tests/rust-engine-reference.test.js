@@ -175,6 +175,28 @@ async function checkGeneratedArrays(rootDir) {
   );
 }
 
+async function checkRangeSequences(rootDir) {
+  const runtime = await loadFixture(rootDir, "range-sequences.json");
+
+  await runtime.evaluate();
+  assert.deepStrictEqual(
+    runtime.getValues([
+      "singleArgument",
+      "ascending",
+      "descending",
+      "fractional",
+      "valueAndIndex",
+    ]),
+    {
+      singleArgument: [0, 1, 2, 3],
+      ascending: [1, 2, 3, 4, 5],
+      descending: [3, 2, 1],
+      fractional: [0, 0.1, 0.2, 0.3],
+      valueAndIndex: [[-2, 0], [-1, 1], [0, 2], [1, 3], [2, 4]],
+    },
+  );
+}
+
 async function checkLocalFunctions(rootDir) {
   const runtime = await loadFixture(rootDir, "local-functions.json");
 
@@ -233,6 +255,7 @@ async function main() {
   await checkConditionalFunctions(rootDir);
   await checkTensorIndexing(rootDir);
   await checkGeneratedArrays(rootDir);
+  await checkRangeSequences(rootDir);
   await checkLocalFunctions(rootDir);
   await checkRk4State(rootDir);
   console.log("rust-engine-reference.test.js: ok");

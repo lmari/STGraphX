@@ -25,6 +25,7 @@ pub(crate) fn is_supported(name: &str) -> bool {
             | "trunc"
             | "int"
             | "pow"
+            | "range"
             | "min"
             | "max"
             | "sum"
@@ -52,6 +53,7 @@ pub(crate) fn evaluate(name: &str, arguments: &[Value]) -> Result<Value, String>
         "tan" => unary(name, arguments, f64::tan),
         "trunc" | "int" => unary(name, arguments, f64::trunc),
         "pow" => binary(name, arguments, f64::powf),
+        "range" => numeric_range(arguments),
         "min" => variadic(name, arguments, f64::min),
         "max" => variadic(name, arguments, f64::max),
         "sum" => reduce_sum(arguments),
@@ -59,6 +61,71 @@ pub(crate) fn evaluate(name: &str, arguments: &[Value]) -> Result<Value, String>
         "count" => reduce_count(arguments),
         "size" => size(arguments),
         _ => Err(format!("unsupported function '{name}'")),
+    }
+}
+
+const MAX_RANGE_ITEMS: usize = 100_000;
+
+fn numeric_range(arguments: &[Value]) -> Result<Value, String> {
+    if !(1..=3).contains(&arguments.len()) {
+        return Err("range expects 1, 2, or 3 arguments".to_string());
+    }
+
+    let scalar = |index: usize, message: &str| {
+        arguments[index]
+            .as_scalar()
+            .filter(|value| value.is_finite())
+            .ok_or_else(|| message.to_string())
+    };
+    let (start, end, step) = match arguments.len() {
+        1 => (0.0, scalar(0, "range bounds must be finite numbers")?, 1.0),
+        2 => {
+            let start = scalar(0, "range bounds must be finite numbers")?;
+            let end = scalar(1, "range bounds must be finite numbers")?;
+            let step = if end >= start { 1.0 } else { -1.0 };
+            (start, end, step)
+        }
+        3 => (
+            scalar(0, "range bounds must be finite numbers")?,
+            scalar(1, "range bounds must be finite numbers")?,
+            scalar(2, "range step must be a non-zero finite number")?,
+        ),
+        _ => unreachable!("range arity was validated"),
+    };
+
+    if step == 0.0 {
+        return Err("range step must be a non-zero finite number".to_string());
+    }
+    if (end > start && step < 0.0) || (end < start && step > 0.0) {
+        return Err("range step does not reach the end value".to_string());
+    }
+
+    let epsilon = step.abs() * 1e-9;
+    let mut elements = Vec::new();
+    let mut value = start;
+    let should_continue = |value: f64| {
+        if step > 0.0 {
+            value < end - epsilon
+        } else {
+            value > end + epsilon
+        }
+    };
+    while should_continue(value) {
+        elements.push(round_range_value(value));
+        if elements.len() > MAX_RANGE_ITEMS {
+            return Err("range is too large".to_string());
+        }
+        value += step;
+    }
+    Value::tensor(vec![elements.len()], elements)
+}
+
+fn round_range_value(value: f64) -> f64 {
+    let scaled = value * 1e12;
+    if scaled.is_finite() {
+        scaled.round() / 1e12
+    } else {
+        value
     }
 }
 
@@ -408,6 +475,45 @@ mod tests {
                 .expect("column should append"),
             Value::tensor(vec![2, 3], vec![1.0, 2.0, 1.0, 3.0, 4.0, 2.0])
                 .expect("tensor should be valid")
+        );
+    }
+
+    #[test]
+    fn range_matches_stgraphx_sequence_rules() {
+        assert_eq!(
+            evaluate("range", &[Value::scalar(4.0)]).expect("single argument should work"),
+            Value::tensor(vec![4], vec![0.0, 1.0, 2.0, 3.0])
+                .expect("tensor should be valid")
+        );
+        assert_eq!(
+            evaluate("range", &[Value::scalar(3.0), Value::scalar(0.0)])
+                .expect("descending range should work"),
+            Value::tensor(vec![3], vec![3.0, 2.0, 1.0]).expect("tensor should be valid")
+        );
+        assert_eq!(
+            evaluate(
+                "range",
+                &[
+                    Value::scalar(0.0),
+                    Value::scalar(0.31),
+                    Value::scalar(0.1),
+                ],
+            )
+            .expect("fractional range should work"),
+            Value::tensor(vec![4], vec![0.0, 0.1, 0.2, 0.3])
+                .expect("tensor should be valid")
+        );
+        assert_eq!(
+            evaluate(
+                "range",
+                &[
+                    Value::scalar(0.0),
+                    Value::scalar(1.0),
+                    Value::scalar(-0.1),
+                ],
+            )
+            .expect_err("wrong direction should fail"),
+            "range step does not reach the end value"
         );
     }
 }

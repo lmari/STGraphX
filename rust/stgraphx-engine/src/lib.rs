@@ -54,6 +54,7 @@ pub const fn engine_info() -> EngineInfo {
             "tensor-reducers",
             "tensor-indexing-and-slicing",
             "generated-arrays",
+            "numeric-range",
             "tensor-append",
             "global-parameters",
             "model-local-functions",
@@ -75,6 +76,7 @@ mod tests {
         assert!(info.capabilities.contains(&"scalar-algebraic-nodes"));
         assert!(info.capabilities.contains(&"scalar-state-nodes"));
         assert!(info.capabilities.contains(&"generated-arrays"));
+        assert!(info.capabilities.contains(&"numeric-range"));
         assert!(info.capabilities.contains(&"global-parameters"));
     }
 }
