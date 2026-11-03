@@ -13,6 +13,8 @@ use crate::value::Value;
 
 const MAX_SIMULATION_STEPS: usize = 100_000;
 
+type EvaluatedValues = (HashMap<String, Value>, Vec<Option<Value>>);
+
 /// Node kinds supported by the current executable slice of the Rust engine.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum NodeKind {
@@ -442,7 +444,7 @@ impl CompiledModel {
         &self,
         state_values: &[Option<Value>],
         time: f64,
-    ) -> Result<(HashMap<String, Value>, Vec<Option<Value>>), EngineError> {
+    ) -> Result<EvaluatedValues, EngineError> {
         let mut computed = HashMap::with_capacity(self.nodes.len());
         let mut values_by_index = vec![None; self.nodes.len()];
 
@@ -482,7 +484,7 @@ impl CompiledModel {
             let next = self.evaluate_expression(
                 node,
                 &node.expression,
-                &computed,
+                computed,
                 time,
                 Some(current),
                 true,
