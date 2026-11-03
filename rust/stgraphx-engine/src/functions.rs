@@ -31,11 +31,7 @@ pub(crate) fn evaluate(name: &str, arguments: &[Value]) -> Result<Value, String>
     }
 }
 
-fn unary(
-    name: &str,
-    arguments: &[Value],
-    operation: impl Fn(f64) -> f64,
-) -> Result<Value, String> {
+fn unary(name: &str, arguments: &[Value], operation: impl Fn(f64) -> f64) -> Result<Value, String> {
     if arguments.len() != 1 {
         return Err(format!("{name} expects exactly 1 argument"));
     }
@@ -61,11 +57,9 @@ fn variadic(
     let Some((first, remaining)) = arguments.split_first() else {
         return Err(format!("{name} expects at least 1 argument"));
     };
-    remaining
-        .iter()
-        .try_fold(first.clone(), |result, value| {
-            result.binary(value, operation)
-        })
+    remaining.iter().try_fold(first.clone(), |result, value| {
+        result.binary(value, operation)
+    })
 }
 
 fn parse_axis(name: &str, arguments: &[Value]) -> Result<Option<usize>, String> {

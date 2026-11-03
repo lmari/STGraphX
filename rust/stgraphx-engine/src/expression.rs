@@ -165,9 +165,7 @@ impl Expression {
                 Ok(match operator {
                     UnaryOperator::Plus => value,
                     UnaryOperator::Minus => value.unary(|item| -item),
-                    UnaryOperator::Not => {
-                        value.unary(|item| if item == 0.0 { 1.0 } else { 0.0 })
-                    }
+                    UnaryOperator::Not => value.unary(|item| if item == 0.0 { 1.0 } else { 0.0 }),
                 })
             }
             Self::Binary {
@@ -202,20 +200,12 @@ impl Expression {
                     BinaryOperator::NotEqual => {
                         left.binary(&right, |left, right| bool_number(left != right))
                     }
-                    BinaryOperator::LogicalAnd => left.binary(&right, |left, right| {
-                        if left != 0.0 {
-                            right
-                        } else {
-                            left
-                        }
-                    }),
-                    BinaryOperator::LogicalOr => left.binary(&right, |left, right| {
-                        if left != 0.0 {
-                            left
-                        } else {
-                            right
-                        }
-                    }),
+                    BinaryOperator::LogicalAnd => {
+                        left.binary(&right, |left, right| if left != 0.0 { right } else { left })
+                    }
+                    BinaryOperator::LogicalOr => {
+                        left.binary(&right, |left, right| if left != 0.0 { left } else { right })
+                    }
                 }
             }
         }
