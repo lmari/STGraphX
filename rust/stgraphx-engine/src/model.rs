@@ -395,7 +395,7 @@ impl CompiledModel {
             self.execution.t0,
             &random,
         )
-            .map(|(evaluation, _)| evaluation)
+        .map(|(evaluation, _)| evaluation)
     }
 
     /// Runs the model from `t0` to `t1`, including both reachable endpoints.
@@ -408,19 +408,18 @@ impl CompiledModel {
         let mut state_values = initialized.states;
         let mut snapshots = Vec::with_capacity(times.len());
         for time in times {
-            let (evaluation, next_state_values) = self.evaluate_snapshot(
-                &state_values,
-                &initialized.parameters,
-                time,
-                &random,
-            )?;
+            let (evaluation, next_state_values) =
+                self.evaluate_snapshot(&state_values, &initialized.parameters, time, &random)?;
             snapshots.push(SimulationSnapshot { time, evaluation });
             state_values = next_state_values;
         }
         Ok(Simulation { snapshots })
     }
 
-    fn initialize_values(&self, random: &RandomGenerator) -> Result<InitializedValues, EngineError> {
+    fn initialize_values(
+        &self,
+        random: &RandomGenerator,
+    ) -> Result<InitializedValues, EngineError> {
         let mut computed = HashMap::with_capacity(self.nodes.len());
         let mut state_values = vec![None; self.nodes.len()];
         let mut parameter_values = vec![None; self.nodes.len()];

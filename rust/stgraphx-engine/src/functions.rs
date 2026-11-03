@@ -3,8 +3,8 @@
 // file, You can obtain one at https://mozilla.org/MPL/2.0/.
 // Copyright (c) 2026 Luca Mari
 
-use crate::value::Value;
 use crate::random::RandomGenerator;
+use crate::value::Value;
 
 pub(crate) fn is_supported(name: &str) -> bool {
     matches!(
@@ -95,19 +95,13 @@ fn random_bounds(arguments: &[Value], name: &str) -> Result<(f64, f64), String> 
     }
 }
 
-fn random_float(
-    arguments: &[Value],
-    random: Option<&RandomGenerator>,
-) -> Result<Value, String> {
+fn random_float(arguments: &[Value], random: Option<&RandomGenerator>) -> Result<Value, String> {
     let (minimum, maximum) = random_bounds(arguments, "rand")?;
     let sample = random_generator(random)?.next()?;
     Ok(Value::scalar(minimum + sample * (maximum - minimum)))
 }
 
-fn random_integer(
-    arguments: &[Value],
-    random: Option<&RandomGenerator>,
-) -> Result<Value, String> {
+fn random_integer(arguments: &[Value], random: Option<&RandomGenerator>) -> Result<Value, String> {
     if !(1..=2).contains(&arguments.len()) {
         return Err("randInt expects 1 or 2 arguments".to_string());
     }
@@ -526,8 +520,7 @@ mod tests {
         let matrix =
             Value::tensor(vec![2, 2], vec![1.0, 2.0, 3.0, 4.0]).expect("matrix should be valid");
         assert_eq!(
-            evaluate("append", &[matrix.clone(), vector.clone()], None)
-                .expect("row should append"),
+            evaluate("append", &[matrix.clone(), vector.clone()], None).expect("row should append"),
             Value::tensor(vec![3, 2], vec![1.0, 2.0, 3.0, 4.0, 1.0, 2.0])
                 .expect("tensor should be valid")
         );
@@ -542,16 +535,11 @@ mod tests {
     #[test]
     fn range_matches_stgraphx_sequence_rules() {
         assert_eq!(
-            evaluate("range", &[Value::scalar(4.0)], None)
-                .expect("single argument should work"),
+            evaluate("range", &[Value::scalar(4.0)], None).expect("single argument should work"),
             Value::tensor(vec![4], vec![0.0, 1.0, 2.0, 3.0]).expect("tensor should be valid")
         );
         assert_eq!(
-            evaluate(
-                "range",
-                &[Value::scalar(3.0), Value::scalar(0.0)],
-                None,
-            )
+            evaluate("range", &[Value::scalar(3.0), Value::scalar(0.0)], None,)
                 .expect("descending range should work"),
             Value::tensor(vec![3], vec![3.0, 2.0, 1.0]).expect("tensor should be valid")
         );
