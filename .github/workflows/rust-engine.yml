@@ -4,10 +4,22 @@ on:
   push:
     paths:
       - "rust/**"
+      - "rust-engine-adapter.js"
+      - "tests/rust-engine-adapter.test.js"
+      - "app.js"
+      - "index.html"
+      - "i18n-inline.js"
+      - "package.json"
       - ".github/workflows/rust-engine.yml"
   pull_request:
     paths:
       - "rust/**"
+      - "rust-engine-adapter.js"
+      - "tests/rust-engine-adapter.test.js"
+      - "app.js"
+      - "index.html"
+      - "i18n-inline.js"
+      - "package.json"
       - ".github/workflows/rust-engine.yml"
 
 permissions:
@@ -31,6 +43,10 @@ jobs:
         working-directory: .
         run: node tests/rust-engine-reference.test.js
 
+      - name: Check JavaScript integration
+        working-directory: .
+        run: npm run check
+
       - name: Check formatting
         run: cargo fmt --all -- --check
 
@@ -39,3 +55,23 @@ jobs:
 
       - name: Test
         run: cargo test --workspace --all-targets
+
+      - name: Install WebAssembly target
+        run: rustup target add wasm32-unknown-unknown
+
+      - name: Install wasm-pack
+        uses: taiki-e/install-action@v2
+        with:
+          tool: wasm-pack
+
+      - name: Build WebAssembly bridge
+        working-directory: .
+        run: npm run build:rust-engine:wasm
+
+      - name: Upload WebAssembly bridge
+        uses: actions/upload-artifact@v4
+        with:
+          name: stgraphx-rust-engine-wasm
+          path: |
+            rust-engine-wasm/stgraphx_wasm.js
+            rust-engine-wasm/stgraphx_wasm_bg.wasm

@@ -7,8 +7,10 @@ da zero e indipendente dall'interfaccia utente.
 
 Il workspace esegue un primo sottoinsieme verticale di modelli: parametri, nodi
 algebrici e nodi di stato scalari o tensoriali con espressioni aritmetiche
-elementari, dipendenze esplicite e simulazione temporale mediante Eulero. Non è
-ancora collegato all'applicazione JavaScript.
+elementari, dipendenze esplicite e simulazione temporale mediante Eulero o RK4.
+Il collegamento sperimentale all'applicazione JavaScript usa un binding
+WebAssembly a grana grossa: il browser invia un modello completo e riceve tutti
+gli snapshot della simulazione.
 
 Il motore JavaScript attuale rimane quindi l'unico motore usato da STGraphX e
 il comportamento dell'applicazione non viene modificato.
@@ -27,7 +29,8 @@ il comportamento dell'applicazione non viene modificato.
 - `stgraphx-engine`: libreria pura e indipendente dalla piattaforma;
 - `stgraphx-cli`: eseguibile minimale per test, benchmark ed esecuzione
   headless;
-- `stgraphx-wasm`: binding WebAssembly previsto, non ancora creato.
+- `stgraphx-wasm`: binding WebAssembly che espone identità del motore ed
+  esecuzione completa mediante payload JSON.
 
 Il codice Tauri esistente in `../src-tauri` è una shell desktop distinta e non
 fa parte del motore.

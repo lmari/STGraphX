@@ -33,6 +33,7 @@ const files = [
   "runtime-loader.js",
   "runtime-session.js",
   "runtime-controller.js",
+  "rust-engine-adapter.js",
   "menu-ui.js",
   "selection-state.js",
   "workspace-tabs-ui.js",
@@ -51,7 +52,7 @@ const files = [
   "QUICK-START-USERS.md",
   "QUICK-START-DEVELOPERS.md",
 ];
-const directories = ["examples", "help", "platform", "vendor", "docs"];
+const directories = ["examples", "help", "platform", "vendor", "docs", "rust-engine-wasm"];
 
 async function copyFile(relativePath) {
   const source = path.join(root, relativePath);

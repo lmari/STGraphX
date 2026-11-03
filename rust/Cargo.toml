@@ -2,6 +2,7 @@
 members = [
   "stgraphx-engine",
   "stgraphx-cli",
+  "stgraphx-wasm",
 ]
 resolver = "2"
 
