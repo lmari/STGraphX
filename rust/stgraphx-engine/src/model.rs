@@ -58,6 +58,7 @@ struct CompiledNode {
     name: String,
     kind: NodeKind,
     expression: Expression,
+    integral_derivative: Option<Expression>,
     initial_expression: Option<Expression>,
     initial_dependencies: Vec<usize>,
     predecessors: Vec<usize>,
@@ -71,6 +72,7 @@ pub struct CompiledModel {
     evaluation_order: Vec<usize>,
     initialization_order: Vec<usize>,
     state_indices: Vec<usize>,
+    rk4_state_indices: Vec<usize>,
     execution: ExecutionConfig,
 }
 
@@ -224,6 +226,7 @@ impl CompiledModel {
                         name: node.name.clone(),
                         kind: NodeKind::Parameter,
                         expression,
+                        integral_derivative: None,
                         initial_expression: None,
                         initial_dependencies: Vec::new(),
                         predecessors: incoming[index].clone(),
@@ -248,6 +251,7 @@ impl CompiledModel {
                         name: node.name.clone(),
                         kind: NodeKind::Algebraic,
                         expression,
+                        integral_derivative: None,
                         initial_expression: None,
                         initial_dependencies: dependencies,
                         predecessors: incoming[index].clone(),
@@ -280,11 +284,15 @@ impl CompiledModel {
                         &predecessor_names,
                         true,
                     )?;
+                    let integral_derivative = transition_expression
+                        .pure_integral_argument()
+                        .cloned();
                     CompiledNode {
                         id: node.id,
                         name: node.name.clone(),
                         kind: NodeKind::State,
                         expression: transition_expression,
+                        integral_derivative,
                         initial_expression: Some(initial_expression),
                         initial_dependencies,
                         predecessors: incoming[index].clone(),
@@ -308,12 +316,24 @@ impl CompiledModel {
             .collect::<Vec<_>>();
         if !state_indices.is_empty() {
             validate_time_config(execution)?;
-            if execution.integrator != Integrator::Euler {
-                return Err(EngineError::UnsupportedIntegrator(
-                    document.execution.integrator,
-                ));
+            if execution.integrator == Integrator::Rk4 {
+                for index in &state_indices {
+                    let node = &nodes[*index];
+                    if node.expression.uses_integral() && node.integral_derivative.is_none() {
+                        return Err(EngineError::UnsupportedRk4Transition(node.name.clone()));
+                    }
+                }
             }
         }
+        let rk4_state_indices = if execution.integrator == Integrator::Rk4 {
+            state_indices
+                .iter()
+                .copied()
+                .filter(|index| nodes[*index].integral_derivative.is_some())
+                .collect()
+        } else {
+            Vec::new()
+        };
 
         let evaluation_order = build_evaluation_order(&nodes)?;
         let initialization_order = build_initialization_order(&nodes)?;
@@ -323,6 +343,7 @@ impl CompiledModel {
             evaluation_order,
             initialization_order,
             state_indices,
+            rk4_state_indices,
             execution,
         })
     }
@@ -356,9 +377,6 @@ impl CompiledModel {
     /// Runs the model from `t0` to `t1`, including both reachable endpoints.
     pub fn simulate(&self) -> Result<Simulation, EngineError> {
         validate_time_config(self.execution)?;
-        if self.has_state_nodes() && self.execution.integrator != Integrator::Euler {
-            return Err(EngineError::UnsupportedIntegrator("rk4".to_string()));
-        }
 
         let times = simulation_times(self.execution)?;
         let mut state_values = self.initialize_state_values()?;
@@ -399,6 +417,35 @@ impl CompiledModel {
         state_values: &[Option<Value>],
         time: f64,
     ) -> Result<(Evaluation, Vec<Option<Value>>), EngineError> {
+        let (computed, values_by_index) = self.evaluate_current_values(state_values, time)?;
+        let next_state_values = match self.execution.integrator {
+            Integrator::Euler => {
+                self.evaluate_euler_transitions(state_values, &computed, time)?
+            }
+            Integrator::Rk4 => self.evaluate_rk4_transitions(state_values, &computed, time)?,
+        };
+
+        let values = self
+            .nodes
+            .iter()
+            .enumerate()
+            .map(|(index, node)| NodeValue {
+                id: node.id,
+                name: node.name.clone(),
+                value: values_by_index[index]
+                    .as_ref()
+                    .cloned()
+                    .expect("every compiled node must have a value in a snapshot"),
+            })
+            .collect();
+        Ok((Evaluation { values }, next_state_values))
+    }
+
+    fn evaluate_current_values(
+        &self,
+        state_values: &[Option<Value>],
+        time: f64,
+    ) -> Result<(HashMap<String, Value>, Vec<Option<Value>>), EngineError> {
         let mut computed = HashMap::with_capacity(self.nodes.len());
         let mut values_by_index = vec![None; self.nodes.len()];
 
@@ -420,12 +467,21 @@ impl CompiledModel {
             values_by_index[*index] = Some(value);
         }
 
+        Ok((computed, values_by_index))
+    }
+
+    fn evaluate_euler_transitions(
+        &self,
+        state_values: &[Option<Value>],
+        computed: &HashMap<String, Value>,
+        time: f64,
+    ) -> Result<Vec<Option<Value>>, EngineError> {
         let mut next_state_values = state_values.to_vec();
         for index in &self.state_indices {
             let node = &self.nodes[*index];
-            let current = values_by_index[*index]
+            let current = state_values[*index]
                 .as_ref()
-                .expect("the current state value must have been inserted before transitions");
+                .expect("initialized simulations must contain every state value");
             let next = self.evaluate_expression(
                 node,
                 &node.expression,
@@ -436,21 +492,133 @@ impl CompiledModel {
             )?;
             next_state_values[*index] = Some(next);
         }
+        Ok(next_state_values)
+    }
 
-        let values = self
-            .nodes
-            .iter()
-            .enumerate()
-            .map(|(index, node)| NodeValue {
-                id: node.id,
-                name: node.name.clone(),
-                value: values_by_index[index]
+    fn evaluate_rk4_transitions(
+        &self,
+        state_values: &[Option<Value>],
+        computed: &HashMap<String, Value>,
+        time: f64,
+    ) -> Result<Vec<Option<Value>>, EngineError> {
+        let mut next_state_values = state_values.to_vec();
+        for index in &self.state_indices {
+            let node = &self.nodes[*index];
+            if node.integral_derivative.is_some() {
+                continue;
+            }
+            let current = state_values[*index]
+                .as_ref()
+                .expect("initialized simulations must contain every state value");
+            next_state_values[*index] = Some(self.evaluate_expression(
+                node,
+                &node.expression,
+                computed,
+                time,
+                Some(current),
+                false,
+            )?);
+        }
+        if self.rk4_state_indices.is_empty() {
+            return Ok(next_state_values);
+        }
+
+        let k1 = self.evaluate_rk4_derivatives(state_values, computed, time)?;
+        let stage2 = self.rk4_stage_values(state_values, &k1, self.execution.dt / 2.0)?;
+        let k2 = self.evaluate_rk4_derivatives_at_state(&stage2, time + self.execution.dt / 2.0)?;
+        let stage3 = self.rk4_stage_values(state_values, &k2, self.execution.dt / 2.0)?;
+        let k3 = self.evaluate_rk4_derivatives_at_state(&stage3, time + self.execution.dt / 2.0)?;
+        let stage4 = self.rk4_stage_values(state_values, &k3, self.execution.dt)?;
+        let k4 = self.evaluate_rk4_derivatives_at_state(&stage4, time + self.execution.dt)?;
+
+        for index in &self.rk4_state_indices {
+            let node = &self.nodes[*index];
+            let current = state_values[*index]
+                .as_ref()
+                .expect("initialized simulations must contain every state value");
+            let next = current
+                .rk4_integrate(
+                    k1[*index].as_ref().expect("RK4 k1 must be available"),
+                    k2[*index].as_ref().expect("RK4 k2 must be available"),
+                    k3[*index].as_ref().expect("RK4 k3 must be available"),
+                    k4[*index].as_ref().expect("RK4 k4 must be available"),
+                    self.execution.dt,
+                )
+                .map_err(|message| EngineError::Evaluation {
+                    node: node.name.clone(),
+                    message,
+                })?;
+            if !next.is_finite() {
+                return Err(EngineError::NonFiniteValue(node.name.clone()));
+            }
+            next_state_values[*index] = Some(next);
+        }
+        Ok(next_state_values)
+    }
+
+    fn evaluate_rk4_derivatives_at_state(
+        &self,
+        state_values: &[Option<Value>],
+        time: f64,
+    ) -> Result<Vec<Option<Value>>, EngineError> {
+        let (computed, _) = self.evaluate_current_values(state_values, time)?;
+        self.evaluate_rk4_derivatives(state_values, &computed, time)
+    }
+
+    fn evaluate_rk4_derivatives(
+        &self,
+        state_values: &[Option<Value>],
+        computed: &HashMap<String, Value>,
+        time: f64,
+    ) -> Result<Vec<Option<Value>>, EngineError> {
+        let mut derivatives = vec![None; self.nodes.len()];
+        for index in &self.rk4_state_indices {
+            let node = &self.nodes[*index];
+            let current = state_values[*index]
+                .as_ref()
+                .expect("initialized simulations must contain every state value");
+            let derivative = self.evaluate_expression(
+                node,
+                node.integral_derivative
                     .as_ref()
-                    .cloned()
-                    .expect("every compiled node must have a value in a snapshot"),
-            })
-            .collect();
-        Ok((Evaluation { values }, next_state_values))
+                    .expect("RK4 states must contain a derivative"),
+                computed,
+                time,
+                Some(current),
+                false,
+            )?;
+            derivatives[*index] = Some(derivative);
+        }
+        Ok(derivatives)
+    }
+
+    fn rk4_stage_values(
+        &self,
+        current_values: &[Option<Value>],
+        derivatives: &[Option<Value>],
+        factor: f64,
+    ) -> Result<Vec<Option<Value>>, EngineError> {
+        let mut stage_values = current_values.to_vec();
+        for index in &self.rk4_state_indices {
+            let node = &self.nodes[*index];
+            let current = current_values[*index]
+                .as_ref()
+                .expect("initialized simulations must contain every state value");
+            let derivative = derivatives[*index]
+                .as_ref()
+                .expect("every RK4 stage must contain every derivative");
+            let stage = current.euler_integrate(derivative, factor).map_err(|message| {
+                EngineError::Evaluation {
+                    node: node.name.clone(),
+                    message,
+                }
+            })?;
+            if !stage.is_finite() {
+                return Err(EngineError::NonFiniteValue(node.name.clone()));
+            }
+            stage_values[*index] = Some(stage);
+        }
+        Ok(stage_values)
     }
 
     fn evaluate_expression(

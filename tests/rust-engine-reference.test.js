@@ -175,6 +175,30 @@ async function checkLocalFunctions(rootDir) {
   );
 }
 
+function assertClose(actual, expected, tolerance, label) {
+  assert.ok(
+    Math.abs(actual - expected) <= tolerance,
+    `${label}: expected ${expected}, found ${actual}`,
+  );
+}
+
+async function checkRk4State(rootDir) {
+  const runtime = await loadFixture(rootDir, "rk4-state.json");
+
+  await runtime.run();
+  const history = runtime.getOutputHistory();
+  assert.strictEqual(history.length, 11);
+  const finalSnapshot = history[history.length - 1];
+  assertClose(finalSnapshot.time, 1, 1e-12, "time");
+  assertClose(finalSnapshot.values.decay, Math.exp(-1), 1e-6, "decay");
+  assertClose(finalSnapshot.values.vectorDecay[0], Math.exp(-1), 1e-6, "vectorDecay[0]");
+  assertClose(finalSnapshot.values.vectorDecay[1], 2 * Math.exp(-1), 2e-6, "vectorDecay[1]");
+  assertClose(finalSnapshot.values.position, Math.cos(1), 1e-6, "position");
+  assertClose(finalSnapshot.values.velocity, -Math.sin(1), 1e-6, "velocity");
+  assert.strictEqual(finalSnapshot.values.counter, 10);
+  assertClose(finalSnapshot.values.timeIntegral, 0.5, 1e-12, "timeIntegral");
+}
+
 async function main() {
   const rootDir = path.resolve(__dirname, "..");
   await checkScalarAlgebraic(rootDir);
@@ -183,6 +207,7 @@ async function main() {
   await checkConditionalFunctions(rootDir);
   await checkTensorIndexing(rootDir);
   await checkLocalFunctions(rootDir);
+  await checkRk4State(rootDir);
   console.log("rust-engine-reference.test.js: ok");
 }
 

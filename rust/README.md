@@ -54,6 +54,8 @@ Sono supportati:
   selezioni multiple di righe o colonne;
 - funzioni locali definite dal modello, componibili e non ricorsive, con
   parametri e risultati scalari o tensoriali;
+- integrazione RK4 di stati scalari o tensoriali con transizione
+  `integral(derivata)`, inclusi sistemi accoppiati e derivate algebriche;
 - operatori `+`, `-`, `*`, `/`, `%`, `^` e `**`;
 - variabili di esecuzione `time`, `t0`, `t1` e `dt`;
 - alias `this` nelle transizioni di stato;
@@ -65,7 +67,9 @@ Sono supportati:
 - diagnostica per nomi e identificativi duplicati, riferimenti mancanti,
   archi incoerenti e cicli algebrici.
 
-Non sono ancora supportati RK4, sottomodelli o input esterni.
+Non sono ancora supportate in RK4 le transizioni che combinano `integral(...)`
+con altre operazioni esterne; non sono inoltre supportati sottomodelli o input
+esterni.
 
 La CLI può eseguire un modello compatibile:
 

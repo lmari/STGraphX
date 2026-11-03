@@ -54,6 +54,7 @@ pub const fn engine_info() -> EngineInfo {
             "tensor-reducers",
             "tensor-indexing-and-slicing",
             "model-local-functions",
+            "rk4-pure-integral",
         ],
     }
 }

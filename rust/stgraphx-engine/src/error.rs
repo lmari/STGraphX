@@ -35,6 +35,7 @@ pub enum EngineError {
     InvalidTimeStep,
     InvalidTimeDirection,
     UnsupportedIntegrator(String),
+    UnsupportedRk4Transition(String),
     SimulationStepLimit(usize),
     Evaluation { node: String, message: String },
     NonFiniteValue(String),
@@ -131,6 +132,10 @@ impl fmt::Display for EngineError {
             Self::UnsupportedIntegrator(integrator) => {
                 write!(formatter, "unsupported integrator '{integrator}'")
             }
+            Self::UnsupportedRk4Transition(node) => write!(
+                formatter,
+                "RK4 currently requires state node '{node}' to use integral(derivative) as its complete transition"
+            ),
             Self::SimulationStepLimit(limit) => {
                 write!(formatter, "the simulation requires at least {limit} steps")
             }

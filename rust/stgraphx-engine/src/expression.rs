@@ -162,6 +162,13 @@ impl Expression {
         }
     }
 
+    pub(crate) fn pure_integral_argument(&self) -> Option<&Expression> {
+        match self {
+            Self::Integral(argument) => Some(argument),
+            _ => None,
+        }
+    }
+
     pub(crate) fn uses_identifier(&self, expected: &str) -> bool {
         match self {
             Self::Identifier(name) => name == expected,

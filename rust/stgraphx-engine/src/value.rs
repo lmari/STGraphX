@@ -228,6 +228,51 @@ impl Value {
         }
     }
 
+    pub(crate) fn rk4_integrate(
+        &self,
+        k1: &Self,
+        k2: &Self,
+        k3: &Self,
+        k4: &Self,
+        dt: f64,
+    ) -> Result<Self, String> {
+        match (self, k1, k2, k3, k4) {
+            (
+                Self::Scalar(current),
+                Self::Scalar(k1),
+                Self::Scalar(k2),
+                Self::Scalar(k3),
+                Self::Scalar(k4),
+            ) => Ok(Self::Scalar(
+                current + (dt / 6.0) * (k1 + 2.0 * k2 + 2.0 * k3 + k4),
+            )),
+            (
+                Self::Tensor(current),
+                Self::Tensor(k1),
+                Self::Tensor(k2),
+                Self::Tensor(k3),
+                Self::Tensor(k4),
+            ) if [k1, k2, k3, k4]
+                .iter()
+                .all(|derivative| derivative.shape == current.shape) =>
+            {
+                let elements = current
+                    .elements
+                    .iter()
+                    .zip(&k1.elements)
+                    .zip(&k2.elements)
+                    .zip(&k3.elements)
+                    .zip(&k4.elements)
+                    .map(|((((current, k1), k2), k3), k4)| {
+                        current + (dt / 6.0) * (k1 + 2.0 * k2 + 2.0 * k3 + k4)
+                    })
+                    .collect();
+                Self::tensor(current.shape.clone(), elements)
+            }
+            _ => Err("RK4 requires matching numeric state and derivative shapes".to_string()),
+        }
+    }
+
     pub(crate) fn select(
         condition: &Self,
         when_true: &Self,
