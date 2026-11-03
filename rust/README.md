@@ -52,6 +52,8 @@ Sono supportati:
 - funzione strutturale `size`;
 - indicizzazione e slicing di tensori, inclusi indici negativi, passi e
   selezioni multiple di righe o colonne;
+- funzioni locali definite dal modello, componibili e non ricorsive, con
+  parametri e risultati scalari o tensoriali;
 - operatori `+`, `-`, `*`, `/`, `%`, `^` e `**`;
 - variabili di esecuzione `time`, `t0`, `t1` e `dt`;
 - alias `this` nelle transizioni di stato;
@@ -63,8 +65,7 @@ Sono supportati:
 - diagnostica per nomi e identificativi duplicati, riferimenti mancanti,
   archi incoerenti e cicli algebrici.
 
-Non sono ancora supportati RK4, funzioni locali definite dal modello,
-sottomodelli o input esterni.
+Non sono ancora supportati RK4, sottomodelli o input esterni.
 
 La CLI può eseguire un modello compatibile:
 

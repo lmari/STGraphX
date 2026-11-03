@@ -1,0 +1,118 @@
+{
+  "version": 1,
+  "localFunctions": [
+    {
+      "name": "scaleAndShift",
+      "params": ["x", "scale", "offset"],
+      "expression": "x*scale+offset",
+      "description": "Affine transformation"
+    },
+    {
+      "name": "positive",
+      "params": ["x"],
+      "expression": "if(x>0,x,0)",
+      "description": "Positive part"
+    },
+    {
+      "name": "pipeline",
+      "params": ["x"],
+      "expression": "positive(scaleAndShift(x,2,-1))",
+      "description": "Nested local function calls"
+    },
+    {
+      "name": "squaredNorm",
+      "params": ["x"],
+      "expression": "sum(x^2)",
+      "description": "Squared Euclidean norm"
+    },
+    {
+      "name": "distance",
+      "params": ["a", "b"],
+      "expression": "sqrt(squaredNorm(a-b))",
+      "description": "Euclidean distance"
+    },
+    {
+      "name": "tail",
+      "params": ["x"],
+      "expression": "x[1:]",
+      "description": "All elements except the first"
+    }
+  ],
+  "nodes": [
+    {
+      "id": 1,
+      "name": "samples",
+      "type": "parameter",
+      "valueExpression": "[-2,0,3]"
+    },
+    {
+      "id": 2,
+      "name": "pointA",
+      "type": "parameter",
+      "valueExpression": "[0,0]"
+    },
+    {
+      "id": 3,
+      "name": "pointB",
+      "type": "parameter",
+      "valueExpression": "[3,4]"
+    },
+    {
+      "id": 4,
+      "name": "matrixData",
+      "type": "parameter",
+      "valueExpression": "[[1,2],[3,4]]"
+    },
+    {
+      "id": 5,
+      "name": "literalResult",
+      "type": "parameter",
+      "valueExpression": "scaleAndShift(2,3,1)"
+    },
+    {
+      "id": 6,
+      "name": "transformed",
+      "type": "algebraic",
+      "valueExpression": "pipeline(samples)"
+    },
+    {
+      "id": 7,
+      "name": "sampleNorm",
+      "type": "algebraic",
+      "valueExpression": "squaredNorm(samples)"
+    },
+    {
+      "id": 8,
+      "name": "separation",
+      "type": "algebraic",
+      "valueExpression": "distance(pointA,pointB)"
+    },
+    {
+      "id": 9,
+      "name": "sampleTail",
+      "type": "algebraic",
+      "valueExpression": "tail(samples)"
+    },
+    {
+      "id": 10,
+      "name": "shiftedMatrix",
+      "type": "algebraic",
+      "valueExpression": "scaleAndShift(matrixData,2,1)"
+    },
+    {
+      "id": 11,
+      "name": "lastRowNorm",
+      "type": "algebraic",
+      "valueExpression": "squaredNorm(matrixData[1])"
+    }
+  ],
+  "edges": [
+    { "id": 1, "from": 1, "to": 6 },
+    { "id": 2, "from": 1, "to": 7 },
+    { "id": 3, "from": 2, "to": 8 },
+    { "id": 4, "from": 3, "to": 8 },
+    { "id": 5, "from": 1, "to": 9 },
+    { "id": 6, "from": 4, "to": 10 },
+    { "id": 7, "from": 4, "to": 11 }
+  ]
+}

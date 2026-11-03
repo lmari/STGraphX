@@ -5,6 +5,33 @@
 
 use crate::value::Value;
 
+pub(crate) fn is_supported(name: &str) -> bool {
+    matches!(
+        name,
+        "abs"
+            | "ceil"
+            | "cos"
+            | "exp"
+            | "floor"
+            | "log"
+            | "log10"
+            | "log2"
+            | "sign"
+            | "sin"
+            | "sqrt"
+            | "tan"
+            | "trunc"
+            | "int"
+            | "pow"
+            | "min"
+            | "max"
+            | "sum"
+            | "average"
+            | "count"
+            | "size"
+    )
+}
+
 pub(crate) fn evaluate(name: &str, arguments: &[Value]) -> Result<Value, String> {
     match name {
         "abs" => unary(name, arguments, f64::abs),

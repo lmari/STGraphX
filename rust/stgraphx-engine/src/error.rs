@@ -14,6 +14,10 @@ pub enum EngineError {
     DuplicateNodeId(i64),
     DuplicateNodeName(String),
     InvalidNodeName(String),
+    DuplicateLocalFunctionName(String),
+    LocalFunctionNodeConflict(String),
+    InvalidLocalFunction { name: String, message: String },
+    LocalFunctionCycle(Vec<String>),
     UnsupportedNodeType { node: String, node_type: String },
     EmptyExpression(String),
     EmptyInitialState(String),
@@ -47,6 +51,20 @@ impl fmt::Display for EngineError {
             Self::DuplicateNodeId(id) => write!(formatter, "duplicate node id {id}"),
             Self::DuplicateNodeName(name) => write!(formatter, "duplicate node name '{name}'"),
             Self::InvalidNodeName(name) => write!(formatter, "invalid node name '{name}'"),
+            Self::DuplicateLocalFunctionName(name) => {
+                write!(formatter, "duplicate local function name '{name}'")
+            }
+            Self::LocalFunctionNodeConflict(name) => {
+                write!(formatter, "local function '{name}' conflicts with a node name")
+            }
+            Self::InvalidLocalFunction { name, message } => {
+                write!(formatter, "invalid local function '{name}': {message}")
+            }
+            Self::LocalFunctionCycle(functions) => write!(
+                formatter,
+                "local function dependency cycle involving {}",
+                functions.join(" -> ")
+            ),
             Self::UnsupportedNodeType { node, node_type } => {
                 write!(
                     formatter,

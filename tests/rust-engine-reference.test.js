@@ -149,6 +149,32 @@ async function checkTensorIndexing(rootDir) {
   );
 }
 
+async function checkLocalFunctions(rootDir) {
+  const runtime = await loadFixture(rootDir, "local-functions.json");
+
+  await runtime.evaluate();
+  assert.deepStrictEqual(
+    runtime.getValues([
+      "literalResult",
+      "transformed",
+      "sampleNorm",
+      "separation",
+      "sampleTail",
+      "shiftedMatrix",
+      "lastRowNorm",
+    ]),
+    {
+      literalResult: 7,
+      transformed: [0, 0, 5],
+      sampleNorm: 13,
+      separation: 5,
+      sampleTail: [0, 3],
+      shiftedMatrix: [[3, 5], [7, 9]],
+      lastRowNorm: 25,
+    },
+  );
+}
+
 async function main() {
   const rootDir = path.resolve(__dirname, "..");
   await checkScalarAlgebraic(rootDir);
@@ -156,6 +182,7 @@ async function main() {
   await checkTensorStateEuler(rootDir);
   await checkConditionalFunctions(rootDir);
   await checkTensorIndexing(rootDir);
+  await checkLocalFunctions(rootDir);
   console.log("rust-engine-reference.test.js: ok");
 }
 

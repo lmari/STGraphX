@@ -43,6 +43,12 @@ pub(crate) enum Accessor {
     },
 }
 
+#[derive(Debug, Clone)]
+pub(crate) struct LocalFunction {
+    pub(crate) params: Vec<String>,
+    pub(crate) expression: Expression,
+}
+
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub(crate) enum UnaryOperator {
     Plus,
@@ -103,6 +109,42 @@ impl Expression {
                 left.collect_references(references);
                 right.collect_references(references);
             }
+        }
+    }
+
+    pub(crate) fn calls(&self) -> BTreeSet<String> {
+        let mut calls = BTreeSet::new();
+        self.collect_calls(&mut calls);
+        calls
+    }
+
+    fn collect_calls(&self, calls: &mut BTreeSet<String>) {
+        match self {
+            Self::Call { name, arguments } => {
+                calls.insert(name.clone());
+                for argument in arguments {
+                    argument.collect_calls(calls);
+                }
+            }
+            Self::Array(elements) => {
+                for element in elements {
+                    element.collect_calls(calls);
+                }
+            }
+            Self::Integral(argument) | Self::Unary { argument, .. } => {
+                argument.collect_calls(calls)
+            }
+            Self::Access { target, accessors } => {
+                target.collect_calls(calls);
+                for accessor in accessors {
+                    accessor.collect_calls(calls);
+                }
+            }
+            Self::Binary { left, right, .. } => {
+                left.collect_calls(calls);
+                right.collect_calls(calls);
+            }
+            Self::Number(_) | Self::Identifier(_) => {}
         }
     }
 
@@ -187,6 +229,40 @@ impl Expression {
                     .iter()
                     .map(|argument| argument.evaluate(context))
                     .collect::<Result<Vec<_>, _>>()?;
+                if let Some(function) = context.local_functions.get(name) {
+                    if context
+                        .local_function_stack
+                        .iter()
+                        .any(|active| active == name)
+                    {
+                        return Err(format!("local function recursion is not allowed: {name}"));
+                    }
+                    if values.len() != function.params.len() {
+                        return Err(format!(
+                            "{name} expects exactly {} arguments",
+                            function.params.len()
+                        ));
+                    }
+                    let local_values = function
+                        .params
+                        .iter()
+                        .cloned()
+                        .zip(values)
+                        .collect::<HashMap<_, _>>();
+                    let mut stack = context.local_function_stack.to_vec();
+                    stack.push(name.clone());
+                    return function.expression.evaluate(&EvaluationContext {
+                        values: &local_values,
+                        time: context.time,
+                        t0: context.t0,
+                        t1: context.t1,
+                        dt: context.dt,
+                        self_value: None,
+                        allow_integral: false,
+                        local_functions: context.local_functions,
+                        local_function_stack: &stack,
+                    });
+                }
                 functions::evaluate(name, &values)
             }
             Self::Access { target, accessors } => {
@@ -261,6 +337,12 @@ impl Accessor {
     fn collect_references(&self, references: &mut BTreeSet<String>) {
         for expression in self.expressions() {
             expression.collect_references(references);
+        }
+    }
+
+    fn collect_calls(&self, calls: &mut BTreeSet<String>) {
+        for expression in self.expressions() {
+            expression.collect_calls(calls);
         }
     }
 
@@ -351,6 +433,8 @@ pub(crate) struct EvaluationContext<'a> {
     pub(crate) dt: f64,
     pub(crate) self_value: Option<&'a Value>,
     pub(crate) allow_integral: bool,
+    pub(crate) local_functions: &'a HashMap<String, LocalFunction>,
+    pub(crate) local_function_stack: &'a [String],
 }
 
 #[derive(Debug, Clone, PartialEq)]
@@ -905,6 +989,7 @@ mod tests {
 
     fn evaluate(source: &str) -> f64 {
         let values = HashMap::new();
+        let local_functions = HashMap::new();
         parse(source)
             .expect("expression should parse")
             .evaluate(&EvaluationContext {
@@ -915,6 +1000,8 @@ mod tests {
                 dt: 1.0,
                 self_value: None,
                 allow_integral: false,
+                local_functions: &local_functions,
+                local_function_stack: &[],
             })
             .expect("expression should evaluate")
             .as_scalar()
@@ -953,6 +1040,7 @@ mod tests {
     fn state_context_and_euler_integral_are_supported() {
         let values = HashMap::from([("rate".to_string(), Value::scalar(2.0))]);
         let self_value = Value::scalar(3.0);
+        let local_functions = HashMap::new();
         let expression = parse("integral(rate)+time+this").expect("expression should parse");
         let value = expression
             .evaluate(&EvaluationContext {
@@ -963,6 +1051,8 @@ mod tests {
                 dt: 0.25,
                 self_value: Some(&self_value),
                 allow_integral: true,
+                local_functions: &local_functions,
+                local_function_stack: &[],
             })
             .expect("state expression should evaluate");
 
@@ -974,6 +1064,7 @@ mod tests {
     #[test]
     fn array_literals_and_broadcast_arithmetic_are_supported() {
         let values = HashMap::new();
+        let local_functions = HashMap::new();
         let expression = parse("[1,2]*2+[[10,20],[30,40]]").expect("expression should parse");
         let error = expression
             .evaluate(&EvaluationContext {
@@ -984,6 +1075,8 @@ mod tests {
                 dt: 1.0,
                 self_value: None,
                 allow_integral: false,
+                local_functions: &local_functions,
+                local_function_stack: &[],
             })
             .expect_err("mismatched shapes should fail");
 
@@ -999,6 +1092,8 @@ mod tests {
                 dt: 1.0,
                 self_value: None,
                 allow_integral: false,
+                local_functions: &local_functions,
+                local_function_stack: &[],
             })
             .expect("vector expression should evaluate");
         assert_eq!(

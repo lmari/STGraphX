@@ -55,8 +55,22 @@ pub struct ModelDocument {
     pub nodes: Vec<NodeDocument>,
     #[serde(default)]
     pub edges: Vec<EdgeDocument>,
+    #[serde(default, rename = "localFunctions")]
+    pub local_functions: Vec<LocalFunctionDocument>,
     #[serde(default)]
     pub execution: ExecutionDocument,
+}
+
+/// Reusable expression function stored at model level.
+#[derive(Debug, Clone, Deserialize)]
+pub struct LocalFunctionDocument {
+    pub name: String,
+    #[serde(default)]
+    pub params: Vec<String>,
+    #[serde(default)]
+    pub expression: String,
+    #[serde(default)]
+    pub description: String,
 }
 
 /// Node data read from the current STGraphX JSON format.

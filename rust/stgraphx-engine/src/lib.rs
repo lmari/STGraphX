@@ -13,7 +13,9 @@ mod functions;
 mod model;
 mod value;
 
-pub use document::{EdgeDocument, ExecutionDocument, ModelDocument, NodeDocument};
+pub use document::{
+    EdgeDocument, ExecutionDocument, LocalFunctionDocument, ModelDocument, NodeDocument,
+};
 pub use error::EngineError;
 pub use model::{
     compile_json, CompiledModel, Evaluation, ExecutionConfig, Integrator, NodeKind, NodeValue,
@@ -51,6 +53,7 @@ pub const fn engine_info() -> EngineInfo {
             "built-in-numeric-functions",
             "tensor-reducers",
             "tensor-indexing-and-slicing",
+            "model-local-functions",
         ],
     }
 }

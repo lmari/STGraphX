@@ -5,9 +5,10 @@
 
 use std::collections::{HashMap, HashSet};
 
-use crate::document::{ExecutionDocument, ModelDocument};
+use crate::document::{ExecutionDocument, LocalFunctionDocument, ModelDocument};
 use crate::error::EngineError;
-use crate::expression::{self, EvaluationContext, Expression};
+use crate::expression::{self, EvaluationContext, Expression, LocalFunction};
+use crate::functions;
 use crate::value::Value;
 
 const MAX_SIMULATION_STEPS: usize = 100_000;
@@ -66,6 +67,7 @@ struct CompiledNode {
 #[derive(Debug, Clone)]
 pub struct CompiledModel {
     nodes: Vec<CompiledNode>,
+    local_functions: HashMap<String, LocalFunction>,
     evaluation_order: Vec<usize>,
     initialization_order: Vec<usize>,
     state_indices: Vec<usize>,
@@ -173,6 +175,9 @@ impl CompiledModel {
                 return Err(EngineError::InvalidNodeName(node.name.clone()));
             }
         }
+
+        let local_functions =
+            compile_local_functions(&document.local_functions, &name_to_index)?;
 
         let mut incoming = vec![Vec::new(); document.nodes.len()];
         for edge in &document.edges {
@@ -315,6 +320,7 @@ impl CompiledModel {
         let initialization_order = build_initialization_order(&nodes)?;
         Ok(Self {
             nodes,
+            local_functions,
             evaluation_order,
             initialization_order,
             state_indices,
@@ -466,6 +472,8 @@ impl CompiledModel {
                 dt: self.execution.dt,
                 self_value,
                 allow_integral,
+                local_functions: &self.local_functions,
+                local_function_stack: &[],
             })
             .map_err(|message| EngineError::Evaluation {
                 node: node.name.clone(),
@@ -476,6 +484,210 @@ impl CompiledModel {
         }
         Ok(value)
     }
+}
+
+fn compile_local_functions(
+    documents: &[LocalFunctionDocument],
+    node_names: &HashMap<String, usize>,
+) -> Result<HashMap<String, LocalFunction>, EngineError> {
+    let mut names = HashSet::new();
+    let mut order = Vec::with_capacity(documents.len());
+    for document in documents {
+        if !is_valid_node_name(&document.name)
+            || is_reserved_local_name(&document.name)
+            || functions::is_supported(&document.name)
+        {
+            return Err(EngineError::InvalidLocalFunction {
+                name: document.name.clone(),
+                message: "the name is invalid or reserved".to_string(),
+            });
+        }
+        if !names.insert(document.name.clone()) {
+            return Err(EngineError::DuplicateLocalFunctionName(
+                document.name.clone(),
+            ));
+        }
+        if node_names.contains_key(&document.name) {
+            return Err(EngineError::LocalFunctionNodeConflict(
+                document.name.clone(),
+            ));
+        }
+        order.push(document.name.clone());
+    }
+
+    let mut compiled = HashMap::with_capacity(documents.len());
+    let mut dependencies = HashMap::with_capacity(documents.len());
+    for document in documents {
+        let mut params = HashSet::new();
+        for param in &document.params {
+            if !is_valid_node_name(param)
+                || is_reserved_local_name(param)
+                || functions::is_supported(param)
+            {
+                return Err(EngineError::InvalidLocalFunction {
+                    name: document.name.clone(),
+                    message: format!("parameter '{param}' is invalid or reserved"),
+                });
+            }
+            if !params.insert(param.clone()) {
+                return Err(EngineError::InvalidLocalFunction {
+                    name: document.name.clone(),
+                    message: format!("parameter '{param}' is duplicated"),
+                });
+            }
+        }
+
+        let source = document.expression.trim();
+        if source.is_empty() {
+            return Err(EngineError::InvalidLocalFunction {
+                name: document.name.clone(),
+                message: "the expression is empty".to_string(),
+            });
+        }
+        let expression = expression::parse(source).map_err(|message| {
+            EngineError::InvalidLocalFunction {
+                name: document.name.clone(),
+                message,
+            }
+        })?;
+        if expression.uses_integral() || expression.uses_identifier("this") {
+            return Err(EngineError::InvalidLocalFunction {
+                name: document.name.clone(),
+                message: "'this' and 'integral' are unavailable in local functions".to_string(),
+            });
+        }
+        for reference in expression.references() {
+            if !params.contains(&reference) && !is_execution_global(&reference) {
+                return Err(EngineError::InvalidLocalFunction {
+                    name: document.name.clone(),
+                    message: format!("unknown reference '{reference}'"),
+                });
+            }
+        }
+
+        let mut local_dependencies = Vec::new();
+        for call in expression.calls() {
+            if names.contains(&call) {
+                local_dependencies.push(call);
+            } else if call != "if" && !functions::is_supported(&call) {
+                return Err(EngineError::InvalidLocalFunction {
+                    name: document.name.clone(),
+                    message: format!("unknown function '{call}'"),
+                });
+            }
+        }
+        dependencies.insert(document.name.clone(), local_dependencies);
+        compiled.insert(
+            document.name.clone(),
+            LocalFunction {
+                params: document.params.clone(),
+                expression,
+            },
+        );
+    }
+
+    if let Some(cycle) = local_function_cycle(&order, &dependencies) {
+        return Err(EngineError::LocalFunctionCycle(cycle));
+    }
+    Ok(compiled)
+}
+
+fn local_function_cycle(
+    order: &[String],
+    dependencies: &HashMap<String, Vec<String>>,
+) -> Option<Vec<String>> {
+    fn visit(
+        name: &str,
+        dependencies: &HashMap<String, Vec<String>>,
+        stack: &mut Vec<String>,
+        visited: &mut HashSet<String>,
+    ) -> Option<Vec<String>> {
+        if let Some(start) = stack.iter().position(|active| active == name) {
+            let mut cycle = stack[start..].to_vec();
+            cycle.push(name.to_string());
+            return Some(cycle);
+        }
+        if visited.contains(name) {
+            return None;
+        }
+        stack.push(name.to_string());
+        for dependency in dependencies.get(name).into_iter().flatten() {
+            if let Some(cycle) = visit(dependency, dependencies, stack, visited) {
+                return Some(cycle);
+            }
+        }
+        stack.pop();
+        visited.insert(name.to_string());
+        None
+    }
+
+    let mut visited = HashSet::new();
+    for name in order {
+        if let Some(cycle) = visit(name, dependencies, &mut Vec::new(), &mut visited) {
+            return Some(cycle);
+        }
+    }
+    None
+}
+
+fn is_reserved_local_name(name: &str) -> bool {
+    matches!(
+        name,
+        "break"
+            | "case"
+            | "catch"
+            | "class"
+            | "const"
+            | "continue"
+            | "debugger"
+            | "default"
+            | "delete"
+            | "do"
+            | "else"
+            | "export"
+            | "extends"
+            | "finally"
+            | "for"
+            | "function"
+            | "if"
+            | "import"
+            | "in"
+            | "instanceof"
+            | "let"
+            | "new"
+            | "return"
+            | "super"
+            | "switch"
+            | "this"
+            | "throw"
+            | "try"
+            | "typeof"
+            | "var"
+            | "void"
+            | "while"
+            | "with"
+            | "yield"
+            | "enum"
+            | "await"
+            | "implements"
+            | "interface"
+            | "package"
+            | "private"
+            | "protected"
+            | "public"
+            | "static"
+            | "null"
+            | "true"
+            | "false"
+            | "time"
+            | "t0"
+            | "t1"
+            | "dt"
+            | "and"
+            | "or"
+            | "not"
+            | "integral"
+    )
 }
 
 fn parse_required_expression(
