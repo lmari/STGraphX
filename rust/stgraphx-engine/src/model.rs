@@ -21,6 +21,14 @@ struct InitializedValues {
     parameters: Vec<Option<Value>>,
 }
 
+enum ExpressionMode<'a> {
+    Regular,
+    State {
+        value: &'a Value,
+        allow_integral: bool,
+    },
+}
+
 /// Node kinds supported by the current executable slice of the Rust engine.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum NodeKind {
@@ -432,8 +440,7 @@ impl CompiledModel {
                 expression,
                 &computed,
                 self.execution.t0,
-                None,
-                false,
+                ExpressionMode::Regular,
                 random,
             )?;
             computed.insert(node.name.clone(), value.clone());
@@ -520,8 +527,7 @@ impl CompiledModel {
                     &node.expression,
                     &computed,
                     time,
-                    None,
-                    false,
+                    ExpressionMode::Regular,
                     random,
                 )?
             };
@@ -550,8 +556,10 @@ impl CompiledModel {
                 &node.expression,
                 computed,
                 time,
-                Some(current),
-                true,
+                ExpressionMode::State {
+                    value: current,
+                    allow_integral: true,
+                },
                 random,
             )?;
             next_state_values[*index] = Some(next);
@@ -581,8 +589,10 @@ impl CompiledModel {
                 &node.expression,
                 computed,
                 time,
-                Some(current),
-                false,
+                ExpressionMode::State {
+                    value: current,
+                    allow_integral: false,
+                },
                 random,
             )?);
         }
@@ -670,8 +680,10 @@ impl CompiledModel {
                     .expect("RK4 states must contain a derivative"),
                 computed,
                 time,
-                Some(current),
-                false,
+                ExpressionMode::State {
+                    value: current,
+                    allow_integral: false,
+                },
                 random,
             )?;
             derivatives[*index] = Some(derivative);
@@ -714,10 +726,16 @@ impl CompiledModel {
         expression: &Expression,
         computed: &HashMap<String, Value>,
         time: f64,
-        self_value: Option<&Value>,
-        allow_integral: bool,
+        mode: ExpressionMode<'_>,
         random: &RandomGenerator,
     ) -> Result<Value, EngineError> {
+        let (self_value, allow_integral) = match mode {
+            ExpressionMode::Regular => (None, false),
+            ExpressionMode::State {
+                value,
+                allow_integral,
+            } => (Some(value), allow_integral),
+        };
         let value = expression
             .evaluate(&EvaluationContext {
                 values: computed,
