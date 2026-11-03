@@ -10,11 +10,7 @@ use serde_json::{json, Map, Value as JsonValue};
 use stgraphx_engine::{compile_json, engine_info, Evaluation, Tensor, Value};
 use wasm_bindgen::prelude::*;
 
-fn tensor_axis_json(
-    tensor: &Tensor,
-    dimension: usize,
-    element_index: &mut usize,
-) -> JsonValue {
+fn tensor_axis_json(tensor: &Tensor, dimension: usize, element_index: &mut usize) -> JsonValue {
     let mut values = Vec::with_capacity(tensor.shape()[dimension]);
     for _ in 0..tensor.shape()[dimension] {
         if dimension + 1 == tensor.shape().len() {
@@ -104,8 +100,7 @@ pub fn execute_model_json(source: &str) -> Result<String, JsValue> {
 mod tests {
     use super::*;
 
-    const RK4_FIXTURE: &str =
-        include_str!("../../stgraphx-engine/tests/fixtures/rk4-state.json");
+    const RK4_FIXTURE: &str = include_str!("../../stgraphx-engine/tests/fixtures/rk4-state.json");
 
     #[test]
     fn serializes_scalar_and_tensor_snapshots_for_javascript() {
