@@ -16,6 +16,7 @@ const info = JSON.parse(engineInfoJson());
 assert.equal(info.name, "STGraphX Rust engine");
 assert.equal(info.apiVersion, 1);
 assert.ok(info.capabilities.includes("generated-arrays"));
+assert.ok(info.capabilities.includes("numeric-range"));
 assert.ok(info.capabilities.includes("tensor-append"));
 assert.ok(info.capabilities.includes("global-parameters"));
 
@@ -37,5 +38,18 @@ assert.deepEqual(generatedArraysResult.snapshots[0].values.indices, [0, 1, 2]);
 assert.deepEqual(generatedArraysResult.snapshots[0].values.generatedGrid, [[2, 5], [4, 7]]);
 assert.deepEqual(generatedArraysResult.snapshots[0].values.joined, [-1, 0, 1, 2, 3]);
 assert.deepEqual(generatedArraysResult.snapshots[0].values.columns, [[1, 2, 5], [3, 4, 6]]);
+
+const rangeFixture = fs.readFileSync(
+  new URL("../rust/stgraphx-engine/tests/fixtures/range-sequences.json", import.meta.url),
+  "utf8",
+);
+const rangeResult = JSON.parse(executeModelJson(rangeFixture));
+assert.deepEqual(rangeResult.snapshots[0].values.singleArgument, [0, 1, 2, 3]);
+assert.deepEqual(rangeResult.snapshots[0].values.descending, [3, 2, 1]);
+assert.deepEqual(rangeResult.snapshots[0].values.fractional, [0, 0.1, 0.2, 0.3]);
+assert.deepEqual(
+  rangeResult.snapshots[0].values.valueAndIndex,
+  [[-2, 0], [-1, 1], [0, 2], [1, 3], [2, 4]],
+);
 
 process.stdout.write("rust-engine-wasm.test.mjs: ok\n");
