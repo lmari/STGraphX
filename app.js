@@ -1,6 +1,3 @@
-Warning: truncated output (original token count: 157785)
-Total output lines: 17955
-
 /*
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -2534,7 +2531,12082 @@ function localizeExpressionErrorMessage(message) {
     return t("expr.error.setAtPair");
   }
   if (lower === "setat expects a row vector with matching length") {
-    return t("expr.error.setAtRowVe…107785 tokens truncated…terLoad();
+    return t("expr.error.setAtRowVectorLength");
+  }
+  if (lower === "setrow expects a row vector with matching length") {
+    return t("expr.error.setRowLength");
+  }
+  if (lower === "appendrow expects a row vector with matching length") {
+    return t("expr.error.appendRowLength");
+  }
+  if (lower === "setcol expects a vector with one value per matrix row") {
+    return t("expr.error.setColLength");
+  }
+  if (lower === "removeat does not accept axis for vectors") {
+    return t("expr.error.removeAtAxisVector");
+  }
+  const integerIndicesMatch = raw.match(/^([A-Za-z_$][A-Za-z0-9_$]*) expects integer indices$/i);
+  if (integerIndicesMatch) {
+    return t("expr.error.integerIndices", { name: integerIndicesMatch[1] });
+  }
+  const indexRangeMatch = raw.match(/^([A-Za-z_$][A-Za-z0-9_$]*) index out of range$/i);
+  if (indexRangeMatch) {
+    return t("expr.error.indexOutOfRange", { name: indexRangeMatch[1] });
+  }
+  if (lower === "average expects a non-empty vector" || lower === "stdev expects a non-empty vector") {
+    const fn = raw.split(" ")[0];
+    return t("expr.error.expectsNonEmptyVector", { name: fn });
+  }
+  if (lower === "average expects a non-empty matrix") {
+    return t("expr.error.averageNonEmptyMatrix");
+  }
+  if (lower === "average expects non-empty matrix rows") {
+    return t("expr.error.averageNonEmptyRows");
+  }
+  if (lower === "grid collision mode must be 'error', 'first', or 'sum'") {
+    return t("expr.error.gridCollisionMode");
+  }
+  if (lower === "grid explicit size expects [rows, cols]") {
+    return t("expr.error.gridExplicitSizePair");
+  }
+  if (lower === "grid explicit size expects non-negative integer dimensions") {
+    return t("expr.error.gridExplicitSizeNonNegative");
+  }
+  if (lower === "grid coordinates exceed explicit matrix size") {
+    return t("expr.error.gridExplicitSizeTooSmall");
+  }
+  if (lower === "grid expects row and column vectors with the same length") {
+    return t("expr.error.gridRowColSameLength");
+  }
+  if (lower === "grid expects type vector with the same length as row and column vectors") {
+    return t("expr.error.gridTypeSameLength");
+  }
+  if (lower === "grid expects non-negative integer coordinates") {
+    return t("expr.error.gridNonNegativeCoords");
+  }
+  const gridCollisionMatch = raw.match(/^grid collision at \[(\d+), (\d+)\]$/i);
+  if (gridCollisionMatch) {
+    return t("expr.error.gridCollisionAt", { row: gridCollisionMatch[1], col: gridCollisionMatch[2] });
+  }
+  if (lower === "grid sum mode expects numeric values on coincident coordinates") {
+    return t("expr.error.gridSumNumeric");
+  }
+  if (lower === "agents expects at least one field name") {
+    return t("expr.error.agentsNeedsFields");
+  }
+  if (lower === "agents expects rows as a matrix") {
+    return t("expr.error.agentsRowsMatrix");
+  }
+  if (lower === "agents row count must be a non-negative integer") {
+    return t("expr.error.agentsRowCount");
+  }
+  if (lower === "agents rows must match the number of field names") {
+    return t("expr.error.agentsRowsLength");
+  }
+  const agentFieldInvalidMatch = raw.match(/^agents field name '([^']+)' is invalid$/i);
+  if (agentFieldInvalidMatch) {
+    return t("expr.error.agentsFieldInvalid", { name: agentFieldInvalidMatch[1] });
+  }
+  const agentFieldReservedMatch = raw.match(/^agents field name '([^']+)' is reserved$/i);
+  if (agentFieldReservedMatch) {
+    return t("expr.error.agentsFieldReserved", { name: agentFieldReservedMatch[1] });
+  }
+  const agentFieldDuplicatedMatch = raw.match(/^agents field name '([^']+)' is duplicated$/i);
+  if (agentFieldDuplicatedMatch) {
+    return t("expr.error.agentsFieldDuplicated", { name: agentFieldDuplicatedMatch[1] });
+  }
+  const agentFieldUnknownMatch = raw.match(/^([A-Za-z_$][A-Za-z0-9_$]*) field name '([^']+)' is unknown$/i);
+  if (agentFieldUnknownMatch) {
+    return t("expr.error.agentFieldUnknown", { fn: agentFieldUnknownMatch[1], name: agentFieldUnknownMatch[2] });
+  }
+  if (lower === "filter mode must be 'elements', 'rows', or 'cols'") {
+    return t("expr.error.filterMode");
+  }
+  if (lower === "agentspace explicit size expects [rows, cols]") {
+    return t("expr.error.agentSpaceSizePair");
+  }
+  if (lower === "agentspace explicit size expects non-negative integer dimensions") {
+    return t("expr.error.agentSpaceSizeNonNegative");
+  }
+  if (lower === "agentspace neighborhood must be 'moore' or 'vonneumann'") {
+    return t("expr.error.agentSpaceNeighborhood");
+  }
+  if (lower === "agentspace radius must be a positive integer") {
+    return t("expr.error.agentSpaceRadius");
+  }
+  if (lower === "agentspace expects non-negative integer coordinates") {
+    return t("expr.error.agentSpaceCoords");
+  }
+  if (lower === "agentspace coordinates exceed explicit matrix size") {
+    return t("expr.error.agentSpaceTooSmall");
+  }
+  if (lower === "agentspace identifier column expects scalar identifiers") {
+    return t("expr.error.agentSpaceIdScalar");
+  }
+  if (lower === "agentspace identifier values must be unique") {
+    return t("expr.error.agentSpaceIdUnique");
+  }
+  const agentSpaceExpectedMatch = raw.match(/^([A-Za-z_$][A-Za-z0-9_$]*) expects an agentspace$/i);
+  if (agentSpaceExpectedMatch) {
+    return t("expr.error.agentSpaceExpected", { name: agentSpaceExpectedMatch[1] });
+  }
+  const agentSpacePopulationMatch = raw.match(/^([A-Za-z_$][A-Za-z0-9_$]*) expects agents and space built from the same population$/i);
+  if (agentSpacePopulationMatch) {
+    return t("expr.error.agentSpacePopulationMismatch", { name: agentSpacePopulationMatch[1] });
+  }
+  const agentsMatrixMatch = raw.match(/^([A-Za-z_$][A-Za-z0-9_$]*) expects a matrix of agents$/i);
+  if (agentsMatrixMatch) {
+    return t("expr.error.agentsMatrixExpected", { name: agentsMatrixMatch[1] });
+  }
+  const agentsRectMatrixMatch = raw.match(/^([A-Za-z_$][A-Za-z0-9_$]*) expects a rectangular agent matrix$/i);
+  if (agentsRectMatrixMatch) {
+    return t("expr.error.agentsMatrixRectangular", { name: agentsRectMatrixMatch[1] });
+  }
+  if (lower === "mapagents expects each transformed agent to be a row vector with matching length") {
+    return t("expr.error.mapAgentsRowLength");
+  }
+  if (lower === "filter mode 'rows' or 'cols' requires a matrix") {
+    return t("expr.error.filterRowsColsMatrix");
+  }
+  if (lower === "filter mode 'rows' or 'cols' requires a rectangular matrix") {
+    return t("expr.error.filterRowsColsRectMatrix");
+  }
+  if (lower === "map expects a vector or matrix") {
+    return t("expr.error.expectsVectorOrMatrix", { name: "map" });
+  }
+  if (lower === "count conditional form expects a vector or matrix") {
+    return t("expr.error.expectsVectorOrMatrix", { name: "count" });
+  }
+  if (lower === "indiceswhere conditional form expects a vector or matrix") {
+    return t("expr.error.expectsVectorOrMatrix", { name: "indicesWhere" });
+  }
+  if (lower === "unsupported reducer operator +" || lower.startsWith("unsupported reducer operator ")) {
+    return t("expr.error.unsupportedReducerOperator", { op: raw.replace(/^Unsupported reducer operator\s*/i, "") });
+  }
+  if (lower.startsWith("unsupported operator ")) {
+    return t("expr.error.unsupportedOperator", { op: raw.replace(/^Unsupported operator\s*/i, "") });
+  }
+  if (lower.startsWith("unsupported ast node ")) {
+    return t("expr.error.unsupportedAstNode", { kind: raw.replace(/^Unsupported AST node\s*/i, "") });
+  }
+  if (lower.startsWith("local function recursion is not allowed:")) {
+    return t("localFunctions.error.runtimeRecursion", {
+      name: raw.replace(/^local function recursion is not allowed:\s*/i, ""),
+    });
+  }
+  const expectedTokenMatch = raw.match(/^Expected '(.+)'$/i);
+  if (expectedTokenMatch) {
+    return t("expr.error.expectedToken", { token: expectedTokenMatch[1] });
+  }
+  if (lower === "open file picker not supported") {
+    return t("expr.error.openPickerUnsupported");
+  }
+  if (lower === "save file picker not supported") {
+    return t("expr.error.savePickerUnsupported");
+  }
+  if (lower.startsWith("duplicate input binding for ")) {
+    return t("expr.error.duplicateInputBinding", { name: raw.replace(/^duplicate input binding for /i, "") });
+  }
+  if (lower === "missing submodel path") {
+    return t("error.submodelMissingPath");
+  }
+  if (lower === "submodel is not loaded") {
+    return t("expr.error.submodelNotLoaded");
+  }
+  if (lower === "recursive submodel reference") {
+    return t("error.submodelRecursiveReference");
+  }
+  return raw;
+}
+
+function validateExpressionDraft(value, fieldKey = null) {
+  const text = String(value ?? "");
+  const modalNode = ui.expressionEditor?.nodeId ? getNodeById(ui.expressionEditor.nodeId) : null;
+  const node = modalNode || selectedNodeForSidebar();
+  const modalMeta = ui.expressionEditor ? expressionEditorMeta() : null;
+  const meta = fieldKey
+    ? expressionFieldMeta(fieldKey, node)
+    : (modalMeta || null);
+  if (!text.trim()) {
+    if (graph.execution.strictDefinitions && meta && node) {
+      if (meta.key === "initial" && isStateNode(node)) {
+        return { ok: false, empty: true, message: nodeDefinitionIssueText({ reason: "missingInitialState" }) };
+      }
+      if (meta.key === "value") {
+        if (isStateNode(node)) {
+          return { ok: false, empty: true, message: nodeDefinitionIssueText({ reason: "missingTransition" }) };
+        }
+        if (node.shape === "diamond") {
+          return { ok: false, empty: true, message: nodeDefinitionIssueText({ reason: "missingValue" }) };
+        }
+        if (!hasInputWidgetBinding(node)) {
+          return { ok: false, empty: true, message: nodeDefinitionIssueText({ reason: "missingBehavior" }) };
+        }
+      }
+    }
+    return { ok: true, empty: true };
+  }
+  const allowStateTransitionOnly = Boolean(meta && meta.key === "value" && node && isStateNode(node));
+  const readDataUsage = validateReadDataExpressionUsage(text, {
+    allowReadData: Boolean(node && node.shape === "diamond"),
+  });
+  if (!readDataUsage.ok) {
+    return { ok: false, empty: false, message: localizeExpressionErrorMessage(readDataUsage.message || "") };
+  }
+  const extraNames = [];
+  if (node) {
+    globalParameterNodesForModel(graph, node.id)
+      .forEach((depNode) => {
+        extraNames.push(depNode.name);
+      });
+    graph.edges
+      .filter((edge) => edge.to === node.id)
+      .map((edge) => getNodeById(edge.from))
+      .filter(Boolean)
+      .filter((depNode) => (meta?.key !== "initial") || !isSubmodelNode(depNode))
+      .forEach((depNode) => {
+        extraNames.push(depNode.name);
+      });
+    accessibleAgentFieldAliasNames(node, meta?.key || "value").forEach((name) => {
+      extraNames.push(name);
+    });
+  }
+  const result = semantics.validateExpressionSyntax(text, extraNames, {
+    allowThisAlias: allowStateTransitionOnly,
+    allowIntegral: allowStateTransitionOnly,
+    localFunctions: localFunctionsForSemantics(graph),
+  });
+  return result.ok
+    ? { ok: true, empty: false }
+    : { ok: false, empty: false, message: localizeExpressionErrorMessage(result.message || t("error.evalReason.syntax")) };
+}
+
+function updateExpressionFieldState(inputEl, statusEl, value, showOk = false, fieldKey = null) {
+  if (!inputEl) {
+    return { ok: true, empty: true };
+  }
+  const syntaxResult = validateExpressionDraft(value, fieldKey);
+  inputEl.classList.toggle("invalid", !syntaxResult.ok);
+  showExpressionStatus(statusEl, syntaxResult, showOk);
+  return syntaxResult;
+}
+
+function validateNodeDefinition(node) {
+  if (!node) {
+    return { ok: true };
+  }
+  if (isDraftNode(node)) {
+    return graph.execution.strictDefinitions
+      ? { ok: false, reason: "draft" }
+      : { ok: true };
+  }
+  const validateExpr = (value, fieldKey, options = {}) => {
+    const readDataUsage = validateReadDataExpressionUsage(value, {
+      allowReadData: node?.shape === "diamond",
+    });
+    if (!readDataUsage.ok) {
+      return { ok: false, reason: "runtime", message: readDataUsage.message || "" };
+    }
+    const extraNames = [];
+    globalParameterNodesForModel(graph, node.id)
+      .forEach((depNode) => {
+        extraNames.push(depNode.name);
+      });
+    graph.edges
+      .filter((edge) => edge.to === node.id)
+      .map((edge) => getNodeById(edge.from))
+      .filter(Boolean)
+      .filter((depNode) => fieldKey !== "initial" || !isSubmodelNode(depNode))
+      .forEach((depNode) => {
+        extraNames.push(depNode.name);
+      });
+    accessibleAgentFieldAliasNames(node, fieldKey || "value").forEach((name) => {
+      extraNames.push(name);
+    });
+    return semantics.validateExpressionSyntax(String(value ?? ""), extraNames, {
+      ...options,
+      localFunctions: localFunctionsForSemantics(graph),
+    });
+  };
+  const valueExpr = String(node.valueExpression ?? "");
+  const initialExpr = String(node.initialStateExpression ?? "");
+
+  if (isSubmodelNode(node)) {
+    if (!String(node.modelPath ?? "").trim()) {
+      return { ok: false, reason: "missingSubmodelPath" };
+    }
+    if (String(node.submodelError ?? "").trim()) {
+      return { ok: false, reason: "invalidSubmodelPath", message: String(node.submodelError ?? "") };
+    }
+    return { ok: true };
+  }
+
+  if (isStateNode(node)) {
+    if (!valueExpr.trim()) {
+      return { ok: false, reason: "missingTransition" };
+    }
+    const transitionResult = validateExpr(valueExpr, "value", { allowThisAlias: true, allowIntegral: true });
+    if (!transitionResult.ok) {
+      return { ok: false, reason: "invalidTransition", message: transitionResult.message || "" };
+    }
+    if (!initialExpr.trim()) {
+      return { ok: false, reason: "missingInitialState" };
+    }
+    const initialResult = validateExpr(initialExpr, "initial");
+    if (!initialResult.ok) {
+      return { ok: false, reason: "invalidInitialState", message: initialResult.message || "" };
+    }
+    return { ok: true };
+  }
+
+  if (hasInputWidgetBinding(node)) {
+    return { ok: true };
+  }
+  if (!valueExpr.trim()) {
+    return { ok: false, reason: node.shape === "diamond" ? "missingValue" : "missingBehavior" };
+  }
+  const result = validateExpr(valueExpr, "value");
+  if (!result.ok) {
+    return { ok: false, reason: node.shape === "diamond" ? "invalidValue" : "invalidBehavior", message: result.message || "" };
+  }
+  return { ok: true };
+}
+
+function invalidDefinedNodes() {
+  return graph.nodes
+    .map((node) => ({ node, issue: validateNodeDefinition(node) }))
+    .filter((entry) => !entry.issue.ok);
+}
+
+function nodeDefinitionIssueText(issue) {
+  if (!issue || issue.ok) {
+    return "";
+  }
+  if (issue.reason === "draft") {
+    return t("error.nodeDefinition.draft");
+  }
+  if (issue.reason === "missingBehavior") {
+    return t("error.nodeDefinition.missingBehavior");
+  }
+  if (issue.reason === "invalidBehavior") {
+    return t("error.nodeDefinition.invalidBehavior", { reason: localizeExpressionErrorMessage(issue.message || "") });
+  }
+  if (issue.reason === "missingValue") {
+    return t("error.nodeDefinition.missingValue");
+  }
+  if (issue.reason === "invalidValue") {
+    return t("error.nodeDefinition.invalidValue", { reason: localizeExpressionErrorMessage(issue.message || "") });
+  }
+  if (issue.reason === "missingTransition") {
+    return t("error.nodeDefinition.missingTransition");
+  }
+  if (issue.reason === "invalidTransition") {
+    return t("error.nodeDefinition.invalidTransition", { reason: localizeExpressionErrorMessage(issue.message || "") });
+  }
+  if (issue.reason === "missingInitialState") {
+    return t("error.nodeDefinition.missingInitialState");
+  }
+  if (issue.reason === "invalidInitialState") {
+    return t("error.nodeDefinition.invalidInitialState", { reason: localizeExpressionErrorMessage(issue.message || "") });
+  }
+  if (issue.reason === "missingSubmodelPath") {
+    return t("error.nodeDefinition.missingSubmodelPath");
+  }
+  if (issue.reason === "invalidSubmodelPath") {
+    return t("error.nodeDefinition.invalidSubmodelPath", { reason: issue.message || "" });
+  }
+  return t("error.evalReason.runtime");
+}
+
+const localFunctionsCoreHelpers = globalThis.STGraphXLocalFunctionsCore?.createLocalFunctionsCoreHelpers({
+  t,
+  getGraph: () => graph,
+  sanitizeDefinition: (definition) => runtimeShared.sanitizeLocalFunctionDefinition(definition),
+  semantics,
+  localizeExpressionErrorMessage,
+});
+
+if (!localFunctionsCoreHelpers) {
+  throw new Error("STGraphX local functions core helpers are unavailable");
+}
+
+function ensureLocalFunctions(model = graph) {
+  return localFunctionsCoreHelpers.ensureLocalFunctions(model);
+}
+
+function sanitizeLocalFunctionName(name) {
+  return localFunctionsCoreHelpers.sanitizeLocalFunctionName(name);
+}
+
+function sanitizeLocalFunctionParams(params) {
+  return localFunctionsCoreHelpers.sanitizeLocalFunctionParams(params);
+}
+
+function sanitizeLocalFunctionDefinition(definition = {}) {
+  return localFunctionsCoreHelpers.sanitizeLocalFunctionDefinition(definition);
+}
+
+function sanitizeLocalFunctions(model = graph) {
+  return localFunctionsCoreHelpers.sanitizeLocalFunctions(model);
+}
+
+function localFunctionMapForModel(model = graph) {
+  return localFunctionsCoreHelpers.localFunctionMapForModel(model);
+}
+
+function localFunctionNamesForModel(model = graph) {
+  return localFunctionsCoreHelpers.localFunctionNamesForModel(model);
+}
+
+function localFunctionSignature(definition) {
+  return localFunctionsCoreHelpers.localFunctionSignature(definition);
+}
+
+function validateLocalFunctions(definitions, options = {}) {
+  return localFunctionsCoreHelpers.validateLocalFunctions(definitions, options);
+}
+
+function localFunctionsForSemantics(model = graph) {
+  return sanitizeLocalFunctions(model);
+}
+
+function collectExpressionIdentifierReferences(expression) {
+  return modelAnalysisCoreHelpers.collectExpressionIdentifierReferences(expression);
+}
+
+function incomingEdgesForNode(nodeId, model = graph) {
+  return modelAnalysisCoreHelpers.incomingEdgesForNode(nodeId, model);
+}
+
+function outgoingEdgesForNode(nodeId, model = graph) {
+  return modelAnalysisCoreHelpers.outgoingEdgesForNode(nodeId, model);
+}
+
+function pureTimeConfigIssue(execution = graph.execution) {
+  return modelAnalysisCoreHelpers.pureTimeConfigIssue(execution);
+}
+
+function pureTimedDelayIssue(execution = graph.execution) {
+  return modelAnalysisCoreHelpers.pureTimedDelayIssue(execution);
+}
+
+function expressionReferencesForAnalysis(node, fieldKey = "value") {
+  return modelAnalysisCoreHelpers.expressionReferencesForAnalysis(node, fieldKey);
+}
+
+function nodeIsImplicitlyReferenced(targetNode, model = graph) {
+  return modelAnalysisCoreHelpers.nodeIsImplicitlyReferenced(targetNode, model);
+}
+
+function submodelBindingReferences(node) {
+  return modelAnalysisCoreHelpers.submodelBindingReferences(node);
+}
+
+function detectNonStateCycles(model = graph) {
+  return modelAnalysisCoreHelpers.detectNonStateCycles(model);
+}
+
+function stateTransitionPreviewForAnalysis(node, previewState) {
+  return modelAnalysisCoreHelpers.stateTransitionPreviewForAnalysis(node, previewState);
+}
+
+function widgetDisplayName(widget) {
+  if (!widget) {
+    return t("analysis.target.widget", { name: "?" });
+  }
+  const typeLabel = widget.type === "xychart"
+    ? t("panel.widgetChart")
+    : widget.type === "table"
+      ? t("panel.widgetTable")
+      : widget.type === "matrix"
+        ? t("panel.widgetMatrix")
+        : widget.type === "slider"
+          ? t("panel.widgetSlider")
+          : widget.type === "numeric"
+            ? t("panel.widgetNumeric")
+          : widget.type === "button"
+            ? t("panel.widgetButton")
+            : widget.type === "select"
+              ? t("panel.widgetSelect")
+              : widget.type === "led"
+                ? t("panel.widgetLed")
+                : widget.type === "text"
+                  ? t("panel.widgetText")
+                  : widget.type;
+  const suffix = widget.customTitle ? `: ${widget.customTitle}` : ` #${widget.id}`;
+  return `${typeLabel}${suffix}`;
+}
+
+const modelAnalysisCoreHelpers = globalThis.STGraphXModelAnalysisCore?.createModelAnalysisCoreHelpers({
+  t,
+  getGraph: () => graph,
+  isSubmodelNode,
+  isStateNode,
+  isAlgebraicNode,
+  isDraftNode,
+  accessibleAgentFieldAliasNames,
+  buildNodeNameMap,
+  getNodeById,
+  getModelNodeById,
+  globalParameterNodesForModel,
+  isGlobalParameterNode,
+  validateNodeDefinition,
+  nodeDefinitionIssueText,
+  localizeExpressionErrorMessage,
+  localFunctionsForSemantics,
+  semantics,
+  nodePropertyAccessForContext,
+  addTensorValues,
+  scaleTensorValue,
+  getExpressionPreviewInitializationState,
+  describeExpressionPreviewShape,
+  canBindButtonToNode,
+  canBindSliderToNode,
+  widgetDisplayName,
+  unitAnalysis: globalThis.STGraphXUnitAnalysisCore,
+  parseExpressionAst: semantics.parseExpressionAst,
+});
+
+if (!modelAnalysisCoreHelpers) {
+  throw new Error("STGraphX model analysis core helpers are unavailable");
+}
+
+const feedbackLoopCoreHelpers = globalThis.STGraphXFeedbackLoopCore?.createFeedbackLoopCoreHelpers({
+  getGraph: () => graph,
+});
+
+if (!feedbackLoopCoreHelpers) {
+  throw new Error("STGraphX feedback loop helpers are unavailable");
+}
+
+const watchDebuggerCoreHelpers = globalThis.STGraphXWatchDebuggerCore?.createWatchDebuggerCoreHelpers({
+  t,
+  getGraph: () => graph,
+  getNodeByName,
+  isStateNode,
+  buildExecutionGlobals,
+  localFunctionsForSemantics,
+  semantics,
+  localizeExpressionErrorMessage,
+  summarizeWatchValue: (value, error) => formatWatchValue(value, error),
+});
+
+if (!watchDebuggerCoreHelpers) {
+  throw new Error("STGraphX watch debugger core helpers are unavailable");
+}
+
+function ensureDebugConfig(model = graph) {
+  return watchDebuggerCoreHelpers.ensureDebugConfig(model);
+}
+
+function sanitizeDebugConfig(model = graph) {
+  return watchDebuggerCoreHelpers.sanitizeDebugConfig(model);
+}
+
+function isAnalysisFocusActive(targetType, targetId) {
+  const focus = ui.analysisFocus;
+  if (!focus || focus.type !== targetType || focus.id !== targetId) {
+    return false;
+  }
+  if (focus.expiresAt <= Date.now()) {
+    ui.analysisFocus = null;
+    return false;
+  }
+  return true;
+}
+
+function setAnalysisFocus(target) {
+  if (!target?.type || target.id == null) {
+    ui.analysisFocus = null;
+    return;
+  }
+  ui.analysisFocus = {
+    type: target.type,
+    id: target.id,
+    expiresAt: Date.now() + 1800,
+  };
+  window.setTimeout(() => {
+    if (!ui.analysisFocus) {
+      return;
+    }
+    if (ui.analysisFocus.type === target.type && ui.analysisFocus.id === target.id && ui.analysisFocus.expiresAt <= Date.now()) {
+      ui.analysisFocus = null;
+      render();
+    }
+  }, 1850);
+}
+
+function isFeedbackLoopFocusActive(targetType, targetId) {
+  const focus = ui.feedbackLoopFocus;
+  if (!focus) {
+    return false;
+  }
+  return targetType === "node" ? focus.nodeIds.has(targetId) : focus.edgeIds.has(targetId);
+}
+
+function clearFeedbackLoopFocus() {
+  ui.feedbackLoopFocus = null;
+  renderFeedbackLoops();
+  render();
+}
+
+function selectFeedbackLoop(loop) {
+  ui.feedbackLoopSelection = {
+    nodeIds: [...loop.nodeIds],
+    edgeIds: [...loop.edgeIds],
+  };
+  renderFeedbackLoops();
+}
+
+function showFeedbackLoopFocus() {
+  const loop = ui.feedbackLoopSelection;
+  if (!loop) {
+    return;
+  }
+  ui.feedbackLoopFocus = {
+    nodeIds: new Set(loop.nodeIds),
+    edgeIds: new Set(loop.edgeIds),
+  };
+  setNodeSelection(loop.nodeIds);
+  renderFeedbackLoops();
+  render();
+}
+
+function renderFeedbackLoops() {
+  if (!feedbackLoopsSummary || !feedbackLoopsContent) {
+    return;
+  }
+  const { loops, truncated } = feedbackLoopCoreHelpers.findFeedbackLoops();
+  feedbackLoopsSummary.textContent = truncated
+    ? t("feedbackLoops.summaryTruncated", { count: loops.length })
+    : t("feedbackLoops.summary", { count: loops.length });
+  feedbackLoopsContent.innerHTML = "";
+  if (feedbackLoopsShowFocusBtn) {
+    feedbackLoopsShowFocusBtn.disabled = !ui.feedbackLoopSelection;
+  }
+  if (!loops.length) {
+    const empty = document.createElement("div");
+    empty.className = "feedback-loops-empty";
+    empty.textContent = t("feedbackLoops.empty");
+    feedbackLoopsContent.appendChild(empty);
+    return;
+  }
+  const selectPrompt = document.createElement("div");
+  selectPrompt.className = "feedback-loops-select-prompt";
+  selectPrompt.textContent = t("feedbackLoops.selectPrompt");
+  feedbackLoopsContent.appendChild(selectPrompt);
+  loops.forEach((loop) => {
+    const item = document.createElement("label");
+    item.className = `feedback-loop-item ${loop.sign}`;
+    const active = ui.feedbackLoopSelection
+      && loop.nodeIds.length === ui.feedbackLoopSelection.nodeIds.length
+      && loop.edgeIds.length === ui.feedbackLoopSelection.edgeIds.length
+      && loop.nodeIds.every((id) => ui.feedbackLoopSelection.nodeIds.includes(id))
+      && loop.edgeIds.every((id) => ui.feedbackLoopSelection.edgeIds.includes(id));
+    item.classList.toggle("active", Boolean(active));
+    const input = document.createElement("input");
+    input.type = "radio";
+    input.name = "feedbackLoopSelection";
+    input.checked = Boolean(active);
+    input.addEventListener("change", () => selectFeedbackLoop(loop));
+    const details = document.createElement("div");
+    details.className = "feedback-loop-details";
+    const path = document.createElement("div");
+    path.className = "feedback-loop-path";
+    path.textContent = [...loop.nodeNames, loop.nodeNames[0]].join(" → ");
+    const sign = document.createElement("div");
+    sign.className = "feedback-loop-sign";
+    sign.textContent = t(`feedbackLoops.${loop.sign}`);
+    details.append(path, sign);
+    item.append(input, details);
+    feedbackLoopsContent.appendChild(item);
+  });
+}
+
+function openFeedbackLoops() {
+  if (!feedbackLoopsModal) {
+    return;
+  }
+  renderFeedbackLoops();
+  feedbackLoopsModal.classList.remove("hidden");
+}
+
+function closeFeedbackLoops() {
+  feedbackLoopsModal?.classList.add("hidden");
+  clearFeedbackLoopFocus();
+}
+
+function sensitivityRangeForNode(node) {
+  const current = Number(node?.externalValueEnabled ? node.externalValue : node?.computedValue);
+  if (!Number.isFinite(current) || current === 0) return { min: -1, max: 1 };
+  const delta = Math.abs(current) * 0.2;
+  return { min: current - delta, max: current + delta };
+}
+
+function formatSensitivityInputValue(value) {
+  if (!Number.isFinite(Number(value))) return "";
+  // Avoid exposing binary floating-point artifacts in numeric input fields.
+  return String(Number(Number(value).toPrecision(12)));
+}
+
+function setSensitivityStatus(message = "", isError = false) {
+  if (!sensitivityAnalysisStatus) return;
+  sensitivityAnalysisStatus.textContent = String(message ?? "");
+  sensitivityAnalysisStatus.classList.toggle("error", Boolean(isError));
+}
+
+function setSensitivityAnalysisRunning(running) {
+  ui.sensitivityRunning = Boolean(running);
+  if (!running) ui.sensitivityStopRequested = false;
+  if (sensitivityRunBtn) {
+    sensitivityRunBtn.disabled = false;
+    sensitivityRunBtn.textContent = t(running ? "sensitivity.stop" : "sensitivity.run");
+  }
+  [sensitivityInputSelect, sensitivityOutputSelect, sensitivityMinInput, sensitivityMaxInput, sensitivitySamplesInput]
+    .forEach((control) => {
+      if (control) control.disabled = Boolean(running);
+    });
+  if (sensitivityExportBtn) sensitivityExportBtn.disabled = running || !ui.sensitivityAnalysis?.rows?.length;
+  if (sensitivityImageExportBtn) sensitivityImageExportBtn.disabled = running || !sensitivityAnalysisChart?.querySelector("svg");
+  updateExecutionProgress();
+}
+
+function requestSensitivityAnalysisStop() {
+  if (!ui.sensitivityRunning) return;
+  ui.sensitivityStopRequested = true;
+  if (sensitivityRunBtn) sensitivityRunBtn.disabled = true;
+  setSensitivityStatus(t("sensitivity.stopping"));
+}
+
+function renderSensitivityChart(rows, inputName, outputName) {
+  if (!sensitivityAnalysisChart) return;
+  sensitivityAnalysisChart.innerHTML = "";
+  const points = (rows || []).filter((row) => !row.error
+    && Number.isFinite(Number(row.inputValue))
+    && Number.isFinite(Number(row.outputValue)));
+  if (!points.length) {
+    sensitivityAnalysisChart.classList.add("hidden");
+    if (sensitivityImageExportBtn) sensitivityImageExportBtn.disabled = true;
+    return;
+  }
+  sensitivityAnalysisChart.classList.remove("hidden");
+  const width = 640;
+  const height = 300;
+  const margin = { top: 22, right: 24, bottom: 48, left: 64 };
+  let minX = Math.min(...points.map((point) => Number(point.inputValue)));
+  let maxX = Math.max(...points.map((point) => Number(point.inputValue)));
+  let minY = Math.min(...points.map((point) => Number(point.outputValue)));
+  let maxY = Math.max(...points.map((point) => Number(point.outputValue)));
+  if (minX === maxX) { minX -= 1; maxX += 1; }
+  if (minY === maxY) { minY -= 1; maxY += 1; }
+  const x = (value) => margin.left + ((Number(value) - minX) / (maxX - minX)) * (width - margin.left - margin.right);
+  const y = (value) => height - margin.bottom - ((Number(value) - minY) / (maxY - minY)) * (height - margin.top - margin.bottom);
+  const svg = document.createElementNS(SVG_NS, "svg");
+  svg.setAttribute("viewBox", `0 0 ${width} ${height}`);
+  svg.setAttribute("role", "img");
+  svg.setAttribute("aria-label", t("sensitivity.chart.aria", { input: inputName, output: outputName }));
+  const add = (tag, attributes = {}, text = "") => {
+    const element = document.createElementNS(SVG_NS, tag);
+    Object.entries(attributes).forEach(([key, value]) => element.setAttribute(key, String(value)));
+    if (text) element.textContent = text;
+    svg.appendChild(element);
+    return element;
+  };
+  for (let index = 0; index <= 4; index += 1) {
+    const value = minY + ((maxY - minY) * index) / 4;
+    const chartY = y(value);
+    add("line", { x1: margin.left, x2: width - margin.right, y1: chartY, y2: chartY, class: "sensitivity-chart-grid" });
+    add("text", { x: margin.left - 10, y: chartY + 4, class: "sensitivity-chart-tick", "text-anchor": "end" }, formatNumberValue(value));
+  }
+  add("line", { x1: margin.left, x2: width - margin.right, y1: height - margin.bottom, y2: height - margin.bottom, class: "sensitivity-chart-axis" });
+  add("line", { x1: margin.left, x2: margin.left, y1: margin.top, y2: height - margin.bottom, class: "sensitivity-chart-axis" });
+  [minX, (minX + maxX) / 2, maxX].forEach((value) => {
+    const chartX = x(value);
+    add("line", { x1: chartX, x2: chartX, y1: height - margin.bottom, y2: height - margin.bottom + 5, class: "sensitivity-chart-axis" });
+    add("text", { x: chartX, y: height - margin.bottom + 20, class: "sensitivity-chart-tick", "text-anchor": "middle" }, formatNumberValue(value));
+  });
+  add("path", {
+    d: points.slice().sort((left, right) => Number(left.inputValue) - Number(right.inputValue))
+      .map((point, index) => `${index ? "L" : "M"}${x(point.inputValue)},${y(point.outputValue)}`).join(" "),
+    class: "sensitivity-chart-line",
+  });
+  points.forEach((point) => {
+    const circle = add("circle", { cx: x(point.inputValue), cy: y(point.outputValue), r: 3.5, class: "sensitivity-chart-point" });
+    const title = document.createElementNS(SVG_NS, "title");
+    title.textContent = `${inputName}: ${formatNumberValue(Number(point.inputValue))}; ${outputName}: ${formatNumberValue(Number(point.outputValue))}`;
+    circle.appendChild(title);
+  });
+  add("text", { x: (margin.left + width - margin.right) / 2, y: height - 10, class: "sensitivity-chart-label", "text-anchor": "middle" }, inputName);
+  add("text", { x: 16, y: (margin.top + height - margin.bottom) / 2, class: "sensitivity-chart-label", "text-anchor": "middle", transform: `rotate(-90 16 ${(margin.top + height - margin.bottom) / 2})` }, outputName);
+  sensitivityAnalysisChart.appendChild(svg);
+  if (sensitivityImageExportBtn) sensitivityImageExportBtn.disabled = false;
+}
+
+function sensitivityErrorText(error) {
+  if (error === "nonNumeric") return t("sensitivity.error.nonNumeric");
+  if (["selection", "range", "time"].includes(error)) return t(`sensitivity.error.${error}`);
+  return evalReasonText(error);
+}
+
+function renderSensitivityResults(rows, inputName, outputName) {
+  if (!sensitivityAnalysisResults) return;
+  sensitivityAnalysisResults.innerHTML = "";
+  if (!rows?.length) {
+    sensitivityAnalysisResults.textContent = t("sensitivity.empty");
+    renderSensitivityChart();
+    if (sensitivityExportBtn) sensitivityExportBtn.disabled = true;
+    if (sensitivityImageExportBtn) sensitivityImageExportBtn.disabled = true;
+    return;
+  }
+  const table = document.createElement("table");
+  const headerRow = document.createElement("tr");
+  [t("sensitivity.results.input", { name: inputName }), t("sensitivity.results.output", { name: outputName })].forEach((label) => {
+    const cell = document.createElement("th");
+    cell.textContent = label;
+    headerRow.appendChild(cell);
+  });
+  const header = document.createElement("thead");
+  header.appendChild(headerRow);
+  table.appendChild(header);
+  const body = document.createElement("tbody");
+  rows.forEach((row) => {
+    const tableRow = document.createElement("tr");
+    const inputCell = document.createElement("td");
+    inputCell.textContent = formatNumberValue(row.inputValue);
+    const outputCell = document.createElement("td");
+    outputCell.textContent = row.error ? sensitivityErrorText(row.error) : formatNumberValue(row.outputValue);
+    if (row.error) outputCell.classList.add("error");
+    tableRow.append(inputCell, outputCell);
+    body.appendChild(tableRow);
+  });
+  table.appendChild(body);
+  sensitivityAnalysisResults.appendChild(table);
+  renderSensitivityChart(rows, inputName, outputName);
+  if (sensitivityExportBtn) sensitivityExportBtn.disabled = false;
+}
+
+function populateSensitivityChoices({ preserveSelection = true } = {}) {
+  if (!sensitivityAnalysisCore || !sensitivityInputSelect || !sensitivityOutputSelect) return;
+  const previousInput = preserveSelection ? sensitivityInputSelect.value : "";
+  const previousOutput = preserveSelection ? sensitivityOutputSelect.value : "";
+  const populate = (select, nodes, previous) => {
+    select.innerHTML = "";
+    const empty = document.createElement("option");
+    empty.value = "";
+    empty.textContent = t("sensitivity.choose");
+    select.appendChild(empty);
+    nodes.slice().sort((left, right) => String(left.name).localeCompare(String(right.name), undefined, { sensitivity: "base" })).forEach((node) => {
+      const option = document.createElement("option");
+      option.value = node.name;
+      option.textContent = node.name;
+      select.appendChild(option);
+    });
+    if (nodes.some((node) => node.name === previous)) select.value = previous;
+    else if (nodes.length === 1) select.value = nodes[0].name;
+  };
+  const inputs = sensitivityAnalysisCore.sensitivityInputs(graph);
+  const outputs = sensitivityAnalysisCore.sensitivityOutputs(graph);
+  populate(sensitivityInputSelect, inputs, previousInput);
+  populate(sensitivityOutputSelect, outputs, previousOutput);
+  const selectedInput = inputs.find((node) => node.name === sensitivityInputSelect.value);
+  if (selectedInput && !preserveSelection) {
+    const range = sensitivityRangeForNode(selectedInput);
+    sensitivityMinInput.value = formatSensitivityInputValue(range.min);
+    sensitivityMaxInput.value = formatSensitivityInputValue(range.max);
+  }
+}
+
+function updateSensitivityRangeFromSelection() {
+  const selected = sensitivityAnalysisCore?.sensitivityInputs(graph).find((node) => node.name === sensitivityInputSelect?.value);
+  if (!selected || !sensitivityMinInput || !sensitivityMaxInput) return;
+  const range = sensitivityRangeForNode(selected);
+  sensitivityMinInput.value = formatSensitivityInputValue(range.min);
+  sensitivityMaxInput.value = formatSensitivityInputValue(range.max);
+}
+
+function openSensitivityAnalysis() {
+  if (!sensitivityAnalysisModal) return;
+  applyWidgetDrivenNodeValues();
+  populateSensitivityChoices({ preserveSelection: false });
+  ui.sensitivityAnalysis = null;
+  setSensitivityStatus();
+  renderSensitivityResults();
+  sensitivityAnalysisModal.classList.remove("hidden");
+  window.setTimeout(() => sensitivityInputSelect?.focus(), 0);
+}
+
+function closeSensitivityAnalysis() {
+  sensitivityAnalysisModal?.classList.add("hidden");
+}
+
+function exportSensitivityAnalysis() {
+  const result = ui.sensitivityAnalysis;
+  if (!result?.rows?.length || !sensitivityAnalysisCore) return;
+  downloadTextFile("sensitivity-analysis.csv", sensitivityAnalysisCore.sensitivityCsv(result.rows, result.inputName, result.outputName), "text/csv;charset=utf-8");
+  setSensitivityStatus(t("sensitivity.exported"));
+}
+
+function exportSensitivityChart() {
+  const source = sensitivityAnalysisChart?.querySelector("svg");
+  if (!source) return;
+  const chart = source.cloneNode(true);
+  chart.setAttribute("xmlns", SVG_NS);
+  chart.setAttribute("width", "640");
+  chart.setAttribute("height", "300");
+  const rootStyle = getComputedStyle(document.documentElement);
+  const font = getComputedStyle(document.body).fontFamily;
+  const style = document.createElementNS(SVG_NS, "style");
+  style.textContent = [
+    `.sensitivity-chart-grid{stroke:${rootStyle.getPropertyValue("--line")};stroke-width:1}`,
+    `.sensitivity-chart-axis{stroke:${rootStyle.getPropertyValue("--muted")};stroke-width:1.25}`,
+    `.sensitivity-chart-line{fill:none;stroke:${rootStyle.getPropertyValue("--accent")};stroke-width:2.25}`,
+    `.sensitivity-chart-point{fill:#fff;stroke:${rootStyle.getPropertyValue("--accent")};stroke-width:2}`,
+    `.sensitivity-chart-tick{fill:${rootStyle.getPropertyValue("--muted")};font:12px ${font}}`,
+    `.sensitivity-chart-label{fill:${rootStyle.getPropertyValue("--text")};font:600 12px ${font}}`,
+  ].join("");
+  const background = document.createElementNS(SVG_NS, "rect");
+  background.setAttribute("x", "0");
+  background.setAttribute("y", "0");
+  background.setAttribute("width", "640");
+  background.setAttribute("height", "300");
+  background.setAttribute("fill", "#fff");
+  background.setAttribute("fill-opacity", "1");
+  chart.insertBefore(style, chart.firstChild);
+  chart.insertBefore(background, style);
+  downloadTextFile("sensitivity-analysis.svg", new XMLSerializer().serializeToString(chart), "image/svg+xml;charset=utf-8");
+  setSensitivityStatus(t("sensitivity.exportedImage"));
+}
+
+async function runSensitivityAnalysis() {
+  if (ui.sensitivityRunning) {
+    requestSensitivityAnalysisStop();
+    return;
+  }
+  if (!sensitivityAnalysisCore || isEditingUiLocked()) {
+    setSensitivityStatus(t("sensitivity.error.running"), true);
+    return;
+  }
+  const options = {
+    inputName: sensitivityInputSelect?.value || "",
+    outputName: sensitivityOutputSelect?.value || "",
+    min: sensitivityMinInput?.value,
+    max: sensitivityMaxInput?.value,
+    samples: sensitivitySamplesInput?.value,
+  };
+  if (!options.inputName || !options.outputName) {
+    setSensitivityStatus(t("sensitivity.error.selection"), true);
+    return;
+  }
+  if (!sensitivityAnalysisCore.sampleValues(options.min, options.max, options.samples)) {
+    setSensitivityStatus(t("sensitivity.error.range"), true);
+    return;
+  }
+  ui.sensitivityAnalysis = null;
+  renderSensitivityResults();
+  ui.sensitivityStopRequested = false;
+  ui.sensitivityProgressFraction = 0;
+  ui.sensitivityCompletedSamples = 0;
+  setSensitivityAnalysisRunning(true);
+  setSensitivityStatus(t("sensitivity.running"));
+  try {
+    if (!await prepareSubmodelsForExecution()) {
+      setSensitivityStatus(t("sensitivity.error.preparation"), true);
+      return;
+    }
+    applyWidgetDrivenNodeValues();
+    await new Promise((resolve) => window.requestAnimationFrame(resolve));
+    let lastSensitivityUiYield = performance.now();
+    const sampleCount = sensitivityAnalysisCore.sampleValues(options.min, options.max, options.samples).length;
+    const result = await sensitivityAnalysisCore.runSensitivityAsync(graph, {
+      ...options,
+      shouldCancel: () => ui.sensitivityStopRequested === true,
+      // Yield only often enough to keep the interface responsive; yielding on
+      // every few simulation steps makes otherwise fast analyses unusable.
+      shouldYield: () => performance.now() - lastSensitivityUiYield >= 50,
+      yieldToUi: () => new Promise((resolve) => window.requestAnimationFrame(() => {
+        lastSensitivityUiYield = performance.now();
+        resolve();
+      })),
+      yieldEverySteps: 64,
+      onProgress: ({ completed, total }) => {
+        if (!(Number(total) > 0) || sampleCount <= 0) return;
+        const completedSamples = Math.min(
+          sampleCount,
+          Math.floor((Number(completed) * sampleCount) / Number(total)),
+        );
+        if (completedSamples === ui.sensitivityCompletedSamples) return;
+        ui.sensitivityCompletedSamples = completedSamples;
+        ui.sensitivityProgressFraction = completedSamples / sampleCount;
+        updateExecutionProgress();
+      },
+    });
+    if (result.error === "cancelled") {
+      if (result.rows.length) {
+        ui.sensitivityAnalysis = { rows: result.rows, inputName: options.inputName, outputName: options.outputName };
+        renderSensitivityResults(result.rows, options.inputName, options.outputName);
+      }
+      setSensitivityStatus(t("sensitivity.interrupted"));
+      return;
+    }
+    if (!result.ok) {
+      setSensitivityStatus(t(`sensitivity.error.${result.error}`), true);
+      return;
+    }
+    ui.sensitivityAnalysis = { rows: result.rows, inputName: options.inputName, outputName: options.outputName };
+    renderSensitivityResults(result.rows, options.inputName, options.outputName);
+    setSensitivityStatus(t("sensitivity.summary", { count: result.rows.length }));
+  } catch (_err) {
+    setSensitivityStatus(t("error.evalReason.runtime"), true);
+  } finally {
+    setSensitivityAnalysisRunning(false);
+    ui.sensitivityProgressFraction = 0;
+    ui.sensitivityCompletedSamples = 0;
+    updateExecutionProgress();
+  }
+}
+
+function analyzeModelStaticIssues() {
+  graph.nodes.forEach((node) => {
+    delete node.unitAnalysisError;
+    delete node.analysisIssue;
+  });
+  const allIssues = modelAnalysisCoreHelpers.analyzeModelStaticIssues();
+  ui.modelAnalysisIssues = ui.checkUnits === false
+    ? allIssues.filter((issue) => ![
+      "analysis.issue.invalidUnit",
+      "analysis.issue.unitMismatch",
+      "analysis.issue.unitExpressionMismatch",
+    ].includes(issue.key))
+    : allIssues;
+  ui.modelAnalysisIssues.forEach((issue) => {
+    if (issue.target?.type !== "node" || !["error", "warning"].includes(issue.severity)) return;
+    const node = getNodeById(issue.target.id);
+    if (!node) return;
+    const previous = node.analysisIssue;
+    if (!previous || (issue.severity === "error" && previous.severity !== "error")) {
+      node.analysisIssue = { severity: issue.severity, message: issue.message };
+    }
+    if ([
+      "analysis.issue.invalidUnit",
+      "analysis.issue.unitMismatch",
+      "analysis.issue.unitExpressionMismatch",
+    ].includes(issue.key)) {
+      node.unitAnalysisError = issue.message;
+    }
+  });
+  return ui.modelAnalysisIssues;
+}
+
+function independentNodesForUnitAnalysis() {
+  const nodeNames = new Set(graph.nodes.map((node) => String(node?.name || "")).filter(Boolean));
+  return graph.nodes.filter((node) => {
+    if (isDraftNode(node) || isSubmodelNode(node)) return false;
+    const fieldKey = isStateNode(node) ? "initial" : "value";
+    const expression = fieldKey === "initial" ? node.initialStateExpression : node.valueExpression;
+    if (!String(expression || "").trim()) return false;
+    return ![...expressionReferencesForAnalysis(node, fieldKey)].some((name) => nodeNames.has(name));
+  });
+}
+
+function canDeclareNodeUnit(node) {
+  if (!node || isDraftNode(node) || isSubmodelNode(node)) return false;
+  if (node.shape === "diamond" || node.input) return true;
+  if (!isStateNode(node)) return false;
+  const nodeNames = new Set(graph.nodes.map((item) => String(item?.name || "")).filter(Boolean));
+  return ![...expressionReferencesForAnalysis(node, "initial")].some((name) => nodeNames.has(name));
+}
+
+function strictUnitExecutionIssue() {
+  if (!graph.execution.strictDefinitions || ui.checkUnits === false) return null;
+  const independentNodes = independentNodesForUnitAnalysis();
+  if (!independentNodes.length || independentNodes.some((node) => !String(node.unit || "").trim())) return null;
+  const issues = ui.modelAnalysisIssues || analyzeModelStaticIssues();
+  return issues.find((issue) => [
+    "analysis.issue.invalidUnit",
+    "analysis.issue.unitMismatch",
+    "analysis.issue.unitExpressionMismatch",
+  ].includes(issue.key)) || null;
+}
+
+function enforceStrictDefinitionsIfNeeded() {
+  if (!graph.execution.strictDefinitions) {
+    return true;
+  }
+  const invalidNodes = invalidDefinedNodes();
+  if (!invalidNodes.length) {
+    const unitIssue = strictUnitExecutionIssue();
+    if (!unitIssue) return true;
+    setStatusKey("error.strictUnitsBlocked", {
+      node: unitIssue.target?.name || "?",
+      reason: unitIssue.message,
+    });
+    render();
+    return false;
+  }
+  invalidNodes.forEach(({ node }) => {
+    node.computedValue = null;
+    node.computedError = "";
+    node.pendingStateValue = null;
+    node.pendingStateError = "";
+  });
+  const first = invalidNodes[0];
+  setStatusKey("error.strictDefinitionsBlocked", {
+    count: invalidNodes.length,
+    node: first.node.name,
+    reason: nodeDefinitionIssueText(first.issue),
+  });
+  render();
+  return false;
+}
+
+function clearStrictInvalidNodeValues() {
+  if (!graph.execution.strictDefinitions) {
+    return;
+  }
+  invalidDefinedNodes().forEach(({ node }) => {
+    node.computedValue = null;
+    node.computedError = "";
+    node.pendingStateValue = null;
+    node.pendingStateError = "";
+  });
+}
+
+function hasStrictExecutionBlock() {
+  return Boolean(graph.execution.strictDefinitions && (invalidDefinedNodes().length > 0 || strictUnitExecutionIssue()));
+}
+
+function selectedNodeForSidebar() {
+  if (ui.selectedNodes.size !== 1) {
+    return null;
+  }
+  const nodeId = [...ui.selectedNodes][0];
+  return getNodeById(nodeId) || null;
+}
+
+function expressionFieldMeta(fieldKey, node = selectedNodeForSidebar()) {
+  if (!node || isDraftNode(node)) {
+    return null;
+  }
+  if (fieldKey === "value") {
+    const title = node.shape === "diamond"
+      ? t("label.value")
+      : (isStateNode(node) ? t("label.stateTransition") : t("label.behaviorFunction"));
+    return {
+      key: "value",
+      title,
+      value: String(node.valueExpression ?? ""),
+      setValue: (nextValue) => {
+        node.valueExpression = String(nextValue ?? "");
+      },
+      inputEl: nodeValueExprInput,
+      statusEl: nodeValueExprStatus,
+    };
+  }
+  if (fieldKey === "initial" && isStateNode(node)) {
+    return {
+      key: "initial",
+      title: t("label.initialState"),
+      value: String(node.initialStateExpression ?? ""),
+      setValue: (nextValue) => {
+        node.initialStateExpression = String(nextValue ?? "");
+      },
+      inputEl: nodeInitialStateInput,
+      statusEl: nodeInitialStateStatus,
+    };
+  }
+  return null;
+}
+
+function expressionEditorNodeTypeLabel(node) {
+  if (!node) {
+    return "";
+  }
+  if (node.shape === "diamond") {
+    return t("expr.editor.nodeType.parameter");
+  }
+  if (isStateNode(node)) {
+    return t("expr.editor.nodeType.state");
+  }
+  return t("expr.editor.nodeType.algebraic");
+}
+
+function expressionEditorBaseTitleForNode(node) {
+  if (!node) {
+    return "";
+  }
+  return t("expr.editor.nodeTitle", {
+    name: String(node.name ?? ""),
+    type: expressionEditorNodeTypeLabel(node),
+  });
+}
+
+function expressionEditorMainFieldLabel(node) {
+  if (!node) {
+    return "";
+  }
+  if (isStateNode(node)) {
+    return t("label.stateTransition");
+  }
+  return node.shape === "diamond" ? t("label.value") : t("label.behaviorFunction");
+}
+
+function expressionEditorMainFieldTooltipKey(node) {
+  return nodeExpressionTooltipKey(node);
+}
+
+function expressionEditorInitialFieldTooltipKey() {
+  return "tooltip.node.initialState";
+}
+
+function syncExpressionEditorFieldTooltips(node) {
+  const mainTooltip = t(expressionEditorMainFieldTooltipKey(node));
+  const initialTooltip = t(expressionEditorInitialFieldTooltipKey());
+  setTooltipText(expressionStateTransitionLabel, mainTooltip);
+  setTooltipText(expressionEditorTextarea, mainTooltip);
+  setTooltipText(expressionStateInitialInput, initialTooltip);
+}
+
+function syncExpressionEditorHeadLabel(node) {
+  if (!expressionStateTransitionLabel) {
+    return;
+  }
+  expressionStateTransitionLabel.textContent = expressionEditorMainFieldLabel(node);
+  syncExpressionEditorFieldTooltips(node);
+}
+
+function expressionEditorMeta() {
+  if (!ui.expressionEditor) {
+    return null;
+  }
+  const node = getNodeById(ui.expressionEditor.nodeId);
+  return expressionFieldMeta(currentExpressionEditorFieldKey(), node);
+}
+
+function currentExpressionEditorFieldKey() {
+  if (!ui.expressionEditor) {
+    return "value";
+  }
+  if (ui.expressionEditor.activeEditor === "initial" && !expressionStateInitialBlock?.classList.contains("hidden")) {
+    return "initial";
+  }
+  return ui.expressionEditor.fieldKey;
+}
+
+function activeExpressionEditorInput() {
+  return currentExpressionEditorFieldKey() === "initial" ? expressionStateInitialInput : expressionEditorTextarea;
+}
+
+function activeExpressionEditorHighlight() {
+  return currentExpressionEditorFieldKey() === "initial" ? expressionStateInitialHighlight : expressionEditorHighlight;
+}
+
+function setActiveExpressionEditor(editorKey) {
+  if (!ui.expressionEditor) {
+    return;
+  }
+  ui.expressionEditor.activeEditor = editorKey === "initial" ? "initial" : "main";
+  syncExpressionEditorFieldTooltips(getNodeById(ui.expressionEditor.nodeId));
+  renderExpressionHighlight();
+  renderExpressionAutocomplete();
+}
+
+function effectiveExpressionEditorFieldForNode(node, preferredFieldKey) {
+  if (!node) {
+    return null;
+  }
+  if (expressionFieldMeta(preferredFieldKey, node)) {
+    return preferredFieldKey;
+  }
+  if (preferredFieldKey !== "value" && expressionFieldMeta("value", node)) {
+    return "value";
+  }
+  return null;
+}
+
+function syncExpressionEditorToSelectedNode() {
+  if (!ui.expressionEditor || ui.expressionEditor.fieldKey === "__custom__" || !expressionEditorTextarea || !expressionEditorTitle) {
+    return;
+  }
+  const selectedNode = selectedNodeForSidebar();
+  if (!selectedNode) {
+    return;
+  }
+  const nextFieldKey = effectiveExpressionEditorFieldForNode(selectedNode, ui.expressionEditor.fieldKey);
+  if (!nextFieldKey) {
+    return;
+  }
+  if (ui.expressionEditor.nodeId === selectedNode.id && ui.expressionEditor.fieldKey === nextFieldKey) {
+    return;
+  }
+  const meta = expressionFieldMeta(nextFieldKey, selectedNode);
+  if (!meta) {
+    return;
+  }
+  ui.expressionEditor.nodeId = selectedNode.id;
+  ui.expressionEditor.fieldKey = meta.key;
+  ui.expressionEditor.baseTitle = expressionEditorBaseTitleForNode(selectedNode);
+  ui.expressionEditor.initialValue = meta.value;
+  ui.expressionEditor.secondaryInitialValue = isStateNode(selectedNode)
+    ? String(selectedNode.initialStateExpression ?? "")
+    : "";
+  ui.expressionEditor.syntaxOk = true;
+  expressionEditorTitle.textContent = ui.expressionEditor.baseTitle;
+  expressionEditorTextarea.value = meta.value;
+  if (expressionStateInitialInput) {
+    expressionStateInitialInput.value = isStateNode(selectedNode) ? String(selectedNode.initialStateExpression ?? "") : "";
+  }
+  if (expressionDescriptionInput) {
+    expressionDescriptionInput.value = getNodeDescription(selectedNode);
+  }
+  if (expressionFormulaNotesInput) {
+    expressionFormulaNotesInput.value = getNodeFormulaNotes(selectedNode);
+  }
+  syncExpressionEditorFormulaNotes();
+  refreshExpressionEditorValidation();
+}
+
+function syncExpressionEditorNodeIdentity(node) {
+  const visible = Boolean(
+    node
+    && ui.expressionEditor?.fieldKey !== "__custom__"
+    && !isDraftNode(node)
+    && !isSubmodelNode(node),
+  );
+  expressionNodeIdentity?.classList.toggle("hidden", !visible);
+  expressionNodeIdentity?.classList.toggle("state-node-identity", Boolean(visible && isStateNode(node)));
+  if (!visible) {
+    return;
+  }
+
+  const editable = !isEditingUiLocked();
+  if (expressionNodeNameInput && document.activeElement !== expressionNodeNameInput) {
+    expressionNodeNameInput.value = String(node.name ?? "");
+  }
+  if (expressionNodeShapeInput) {
+    expressionNodeShapeInput.value = ["ellipse", "rect", "diamond"].includes(node.shape)
+      ? node.shape
+      : "ellipse";
+    expressionNodeShapeInput.disabled = !editable;
+    Array.from(expressionNodeShapeInput.options).forEach((option) => {
+      option.title = t(`tooltip.node.type.${option.value}`);
+    });
+    setTooltipText(expressionNodeShapeInput, t(`tooltip.node.type.${expressionNodeShapeInput.value}`));
+  }
+
+  const canSetInput = canMarkNodeAsInput(node);
+  const canSetGlobal = canMarkNodeAsGlobal(node);
+  expressionNodeInputLabel?.classList.toggle("hidden", !canSetInput);
+  expressionNodeGlobalLabel?.classList.toggle("hidden", !canSetGlobal);
+  expressionNodeOutputLabel?.classList.remove("hidden");
+  if (expressionNodeInputInput) {
+    expressionNodeInputInput.checked = Boolean(node.input);
+    expressionNodeInputInput.disabled = !editable || !canSetInput;
+  }
+  if (expressionNodeOutputInput) {
+    expressionNodeOutputInput.checked = Boolean(node.output);
+    expressionNodeOutputInput.disabled = !editable;
+  }
+  if (expressionNodeGlobalInput) {
+    expressionNodeGlobalInput.checked = Boolean(node.global);
+    expressionNodeGlobalInput.disabled = !editable || !canSetGlobal;
+  }
+
+  const declaredUnit = String(node.unit ?? "").trim();
+  const unitMayBeDeclared = canDeclareNodeUnit(node);
+  expressionNodeUnitLabel?.classList.toggle("hidden", false);
+  if (expressionNodeUnitInput) {
+    if (document.activeElement !== expressionNodeUnitInput) {
+      expressionNodeUnitInput.value = declaredUnit || (unitMayBeDeclared ? "" : String(node.inferredUnit ?? ""));
+    }
+    expressionNodeUnitInput.readOnly = !declaredUnit && Boolean(node.inferredUnit) && !unitMayBeDeclared;
+    expressionNodeUnitInput.disabled = !editable;
+    expressionNodeUnitInput.classList.toggle("inferred-unit", expressionNodeUnitInput.readOnly);
+  }
+}
+
+function syncExpressionEditorFormulaNotes() {
+  const node = ui.expressionEditor?.nodeId ? getNodeById(ui.expressionEditor.nodeId) : null;
+  const visible = Boolean(node && ui.expressionEditor?.fieldKey !== "__custom__");
+  const stateVisible = Boolean(visible && node && isStateNode(node));
+  const widgetControlled = Boolean(visible && isWidgetControlledExpressionNode(node));
+  if (!stateVisible && ui.expressionEditor) {
+    ui.expressionEditor.activeEditor = "main";
+  }
+  expressionStateInitialBlock?.classList.toggle("hidden", !stateVisible);
+  expressionStateTransitionHead?.classList.toggle("hidden", !visible);
+  if (expressionWidgetBindingInfo) {
+    expressionWidgetBindingInfo.classList.toggle("hidden", !widgetControlled);
+    expressionWidgetBindingInfo.classList.remove("ok", "error");
+    expressionWidgetBindingInfo.textContent = widgetControlled ? t("node.widgetControlled") : "";
+  }
+  if (expressionEditorTextarea) {
+    setExplicitControlDisabled(
+      expressionEditorTextarea,
+      isEditingUiLocked() || (visible && widgetControlled),
+    );
+  }
+  syncExpressionEditorHeadLabel(node);
+  if (expressionStateInitialInput) {
+    expressionStateInitialInput.value = stateVisible ? String(node.initialStateExpression ?? "") : "";
+    expressionStateInitialInput.disabled = !stateVisible || isEditingUiLocked();
+  }
+  hideExpressionStatus(expressionStateInitialStatus);
+  hideExpressionStatus(expressionStateTransitionStatus);
+  expressionDescriptionBox?.classList.toggle("hidden", !visible);
+  expressionFormulaNotesBox?.classList.toggle("hidden", !visible);
+  if (expressionDescriptionInput) {
+    expressionDescriptionInput.value = visible ? getNodeDescription(node) : "";
+    expressionDescriptionInput.disabled = !visible || isEditingUiLocked();
+  }
+  if (expressionFormulaNotesInput) {
+    expressionFormulaNotesInput.value = visible ? getNodeFormulaNotes(node) : "";
+    expressionFormulaNotesInput.disabled = !visible || isEditingUiLocked();
+  }
+  expressionEditorCard?.classList.toggle("state-node-editor", stateVisible);
+  expressionEditorMain?.classList.toggle("state-node-editor", stateVisible);
+  syncExpressionEditorNodeIdentity(node);
+}
+
+function expressionDocMap() {
+  const docs = window.GraphFunctions?.expressionDocs || globalThis.GraphFunctions?.expressionDocs;
+  if (!docs) {
+    return {};
+  }
+  const out = {};
+  const appendEntries = (entries) => {
+    Object.entries(entries || {}).forEach(([name, entry]) => {
+      out[name] = {
+        ...entry,
+        name,
+        description: t(entry.descriptionKey),
+      };
+    });
+  };
+  appendEntries(docs.variables);
+  appendEntries(docs.functions);
+  return out;
+}
+
+function globalHelpEntries() {
+  const docs = expressionDocMap();
+  return Object.keys(docs).map((name) => ({ name, ...docs[name] }));
+}
+
+function helpGroupLabel(kind) {
+  if (kind === "agent") {
+    return t("help.group.agent");
+  }
+  if (kind === "variable") {
+    return t("help.group.variables");
+  }
+  if (kind === "array") {
+    return t("help.group.array");
+  }
+  if (kind === "probability") {
+    return t("help.group.probability");
+  }
+  if (kind === "math") {
+    return t("help.group.math");
+  }
+  return t("help.group.functions");
+}
+
+function renderFunctionsHelp() {
+  if (!functionsHelpContent) {
+    return;
+  }
+  functionsHelpContent.innerHTML = "";
+  const filter = String(functionsHelpSearch?.value || "").trim().toLocaleLowerCase();
+  const typeFilter = String(functionsHelpTypeFilter?.value || "").trim();
+  const groups = new Map();
+  globalHelpEntries().filter((entry) => {
+    const kind = entry.helpSection || entry.kind || "function";
+    return (!filter || entry.name.toLocaleLowerCase().includes(filter))
+      && (!typeFilter || kind === typeFilter);
+  }).forEach((entry) => {
+    const key = entry.helpSection || entry.kind || "function";
+    if (!groups.has(key)) {
+      groups.set(key, []);
+    }
+    groups.get(key).push(entry);
+  });
+
+  let visibleEntries = 0;
+  ["variable", "function", "array", "probability", "math", "agent"].forEach((kind) => {
+    const entries = (groups.get(kind) || []).slice().sort((left, right) => left.name.localeCompare(right.name));
+    if (!entries || !entries.length) {
+      return;
+    }
+    visibleEntries += entries.length;
+    const group = document.createElement("section");
+    group.className = "help-group";
+    const title = document.createElement("h4");
+    title.className = "help-group-title";
+    title.textContent = helpGroupLabel(kind);
+    group.appendChild(title);
+
+    entries.forEach((entry) => {
+      const item = document.createElement("div");
+      item.className = "help-item";
+      const name = document.createElement("div");
+      name.className = "help-item-name";
+      name.textContent = entry.name;
+      const signature = document.createElement("code");
+      signature.className = "help-item-signature";
+      signature.textContent = entry.signature || entry.name;
+      const desc = document.createElement("div");
+      desc.className = "help-item-desc";
+      const description = normalizedExpressionHelpDescription(entry);
+      const exampleMatch = description.match(/\s+(?:Esempio|Esempi|Example|Examples):\s*([\s\S]+)$/i);
+      const bodyText = exampleMatch ? description.slice(0, exampleMatch.index).trim() : description;
+      const examplesText = exampleMatch ? exampleMatch[1].trim() : "";
+      appendExpressionHelpInlineText(desc, bodyText);
+      item.appendChild(name);
+      item.appendChild(signature);
+      item.appendChild(desc);
+      if (examplesText) {
+        const examples = document.createElement("div");
+        examples.className = "help-item-examples";
+        const label = document.createElement("span");
+        label.textContent = t("expr.help.examples");
+        examples.appendChild(label);
+        examplesText.split(/\s*;\s*/).filter(Boolean).forEach((example) => {
+          const code = document.createElement("code");
+          code.textContent = expressionHelpExampleCode(example);
+          examples.appendChild(code);
+        });
+        item.appendChild(examples);
+      }
+      group.appendChild(item);
+    });
+    functionsHelpContent.appendChild(group);
+  });
+  if (!visibleEntries) {
+    const empty = document.createElement("p");
+    empty.className = "functions-help-empty";
+    empty.textContent = t("help.searchEmpty");
+    functionsHelpContent.appendChild(empty);
+  }
+}
+
+function renderExpressionLibrary() {
+  if (!expressionLibrary) {
+    return;
+  }
+  const entries = expressionCatalogForEditor();
+  const manualFilter = String(expressionSymbolsFilter?.value || "").trim().toLowerCase();
+  const autoFilter = String(ui.expressionEditor?.autoFilter || "").trim().toLowerCase();
+  const filter = manualFilter || autoFilter;
+  const selectedName = String(ui.expressionEditor?.librarySelectedName || "").trim();
+  const filteredEntries = entries
+    .filter((entry) => {
+      // Model inputs remain available while the caret filter narrows the
+      // general catalog, so they can always be inserted immediately.
+      if (entry.linkedNode || entry.globalNode) {
+        return true;
+      }
+      if (!filter) {
+        return true;
+      }
+      return entry.name.toLowerCase().includes(filter);
+    })
+    .sort((left, right) => {
+      const linkedDelta = Number(Boolean(right.linkedNode)) - Number(Boolean(left.linkedNode));
+      if (linkedDelta) {
+        return linkedDelta;
+      }
+      const leftName = left.name.toLowerCase();
+      const rightName = right.name.toLowerCase();
+      const leftStarts = filter ? leftName.startsWith(filter) : false;
+      const rightStarts = filter ? rightName.startsWith(filter) : false;
+      if (leftStarts !== rightStarts) {
+        return leftStarts ? -1 : 1;
+      }
+      const kindDelta = expressionEntryKindOrder(left.kind) - expressionEntryKindOrder(right.kind);
+      return kindDelta || compareExpressionLibraryEntries(left, right);
+    });
+  if (!selectedName && filteredEntries.length > 0 && ui.expressionEditor) {
+    ui.expressionEditor.librarySelectedName = filteredEntries[0].name;
+  } else if (selectedName && !filteredEntries.some((entry) => entry.name === selectedName) && ui.expressionEditor) {
+    ui.expressionEditor.librarySelectedName = filteredEntries[0]?.name || "";
+  }
+  const effectiveSelectedName = String(ui.expressionEditor?.librarySelectedName || "").trim();
+
+  expressionLibrary.innerHTML = "";
+  expressionSidebar?.classList.remove("hidden");
+  const groups = new Map();
+  filteredEntries.forEach((entry) => {
+    const key = entry.linkedNode || entry.globalNode ? "linkedNode" : (entry.kind || "function");
+    if (!groups.has(key)) {
+      groups.set(key, []);
+    }
+    groups.get(key).push(entry);
+  });
+  const visibleEntries = [];
+  Array.from(groups.keys())
+    .sort((left, right) => expressionEntryKindOrder(left) - expressionEntryKindOrder(right))
+    .forEach((kind) => {
+      const group = document.createElement("section");
+      group.className = "expression-library-group";
+      group.classList.toggle("expression-library-linked-group", kind === "linkedNode");
+      const title = document.createElement("h4");
+      title.className = "expression-library-title";
+      title.textContent = t(`expr.help.kind.${kind}`);
+      const list = document.createElement("div");
+      list.className = "expression-library-list";
+      groups.get(kind)
+        .slice()
+        .sort(compareExpressionLibraryEntries)
+        .forEach((entry) => {
+          visibleEntries.push(entry);
+          const item = document.createElement("div");
+          item.className = "expression-library-item";
+          item.classList.toggle("active", entry.name === effectiveSelectedName);
+          item.dataset.entryName = entry.name;
+          item.tabIndex = 0;
+          const name = document.createElement("div");
+          name.className = "expression-library-name";
+          if (filter) {
+            const lowerName = entry.name.toLowerCase();
+            const idx = lowerName.indexOf(filter);
+            if (idx >= 0) {
+              const before = entry.name.slice(0, idx);
+              const match = entry.name.slice(idx, idx + filter.length);
+              const after = entry.name.slice(idx + filter.length);
+              if (before) {
+                name.appendChild(document.createTextNode(before));
+              }
+              const mark = document.createElement("mark");
+              mark.textContent = match;
+              name.appendChild(mark);
+              if (after) {
+                name.appendChild(document.createTextNode(after));
+              }
+            } else {
+              name.textContent = entry.name;
+            }
+          } else {
+            name.textContent = entry.name;
+          }
+          item.appendChild(name);
+          const selectEntry = () => {
+            setSelectedLibraryEntry(entry.name, entry);
+          };
+          const activate = () => {
+            selectEntry();
+            insertSelectedLibraryEntry();
+          };
+          item.addEventListener("mousedown", (evt) => {
+            evt.preventDefault();
+          });
+          item.addEventListener("click", (evt) => {
+            if (evt.shiftKey) {
+              selectEntry();
+              insertExpressionAtCursor("\n");
+              refreshExpressionEditorValidation();
+              return;
+            }
+            if (evt.detail >= 2) {
+              activate();
+              return;
+            }
+            selectEntry();
+            // mousedown is cancelled to preserve the expression caret; restore
+            // keyboard focus explicitly so arrows navigate the library.
+            item.focus({ preventScroll: true });
+          });
+          item.addEventListener("keydown", (evt) => {
+            if (evt.key === "ArrowDown" || evt.key === "ArrowUp") {
+              evt.preventDefault();
+              moveLibrarySelection(evt.key === "ArrowDown" ? 1 : -1);
+              const activeItem = expressionLibrary.querySelector(".expression-library-item.active");
+              activeItem?.focus({ preventScroll: true });
+            } else if (evt.key === "Enter") {
+              evt.preventDefault();
+              activate();
+            } else if (evt.key === " ") {
+              evt.preventDefault();
+              selectEntry();
+            }
+          });
+          item.addEventListener("focus", () => {
+            selectEntry();
+          });
+          list.appendChild(item);
+        });
+      group.appendChild(title);
+      group.appendChild(list);
+      expressionLibrary.appendChild(group);
+    });
+  expressionLibrary.classList.remove("hidden");
+  if (!groups.size) {
+    const empty = document.createElement("div");
+    empty.className = "empty-props";
+    empty.textContent = t("text.noMatches");
+    expressionLibrary.appendChild(empty);
+    return;
+  }
+  if (effectiveSelectedName) {
+    window.requestAnimationFrame(() => {
+      const active = expressionLibrary.querySelector(`.expression-library-item[data-entry-name="${CSS.escape(effectiveSelectedName)}"]`);
+      revealExpressionLibraryEntry(active);
+    });
+  }
+}
+
+function revealExpressionLibraryEntry(item) {
+  if (!item || !expressionLibrary) {
+    return;
+  }
+  item.scrollIntoView({ block: "nearest" });
+  const groupTitle = item.closest(".expression-library-group")?.querySelector(".expression-library-title");
+  const libraryRect = expressionLibrary.getBoundingClientRect();
+  const titleRect = groupTitle?.getBoundingClientRect();
+  const safeTop = Math.max(
+    libraryRect.top,
+    Math.min(libraryRect.bottom, titleRect?.bottom ?? libraryRect.top),
+  ) + 4;
+  const itemRect = item.getBoundingClientRect();
+  if (itemRect.top < safeTop) {
+    expressionLibrary.scrollTop -= safeTop - itemRect.top;
+  }
+}
+
+function setSelectedLibraryEntry(name, entry = null) {
+  if (!ui.expressionEditor || !expressionLibrary) {
+    return;
+  }
+  const nextName = String(name || "").trim();
+  if (!nextName) {
+    return;
+  }
+  ui.expressionEditor.librarySelectedName = nextName;
+  const resolvedEntry = entry || expressionCatalogForEditor().find((item) => item.name === nextName) || null;
+  if (resolvedEntry) {
+    setExpressionHelp(resolvedEntry);
+  }
+  expressionLibrary.querySelectorAll(".expression-library-item.active").forEach((item) => {
+    item.classList.remove("active");
+  });
+  const active = expressionLibrary.querySelector(`.expression-library-item[data-entry-name="${CSS.escape(nextName)}"]`);
+  if (active) {
+    active.classList.add("active");
+    revealExpressionLibraryEntry(active);
+  }
+}
+
+function openFunctionsHelp() {
+  if (!functionsHelpModal) {
+    return;
+  }
+  renderFunctionsHelp();
+  functionsHelpModal.classList.remove("hidden");
+  window.setTimeout(() => functionsHelpSearch?.focus(), 0);
+}
+
+function closeFunctionsHelp() {
+  if (!functionsHelpModal) {
+    return;
+  }
+  functionsHelpModal.classList.add("hidden");
+}
+
+function openExamplesHelp() {
+  helpContentHelpers.openExamplesHelp();
+}
+
+function closeExamplesHelp() {
+  helpContentHelpers.closeExamplesHelp();
+}
+
+function openDocumentationHelp() {
+  helpContentHelpers.openDocumentationHelp();
+}
+
+function closeDocumentationHelp() {
+  helpContentHelpers.closeDocumentationHelp();
+}
+
+function openEightTuple() {
+  helpContentHelpers.openEightTuple();
+}
+
+function closeEightTuple() {
+  helpContentHelpers.closeEightTuple();
+}
+
+async function copyEightTupleText() {
+  return helpContentHelpers.copyEightTupleText();
+}
+
+async function exportEightTupleMarkdown() {
+  return helpContentHelpers.exportEightTupleMarkdown();
+}
+
+function openAboutApp() {
+  helpContentHelpers.openAboutApp();
+}
+
+function closeAboutApp() {
+  helpContentHelpers.closeAboutApp();
+}
+
+function closeModelAnalysis() {
+  modelAnalysisUiHelpers.closeModelAnalysis();
+}
+
+function showLocalFunctionsStatus(message = "", isError = false) {
+  if (!localFunctionsStatus) {
+    return;
+  }
+  const text = String(message ?? "").trim();
+  if (!text) {
+    localFunctionsStatus.textContent = "";
+    localFunctionsStatus.classList.add("hidden");
+    localFunctionsStatus.classList.remove("error");
+    return;
+  }
+  localFunctionsStatus.textContent = text;
+  localFunctionsStatus.classList.remove("hidden");
+  localFunctionsStatus.classList.toggle("error", isError);
+}
+
+function localFunctionsDraft() {
+  if (!ui.localFunctionsEditor) {
+    ui.localFunctionsEditor = {
+      draft: sanitizeLocalFunctions(graph).map((definition) => ({ ...definition, params: definition.params.slice() })),
+    };
+  }
+  return ui.localFunctionsEditor.draft;
+}
+
+function renderLocalFunctionsEditor() {
+  if (!localFunctionsList) {
+    return;
+  }
+  const draft = localFunctionsDraft();
+  const frozen = isEditingUiLocked();
+  localFunctionsList.innerHTML = "";
+  if (!draft.length) {
+    const empty = document.createElement("div");
+    empty.className = "local-function-empty";
+    empty.textContent = t("localFunctions.empty");
+    localFunctionsList.appendChild(empty);
+    return;
+  }
+  draft.forEach((definition, index) => {
+    const item = document.createElement("section");
+    item.className = "local-function-item";
+
+    const top = document.createElement("div");
+    top.className = "local-function-top";
+
+    const nameRow = document.createElement("label");
+    nameRow.className = "local-function-row";
+    const nameLabel = document.createElement("span");
+    nameLabel.textContent = t("localFunctions.name");
+    const nameInput = document.createElement("input");
+    nameInput.type = "text";
+    nameInput.value = definition.name;
+    nameInput.disabled = frozen;
+    nameInput.addEventListener("input", () => {
+      definition.name = String(nameInput.value ?? "");
+      showLocalFunctionsStatus();
+    });
+    nameRow.appendChild(nameLabel);
+    nameRow.appendChild(nameInput);
+
+    const paramsRow = document.createElement("label");
+    paramsRow.className = "local-function-row";
+    const paramsLabel = document.createElement("span");
+    paramsLabel.textContent = t("localFunctions.params");
+    const paramsInput = document.createElement("input");
+    paramsInput.type = "text";
+    paramsInput.value = definition.params.join(", ");
+    paramsInput.disabled = frozen;
+    paramsInput.addEventListener("input", () => {
+      definition.params = sanitizeLocalFunctionParams(paramsInput.value);
+      showLocalFunctionsStatus();
+    });
+    paramsRow.appendChild(paramsLabel);
+    paramsRow.appendChild(paramsInput);
+
+    const removeBtn = document.createElement("button");
+    removeBtn.type = "button";
+    removeBtn.className = "small-btn";
+    removeBtn.textContent = t("action.remove");
+    removeBtn.disabled = frozen;
+    removeBtn.addEventListener("click", () => {
+      draft.splice(index, 1);
+      renderLocalFunctionsEditor();
+      showLocalFunctionsStatus();
+    });
+
+    top.appendChild(nameRow);
+    top.appendChild(paramsRow);
+    top.appendChild(removeBtn);
+
+    const fields = document.createElement("div");
+    fields.className = "local-function-fields";
+
+    const exprRow = document.createElement("label");
+    exprRow.className = "local-function-row";
+    const exprLabel = document.createElement("span");
+    exprLabel.textContent = t("localFunctions.expression");
+    const exprInput = document.createElement("textarea");
+    exprInput.rows = 3;
+    exprInput.spellcheck = false;
+    exprInput.value = definition.expression;
+    exprInput.disabled = frozen;
+    exprInput.addEventListener("input", () => {
+      definition.expression = String(exprInput.value ?? "");
+      showLocalFunctionsStatus();
+    });
+    exprRow.appendChild(exprLabel);
+    exprRow.appendChild(exprInput);
+
+    const descRow = document.createElement("label");
+    descRow.className = "local-function-row";
+    const descLabel = document.createElement("span");
+    descLabel.textContent = t("localFunctions.description");
+    const descInput = document.createElement("textarea");
+    descInput.rows = 2;
+    descInput.value = definition.description;
+    descInput.disabled = frozen;
+    descInput.addEventListener("input", () => {
+      definition.description = String(descInput.value ?? "");
+      showLocalFunctionsStatus();
+    });
+    descRow.appendChild(descLabel);
+    descRow.appendChild(descInput);
+
+    fields.appendChild(exprRow);
+    fields.appendChild(descRow);
+    item.appendChild(top);
+    item.appendChild(fields);
+    localFunctionsList.appendChild(item);
+  });
+}
+
+function openLocalFunctionsEditor() {
+  if (!localFunctionsModal) {
+    return;
+  }
+  updateEditingLockUi();
+  ui.localFunctionsEditor = {
+    draft: sanitizeLocalFunctions(graph).map((definition) => ({ ...definition, params: definition.params.slice() })),
+  };
+  renderLocalFunctionsEditor();
+  showLocalFunctionsStatus();
+  localFunctionsModal.classList.remove("hidden");
+}
+
+function closeLocalFunctionsEditor() {
+  if (!localFunctionsModal) {
+    return;
+  }
+  localFunctionsModal.classList.add("hidden");
+  ui.localFunctionsEditor = null;
+  showLocalFunctionsStatus();
+}
+
+function commitLocalFunctionsEditor() {
+  const draft = localFunctionsDraft();
+  const validation = validateLocalFunctions(draft, { model: graph });
+  if (!validation.ok) {
+    showLocalFunctionsStatus(validation.message || t("error.evalReason.runtime"), true);
+    return false;
+  }
+  runAction(() => {
+    graph.localFunctions = validation.definitions.map((definition) => ({
+      ...definition,
+      params: definition.params.slice(),
+    }));
+  });
+  renderExpressionLibrary();
+  closeLocalFunctionsEditor();
+  setStatus(t("localFunctions.updated"));
+  return true;
+}
+
+function setPresentationGroupsStatus(message = "", isError = false) {
+  if (!presentationGroupsStatus) {
+    return;
+  }
+  presentationGroupsStatus.textContent = String(message || "");
+  presentationGroupsStatus.classList.toggle("hidden", !message);
+  presentationGroupsStatus.classList.toggle("error", Boolean(message && isError));
+  presentationGroupsStatus.classList.toggle("ok", Boolean(message && !isError));
+}
+
+function presentationGroupNameIsAvailable(name, excludeId = null) {
+  const normalized = String(name || "").trim().toLocaleLowerCase();
+  return Boolean(normalized) && !graph.presentationGroups.some((group) => (
+    group.id !== excludeId && group.name.toLocaleLowerCase() === normalized
+  ));
+}
+
+function renderPresentationGroupsEditor() {
+  if (!presentationGroupsList) {
+    return;
+  }
+  syncPresentationGroups();
+  presentationGroupsList.innerHTML = "";
+  if (!graph.presentationGroups.length) {
+    const empty = document.createElement("p");
+    empty.className = "presentation-group-empty";
+    empty.textContent = t("presentationGroups.empty");
+    presentationGroupsList.appendChild(empty);
+    return;
+  }
+  graph.presentationGroups.forEach((group) => {
+    const item = document.createElement("div");
+    item.className = "presentation-group-item";
+
+    const visibleLabel = document.createElement("label");
+    visibleLabel.className = "menu-check compact-bool";
+    const visibleInput = document.createElement("input");
+    visibleInput.type = "checkbox";
+    visibleInput.checked = group.visible !== false;
+    const visibleText = document.createElement("span");
+    visibleText.textContent = t("presentationGroups.visible");
+    visibleInput.addEventListener("change", () => {
+      commitPresentationGroupsChange(() => {
+        const target = graph.presentationGroups.find((candidate) => candidate.id === group.id);
+        if (target) {
+          target.visible = visibleInput.checked;
+        }
+      });
+      renderPresentationGroupsEditor();
+    });
+    visibleLabel.append(visibleInput, visibleText);
+
+    const frameLabel = document.createElement("label");
+    frameLabel.className = "menu-check compact-bool";
+    const frameInput = document.createElement("input");
+    frameInput.type = "checkbox";
+    frameInput.checked = group.visible !== false && group.showFrame !== false;
+    frameInput.disabled = group.visible === false;
+    const frameText = document.createElement("span");
+    frameText.textContent = t("presentationGroups.showFrame");
+    frameInput.addEventListener("change", () => {
+      commitPresentationGroupsChange(() => {
+        const target = graph.presentationGroups.find((candidate) => candidate.id === group.id);
+        if (target) {
+          target.showFrame = frameInput.checked;
+        }
+      });
+      renderPresentationGroupsEditor();
+    });
+    frameLabel.append(frameInput, frameText);
+
+    const nameInput = document.createElement("input");
+    nameInput.type = "text";
+    nameInput.maxLength = 80;
+    nameInput.value = group.name;
+    nameInput.addEventListener("change", () => {
+      const name = String(nameInput.value || "").trim();
+      if (!name) {
+        nameInput.value = group.name;
+        setPresentationGroupsStatus(t("presentationGroups.error.nameRequired"), true);
+        return;
+      }
+      if (!presentationGroupNameIsAvailable(name, group.id)) {
+        nameInput.value = group.name;
+        setPresentationGroupsStatus(t("presentationGroups.error.nameDuplicate"), true);
+        return;
+      }
+      commitPresentationGroupsChange(() => {
+        const target = graph.presentationGroups.find((candidate) => candidate.id === group.id);
+        if (target) {
+          target.name = name;
+        }
+      });
+      setPresentationGroupsStatus();
+    });
+
+    const members = document.createElement("span");
+    members.className = "presentation-group-members";
+    members.textContent = t("presentationGroups.members", { count: group.nodeIds.length });
+
+    const selectBtn = document.createElement("button");
+    selectBtn.type = "button";
+    selectBtn.className = "small-btn";
+    selectBtn.textContent = t("presentationGroups.selectNodes");
+    selectBtn.disabled = group.nodeIds.length === 0;
+    selectBtn.addEventListener("click", () => {
+      setNodeSelection(group.nodeIds);
+      render();
+    });
+
+    const deleteBtn = document.createElement("button");
+    deleteBtn.type = "button";
+    deleteBtn.className = "small-btn danger";
+    deleteBtn.textContent = t("action.delete");
+    deleteBtn.addEventListener("click", () => {
+      commitPresentationGroupsChange(() => {
+        graph.presentationGroups = graph.presentationGroups.filter((candidate) => candidate.id !== group.id);
+      });
+      setPresentationGroupsStatus();
+      renderPresentationGroupsEditor();
+    });
+
+    item.append(visibleLabel, frameLabel, nameInput, members, selectBtn, deleteBtn);
+    presentationGroupsList.appendChild(item);
+  });
+}
+
+function openPresentationGroupsEditor() {
+  if (!presentationGroupsModal) {
+    return;
+  }
+  setPresentationGroupsStatus();
+  if (presentationGroupNameInput) {
+    presentationGroupNameInput.value = "";
+  }
+  renderPresentationGroupsEditor();
+  presentationGroupsModal.classList.remove("hidden");
+  presentationGroupNameInput?.focus();
+}
+
+function closePresentationGroupsEditor() {
+  presentationGroupsModal?.classList.add("hidden");
+  setPresentationGroupsStatus();
+}
+
+function syncViewOptionsInputs() {
+  if (snapToGridInput) {
+    snapToGridInput.checked = ui.snapToGrid === true;
+  }
+  if (showGridInput) {
+    showGridInput.checked = ui.showGrid === true;
+  }
+  if (highlightNodeEdgesInput) {
+    highlightNodeEdgesInput.checked = ui.highlightNodeEdges === true;
+  }
+  if (showNodeValuesInput) {
+    showNodeValuesInput.checked = ui.showNodeValues === true;
+  }
+  if (unitChecksInput) {
+    unitChecksInput.checked = ui.checkUnits !== false;
+  }
+  if (gridSizeInput) {
+    gridSizeInput.value = String(ui.gridSize);
+  }
+  if (tooltipDelayInput) {
+    tooltipDelayInput.value = String(normalizeTooltipDelayMs(ui.tooltipDelayMs));
+  }
+  if (interfaceLanguageInput) {
+    interfaceLanguageInput.value = currentLang;
+  }
+  if (decimalDigitsInput) {
+    decimalDigitsInput.value = String(clampDisplayDecimals(graph.execution.decimals));
+  }
+}
+
+function openViewOptions() {
+  if (!viewOptionsModal) {
+    return;
+  }
+  closeTopMenus();
+  syncViewOptionsInputs();
+  viewOptionsModal.classList.remove("hidden");
+  snapToGridInput?.focus();
+}
+
+function closeViewOptions() {
+  viewOptionsModal?.classList.add("hidden");
+}
+
+function openConfigurationHelp(kind) {
+  const normalizedKind = ["model", "node", "widget", "text"].includes(kind) ? kind : "model";
+  if (!configHelpModal || !configHelpTitle || !configHelpContent) {
+    return;
+  }
+  let helpKey = `configHelp.${normalizedKind}`;
+  if (normalizedKind === "widget" && ui.selected?.type === "widget") {
+    const widget = getWidgetById(ui.selected.id);
+    const widgetHelpKey = widget ? `configHelp.widget.${widget.type}` : "";
+    if (widgetHelpKey && i18n[`${widgetHelpKey}.title`] && i18n[`${widgetHelpKey}.body`]) {
+      helpKey = widgetHelpKey;
+    }
+  }
+  configHelpTitle.textContent = t(`${helpKey}.title`);
+  const markdown = t(`${helpKey}.body`);
+  configHelpContent.innerHTML = globalThis.STGraphXMarkdown?.renderMarkdownToHtml(markdown) || "";
+  configHelpModal.classList.remove("hidden");
+}
+
+function closeConfigurationHelp() {
+  configHelpModal?.classList.add("hidden");
+}
+
+function createPresentationGroupFromSelection() {
+  const nodeIds = [...ui.selectedNodes];
+  if (!nodeIds.length) {
+    setPresentationGroupsStatus(t("presentationGroups.error.selectionRequired"), true);
+    return;
+  }
+  const name = String(presentationGroupNameInput?.value || "").trim();
+  if (!name) {
+    setPresentationGroupsStatus(t("presentationGroups.error.nameRequired"), true);
+    presentationGroupNameInput?.focus();
+    return;
+  }
+  if (!presentationGroupNameIsAvailable(name)) {
+    setPresentationGroupsStatus(t("presentationGroups.error.nameDuplicate"), true);
+    presentationGroupNameInput?.focus();
+    return;
+  }
+  commitPresentationGroupsChange(() => {
+    graph.presentationGroups.push({
+      id: presentationGroupCounter++,
+      name,
+      nodeIds,
+      visible: true,
+      showFrame: true,
+    });
+  });
+  presentationGroupNameInput.value = "";
+  setPresentationGroupsStatus();
+  renderPresentationGroupsEditor();
+}
+
+function dashboardSuggestedItemPosition(item, pageId) {
+  const dashboard = graph.dashboard;
+  const contentWidth = Math.max(80, dashboard.width - 32);
+  const items = [...graph.widgets, ...graph.textItems]
+    .filter((candidate) => candidate !== item && normalizeDashboardPageId(candidate.dashboardPageId) === pageId);
+  let x = 16;
+  let y = 16;
+  let rowHeight = 0;
+  items.forEach((candidate) => {
+    const width = Math.min(Number(candidate.width) || 220, contentWidth);
+    const height = Number(candidate.height) || 80;
+    if (x + width > contentWidth && x > 16) {
+      x = 16;
+      y += rowHeight + 16;
+      rowHeight = 0;
+    }
+    x += width + 16;
+    rowHeight = Math.max(rowHeight, height);
+  });
+  const width = Math.min(Number(item.width) || 220, contentWidth);
+  if (x + width > contentWidth && x > 16) {
+    x = 16;
+    y += rowHeight + 16;
+  }
+  return { x, y };
+}
+
+function constrainDashboardItemPosition(item) {
+  if (normalizeDashboardPageId(item?.dashboardPageId) == null || !graph.dashboard) {
+    return;
+  }
+  const maxX = Math.max(16, graph.dashboard.width - 16 - (Number(item.width) || 0));
+  const maxY = Math.max(16, graph.dashboard.height - 92 - (Number(item.height) || 0));
+  item.x = clamp(Number(item.x) || 16, 16, maxX);
+  item.y = clamp(Number(item.y) || 16, 16, maxY);
+}
+
+function addDashboardPage() {
+  commitDashboardChange(() => {
+    const dashboard = graph.dashboard;
+    const id = dashboard.nextPageId++;
+    dashboard.pages.push({ id, title: `${t("dashboard.defaultPage")} ${dashboard.pages.length + 1}` });
+    dashboard.activePageId = id;
+  });
+}
+
+function removeDashboardPage(pageId) {
+  if (!graph.dashboard || graph.dashboard.pages.length < 2) return;
+  commitDashboardChange(() => {
+    const dashboard = graph.dashboard;
+    const replacement = dashboard.pages.find((page) => page.id !== pageId);
+    [...graph.widgets, ...graph.textItems].forEach((item) => {
+      if (normalizeDashboardPageId(item.dashboardPageId) !== pageId) return;
+      item.dashboardPageId = replacement.id;
+      const position = dashboardSuggestedItemPosition(item, replacement.id);
+      item.x = position.x;
+      item.y = position.y;
+    });
+    dashboard.pages = dashboard.pages.filter((page) => page.id !== pageId);
+    if (dashboard.activePageId === pageId) dashboard.activePageId = replacement.id;
+  });
+}
+
+function renameDashboardPage(pageId) {
+  const page = graph.dashboard?.pages.find((candidate) => candidate.id === pageId);
+  if (!page || !dashboardRenameModal || !dashboardRenameInput) return;
+  ui.dashboardRenamePageId = pageId;
+  dashboardRenameInput.value = page.title;
+  dashboardRenameModal.classList.remove("hidden");
+  window.setTimeout(() => {
+    dashboardRenameInput.focus();
+    dashboardRenameInput.select();
+  }, 0);
+}
+
+function closeDashboardPageRenameEditor() {
+  dashboardRenameModal?.classList.add("hidden");
+  ui.dashboardRenamePageId = null;
+}
+
+function applyDashboardPageRename() {
+  const pageId = ui.dashboardRenamePageId;
+  const page = graph.dashboard?.pages.find((candidate) => candidate.id === pageId);
+  if (!page) {
+    closeDashboardPageRenameEditor();
+    return;
+  }
+  const title = String(dashboardRenameInput?.value ?? "").trim() || t("dashboard.defaultPage");
+  if (title !== page.title) {
+    commitDashboardChange(() => {
+      const target = graph.dashboard.pages.find((candidate) => candidate.id === pageId);
+      if (target) target.title = title;
+    });
+  }
+  closeDashboardPageRenameEditor();
+}
+
+function dropItemIntoActiveDashboardPage(item) {
+  const dashboard = graph.dashboard;
+  if (!dashboard || dashboard.visible === false) return false;
+  const position = dashboardItemPosition(item);
+  const centerX = position.x + (Number(item.width) || 0) / 2;
+  const centerY = position.y + (Number(item.height) || 0) / 2;
+  const inside = centerX >= dashboard.x + 8
+    && centerX <= dashboard.x + dashboard.width - 8
+    && centerY >= dashboard.y + 70
+    && centerY <= dashboard.y + dashboard.height - 8;
+  const currentPageId = normalizeDashboardPageId(item.dashboardPageId);
+  if (!inside) {
+    // Keep the visual position when an item is released outside the dashboard.
+    if (currentPageId == null) return false;
+    item.dashboardPageId = null;
+    item.x = position.x;
+    item.y = position.y;
+    return true;
+  }
+  if (currentPageId === dashboard.activePageId) return false;
+  const origin = dashboardContentOrigin(dashboard);
+  item.dashboardPageId = dashboard.activePageId;
+  item.x = position.x - origin.x;
+  item.y = position.y - origin.y;
+  constrainDashboardItemPosition(item);
+  return true;
+}
+
+function dashboardDropStateForItem(item) {
+  const dashboard = graph.dashboard;
+  if (!dashboard || dashboard.visible === false) return null;
+  const position = dashboardItemPosition(item);
+  const centerX = position.x + (Number(item.width) || 0) / 2;
+  const centerY = position.y + (Number(item.height) || 0) / 2;
+  const inside = centerX >= dashboard.x + 8
+    && centerX <= dashboard.x + dashboard.width - 8
+    && centerY >= dashboard.y + 70
+    && centerY <= dashboard.y + dashboard.height - 8;
+  const pageId = normalizeDashboardPageId(item.dashboardPageId);
+  if (pageId == null && inside) return "enter";
+  if (pageId != null && !inside) return "leave";
+  return null;
+}
+
+function updateDashboardDropState(item) {
+  const state = dashboardDropStateForItem(item);
+  if (ui.dashboardDropState === state) return;
+  ui.dashboardDropState = state;
+  const frame = dashboardLayer.querySelector(".dashboard-frame");
+  if (frame) {
+    frame.classList.toggle("dashboard-drop-enter", state === "enter");
+    frame.classList.toggle("dashboard-drop-leave", state === "leave");
+  }
+}
+
+function selectedWatchableNode() {
+  if (ui.selectedNodes.size !== 1) {
+    return null;
+  }
+  const nodeId = [...ui.selectedNodes][0];
+  return getNodeById(nodeId) || null;
+}
+
+function formatWatchValue(value, error = "") {
+  return watchDebuggerUiHelpers.formatWatchValue(value, error);
+}
+
+function captureWatchSnapshot() {
+  ui.watchPreviousSnapshot = watchDebuggerCoreHelpers.captureWatchSnapshot();
+}
+
+function breakpointExpressionSource() {
+  if (watchBreakpointInput && document.activeElement === watchBreakpointInput) {
+    return String(watchBreakpointInput.value ?? "");
+  }
+  return String(ensureDebugConfig(graph).breakpointExpression ?? "");
+}
+
+function validateBreakpointExpressionText(source = breakpointExpressionSource()) {
+  return watchDebuggerCoreHelpers.validateBreakpointExpressionText(source);
+}
+
+function evaluateBreakpointConditionAtTime(timeValue) {
+  return watchDebuggerCoreHelpers.evaluateBreakpointConditionAtTime(timeValue);
+}
+
+function ensureBreakpointReadyForExecution() {
+  const debug = sanitizeDebugConfig(graph);
+  if (!debug.breakpointEnabled) {
+    return true;
+  }
+  const expression = String(debug.breakpointExpression ?? "").trim();
+  if (!expression) {
+    setStatus(t("watch.breakpointEmpty"), true);
+    openWatchDebugger();
+    return false;
+  }
+  const validation = validateBreakpointExpressionText(expression);
+  if (!validation.ok) {
+    setStatus(t("error.breakpointInvalid", { reason: localizeExpressionErrorMessage(validation.message || "") }), true);
+    openWatchDebugger();
+    return false;
+  }
+  return true;
+}
+
+function commitFocusedBreakpointFields() {
+  const expressionIsFocused = document.activeElement === watchBreakpointInput;
+  const messageIsFocused = document.activeElement === watchBreakpointMessageInput;
+  if (!expressionIsFocused && !messageIsFocused) {
+    return;
+  }
+  const expression = expressionIsFocused
+    ? String(watchBreakpointInput.value ?? "")
+    : String(ensureDebugConfig(graph).breakpointExpression ?? "");
+  const message = messageIsFocused
+    ? String(watchBreakpointMessageInput.value ?? "")
+    : String(ensureDebugConfig(graph).breakpointMessage ?? "");
+  const debug = ensureDebugConfig(graph);
+  if (debug.breakpointExpression === expression && debug.breakpointMessage === message) {
+    return;
+  }
+  commitDebugConfigChange(() => {
+    const nextDebug = ensureDebugConfig(graph);
+    nextDebug.breakpointExpression = expression;
+    nextDebug.breakpointMessage = message;
+    ui.breakpointLastResult = null;
+  });
+}
+
+function renderWatchDebugger() {
+  return watchDebuggerUiHelpers.renderWatchDebugger();
+}
+
+function openWatchDebugger() {
+  return watchDebuggerUiHelpers.openWatchDebugger();
+}
+
+function closeWatchDebugger() {
+  return watchDebuggerUiHelpers.closeWatchDebugger();
+}
+
+function openSemanticBreakpointMessage(message) {
+  if (!semanticBreakpointModal || !semanticBreakpointMessage) {
+    return;
+  }
+  semanticBreakpointMessage.textContent = String(message ?? "").trim();
+  semanticBreakpointModal.classList.remove("hidden");
+  semanticBreakpointDismissBtn?.focus();
+}
+
+function closeSemanticBreakpointMessage() {
+  semanticBreakpointModal?.classList.add("hidden");
+}
+
+function modelAnalysisCheckEntries() {
+  return modelAnalysisUiHelpers.modelAnalysisCheckEntries();
+}
+
+function renderModelAnalysisChecksHelp() {
+  return modelAnalysisUiHelpers.renderModelAnalysisChecksHelp();
+}
+
+function openModelAnalysisChecksHelp() {
+  return modelAnalysisUiHelpers.openModelAnalysisChecksHelp();
+}
+
+function closeModelAnalysisChecksHelp() {
+  return modelAnalysisUiHelpers.closeModelAnalysisChecksHelp();
+}
+
+function analysisIssueTargetLabel(issue) {
+  return modelAnalysisUiHelpers.analysisIssueTargetLabel(issue);
+}
+
+function focusAnalysisIssueTarget(issue) {
+  const target = issue?.target;
+  if (!target) {
+    return;
+  }
+  setAnalysisFocus(target);
+  if (target.type === "node" && target.id != null) {
+    selectSingleNode(target.id);
+    render();
+    return;
+  }
+  if (target.type === "edge" && target.id != null) {
+    selectEdge(target.id);
+    render();
+    return;
+  }
+  if (target.type === "widget" && target.id != null) {
+    selectWidget(target.id);
+    render();
+  }
+}
+
+function renderModelAnalysisReport(issues) {
+  return modelAnalysisUiHelpers.renderModelAnalysisReport(issues);
+}
+
+function openModelAnalysis() {
+  return modelAnalysisUiHelpers.openModelAnalysis();
+}
+
+function expressionEditorHasUnsavedChanges() {
+  return Boolean(
+    ui.expressionEditor
+    && ui.expressionEditor.fieldKey !== "__custom__"
+    && (
+      (expressionEditorTextarea && expressionEditorTextarea.value !== String(ui.expressionEditor.initialValue ?? ""))
+      || (
+        expressionStateInitialInput
+        && !expressionStateInitialBlock?.classList.contains("hidden")
+        && expressionStateInitialInput.value !== String(ui.expressionEditor.secondaryInitialValue ?? "")
+      )
+    ),
+  );
+}
+
+function openExpressionEditorSwitchModal() {
+  if (!expressionEditorSwitchModal) {
+    return;
+  }
+  expressionEditorSwitchModal.classList.remove("hidden");
+  if (expressionEditorSwitchApplyBtn) {
+    expressionEditorSwitchApplyBtn.disabled = !Boolean(ui.expressionEditor?.syntaxOk);
+  }
+  (expressionEditorSwitchApplyBtn && !expressionEditorSwitchApplyBtn.disabled
+    ? expressionEditorSwitchApplyBtn
+    : expressionEditorSwitchCancelBtn)?.focus();
+}
+
+function closeExpressionEditorSwitchModal() {
+  if (!expressionEditorSwitchModal) {
+    return;
+  }
+  expressionEditorSwitchModal.classList.add("hidden");
+  ui.expressionEditorPendingSelectionAction = null;
+  expressionEditorTextarea?.focus();
+}
+
+function currentExpressionEditorSelectionKey() {
+  if (!ui.expressionEditor || ui.expressionEditor.fieldKey === "__custom__" || !ui.expressionEditor.nodeId) {
+    return "";
+  }
+  return `node:${ui.expressionEditor.nodeId}`;
+}
+
+function requestExpressionEditorSelectionChange(action, nextSelectionKey = "") {
+  if (typeof action !== "function") {
+    return false;
+  }
+  if (nextSelectionKey && nextSelectionKey === currentExpressionEditorSelectionKey()) {
+    action();
+    return true;
+  }
+  if (!expressionEditorHasUnsavedChanges()) {
+    action();
+    return true;
+  }
+  ui.expressionEditorPendingSelectionAction = action;
+  openExpressionEditorSwitchModal();
+  return false;
+}
+
+function runPendingExpressionEditorSelectionAction() {
+  const action = ui.expressionEditorPendingSelectionAction;
+  closeExpressionEditorSwitchModal();
+  if (typeof action === "function") {
+    action();
+  }
+}
+
+function expressionSystemVariableOrder(name) {
+  const order = ["time", "dt", "t0", "t1", "this", "self"];
+  const index = order.indexOf(String(name || ""));
+  if (index >= 0) {
+    return index;
+  }
+  return String(name || "").startsWith("$") ? order.length : Number.POSITIVE_INFINITY;
+}
+
+function compareExpressionLibraryEntries(left, right) {
+  const leftSystemOrder = expressionSystemVariableOrder(left?.name);
+  const rightSystemOrder = expressionSystemVariableOrder(right?.name);
+  const leftIsSystemVariable = Number.isFinite(leftSystemOrder);
+  const rightIsSystemVariable = Number.isFinite(rightSystemOrder);
+  if (leftIsSystemVariable !== rightIsSystemVariable) {
+    return leftIsSystemVariable ? -1 : 1;
+  }
+  if (leftIsSystemVariable && leftSystemOrder !== rightSystemOrder) {
+    return leftSystemOrder - rightSystemOrder;
+  }
+  return String(left?.name || "").localeCompare(String(right?.name || ""), undefined, { numeric: true });
+}
+
+function expressionCatalogForEditor() {
+  const meta = expressionEditorMeta();
+  if (!meta) {
+    return [];
+  }
+  const docs = expressionDocMap();
+  const node = getNodeById(ui.expressionEditor.nodeId);
+  const allowStateAliases = Boolean(meta.key === "value" && node && isStateNode(node));
+  const out = [];
+  const seen = new Set();
+  const pushEntry = (name, entry) => {
+    if (!name) {
+      return;
+    }
+    if (seen.has(name)) {
+      if (entry?.linkedNode || entry?.globalNode) {
+        const existing = out.find((item) => item.name === name);
+        if (existing) {
+          existing.linkedNode = existing.linkedNode || Boolean(entry.linkedNode);
+          existing.globalNode = existing.globalNode || Boolean(entry.globalNode);
+        }
+      }
+      return;
+    }
+    seen.add(name);
+    out.push({ name, ...entry });
+  };
+
+  Object.entries(docs).forEach(([name, entry]) => {
+    if (name === "integral" && !allowStateAliases) {
+      return;
+    }
+    if (name === "this" && !allowStateAliases) {
+      return;
+    }
+    pushEntry(name, entry);
+  });
+
+  localFunctionsForSemantics(graph).forEach((definition) => {
+    pushEntry(definition.name, {
+      kind: "local",
+      signature: localFunctionSignature(definition),
+      description: definition.description || t("localFunctions.editor.defaultDescription"),
+      insertText: `${definition.name}(${definition.params.join(", ")})`,
+      cursorOffset: `${definition.name}(${definition.params.join(", ")})`.length,
+    });
+  });
+
+  if (node) {
+    pushEntry("self", {
+      kind: "variable",
+      signature: "self",
+      description: t("expr.help.self"),
+      insertText: "self",
+      cursorOffset: 4,
+    });
+    pushEntry("$j", {
+      kind: "variable",
+      signature: "$j",
+      description: t("expr.help.agentColumnIndex"),
+      insertText: "$j",
+      cursorOffset: 2,
+    });
+    accessibleAgentFieldAliasEntries(node, meta?.key || "value").forEach((entry) => {
+      pushEntry(entry.name, {
+        kind: "agentField",
+        signature: entry.name,
+        description: t("expr.help.agentFieldAlias", { name: entry.name, index: entry.index }),
+        insertText: entry.name,
+        cursorOffset: entry.name.length,
+      });
+    });
+  }
+
+  if ((meta.key === "value" || meta.key === "initial") && node) {
+    globalParameterNodesForModel(graph, node.id)
+      .forEach((depNode) => {
+        const nodeDescription = getNodeDescription(depNode);
+        pushEntry(depNode.name, {
+          kind: "variable",
+          globalNode: true,
+          signature: depNode.name,
+          description: nodeDescription || depNode.name,
+          insertText: depNode.name,
+          cursorOffset: depNode.name.length,
+        });
+      });
+    graph.edges
+      .filter((edge) => edge.to === node.id)
+      .map((edge) => getNodeById(edge.from))
+      .filter(Boolean)
+      .filter((depNode) => meta.key !== "initial" || !isSubmodelNode(depNode))
+      .forEach((depNode) => {
+        const nodeDescription = getNodeDescription(depNode);
+        pushEntry(depNode.name, {
+          kind: "variable",
+          linkedNode: true,
+          signature: depNode.name,
+          description: nodeDescription || depNode.name,
+          insertText: depNode.name,
+          cursorOffset: depNode.name.length,
+        });
+        if (meta.key === "value" && isSubmodelNode(depNode)) {
+          const outputs = Array.isArray(depNode.interfaceCache?.outputs)
+            ? depNode.interfaceCache.outputs.map((value) => String(value).trim()).filter(Boolean)
+            : [];
+          outputs.forEach((outputName) => {
+            const qualifiedName = `${depNode.name}.${outputName}`;
+            const outputDescription = String(
+              depNode.interfaceCache?.outputDetails?.[outputName]?.description ?? "",
+            ).trim();
+            pushEntry(qualifiedName, {
+              kind: "variable",
+              linkedNode: true,
+              signature: qualifiedName,
+              description: outputDescription || t("text.submodelOutputEntry", { node: depNode.name, output: outputName }),
+              insertText: qualifiedName,
+              cursorOffset: qualifiedName.length,
+            });
+          });
+        }
+      });
+  }
+
+  return out.sort((a, b) => {
+    const linkedDelta = Number(Boolean(b.linkedNode)) - Number(Boolean(a.linkedNode));
+    return linkedDelta || compareExpressionLibraryEntries(a, b);
+  });
+}
+
+function expressionEntryKindOrder(kind) {
+  switch (kind) {
+    case "linkedNode":
+      return -1;
+    case "variable":
+      return 0;
+    case "function":
+      return 1;
+    case "local":
+      return 2;
+    case "array":
+      return 3;
+    case "probability":
+      return 4;
+    case "property":
+      return 5;
+    case "math":
+      return 6;
+    case "node":
+      return 7;
+    case "agentField":
+      return 8;
+    case "agent":
+      return 9;
+    default:
+      return 99;
+  }
+}
+
+function identifierPrefixAtCaret(text, caret) {
+  const src = String(text ?? "");
+  const pos = Math.max(0, Math.min(caret, src.length));
+  let start = pos;
+  while (start > 0 && /[A-Za-z0-9_$]/.test(src[start - 1])) {
+    start -= 1;
+  }
+  const prefix = src.slice(start, pos);
+  return /^[A-Za-z_$][A-Za-z0-9_$]*$/.test(prefix) ? { start, end: pos, prefix } : null;
+}
+
+function identifierAtCaret(text, caret) {
+  const src = String(text ?? "");
+  const pos = Math.max(0, Math.min(caret, src.length));
+  let start = pos;
+  while (start > 0 && /[A-Za-z0-9_$]/.test(src[start - 1])) {
+    start -= 1;
+  }
+  let end = pos;
+  while (end < src.length && /[A-Za-z0-9_$]/.test(src[end])) {
+    end += 1;
+  }
+  const name = src.slice(start, end);
+  return /^[A-Za-z_$][A-Za-z0-9_$]*$/.test(name) ? name : "";
+}
+
+function escapeHtml(text) {
+  return String(text ?? "")
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;");
+}
+
+function expressionTokenClass(name, entryMap) {
+  if (name === "true" || name === "false" || name === "null") {
+    return "expression-token-keyword";
+  }
+  if (/^\$(?:i)?[0-9]+$/u.test(name) || name === "$value") {
+    return "expression-token-variable";
+  }
+  const entry = entryMap.get(name);
+  if (!entry) {
+    return "";
+  }
+  if (entry.kind === "variable") {
+    return entry.name?.includes(".") ? "expression-token-node" : "expression-token-variable";
+  }
+  if (entry.kind === "agentField") {
+    return "expression-token-variable";
+  }
+  return "expression-token-function";
+}
+
+function expressionBracketStateMap(text, caret) {
+  const src = String(text ?? "");
+  const stack = [];
+  const pairs = new Map();
+  const unmatched = new Set();
+  const openingFor = { ")": "(", "]": "[", "}": "{" };
+  const closingFor = { "(": ")", "[": "]", "{": "}" };
+
+  let inString = false;
+  let stringQuote = "";
+  for (let i = 0; i < src.length; i += 1) {
+    const ch = src[i];
+    const prev = src[i - 1];
+    if (inString) {
+      if (ch === stringQuote && prev !== "\\") {
+        inString = false;
+        stringQuote = "";
+      }
+      continue;
+    }
+    if (ch === "\"" || ch === "'") {
+      inString = true;
+      stringQuote = ch;
+      continue;
+    }
+    if (closingFor[ch]) {
+      stack.push({ ch, index: i });
+      continue;
+    }
+    if (openingFor[ch]) {
+      const last = stack.pop();
+      if (last && last.ch === openingFor[ch]) {
+        pairs.set(last.index, i);
+        pairs.set(i, last.index);
+      } else {
+        unmatched.add(i);
+        if (last) {
+          unmatched.add(last.index);
+        }
+      }
+    }
+  }
+  stack.forEach((item) => unmatched.add(item.index));
+
+  const candidateIndexes = [];
+  if (caret > 0) {
+    candidateIndexes.push(caret - 1);
+  }
+  if (caret < src.length) {
+    candidateIndexes.push(caret);
+  }
+  const active = new Set();
+  for (const idx of candidateIndexes) {
+    const ch = src[idx];
+    if (!"()[]{}".includes(ch)) {
+      continue;
+    }
+    active.add(idx);
+    if (pairs.has(idx)) {
+      active.add(pairs.get(idx));
+    }
+    break;
+  }
+  return { active, unmatched };
+}
+
+function renderExpressionHighlightFor(inputEl, highlightEl) {
+  if (!highlightEl || !inputEl) {
+    return;
+  }
+  syncExpressionSurfaceSize(inputEl, highlightEl);
+  const text = inputEl.value || "";
+  const caret = inputEl.selectionStart ?? 0;
+  const bracketState = expressionBracketStateMap(text, caret);
+  const catalogMap = new Map(expressionCatalogForEditor().map((entry) => [entry.name, entry]));
+  let out = "";
+  let i = 0;
+
+  while (i < text.length) {
+    const ch = text[i];
+
+    if (ch === "\n") {
+      out += "\n";
+      i += 1;
+      continue;
+    }
+
+    if (/\s/u.test(ch)) {
+      let j = i + 1;
+      while (j < text.length && /\s/u.test(text[j]) && text[j] !== "\n") {
+        j += 1;
+      }
+      out += escapeHtml(text.slice(i, j));
+      i = j;
+      continue;
+    }
+
+    if (ch === "\"" || ch === "'") {
+      let j = i + 1;
+      while (j < text.length) {
+        if (text[j] === ch && text[j - 1] !== "\\") {
+          j += 1;
+          break;
+        }
+        j += 1;
+      }
+      out += `<span class="expression-token-string">${escapeHtml(text.slice(i, j))}</span>`;
+      i = j;
+      continue;
+    }
+
+    if (/[0-9]/u.test(ch) || (ch === "." && /[0-9]/u.test(text[i + 1] || ""))) {
+      let j = i + 1;
+      while (j < text.length && /[0-9._eE]/u.test(text[j])) {
+        j += 1;
+      }
+      out += `<span class="expression-token-number">${escapeHtml(text.slice(i, j))}</span>`;
+      i = j;
+      continue;
+    }
+
+    if (/[A-Za-z_$]/u.test(ch)) {
+      let j = i + 1;
+      while (j < text.length && /[A-Za-z0-9_$]/u.test(text[j])) {
+        j += 1;
+      }
+      const name = text.slice(i, j);
+      const cls = expressionTokenClass(name, catalogMap);
+      out += cls ? `<span class="${cls}">${escapeHtml(name)}</span>` : escapeHtml(name);
+      i = j;
+      continue;
+    }
+
+    if ("()[]{}".includes(ch)) {
+      const classes = ["expression-token-bracket"];
+      if (bracketState.unmatched.has(i)) {
+        classes.push("expression-token-bracket-unmatched");
+      } else if (bracketState.active.has(i)) {
+        classes.push("expression-token-bracket-active");
+      }
+      out += `<span class="${classes.join(" ")}">${escapeHtml(ch)}</span>`;
+      i += 1;
+      continue;
+    }
+
+    if (/[+\-*/%=!<>?:&,.;|^~]/u.test(ch)) {
+      out += `<span class="expression-token-operator">${escapeHtml(ch)}</span>`;
+      i += 1;
+      continue;
+    }
+
+    out += escapeHtml(ch);
+    i += 1;
+  }
+
+  highlightEl.innerHTML = `${out || " "}\n`;
+  highlightEl.classList.toggle("invalid", inputEl.classList.contains("invalid"));
+  highlightEl.scrollTop = inputEl.scrollTop;
+  highlightEl.scrollLeft = inputEl.scrollLeft;
+}
+
+function syncExpressionSurfaceSize(inputEl, highlightEl) {
+  if (!inputEl) {
+    return;
+  }
+  const surfaceEl = inputEl.closest(".expression-editor-surface");
+  const renderedHeight = inputEl.offsetHeight || inputEl.clientHeight || 0;
+  if (surfaceEl && renderedHeight > 0) {
+    surfaceEl.style.height = `${renderedHeight}px`;
+  }
+  if (highlightEl && renderedHeight > 0) {
+    highlightEl.style.height = `${renderedHeight}px`;
+  }
+}
+
+function renderExpressionHighlight() {
+  renderExpressionHighlightFor(activeExpressionEditorInput(), activeExpressionEditorHighlight());
+}
+
+function appendExpressionHelpInlineText(container, text) {
+  const formulaPattern = /(\$[A-Za-z0-9_]+|\b(?:axis|mode)\s*=\s*[-A-Za-z0-9_.]+|\b[A-Za-z_][A-Za-z0-9_]*\([^()\n]*\)|\[[^\]\n]*\])/g;
+  const source = String(text ?? "");
+  const appendAutomaticFormatting = (fragment) => {
+    let lastIndex = 0;
+    fragment.replace(formulaPattern, (match, _unused, offset) => {
+      if (offset > lastIndex) {
+        container.append(document.createTextNode(fragment.slice(lastIndex, offset)));
+      }
+      const code = document.createElement("code");
+      code.textContent = match;
+      container.append(code);
+      lastIndex = offset + match.length;
+      return match;
+    });
+    if (lastIndex < fragment.length) {
+      container.append(document.createTextNode(fragment.slice(lastIndex)));
+    }
+  };
+
+  let cursor = 0;
+  const explicitFormulaPattern = /`([^`\r\n]+)`/g;
+  for (const match of source.matchAll(explicitFormulaPattern)) {
+    appendAutomaticFormatting(source.slice(cursor, match.index));
+    const code = document.createElement("code");
+    code.textContent = match[1];
+    container.append(code);
+    cursor = match.index + match[0].length;
+  }
+  appendAutomaticFormatting(source.slice(cursor));
+}
+
+function expressionHelpExampleCode(example) {
+  const text = String(example ?? "").trim();
+  const terminatedCode = text.match(/^`([\s\S]*)`\.$/);
+  if (terminatedCode) return terminatedCode[1];
+  const code = text.match(/^`([\s\S]*)`$/);
+  return code ? code[1] : text.replace(/\.$/, "");
+}
+
+function normalizedExpressionHelpDescription(entry) {
+  const name = String(entry?.name ?? "");
+  const escapedName = name.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+  return String(entry?.description ?? "")
+    .replace(new RegExp(`^\\s*${escapedName}\\s*\\([^\\n]*?\\)\\s*:\\s*`, "i"), "")
+    .replace(/\basse\s*=/g, "axis=")
+    .trim();
+}
+
+function setExpressionHelp(entry = null) {
+  if (!expressionHelp) {
+    return;
+  }
+  if (!entry) {
+    expressionHelp.textContent = t("expr.help.empty");
+    expressionHelpCopyBtn?.classList.add("hidden");
+    return;
+  }
+  const kindKey = `expr.help.kind.${entry.kind || "function"}`;
+  const kindLabel = t(kindKey);
+  const description = normalizedExpressionHelpDescription(entry);
+  const exampleMatch = description.match(/\s+(?:Esempio|Esempi|Example|Examples):\s*([\s\S]+)$/i);
+  const bodyText = exampleMatch ? description.slice(0, exampleMatch.index).trim() : description;
+  const examplesText = exampleMatch ? exampleMatch[1].trim() : "";
+  expressionHelp.replaceChildren();
+
+  const title = document.createElement("div");
+  title.className = "expression-help-entry-title";
+  title.textContent = `${entry.name} (${kindLabel})`;
+  expressionHelp.append(title);
+
+  const signatureText = String(entry.signature ?? "").trim();
+  const entryName = String(entry.name ?? "").trim();
+  if (signatureText && signatureText !== entryName) {
+    const signature = document.createElement("code");
+    signature.className = "expression-help-signature";
+    signature.textContent = signatureText;
+    expressionHelp.append(signature);
+  }
+  if (bodyText) {
+    const body = document.createElement("p");
+    body.className = "expression-help-description";
+    appendExpressionHelpInlineText(body, bodyText);
+    expressionHelp.append(body);
+  }
+  if (examplesText) {
+    const examples = document.createElement("div");
+    examples.className = "expression-help-examples";
+    const label = document.createElement("span");
+    label.textContent = t("expr.help.examples");
+    examples.append(label);
+    examplesText.split(/\s*;\s*/).filter(Boolean).forEach((example) => {
+      const code = document.createElement("code");
+      code.textContent = expressionHelpExampleCode(example);
+      examples.append(code);
+    });
+    expressionHelp.append(examples);
+  }
+  expressionHelpCopyBtn?.classList.remove("hidden");
+}
+
+function setExpressionEntryTooltip(entry = null) {
+  const node = ui.expressionEditor?.nodeId ? getNodeById(ui.expressionEditor.nodeId) : null;
+  const activeFieldKey = currentExpressionEditorFieldKey();
+  const fallback = t(
+    activeFieldKey === "initial"
+      ? expressionEditorInitialFieldTooltipKey()
+      : expressionEditorMainFieldTooltipKey(node),
+  );
+  const preview = expressionValuePreviewForEntry(entry);
+  const lines = [];
+  if (entry?.name) {
+    lines.push(entry.name);
+  }
+  if (preview?.text) {
+    lines.push(`${t("expr.preview.title")}: ${preview.text}`);
+  }
+  if (preview?.typeLabel) {
+    lines.push(`${t("expr.preview.type")}: ${preview.typeLabel}`);
+  }
+  const tooltipText = lines.join("\n") || fallback;
+  const activeInput = activeExpressionEditorInput();
+  const activeHighlight = activeExpressionEditorHighlight();
+  setTooltipText(activeInput, tooltipText);
+  setTooltipText(activeHighlight, tooltipText);
+
+  // Updating data-tooltip alone does not redraw an already visible custom
+  // tooltip. Keep it in sync while the pointer remains over the editor.
+  if (ui.tooltipTarget === activeInput || ui.tooltipTarget === activeHighlight) {
+    refreshActiveTooltip();
+  }
+}
+
+async function copyExpressionAuxText(sourceEl, emptyKey = "expr.copy.empty") {
+  const content = String(sourceEl?.innerText || sourceEl?.textContent || "").trim();
+  if (!content) {
+    setStatusKey(emptyKey);
+    return;
+  }
+  const ok = await copyTextToClipboard(content);
+  if (ok) {
+    setStatusKey("status.clipboardTextCopied");
+    return;
+  }
+  setStatusKey("error.clipboardTextCopyFailed");
+}
+
+function expressionValuePreviewForEntry(entry) {
+  if (!entry) {
+    return null;
+  }
+  const previewState = getExpressionPreviewInitializationState();
+  const { context: baseContext, node } = buildExpressionPreviewBaseContext(previewState);
+
+  if (entry.kind === "variable") {
+    if (entry.name === "$i" || entry.name === "$j") {
+      return {
+        text: "0",
+        typeLabel: t("expr.preview.type.scalar"),
+        error: false,
+      };
+    }
+    if (entry.name === "this" && node && isStateNode(node)) {
+      const currentValueResult = resolveStatePreviewCurrentValue(node, previewState);
+      if (!currentValueResult.ok) {
+        return { text: currentValueResult.message || t("expr.preview.unavailableState"), error: true };
+      }
+      return {
+        text: summarizeExpressionPreviewValue(currentValueResult.value),
+        typeLabel: describeExpressionPreviewShape(currentValueResult.value),
+        error: false,
+      };
+    }
+    if (entry.name === "self" && node) {
+      let selfValue = node.computedValue;
+      if (selfValue == null && isStateNode(node)) {
+        const currentValueResult = resolveStatePreviewCurrentValue(node, previewState);
+        if (currentValueResult.ok) {
+          selfValue = currentValueResult.value;
+        }
+      }
+      if (selfValue == null) {
+        return { text: t("expr.preview.unavailableState"), error: true };
+      }
+      if (Array.isArray(selfValue)) {
+        const localSelfValue = Array.isArray(selfValue[0]) ? selfValue[0][0] : selfValue[0];
+        return {
+          text: summarizeExpressionPreviewValue(localSelfValue),
+          typeLabel: describeExpressionPreviewShape(localSelfValue),
+          error: false,
+        };
+      }
+      return {
+        text: summarizeExpressionPreviewValue(selfValue),
+        typeLabel: describeExpressionPreviewShape(selfValue),
+        error: false,
+      };
+    }
+    if (Object.prototype.hasOwnProperty.call(baseContext, entry.name)) {
+      return {
+        text: summarizeExpressionPreviewValue(baseContext[entry.name]),
+        typeLabel: describeExpressionPreviewShape(baseContext[entry.name]),
+        error: false,
+      };
+    }
+    const agentFieldAliases = graphFunctionHelpers.collectAgentFieldAliasesFromContext?.(baseContext) || {};
+    if (Object.prototype.hasOwnProperty.call(agentFieldAliases, entry.name)) {
+      return {
+        text: summarizeExpressionPreviewValue(agentFieldAliases[entry.name]),
+        typeLabel: describeExpressionPreviewShape(agentFieldAliases[entry.name]),
+        error: false,
+      };
+    }
+    return null;
+  }
+  return null;
+}
+
+function renderExpressionAutocomplete() {
+  const inputEl = activeExpressionEditorInput();
+  if (!inputEl) {
+    return;
+  }
+  if (!ui.expressionEditor) {
+    setExpressionHelp(null);
+    return;
+  }
+
+  const caret = inputEl.selectionStart ?? 0;
+  const tokenInfo = identifierPrefixAtCaret(inputEl.value, caret);
+  const exactToken = identifierAtCaret(inputEl.value, caret);
+  const allEntries = expressionCatalogForEditor();
+  ui.expressionEditor.catalog = allEntries;
+  ui.expressionEditor.autoFilter = tokenInfo?.prefix || exactToken || "";
+
+  let helpEntry = null;
+  if (tokenInfo && tokenInfo.prefix.length > 0) {
+    const prefixLower = tokenInfo.prefix.toLowerCase();
+    const suggestions = allEntries
+      .filter((entry) => entry.name.toLowerCase().startsWith(prefixLower) && entry.name !== tokenInfo.prefix)
+      .sort((left, right) => {
+        const kindDelta = expressionEntryKindOrder(left.kind) - expressionEntryKindOrder(right.kind);
+        return kindDelta || left.name.localeCompare(right.name);
+      });
+    ui.expressionEditor.completion = {
+      tokenStart: tokenInfo.start,
+      tokenEnd: tokenInfo.end,
+      entries: suggestions.slice(0, 8),
+      activeIndex: 0,
+    };
+    if (ui.expressionEditor.completion.entries.length > 0) {
+      if (!exactToken) {
+        helpEntry = ui.expressionEditor.completion.entries[ui.expressionEditor.completion.activeIndex] || null;
+      }
+    } else {
+      ui.expressionEditor.completion = null;
+    }
+  } else {
+    ui.expressionEditor.completion = null;
+  }
+
+  if (!helpEntry) {
+    if (exactToken) {
+      helpEntry = allEntries.find((entry) => entry.name === exactToken) || null;
+    }
+  }
+  const preferred = exactToken
+    ? (allEntries.find((entry) => entry.name === exactToken) || null)
+    : (ui.expressionEditor.completion?.entries?.[ui.expressionEditor.completion.activeIndex] || null);
+  if (preferred && ui.expressionEditor.librarySelectedName !== preferred.name) {
+    ui.expressionEditor.librarySelectedName = preferred.name;
+  }
+  if (!helpEntry && ui.expressionEditor?.librarySelectedName) {
+    helpEntry = allEntries.find((entry) => entry.name === ui.expressionEditor.librarySelectedName) || null;
+  }
+  setExpressionHelp(helpEntry);
+  setExpressionEntryTooltip(helpEntry);
+  renderExpressionLibrary();
+}
+
+function insertSelectedLibraryEntry() {
+  const inputEl = activeExpressionEditorInput();
+  if (!ui.expressionEditor || !inputEl) {
+    return false;
+  }
+  const selectedName = String(ui.expressionEditor.librarySelectedName || "").trim();
+  if (!selectedName) {
+    return false;
+  }
+  const entry = expressionCatalogForEditor().find((item) => item.name === selectedName);
+  if (!entry) {
+    return false;
+  }
+  const replacement = entry.insertText || entry.name;
+  const caret = inputEl.selectionStart ?? 0;
+  const tokenInfo = identifierPrefixAtCaret(inputEl.value, caret);
+  const tokenAtCaret = identifierAtCaret(inputEl.value, caret);
+  if (tokenInfo && (tokenInfo.prefix || tokenAtCaret)) {
+    const tokenEnd = tokenInfo.end + Math.max(0, tokenAtCaret.length - tokenInfo.prefix.length);
+    const before = inputEl.value.slice(0, tokenInfo.start);
+    const after = inputEl.value.slice(tokenEnd);
+    inputEl.value = `${before}${replacement}${after}`;
+    const nextCaret = tokenInfo.start + (entry.cursorOffset ?? replacement.length);
+    inputEl.focus();
+    inputEl.setSelectionRange(nextCaret, nextCaret);
+  } else {
+    insertExpressionSnippet(replacement, entry.cursorOffset ?? replacement.length);
+  }
+  refreshExpressionEditorValidation();
+  return true;
+}
+
+function insertExpressionSnippet(snippet, cursorOffset = null) {
+  const inputEl = activeExpressionEditorInput();
+  if (!inputEl) {
+    return false;
+  }
+  const value = inputEl.value;
+  const start = inputEl.selectionStart ?? 0;
+  const end = inputEl.selectionEnd ?? start;
+  const text = String(snippet ?? "");
+  inputEl.value = `${value.slice(0, start)}${text}${value.slice(end)}`;
+  const caret = start + (cursorOffset == null ? text.length : cursorOffset);
+  inputEl.focus();
+  inputEl.setSelectionRange(caret, caret);
+  refreshExpressionEditorValidation();
+  return true;
+}
+
+function visibleLibraryEntryNames() {
+  if (!expressionLibrary) {
+    return [];
+  }
+  return Array.from(expressionLibrary.querySelectorAll(".expression-library-item[data-entry-name]"))
+    .map((item) => String(item.dataset.entryName || "").trim())
+    .filter(Boolean);
+}
+
+function moveLibrarySelection(direction) {
+  if (!ui.expressionEditor) {
+    return false;
+  }
+  const names = visibleLibraryEntryNames();
+  if (!names.length) {
+    return false;
+  }
+  const current = String(ui.expressionEditor.librarySelectedName || "").trim();
+  const currentIndex = Math.max(0, names.indexOf(current));
+  const nextIndex = (currentIndex + direction + names.length) % names.length;
+  setSelectedLibraryEntry(names[nextIndex]);
+  return true;
+}
+
+function resetExpressionEditorCardPosition() {
+  const card = expressionEditorModal?.querySelector(".expression-editor-card");
+  if (!card) {
+    return;
+  }
+  card.style.width = "";
+  card.style.height = "";
+  card.style.left = "50%";
+  card.style.top = "50%";
+  card.style.transform = "translate(-50%, -50%)";
+}
+
+function isTabletExpressionEditorMode() {
+  return document.body.classList.contains("tablet-sidebar-layout")
+    || window.matchMedia("(hover: none) and (pointer: coarse)").matches;
+}
+
+function setExpressionEditorView(view, options = {}) {
+  const nextView = view === "notes" || view === "help" ? view : "editor";
+  ui.expressionEditorView = nextView;
+  const card = expressionEditorCard;
+  if (card) {
+    card.classList.toggle("expression-view-editor", nextView === "editor");
+    card.classList.toggle("expression-view-notes", nextView === "notes");
+    card.classList.toggle("expression-view-help", nextView === "help");
+  }
+  const viewButtons = [
+    [expressionEditorViewEditorBtn, "editor"],
+    [expressionEditorViewNotesBtn, "notes"],
+    [expressionEditorViewHelpBtn, "help"],
+  ];
+  viewButtons.forEach(([btn, btnView]) => {
+    if (!btn) {
+      return;
+    }
+    const active = btnView === nextView;
+    btn.classList.toggle("active", active);
+    btn.setAttribute("aria-selected", active ? "true" : "false");
+    btn.tabIndex = active ? 0 : -1;
+  });
+  if (options.focus !== false && isTabletExpressionEditorMode()) {
+    if (nextView === "help") {
+      expressionSymbolsFilter?.focus();
+    } else if (nextView === "notes") {
+      (expressionDescriptionInput || expressionFormulaNotesInput)?.focus();
+    } else if (ui.expressionEditor?.activeEditor === "initial" && !expressionStateInitialBlock?.classList.contains("hidden")) {
+      expressionStateInitialInput?.focus();
+    } else {
+      expressionEditorTextarea?.focus();
+    }
+  }
+}
+
+function clearExpressionPreviewTimer() {
+  if (ui.expressionPreviewTimer != null) {
+    window.clearTimeout(ui.expressionPreviewTimer);
+    ui.expressionPreviewTimer = null;
+  }
+}
+
+function invalidateExpressionPreviewInitializationCache() {
+  ui.expressionPreviewInitCache = null;
+}
+
+function setExpressionPreviewState(text, tone = "") {
+  if (!expressionPreviewBox || !expressionPreviewValue) {
+    return;
+  }
+  expressionPreviewValue.textContent = String(text ?? "");
+  expressionPreviewBox.classList.toggle("error", tone === "error");
+}
+
+function expressionPreviewNode() {
+  if (!ui.expressionEditor) {
+    return null;
+  }
+  if (ui.expressionEditor.nodeId) {
+    return getNodeById(ui.expressionEditor.nodeId);
+  }
+  return selectedNodeForSidebar();
+}
+
+function createExpressionPreviewRuntimeModel() {
+  const model = cloneRuntimeModel({
+    modelTitle: graph.modelTitle,
+    properties: graph.properties,
+    nodes: graph.nodes,
+    edges: graph.edges,
+    execution: normalizeExecutionConfig(graph.execution),
+    __directoryPath: String(graph.__directoryPath ?? ""),
+    __readDataCache: graph.__readDataCache || Object.create(null),
+  });
+  clearRuntimeSubmodelState(model);
+  model.execution.currentTime = null;
+  return model;
+}
+
+function getExpressionPreviewInitializationState() {
+  const snapshotKey = currentSnapshot();
+  if (ui.expressionPreviewInitCache?.snapshotKey === snapshotKey) {
+    return ui.expressionPreviewInitCache.value;
+  }
+  const model = createExpressionPreviewRuntimeModel();
+  const timeValue = Number(model.execution.t0);
+  initializeStateNodesForModel(model, timeValue, model.execution);
+  evaluateModelAtTimeRecursive(
+    model,
+    timeValue,
+    { rootExecution: model.execution, stack: [] },
+  );
+  model.execution.currentTime = timeValue;
+  const value = {
+    model,
+    timeValue,
+    globals: buildExecutionGlobalsForModel(model, model.execution, timeValue),
+    nodeMap: new Map(model.nodes.map((item) => [item.id, item])),
+  };
+  ui.expressionPreviewInitCache = { snapshotKey, value };
+  return value;
+}
+
+function expressionPreviewNodeFromState(previewState) {
+  const node = expressionPreviewNode();
+  if (!node || !previewState?.nodeMap) {
+    return null;
+  }
+  return previewState.nodeMap.get(node.id) || null;
+}
+
+function buildExpressionPreviewBaseContext(previewState, meta = null) {
+  const context = { ...(previewState?.globals || {}) };
+  const node = expressionPreviewNodeFromState(previewState);
+  if (!node || !previewState?.model) {
+    return { context, node };
+  }
+  Object.assign(context, nodePropertyAccessForContext(node));
+  globalParameterNodesForModel(previewState.model, node.id).forEach((depNode) => {
+    if (!depNode.computedError) {
+      context[depNode.name] = depNode.computedValue;
+    }
+  });
+  previewState.model.edges
+    .filter((edge) => edge.to === node.id)
+    .map((edge) => getModelNodeById(previewState.model, edge.from))
+    .filter(Boolean)
+    .filter((depNode) => (meta?.key !== "initial") || !isSubmodelNode(depNode))
+    .forEach((depNode) => {
+      if (!depNode.computedError) {
+        context[depNode.name] = depNode.computedValue;
+      }
+    });
+  return { context, node };
+}
+
+function evaluateInitialStatePreviewValue(node, globals, model = graph) {
+  if (!node || !isStateNode(node)) {
+    return { ok: false };
+  }
+  const context = {
+    ...globals,
+    ...nodePropertyAccessForContext(node),
+  };
+  globalParameterNodesForModel(model, node.id).forEach((depNode) => {
+    if (!depNode.computedError) {
+      context[depNode.name] = depNode.computedValue;
+    }
+  });
+  (model?.edges || [])
+    .filter((edge) => edge.to === node.id)
+    .map((edge) => getModelNodeById(model, edge.from))
+    .filter((depNode) => depNode && !isSubmodelNode(depNode))
+    .forEach((depNode) => {
+      if (!depNode.computedError) {
+        context[depNode.name] = depNode.computedValue;
+      }
+    });
+  const source = (
+    ui.expressionEditor
+    && ui.expressionEditor.nodeId === node.id
+    && !expressionStateInitialBlock?.classList.contains("hidden")
+    && expressionStateInitialInput
+  )
+    ? String(expressionStateInitialInput.value ?? "")
+    : String(node.initialStateExpression ?? "");
+  return semantics.evaluateValueExpression(source, context, {
+    localFunctions: localFunctionsForSemantics(model),
+  });
+}
+
+function resolveStatePreviewCurrentValue(node, previewState) {
+  if (!node || !isStateNode(node)) {
+    return { ok: false };
+  }
+  const initialPreview = evaluateInitialStatePreviewValue(node, previewState.globals, previewState.model);
+  if (initialPreview.ok) {
+    return initialPreview;
+  }
+  if (node.computedValue != null) {
+    return { ok: true, value: node.computedValue };
+  }
+  return { ok: false, message: initialPreview.message || t("expr.preview.unavailableState") };
+}
+
+function buildExpressionPreviewEvaluation() {
+  if (!ui.expressionEditor || !expressionEditorTextarea) {
+    return null;
+  }
+  const source = String(expressionEditorTextarea.value ?? "");
+  if (!source.trim()) {
+    return { ok: true, empty: true, value: null };
+  }
+  const editorNode = ui.expressionEditor.nodeId ? getNodeById(ui.expressionEditor.nodeId) : null;
+  const meta = (editorNode && isStateNode(editorNode))
+    ? expressionFieldMeta("value", editorNode)
+    : expressionEditorMeta();
+  const previewState = getExpressionPreviewInitializationState();
+  const { context, node } = buildExpressionPreviewBaseContext(previewState, meta);
+
+  const isStateTransition = Boolean(meta?.key === "value" && node && isStateNode(node));
+  if (isStateTransition) {
+    const currentValueResult = resolveStatePreviewCurrentValue(node, previewState);
+    if (!currentValueResult.ok) {
+      return { ok: false, reason: "runtime", message: currentValueResult.message || t("expr.preview.unavailableState") };
+    }
+    const selfValue = currentValueResult.value;
+    context.__self = selfValue;
+    if (String(source).includes("integral(")) {
+        const derivativeList = semantics.evaluateIntegralDerivativeList(source, context, {
+          allowThisAlias: true,
+          localFunctions: localFunctionsForSemantics(graph),
+        });
+      if (!derivativeList.ok) {
+        return {
+          ...derivativeList,
+          stateTransition: true,
+          currentValue: selfValue,
+        };
+      }
+      const dt = Number(graph.execution.dt);
+      const integralValues = (derivativeList.value || []).map((derivativeValue) => addTensorValues(selfValue, scaleTensorValue(derivativeValue, dt)));
+      const nextValueResult = semantics.evaluateStateTransitionExpressionWithIntegralValues(
+        source,
+        context,
+        integralValues,
+        { allowThisAlias: true, localFunctions: localFunctionsForSemantics(graph) },
+      );
+      return {
+        ...nextValueResult,
+        stateTransition: true,
+        currentValue: selfValue,
+        nextValue: nextValueResult.ok ? nextValueResult.value : null,
+      };
+    }
+    const nextValueResult = semantics.evaluateValueExpression(source, context, {
+      allowThisAlias: true,
+      allowIntegral: true,
+      localFunctions: localFunctionsForSemantics(graph),
+    });
+    return {
+      ...nextValueResult,
+      stateTransition: true,
+      currentValue: selfValue,
+      nextValue: nextValueResult.ok ? nextValueResult.value : null,
+    };
+  }
+  return semantics.evaluateValueExpression(source, context, {
+    localFunctions: localFunctionsForSemantics(graph),
+  });
+}
+
+function refreshExpressionPreviewNow() {
+  clearExpressionPreviewTimer();
+  if (!expressionPreviewBox || !expressionPreviewValue) {
+    return;
+  }
+  const result = buildExpressionPreviewEvaluation();
+  if (!result || result.empty) {
+    setExpressionPreviewState(t("expr.preview.empty"));
+    return;
+  }
+  if (result.stateTransition) {
+    const formatStatePreviewBlock = (label, value) => {
+      const shape = describeExpressionPreviewShape(value);
+      const summary = summarizeExpressionPreviewValue(value);
+      const lines = [`${label} (${shape}):`];
+      let redundantSummary = summary === shape;
+      if (Array.isArray(value) && !redundantSummary) {
+        const isMatrix =
+          value.length > 0 &&
+          value.every((row) => Array.isArray(row)) &&
+          value.every((row) => row.length === value[0].length);
+        if (isMatrix) {
+          redundantSummary = summary === t("text.matrixSummary", { rows: value.length, cols: value[0]?.length ?? 0 });
+        } else if (value.every((item) => !Array.isArray(item))) {
+          redundantSummary = summary === t("text.vectorSummary", { size: value.length });
+        }
+      }
+      if (!redundantSummary) {
+        lines.push(summary);
+      }
+      return lines;
+    };
+    const formatStateErrorBlock = (label, message) => [
+      `${label}:`,
+      t("expr.preview.error", { message }),
+    ];
+    const currentBlock = formatStatePreviewBlock(t("expr.preview.currentValue"), result.currentValue);
+    if (!result.ok) {
+      const msg = result.message ? localizeExpressionErrorMessage(result.message) : t(`error.evalReason.${result.reason || "runtime"}`);
+      const nextBlock = formatStateErrorBlock(t("expr.preview.nextValue"), msg);
+      setExpressionPreviewState(`${currentBlock.join("\n")}\n\n${nextBlock.join("\n")}`, "error");
+      return;
+    }
+    const nextBlock = formatStatePreviewBlock(t("expr.preview.nextValue"), result.nextValue);
+    setExpressionPreviewState(`${currentBlock.join("\n")}\n\n${nextBlock.join("\n")}`);
+    return;
+  }
+  if (!result.ok) {
+    const msg = result.message ? localizeExpressionErrorMessage(result.message) : t(`error.evalReason.${result.reason || "runtime"}`);
+    setExpressionPreviewState(t("expr.preview.error", { message: msg }), "error");
+    return;
+  }
+  setExpressionPreviewState(`${t("expr.preview.type")}: ${describeExpressionPreviewShape(result.value)}\n${summarizeExpressionPreviewValue(result.value)}`);
+}
+
+function scheduleExpressionPreviewRefresh(delay = 180) {
+  clearExpressionPreviewTimer();
+  if (!ui.expressionEditor) {
+    setExpressionPreviewState(t("expr.preview.empty"));
+    return;
+  }
+  setExpressionPreviewState(t("expr.preview.pending"));
+  ui.expressionPreviewTimer = window.setTimeout(() => {
+    ui.expressionPreviewTimer = null;
+    refreshExpressionPreviewNow();
+  }, delay);
+}
+
+function closeExpressionEditor() {
+  if (!expressionEditorModal) {
+    return;
+  }
+  expressionEditorModal.classList.add("hidden");
+  closeExpressionEditorSwitchModal();
+  ui.expressionEditor = null;
+  invalidateExpressionPreviewInitializationCache();
+  ui.modalDrag = null;
+  if (expressionEditorTextarea) {
+    expressionEditorTextarea.value = "";
+    expressionEditorTextarea.classList.remove("invalid");
+  }
+  if (expressionStateInitialInput) {
+    expressionStateInitialInput.value = "";
+    expressionStateInitialInput.classList.remove("invalid");
+  }
+  if (expressionEditorHighlight) {
+    expressionEditorHighlight.innerHTML = "";
+    expressionEditorHighlight.classList.remove("invalid");
+  }
+  expressionEditorSurface?.classList.remove("invalid");
+  hideExpressionStatus(expressionStateTransitionStatus);
+  if (expressionLibrary) {
+    expressionLibrary.innerHTML = "";
+    expressionLibrary.classList.add("hidden");
+  }
+  if (expressionSymbolsFilter) {
+    expressionSymbolsFilter.value = "";
+  }
+  expressionSidebar?.classList.remove("hidden");
+  setExpressionEditorView("editor", { focus: false });
+  setExpressionHelp(null);
+  hideExpressionStatus(expressionEditorStatus);
+  hideExpressionStatus(expressionStateInitialStatus);
+  clearExpressionPreviewTimer();
+  setExpressionPreviewState(t("expr.preview.empty"));
+  syncExpressionEditorFormulaNotes();
+  ui.modalResize = null;
+  resetExpressionEditorCardPosition();
+}
+
+function refreshExpressionEditorValidation() {
+  if (!ui.expressionEditor || !expressionEditorTextarea || !expressionEditorApplyBtn) {
+    return { ok: true, empty: true };
+  }
+  if (expressionEditorTitle) {
+    const dirtyMain = expressionEditorTextarea.value !== String(ui.expressionEditor.initialValue ?? "");
+    const dirtyInitial = Boolean(
+      expressionStateInitialInput
+      && !expressionStateInitialBlock?.classList.contains("hidden")
+      && expressionStateInitialInput.value !== String(ui.expressionEditor.secondaryInitialValue ?? ""),
+    );
+    const dirty = dirtyMain || dirtyInitial;
+    expressionEditorTitle.textContent = `${ui.expressionEditor.baseTitle}${dirty ? " *" : ""}`;
+  }
+  const mainFieldKey = ui.expressionEditor.fieldKey === "__custom__" ? null : "value";
+  const syntaxResult = validateExpressionDraft(expressionEditorTextarea.value, mainFieldKey);
+  expressionEditorTextarea.classList.toggle("invalid", !syntaxResult.ok);
+  showExpressionStatus(expressionEditorStatus, syntaxResult, false);
+  expressionEditorSurface?.classList.toggle("invalid", !syntaxResult.ok);
+  // An empty field is an incomplete definition, not a malformed expression.
+  // It must remain reportable in strict mode without preventing the user from
+  // applying a valid change to the other state-definition field.
+  const mainCanApply = syntaxResult.ok || syntaxResult.empty;
+  let initialCanApply = true;
+  if (expressionStateInitialInput && !expressionStateInitialBlock?.classList.contains("hidden")) {
+    const initialResult = updateExpressionFieldState(
+      expressionStateInitialInput,
+      expressionStateInitialStatus,
+      expressionStateInitialInput.value,
+      true,
+      "initial",
+    );
+    initialCanApply = initialResult.ok || initialResult.empty;
+  } else {
+    hideExpressionStatus(expressionStateInitialStatus);
+  }
+  const canApply = mainCanApply && initialCanApply;
+  expressionEditorApplyBtn.disabled = !canApply;
+  if (expressionEditorSwitchApplyBtn && expressionEditorSwitchModal && !expressionEditorSwitchModal.classList.contains("hidden")) {
+    expressionEditorSwitchApplyBtn.disabled = !canApply;
+  }
+  ui.expressionEditor.syntaxOk = canApply;
+  renderExpressionHighlight();
+  if (expressionStateInitialInput && expressionStateInitialHighlight && !expressionStateInitialBlock?.classList.contains("hidden")) {
+    renderExpressionHighlightFor(expressionStateInitialInput, expressionStateInitialHighlight);
+  }
+  renderExpressionAutocomplete();
+  scheduleExpressionPreviewRefresh(syntaxResult.ok ? 180 : 0);
+  showExpressionStatus(
+    expressionStateTransitionStatus,
+    syntaxResult,
+    true,
+  );
+  return syntaxResult;
+}
+
+function lineRangeAroundSelection(textarea) {
+  const start = textarea.selectionStart ?? 0;
+  const end = textarea.selectionEnd ?? start;
+  const value = textarea.value;
+  const lineStart = value.lastIndexOf("\n", Math.max(0, start - 1)) + 1;
+  let lineEnd = value.indexOf("\n", end);
+  if (lineEnd < 0) {
+    lineEnd = value.length;
+  }
+  return { start, end, lineStart, lineEnd };
+}
+
+function indentExpressionSelection(textarea, outdent = false) {
+  if (!textarea) {
+    return;
+  }
+  const { start, end, lineStart, lineEnd } = lineRangeAroundSelection(textarea);
+  const value = textarea.value;
+  const block = value.slice(lineStart, lineEnd);
+  const lines = block.split("\n");
+  let removedBeforeStart = 0;
+  let removedTotal = 0;
+  const nextLines = lines.map((line, idx) => {
+    if (!outdent) {
+      return `  ${line}`;
+    }
+    let removed = 0;
+    if (line.startsWith("  ")) {
+      removed = 2;
+    } else if (line.startsWith("\t")) {
+      removed = 1;
+    } else if (line.startsWith(" ")) {
+      removed = 1;
+    }
+    if (idx === 0) {
+      removedBeforeStart = removed;
+    }
+    removedTotal += removed;
+    return line.slice(removed);
+  });
+  const replacement = nextLines.join("\n");
+  textarea.value = `${value.slice(0, lineStart)}${replacement}${value.slice(lineEnd)}`;
+  if (start === end && !outdent) {
+    const caret = start + 2;
+    textarea.setSelectionRange(caret, caret);
+  } else {
+    const nextStart = Math.max(lineStart, start + (outdent ? -removedBeforeStart : 2));
+    const delta = outdent ? -removedTotal : (2 * lines.length);
+    const nextEnd = Math.max(nextStart, end + delta);
+    textarea.setSelectionRange(nextStart, nextEnd);
+  }
+}
+
+function insertExpressionNewlineWithIndent(textarea) {
+  if (!textarea) {
+    return;
+  }
+  const start = textarea.selectionStart ?? 0;
+  const end = textarea.selectionEnd ?? start;
+  const value = textarea.value;
+  const lineStart = value.lastIndexOf("\n", Math.max(0, start - 1)) + 1;
+  const currentLine = value.slice(lineStart, start);
+  const indent = (currentLine.match(/^[ \t]*/) || [""])[0];
+  const extraIndent = /[(\[{]$/.test(currentLine.trimEnd()) ? "  " : "";
+  const insertion = `\n${indent}${extraIndent}`;
+  textarea.value = `${value.slice(0, start)}${insertion}${value.slice(end)}`;
+  const caret = start + insertion.length;
+  textarea.setSelectionRange(caret, caret);
+}
+
+function openExpressionEditor(fieldKey) {
+  const node = selectedNodeForSidebar();
+  const meta = expressionFieldMeta(fieldKey, node);
+  if (!node || !meta || !expressionEditorModal || !expressionEditorTextarea || !expressionEditorTitle) {
+    return;
+  }
+  if (isEditingUiLocked()) {
+    return;
+  }
+  ui.expressionEditor = {
+    nodeId: node.id,
+    fieldKey: isStateNode(node) ? "value" : meta.key,
+    syntaxOk: true,
+    baseTitle: expressionEditorBaseTitleForNode(node),
+    initialValue: isStateNode(node) ? String(node.valueExpression ?? "") : meta.value,
+    secondaryInitialValue: isStateNode(node) ? String(node.initialStateExpression ?? "") : "",
+    librarySelectedName: "",
+    preferredFocus: fieldKey === "initial" ? "initial" : "main",
+    activeEditor: fieldKey === "initial" ? "initial" : "main",
+  };
+  if (!isStateNode(node)) {
+    expressionStateInitialBlock?.classList.add("hidden");
+    expressionStateTransitionHead?.classList.add("hidden");
+  }
+  expressionEditorTitle.textContent = ui.expressionEditor.baseTitle;
+  expressionEditorTextarea.value = String(ui.expressionEditor.initialValue ?? "");
+  expressionEditorModal.classList.remove("hidden");
+  resetExpressionEditorCardPosition();
+  setExpressionEditorView("editor", { focus: false });
+  syncExpressionEditorFormulaNotes();
+  setActiveExpressionEditor(isStateNode(node) && fieldKey === "initial" ? "initial" : "main");
+  refreshExpressionEditorValidation();
+  if (isStateNode(node) && fieldKey === "initial" && expressionStateInitialInput) {
+    expressionStateInitialInput.focus();
+    expressionStateInitialInput.select();
+  } else {
+    expressionEditorTextarea.focus();
+    expressionEditorTextarea.select();
+  }
+}
+
+function openNodePrimaryEditor(node) {
+  if (!node || isEditingUiLocked()) {
+    return;
+  }
+  if (isSubmodelNode(node)) {
+    void openSubmodelNodeInNewTab(node);
+    return;
+  }
+  if (isDraftNode(node)) {
+    return;
+  }
+  if (ui.expressionEditor && !expressionEditorModal?.classList.contains("hidden")) {
+    selectSingleNode(node.id);
+    return;
+  }
+  selectSingleNode(node.id);
+  openExpressionEditor("value");
+}
+
+function renameSelectedNode() {
+  const node = selectedNodeForSidebar();
+  if (!node || isEditingUiLocked()) {
+    return false;
+  }
+  revealSidebarForCompactLayout();
+  refreshSidebar();
+  window.requestAnimationFrame(() => {
+    if (!nodeNameInput.disabled && !nodeNameInput.classList.contains("hidden")) {
+      nodeNameInput.focus();
+      nodeNameInput.select();
+    }
+  });
+  return true;
+}
+
+function editSelectedTextItem() {
+  const item = ui.selected?.type === "text" ? getTextItemById(ui.selected.id) : null;
+  if (!item || isEditingUiLocked()) {
+    return false;
+  }
+  revealSidebarForCompactLayout();
+  openTextEditor();
+  return true;
+}
+
+function activateRenameSelectionAction() {
+  return ui.selected?.type === "text"
+    ? editSelectedTextItem()
+    : renameSelectedNode();
+}
+
+function editSelectedNodeExpression() {
+  const node = selectedNodeForSidebar();
+  if (!node || isSubmodelNode(node) || isWidgetControlledExpressionNode(node) || isEditingUiLocked()) {
+    return false;
+  }
+  openExpressionEditor("value");
+  return true;
+}
+
+function openCustomExpressionEditor(title, initialValue, onApply) {
+  if (!expressionEditorModal || !expressionEditorTextarea || !expressionEditorTitle) {
+    return;
+  }
+  if (isEditingUiLocked()) {
+    return;
+  }
+  ui.expressionEditor = {
+    nodeId: null,
+    fieldKey: "__custom__",
+    syntaxOk: true,
+    baseTitle: String(title ?? ""),
+    initialValue: String(initialValue ?? ""),
+    onApplyCustom: typeof onApply === "function" ? onApply : null,
+    librarySelectedName: "",
+  };
+  expressionStateInitialBlock?.classList.add("hidden");
+  expressionStateTransitionHead?.classList.add("hidden");
+  expressionEditorTitle.textContent = String(title ?? "");
+  expressionEditorTextarea.value = String(initialValue ?? "");
+  expressionEditorModal.classList.remove("hidden");
+  resetExpressionEditorCardPosition();
+  setExpressionEditorView("editor", { focus: false });
+  syncExpressionEditorFormulaNotes();
+  refreshExpressionEditorValidation();
+  expressionEditorTextarea.focus();
+  expressionEditorTextarea.select();
+}
+
+function commitExpressionEditorValue(closeAfter = true) {
+  if (!ui.expressionEditor || !ui.expressionEditor.syntaxOk || isEditingUiLocked()) {
+    return false;
+  }
+  if (ui.expressionEditor.fieldKey === "__custom__") {
+    const nextValue = expressionEditorTextarea ? expressionEditorTextarea.value : "";
+    if (typeof ui.expressionEditor.onApplyCustom === "function") {
+      ui.expressionEditor.onApplyCustom(nextValue);
+    }
+    if (closeAfter) {
+      closeExpressionEditor();
+    } else {
+      ui.expressionEditor.initialValue = nextValue;
+      refreshExpressionEditorValidation();
+    }
+    return true;
+  }
+  const node = getNodeById(ui.expressionEditor.nodeId);
+  const meta = expressionFieldMeta(ui.expressionEditor.fieldKey, node);
+  if (!node || !meta || !expressionEditorTextarea) {
+    if (closeAfter) {
+      closeExpressionEditor();
+    }
+    return false;
+  }
+  const nextValue = expressionEditorTextarea.value;
+  const nextInitialValue = expressionStateInitialInput && !expressionStateInitialBlock?.classList.contains("hidden")
+    ? expressionStateInitialInput.value
+    : null;
+  runAction(() => {
+    meta.setValue(nextValue);
+    if (nextInitialValue != null && isStateNode(node)) {
+      node.initialStateExpression = String(nextInitialValue ?? "");
+    }
+  });
+  // Keep inferred units and their diagnostics synchronized with the editor,
+  // not only with the explicit "Analyze model" command.
+  analyzeModelStaticIssues();
+  recalculateAfterNodeDefinitionChange();
+  if (meta.inputEl && document.activeElement !== meta.inputEl) {
+    meta.inputEl.value = nextValue;
+  }
+  updateExpressionFieldState(meta.inputEl, meta.statusEl, nextValue, false, meta.key);
+  if (nextInitialValue != null) {
+    if (nodeInitialStateInput && document.activeElement !== nodeInitialStateInput) {
+      nodeInitialStateInput.value = nextInitialValue;
+    }
+    updateExpressionFieldState(nodeInitialStateInput, nodeInitialStateStatus, nextInitialValue, false, "initial");
+  }
+  if (closeAfter) {
+    closeExpressionEditor();
+  } else {
+    ui.expressionEditor.initialValue = nextValue;
+    if (nextInitialValue != null) {
+      ui.expressionEditor.secondaryInitialValue = nextInitialValue;
+    }
+    ui.expressionEditor.baseTitle = expressionEditorBaseTitleForNode(node);
+    refreshExpressionEditorValidation();
+  }
+  return true;
+}
+
+function applyExpressionEditor() {
+  commitExpressionEditorValue(true);
+}
+
+function recalculateAfterNodeDefinitionChange() {
+  if (ui.nodeDefinitionRefreshTimer != null) {
+    window.clearTimeout(ui.nodeDefinitionRefreshTimer);
+    ui.nodeDefinitionRefreshTimer = null;
+  }
+  if (ui.timedRunHandle != null || ui.timedStepRunning) {
+    return;
+  }
+  const timeValue = Number(graph.execution.t0);
+  if (!Number.isFinite(timeValue)) {
+    render();
+    return;
+  }
+  invalidateExecutionPlan();
+  invalidateExpressionPreviewInitializationCache();
+  clearRuntimeSubmodelState();
+  clearAllXYChartPoints();
+  clearAllTableWidgetRows();
+  clearSimulationOutputHistory();
+  graph.execution.currentTime = null;
+  initializeStateNodes(timeValue);
+  evaluateAtTime(timeValue);
+  // This is a preview of the revised definition, not an execution step.
+  graph.execution.currentTime = null;
+  refreshRuntimeView();
+}
+
+function scheduleNodeDefinitionRecalculation(delayMs = 260) {
+  if (ui.nodeDefinitionRefreshTimer != null) {
+    window.clearTimeout(ui.nodeDefinitionRefreshTimer);
+  }
+  ui.nodeDefinitionRefreshTimer = window.setTimeout(() => {
+    ui.nodeDefinitionRefreshTimer = null;
+    analyzeModelStaticIssues();
+    recalculateAfterNodeDefinitionChange();
+  }, delayMs);
+}
+
+function isFirefoxBrowser() {
+  return /firefox/i.test(navigator.userAgent || "");
+}
+
+function applyI18nToDom() {
+  document.documentElement.lang = currentLang;
+  populateNodeColorSelect(nodeFillColorInput, NODE_FILL_COLOR_PRESETS);
+  populateNodeColorSelect(nodeStrokeColorInput, NODE_STROKE_COLOR_PRESETS);
+  populateNodeColorSelect(textFillColorInput, TEXT_FILL_COLOR_PRESETS);
+  populateNodeColorSelect(textStrokeColorInput, TEXT_STROKE_COLOR_PRESETS);
+  document.querySelectorAll("[data-i18n]").forEach((el) => {
+    const key = el.getAttribute("data-i18n");
+    if (!key) {
+      return;
+    }
+    const text = t(key);
+    if (el.tagName === "TITLE") {
+      document.title = applicationWindowTitle();
+    } else {
+      el.textContent = text;
+    }
+  });
+  document.querySelectorAll("[data-title-i18n]").forEach((el) => {
+    const key = el.getAttribute("data-title-i18n");
+    if (!key) {
+      return;
+    }
+    setTooltipText(el, t(key));
+  });
+  document.querySelectorAll("[data-i18n-placeholder]").forEach((el) => {
+    const key = el.getAttribute("data-i18n-placeholder");
+    if (!key || !("placeholder" in el)) {
+      return;
+    }
+    el.placeholder = t(key);
+  });
+  document.querySelectorAll("[data-i18n-aria-label]").forEach((el) => {
+    const key = el.getAttribute("data-i18n-aria-label");
+    if (!key) {
+      return;
+    }
+    el.setAttribute("aria-label", t(key));
+  });
+  document.querySelectorAll("[data-i18n-alt]").forEach((el) => {
+    const key = el.getAttribute("data-i18n-alt");
+    if (!key) {
+      return;
+    }
+    el.setAttribute("alt", t(key));
+  });
+  renderRecentModelsMenu();
+  updateFileStatusLabel(dirtySinceLastSave);
+}
+
+function applyI18nTooltipsToSubtree(root) {
+  if (!root || !(root instanceof Element)) {
+    return;
+  }
+  root.querySelectorAll("[data-title-i18n]").forEach((el) => {
+    const key = el.getAttribute("data-title-i18n");
+    if (!key) {
+      return;
+    }
+    setTooltipText(el, t(key));
+  });
+}
+
+function applyInterfaceLanguage(rawLanguage, refreshUi = false) {
+  currentLang = normalizeSupportedLanguage(rawLanguage) || "it";
+  const bundledCurrent = bundledI18nMessages(currentLang);
+  if (bundledCurrent) {
+    i18n = bundledCurrent;
+  } else if (currentLang !== "en") {
+    currentLang = "en";
+    i18n = bundledI18nMessages("en") || {};
+  } else {
+    i18n = {};
+  }
+  applyI18nToDom();
+  if (!expressionEditorModal?.classList.contains("hidden")) {
+    refreshExpressionEditorValidation();
+  }
+  if (!functionsHelpModal?.classList.contains("hidden")) {
+    renderFunctionsHelp();
+  }
+  if (!presentationGroupsModal?.classList.contains("hidden")) {
+    renderPresentationGroupsEditor();
+  }
+  if (!localFunctionsModal?.classList.contains("hidden")) {
+    renderLocalFunctionsEditor();
+  }
+  if (!watchDebuggerModal?.classList.contains("hidden")) {
+    renderWatchDebugger();
+  }
+  refreshWorkspaceTabBar();
+  if (refreshUi) {
+    syncViewOptionsInputs();
+    refreshSidebar();
+    render();
+  }
+}
+
+async function loadI18n() {
+  applyInterfaceLanguage(await resolveLangFromUrl());
+}
+
+function setStatus(text) {
+  statusText.textContent = text;
+  refreshActiveTooltip();
+  const activeTab = currentWorkspaceTab();
+  if (activeTab?.state?.context) {
+    activeTab.state.context.statusMessage = String(text ?? "");
+  }
+  syncSubmodelWorkspaceTabsFromActiveParent();
+}
+
+function setStatusKey(key, vars = null) {
+  setStatus(t(key, vars));
+}
+
+function displayFileName() {
+  return currentFileName || t("file.unnamed");
+}
+
+function isCompactTabletLayout() {
+  const narrowViewport = window.matchMedia("(max-width: 1100px)").matches;
+  const coarsePrimaryPointer = window.matchMedia("(pointer: coarse)").matches;
+  const noPrimaryHover = window.matchMedia("(hover: none)").matches;
+  const touchPrimaryDevice = coarsePrimaryPointer && noPrimaryHover;
+  return narrowViewport || touchPrimaryDevice;
+}
+
+function nodeEdgePortPosition(node) {
+  return {
+    x: Number(node?.x || 0),
+    y: Number(node?.y || 0),
+  };
+}
+
+function nodeEdgePortRadius(node) {
+  const preferredRadius = isCompactTabletLayout() ? 10 : 7;
+  const smallestDimension = Math.max(0, Math.min(Number(node?.width || 0), Number(node?.height || 0)));
+  return Math.max(5, Math.min(preferredRadius, smallestDimension * 0.22));
+}
+
+function isTabletCanvasPanMode() {
+  return isCompactTabletLayout() && ui.tabletCanvasMode === "pan";
+}
+
+function isCompactTouchPointerEvent(evt) {
+  return isCompactTabletLayout() && evt?.pointerType === "touch";
+}
+
+function isBackgroundTouchCanvasTarget(target) {
+  return !target?.closest?.(".node, .value-widget, .canvas-text-item, .edge, .control-point, .resize-handle, input, select, button, textarea, .menu-bar, .sidebar, .context-menu, .modal-backdrop, .modal-card");
+}
+
+function clearTouchViewportGesture() {
+  ui.touchViewportGesture = null;
+}
+
+function ensureTouchViewportGesture() {
+  if (!ui.touchViewportGesture) {
+    ui.touchViewportGesture = {
+      pointers: new Map(),
+      mode: null,
+      startClientX: 0,
+      startClientY: 0,
+      startScrollLeft: 0,
+      startScrollTop: 0,
+      startZoom: ui.zoom,
+      startDistance: 0,
+      lastDistance: 0,
+      lastMidClientX: 0,
+      lastMidClientY: 0,
+      target: null,
+    };
+  }
+  return ui.touchViewportGesture;
+}
+
+function touchGestureDistance(a, b) {
+  return Math.hypot(a.clientX - b.clientX, a.clientY - b.clientY);
+}
+
+function touchGestureMidpoint(a, b) {
+  return {
+    x: (a.clientX + b.clientX) / 2,
+    y: (a.clientY + b.clientY) / 2,
+  };
+}
+
+function refreshTouchViewportGestureMode() {
+  const gesture = ui.touchViewportGesture;
+  if (!gesture) {
+    return;
+  }
+  const points = [...gesture.pointers.values()];
+  if (points.length >= 2) {
+    const [a, b] = points;
+    const mid = touchGestureMidpoint(a, b);
+    const dist = touchGestureDistance(a, b);
+    gesture.mode = "pinch";
+    gesture.startZoom = ui.zoom;
+    gesture.startDistance = Math.max(1, dist);
+    gesture.lastDistance = Math.max(1, dist);
+    gesture.lastMidClientX = mid.x;
+    gesture.lastMidClientY = mid.y;
+    return;
+  }
+  if (points.length === 1) {
+    const [point] = points;
+    gesture.mode = "pan";
+    gesture.startClientX = point.clientX;
+    gesture.startClientY = point.clientY;
+    gesture.startScrollLeft = graphViewport.scrollLeft;
+    gesture.startScrollTop = graphViewport.scrollTop;
+    return;
+  }
+  clearTouchViewportGesture();
+}
+
+function updateTabletCanvasModeUi() {
+  const panMode = isTabletCanvasPanMode();
+  document.body.classList.toggle("tablet-canvas-pan", panMode);
+  if (tabletModeBtn) {
+    tabletModeBtn.textContent = panMode ? "✋" : "✎";
+    tabletModeBtn.classList.toggle("active", panMode);
+    setTooltipText(tabletModeBtn, t(panMode ? "action.tabletCanvasPan" : "action.tabletCanvasEdit"));
+  }
+}
+
+function updateTabletSidebarHeaderUi() {
+  const expanded = isCompactTabletLayout() && ui.tabletSidebarExpanded;
+  document.body.classList.toggle("tablet-sidebar-expanded", expanded);
+  if (tabletSidebarExpandBtn) {
+    tabletSidebarExpandBtn.textContent = expanded ? "▾" : "▴";
+    tabletSidebarExpandBtn.setAttribute("aria-expanded", expanded ? "true" : "false");
+    tabletSidebarExpandBtn.title = expanded ? "Riduci pannello" : "Espandi pannello";
+  }
+  if (tabletSidebarCloseBtn) {
+    tabletSidebarCloseBtn.title = t("action.close");
+  }
+}
+
+function setTabletCanvasMode(mode) {
+  ui.tabletCanvasMode = mode === "pan" ? "pan" : "edit";
+  updateTabletCanvasModeUi();
+}
+
+function clearTouchHold() {
+  if (ui.touchHold?.timerId != null) {
+    window.clearTimeout(ui.touchHold.timerId);
+  }
+  ui.touchHold = null;
+}
+
+function startTouchHold(evt, onTrigger, moveTolerance = 12, delayMs = 520) {
+  if (!isCompactTouchPointerEvent(evt) || typeof onTrigger !== "function") {
+    return false;
+  }
+  clearTouchHold();
+  const hold = {
+    pointerId: evt.pointerId,
+    startClientX: evt.clientX,
+    startClientY: evt.clientY,
+    lastClientX: evt.clientX,
+    lastClientY: evt.clientY,
+    moveTolerance,
+    triggered: false,
+    onTrigger,
+    timerId: window.setTimeout(() => {
+      if (!ui.touchHold || ui.touchHold !== hold) {
+        return;
+      }
+      hold.triggered = true;
+      hold.onTrigger({
+        clientX: hold.lastClientX,
+        clientY: hold.lastClientY,
+        pointerId: hold.pointerId,
+      });
+      clearTouchHold();
+    }, delayMs),
+  };
+  ui.touchHold = hold;
+  return true;
+}
+
+function applyResponsiveUiState() {
+  const compact = isCompactTabletLayout();
+  const open = compact && ui.tabletSidebarOpen;
+  const sidebarHidden = !compact && ui.sidebarHidden;
+  document.body.classList.toggle("tablet-sidebar-layout", compact);
+  document.body.classList.toggle("tablet-sidebar-open", open);
+  document.body.classList.toggle("tablet-sidebar-expanded", compact && open && ui.tabletSidebarExpanded);
+  document.body.classList.toggle("sidebar-hidden", sidebarHidden);
+  if (tabletSidebarBackdrop) {
+    tabletSidebarBackdrop.classList.toggle("hidden", !open);
+  }
+  if (tabletSidebarToggle) {
+    tabletSidebarToggle.classList.toggle("active", open);
+    tabletSidebarToggle.setAttribute("aria-expanded", open ? "true" : "false");
+  }
+  if (tabletSidebarHeader) {
+    tabletSidebarHeader.classList.toggle("hidden", !compact);
+  }
+  if (sidebarReopenBtn) {
+    sidebarReopenBtn.classList.toggle("hidden", !sidebarHidden);
+    sidebarReopenBtn.setAttribute("aria-expanded", sidebarHidden ? "false" : "true");
+  }
+  updateTabletSidebarHeaderUi();
+  updateTabletCanvasModeUi();
+}
+
+function hideConfigurationSidebar() {
+  if (isCompactTabletLayout()) {
+    setTabletSidebarOpen(false);
+    return;
+  }
+  ui.sidebarHidden = true;
+  applyResponsiveUiState();
+}
+
+function showConfigurationSidebar() {
+  if (isCompactTabletLayout()) {
+    setTabletSidebarOpen(true);
+    return;
+  }
+  ui.sidebarHidden = false;
+  applyResponsiveUiState();
+}
+
+function setTabletSidebarOpen(open) {
+  ui.tabletSidebarOpen = Boolean(open);
+  if (!ui.tabletSidebarOpen) {
+    ui.tabletSidebarExpanded = false;
+  }
+  applyResponsiveUiState();
+}
+
+function setTabletSidebarExpanded(expanded) {
+  ui.tabletSidebarExpanded = Boolean(expanded);
+  if (ui.tabletSidebarExpanded && !ui.tabletSidebarOpen) {
+    ui.tabletSidebarOpen = true;
+  }
+  applyResponsiveUiState();
+}
+
+function bindModalDragHandle(modalRoot, cardSelector, { allowCompactTouch = false } = {}) {
+  if (!modalRoot) {
+    return;
+  }
+  const modalHead = modalRoot.querySelector(".modal-head");
+  const modalCard = modalRoot.querySelector(cardSelector);
+  if (!modalHead || !modalCard) {
+    return;
+  }
+  modalHead.addEventListener("pointerdown", (evt) => {
+    if (evt.target.closest("button")) {
+      return;
+    }
+    if (!allowCompactTouch && isCompactTouchPointerEvent(evt)) {
+      return;
+    }
+    const rect = modalCard.getBoundingClientRect();
+    // Modal cards normally participate in the backdrop flex layout. Switch to
+    // fixed positioning before applying coordinates so dragging takes effect.
+    modalCard.style.position = "fixed";
+    modalCard.style.transform = "none";
+    modalCard.style.left = `${rect.left}px`;
+    modalCard.style.top = `${rect.top}px`;
+    ui.modalDrag = {
+      pointerId: evt.pointerId,
+      offsetX: evt.clientX - rect.left,
+      offsetY: evt.clientY - rect.top,
+      card: modalCard,
+    };
+    evt.currentTarget?.setPointerCapture?.(evt.pointerId);
+  });
+}
+
+function revealSidebarForCompactLayout() {
+  if (isCompactTabletLayout()) {
+    setTabletSidebarOpen(true);
+  }
+}
+
+function displayFileNameFromContext(context) {
+  const fileName = String(context?.currentFileName || "").trim();
+  if (fileName) {
+    return fileName.replace(/\.json$/i, "");
+  }
+  const modelTitle = String(context?.data?.modelTitle || "").trim();
+  return modelTitle || t("file.unnamed");
+}
+
+function workspaceTabMetaText(tab) {
+  const meta = tab?.meta;
+  if (!meta || meta.kind !== "submodel") {
+    return "";
+  }
+  const parentTab = meta.parentTabId != null ? getWorkspaceTabById(meta.parentTabId) : null;
+  const parentLabel = parentTab
+    ? displayFileNameFromContext(parentTab.state?.context)
+    : String(meta.parentTitle || "").trim();
+  const nodeName = String(meta.parentNodeName || "").trim();
+  if (!nodeName && !parentLabel) {
+    return "";
+  }
+  return t("tab.meta.submodel", {
+    node: nodeName || t("text.unnamed"),
+    parent: parentLabel || t("file.unnamed"),
+  });
+}
+
+function getWorkspaceTabById(tabId) {
+  return workspaceTabsCore.getTabById(workspace.tabs, tabId);
+}
+
+function currentWorkspaceTab() {
+  return workspaceTabsCore.currentTab(workspace.tabs, workspace.activeTabId);
+}
+
+function collectWorkspaceDescendantTabIds(tabId) {
+  return workspaceTabsCore.collectDescendantTabIds(workspace.tabs, tabId);
+}
+
+function workspaceContextHasUnsavedChanges(context) {
+  return workspaceTabsCore.contextHasUnsavedChanges(context);
+}
+
+function cloneRuntimeNodeState(node) {
+  return workspaceRuntimeStateHelpers.cloneRuntimeNodeState(node);
+}
+
+function cloneRuntimeWidgetState(widget) {
+  return workspaceRuntimeStateHelpers.cloneRuntimeWidgetState(widget);
+}
+
+function cloneEmptyRuntimeNodeStateFromDataNode(node) {
+  return workspaceRuntimeStateHelpers.cloneEmptyRuntimeNodeStateFromDataNode(node);
+}
+
+function buildNodeMapFromRuntimeNodes(nodes = []) {
+  return workspaceRuntimeStateHelpers.buildNodeMapFromRuntimeNodes(nodes);
+}
+
+function buildChartPairSeriesDefinitionsForSync(pair, xValue, yValue) {
+  return workspaceRuntimeStateHelpers.buildChartPairSeriesDefinitionsForSync(pair, xValue, yValue);
+}
+
+function buildChartPairInstantSeriesDefinitionsForSync(pair, xValue, yValue) {
+  return workspaceRuntimeStateHelpers.buildChartPairInstantSeriesDefinitionsForSync(pair, xValue, yValue);
+}
+
+function buildSubmodelSimulationHistory(prevHistory, runtimeModel) {
+  return workspaceRuntimeStateHelpers.buildSubmodelSimulationHistory(prevHistory, runtimeModel);
+}
+
+function buildSyncedWidgetRuntimeStates(widgetDefs, runtimeNodes, timeValue, previousStates = []) {
+  return workspaceRuntimeStateHelpers.buildSyncedWidgetRuntimeStates(widgetDefs, runtimeNodes, timeValue, previousStates);
+}
+
+function syncSubmodelWorkspaceTabsFromActiveParent() {
+  const parentTabId = workspace.activeTabId;
+  if (parentTabId == null) {
+    return;
+  }
+  workspace.tabs.forEach((tab) => {
+    if (tab?.meta?.kind !== "submodel" || tab.meta.parentTabId !== parentTabId) {
+      return;
+    }
+    const parentNode = graph.nodes.find((node) => isSubmodelNode(node) && node.name === tab.meta.parentNodeName);
+    const runtimeModel = parentNode?.__runtimeSubmodel;
+    if (!runtimeModel) {
+      return;
+    }
+    const previousRuntimeState = tab.state?.runtimeState || {};
+    const currentTime = Number(runtimeModel.execution?.currentTime);
+    const previousTime = Number(previousRuntimeState.executionCurrentTime);
+    const restartDetected =
+      Number.isFinite(currentTime)
+      && Number.isFinite(previousTime)
+      && currentTime < previousTime - Math.max(1e-12, Math.abs(currentTime) * 1e-9);
+    const widgetPrevStates = restartDetected ? [] : (previousRuntimeState.widgetStates || []);
+    const historyPrev = restartDetected ? [] : (previousRuntimeState.simulationHistory || []);
+    tab.state.runtimeState = {
+      executionCurrentTime: runtimeModel.execution?.currentTime == null ? null : deepClone(runtimeModel.execution.currentTime),
+      simulationHistory: buildSubmodelSimulationHistory(historyPrev, runtimeModel),
+      readDataCache: deepClone(runtimeModel.__readDataCache || Object.create(null)),
+      nodeStates: (runtimeModel.nodes || []).map((node) => cloneRuntimeNodeState(node)),
+      widgetStates: buildSyncedWidgetRuntimeStates(tab.state?.context?.data?.widgets || [], runtimeModel.nodes || [], currentTime, widgetPrevStates),
+    };
+    tab.state.context.statusMessage = String(statusText?.textContent || "");
+    if (tab.state.context?.data?.execution) {
+      tab.state.context.data.execution.currentTime = runtimeModel.execution?.currentTime == null ? null : deepClone(runtimeModel.execution.currentTime);
+    }
+  });
+}
+
+function captureRuntimeStateSnapshot() {
+  return workspaceRuntimeStateHelpers.captureRuntimeStateSnapshot(graph);
+}
+
+function applyRuntimeStateSnapshot(snapshot) {
+  workspaceRuntimeStateHelpers.applyRuntimeStateSnapshot(graph, snapshot);
+}
+
+function captureWorkspaceTabState() {
+  return {
+    context: captureCurrentModelContext(),
+    runtimeState: captureRuntimeStateSnapshot(),
+  };
+}
+
+function restoreWorkspaceTabState(state) {
+  if (!state?.context) {
+    return;
+  }
+  restoreModelContext(state.context);
+  applyRuntimeStateSnapshot(state.runtimeState);
+  render();
+}
+
+function saveActiveWorkspaceTabState() {
+  const tab = currentWorkspaceTab();
+  if (!tab) {
+    return;
+  }
+  tab.state = captureWorkspaceTabState();
+  refreshWorkspaceTabBar();
+}
+
+function createWorkspaceTabFromCurrentState(options = {}) {
+  const tab = {
+    id: workspace.nextTabId++,
+    state: captureWorkspaceTabState(),
+    meta: options.meta ? deepClone(options.meta) : null,
+  };
+  workspace.tabs.push(tab);
+  if (options.activate !== false) {
+    workspace.activeTabId = tab.id;
+  }
+  refreshWorkspaceTabBar();
+  return tab;
+}
+
+function refreshWorkspaceTabBar() {
+  workspaceTabsUi.renderWorkspaceTabs({
+    root: workspaceTabBar,
+    tabs: workspace.tabs,
+    activeTabId: workspace.activeTabId,
+    displayTitle: (tab) => displayFileNameFromContext(tab.state?.context),
+    displayMeta: workspaceTabMetaText,
+    isDirty: (tab) => workspaceContextHasUnsavedChanges(tab.state?.context),
+    closeLabel: () => t("action.closeTab"),
+    onActivate: switchWorkspaceTab,
+    onClose: (tabId) => {
+      void closeWorkspaceTab(tabId);
+    },
+  });
+}
+
+function closeDocumentTransientUi() {
+  closeTopMenus();
+  hideContextMenu();
+  closeExpressionEditor();
+  closeTextEditor();
+  closeFunctionsHelp();
+  closeAboutApp();
+  closeModelAnalysis();
+  closeModelAnalysisChecksHelp();
+  closeWatchDebugger();
+  closeLocalFunctionsEditor();
+  closePresentationGroupsEditor();
+}
+
+function switchWorkspaceTab(tabId) {
+  if (tabId === workspace.activeTabId) {
+    return true;
+  }
+  const nextTab = getWorkspaceTabById(tabId);
+  if (!nextTab) {
+    return false;
+  }
+  saveActiveWorkspaceTabState();
+  closeDocumentTransientUi();
+  workspace.activeTabId = nextTab.id;
+  restoreWorkspaceTabState(nextTab.state);
+  refreshWorkspaceTabBar();
+  return true;
+}
+
+async function ensureWorkspaceTabSavedBeforeClose(tabId) {
+  const tab = getWorkspaceTabById(tabId);
+  if (!tab || !workspaceContextHasUnsavedChanges(tab.state?.context)) {
+    return true;
+  }
+  const shouldSave = await confirmWorkspaceTabSaveBeforeClose();
+  if (!shouldSave) {
+    return true;
+  }
+  if (workspace.activeTabId !== tabId) {
+    switchWorkspaceTab(tabId);
+  }
+  return saveGraphJson(false);
+}
+
+async function confirmWorkspaceTabSaveBeforeClose() {
+  const electronBridge = electronFileBridge();
+  if (typeof electronBridge?.showConfirmDialog === "function") {
+    const response = await electronBridge.showConfirmDialog({
+      title: t("confirm.closeTab.title"),
+      message: t("confirm.closeTab.save"),
+      buttons: [t("action.yes"), t("action.closeWithoutSaving")],
+      defaultId: 0,
+      cancelId: 1,
+    });
+    return response === 0;
+  }
+  if (!modelCloseConfirmModal) {
+    return window.confirm(t("confirm.closeTab.save"));
+  }
+  return new Promise((resolve) => {
+    ui.modelCloseConfirmResolver = resolve;
+    modelCloseConfirmModal.classList.remove("hidden");
+    window.setTimeout(() => modelCloseConfirmSaveBtn?.focus(), 0);
+  });
+}
+
+function resolveWorkspaceTabSaveConfirmation(shouldSave) {
+  modelCloseConfirmModal?.classList.add("hidden");
+  const resolve = ui.modelCloseConfirmResolver;
+  ui.modelCloseConfirmResolver = null;
+  resolve?.(Boolean(shouldSave));
+}
+
+async function ensureWorkspaceTabsSavedBeforeClose(tabIds) {
+  const uniqueIds = [...new Set((Array.isArray(tabIds) ? tabIds : []).map((id) => Number(id)).filter(Number.isFinite))];
+  for (const id of uniqueIds) {
+    const saved = await ensureWorkspaceTabSavedBeforeClose(id);
+    if (!saved) {
+      return false;
+    }
+  }
+  return true;
+}
+
+async function closeWorkspaceTab(tabId) {
+  const tab = getWorkspaceTabById(tabId);
+  if (!tab) {
+    return false;
+  }
+  saveActiveWorkspaceTabState();
+  const descendantIds = collectWorkspaceDescendantTabIds(tabId);
+  const tabsToClose = [tabId, ...descendantIds];
+  const originalTabs = workspace.tabs.slice();
+  const saved = await ensureWorkspaceTabsSavedBeforeClose(tabsToClose);
+  if (!saved) {
+    return false;
+  }
+  const activeTabWillClose = tabsToClose.includes(workspace.activeTabId);
+  workspace.tabs = workspace.tabs.filter((entry) => !tabsToClose.includes(entry.id));
+  if (workspace.tabs.length === 0) {
+    resetGraphToEmptyModel();
+    createWorkspaceTabFromCurrentState({ activate: true });
+    setStatusKey("status.newGraph");
+    render();
+    window.requestAnimationFrame(() => {
+      markSavedSnapshot();
+    });
+    return true;
+  }
+  if (!activeTabWillClose) {
+    refreshWorkspaceTabBar();
+    return true;
+  }
+  const nextTabId = workspaceTabsCore.nextTabIdAfterClosing(
+    originalTabs,
+    tabsToClose,
+    tabId,
+  );
+  if (nextTabId == null) {
+    return false;
+  }
+  const nextTab = getWorkspaceTabById(nextTabId) || workspace.tabs[0];
+  workspace.activeTabId = nextTab.id;
+  restoreWorkspaceTabState(nextTab.state);
+  // Restoring a parent tab also restores a snapshot without live submodels.
+  // Rebuild its t0 preview so nodes fed by a submodel are immediately valid.
+  await preloadSubmodelsAfterLoad();
+  refreshWorkspaceTabBar();
+  setStatusKey("status.tabClosed");
+  return true;
+}
+
+async function closeActiveWorkspaceTab() {
+  const activeTab = currentWorkspaceTab();
+  if (!activeTab) {
+    return false;
+  }
+  return closeWorkspaceTab(activeTab.id);
+}
+
+window.__stgraphxCloseActiveModel = function __stgraphxCloseActiveModel() {
+  return closeActiveWorkspaceTab();
+};
+
+// Browsers reserve Ctrl/Cmd+W and window closing for themselves. They only
+// permit a generic beforeunload confirmation, so use it whenever a web/Tauri
+// document contains unsaved models. Electron has its own native dialog.
+if (!electronFileBridge()) {
+  window.addEventListener("beforeunload", (evt) => {
+    saveActiveWorkspaceTabState();
+    const hasUnsaved = workspace.tabs.some((tab) => workspaceContextHasUnsavedChanges(tab.state?.context));
+    if (!hasUnsaved) {
+      return;
+    }
+    evt.preventDefault();
+    evt.returnValue = "";
+  });
+}
+
+async function saveAllWorkspaceTabsBeforeClose() {
+  saveActiveWorkspaceTabState();
+  const unsavedTabs = workspace.tabs.filter((tab) => workspaceContextHasUnsavedChanges(tab.state?.context));
+  for (const tab of unsavedTabs) {
+    switchWorkspaceTab(tab.id);
+    const saved = await saveGraphJson(false);
+    if (!saved) {
+      return false;
+    }
+  }
+  return true;
+}
+
+window.__stgraphxGetClosePromptData = function __stgraphxGetClosePromptData() {
+  saveActiveWorkspaceTabState();
+  const unsavedCount = workspace.tabs.filter((tab) => workspaceContextHasUnsavedChanges(tab.state?.context)).length;
+  return {
+    hasUnsaved: unsavedCount > 0,
+    message: t("confirm.closeApp.save"),
+    detail: t("confirm.closeApp.detail", { name: unsavedCount > 1 ? `${displayFileName()} (+${unsavedCount - 1})` : displayFileName() }),
+    buttons: [t("action.yes"), t("action.closeWithoutSaving"), t("action.dontCloseApp")],
+  };
+};
+
+window.__stgraphxSaveBeforeClose = async function __stgraphxSaveBeforeClose() {
+  return saveAllWorkspaceTabsBeforeClose();
+};
+
+function updateFileStatusLabel(dirty = dirtySinceLastSave) {
+  if (!fileStatusText) {
+    return;
+  }
+  const key = dirty ? "file.status.dirty" : "file.status.clean";
+  fileStatusText.textContent = t(key, { name: displayFileName() });
+  if (saveJsonBtn) {
+    // Saving is harmless for a clean model and must remain available when a
+    // browser delays the dirty-state refresh after an edit.
+    saveJsonBtn.disabled = false;
+  }
+  const activeTab = currentWorkspaceTab();
+  if (activeTab?.state?.context) {
+    activeTab.state.context.currentFileName = currentFileName;
+    activeTab.state.context.lastSavedSnapshot = lastSavedSnapshot;
+    activeTab.state.context.dirtySinceLastSave = dirty;
+    activeTab.state.context.data = exportGraphData();
+  }
+  refreshWorkspaceTabBar();
+}
+
+function scheduleFileStatusRefresh() {
+  if (fileStatusRefreshTimer != null) {
+    return;
+  }
+  fileStatusRefreshTimer = window.setTimeout(() => {
+    fileStatusRefreshTimer = null;
+    dirtySinceLastSave = hasUnsavedChanges();
+    updateFileStatusLabel(dirtySinceLastSave);
+  }, 120);
+}
+
+function evalReasonText(reason) {
+  return t(`error.evalReason.${reason || "runtime"}`);
+}
+
+function normalizeExecutionConfig(raw) {
+  return runtimeShared.normalizeExecutionConfig(raw);
+}
+
+function createScenarioId() {
+  return `scenario-${Date.now()}-${Math.random().toString(36).slice(2)}`;
+}
+
+function normalizeScenarios(entries) {
+  return Array.isArray(entries) ? entries.map((entry) => ({
+    id: String(entry?.id || createScenarioId()),
+    name: String(entry?.name ?? "").trim().slice(0, 120),
+    values: Array.isArray(entry?.values) ? entry.values.map((value) => ({
+      name: String(value?.name ?? "").trim(),
+      valueExpression: String(value?.valueExpression ?? ""),
+      widgetValue: value?.widgetValue === undefined ? undefined : deepClone(value.widgetValue),
+    })).filter((value) => value.name) : [],
+    execution: entry?.execution && typeof entry.execution === "object" ? {
+      t0: Number.isFinite(Number(entry.execution.t0)) ? Number(entry.execution.t0) : null,
+      dt: Number.isFinite(Number(entry.execution.dt)) ? Number(entry.execution.dt) : null,
+      t1: Number.isFinite(Number(entry.execution.t1)) ? Number(entry.execution.t1) : null,
+      integrator: ["euler", "rk4"].includes(String(entry.execution.integrator)) ? String(entry.execution.integrator) : null,
+    } : null,
+  })).filter((entry) => entry.name) : [];
+}
+
+function scenarioInputWidget(nodeName) {
+  return graph.widgets.find((widget) => ["slider", "numeric", "button", "select"].includes(widget?.type)
+    && String(widget.source ?? "") === String(nodeName ?? "")) || null;
+}
+
+function scenarioTargetNodes() {
+  return graph.nodes.filter((node) => node?.shape === "diamond" || (node?.shape === "ellipse" && node.input));
+}
+
+function scenarioWidgetValueText(widget, value) {
+  if (Array.isArray(value)) return JSON.stringify(value);
+  if (widget?.type === "button") return value ? "1" : "0";
+  return String(value ?? "");
+}
+
+function scenarioWidgetValueFromText(widget, rawValue) {
+  const text = String(rawValue ?? "").trim();
+  if (widget?.type === "numeric") {
+    if (text.startsWith("[")) {
+      try { return JSON.parse(text); } catch { return deepClone(widget.value); }
+    }
+    const number = Number(text);
+    return Number.isFinite(number) ? number : deepClone(widget.value);
+  }
+  if (widget?.type === "button") {
+    return text === "1" || text.toLowerCase() === "true";
+  }
+  const number = Number(text);
+  return Number.isFinite(number) ? number : deepClone(widget?.value);
+}
+
+function currentScenarioValues() {
+  return scenarioTargetNodes().map((node) => {
+    const widget = scenarioInputWidget(node.name);
+    return {
+      name: node.name,
+      valueExpression: String(node.valueExpression ?? ""),
+      widgetValue: widget ? deepClone(widget.value) : undefined,
+    };
+  });
+}
+
+function currentScenarioExecution() {
+  return {
+    t0: Number(graph.execution.t0),
+    dt: Number(graph.execution.dt),
+    t1: Number(graph.execution.t1),
+    integrator: String(graph.execution.integrator ?? "euler"),
+  };
+}
+
+function applyScenario(scenario) {
+  const values = new Map((scenario?.values || []).map((value) => [String(value.name), value]));
+  runAction(() => {
+    const execution = scenario?.execution;
+    if (execution) {
+      ["t0", "dt", "t1"].forEach((key) => {
+        if (Number.isFinite(Number(execution[key]))) graph.execution[key] = Number(execution[key]);
+      });
+      if (["euler", "rk4"].includes(String(execution.integrator))) {
+        graph.execution.integrator = String(execution.integrator);
+      }
+      graph.execution.currentTime = null;
+    }
+    scenarioTargetNodes().forEach((node) => {
+      const saved = values.get(node.name);
+      if (!saved) return;
+      const widget = scenarioInputWidget(node.name);
+      if (widget && saved.widgetValue !== undefined) {
+        widget.value = deepClone(saved.widgetValue);
+      } else {
+        node.valueExpression = String(saved.valueExpression ?? "");
+      }
+    });
+    applyWidgetDrivenNodeValues();
+  });
+  analyzeModelStaticIssues();
+  void resetExecution();
+}
+
+function openScenarioEditor(initialScenario, onSave) {
+  const scenario = initialScenario || { id: "", name: "", values: currentScenarioValues(), execution: currentScenarioExecution() };
+  const saved = new Map((scenario.values || []).map((value) => [String(value.name), value]));
+  const backdrop = document.createElement("div");
+  backdrop.className = "modal-backdrop scenario-editor-backdrop";
+  const card = document.createElement("div");
+  card.className = "modal-card scenario-editor-card";
+  card.setAttribute("role", "dialog");
+  card.setAttribute("aria-modal", "true");
+  const head = document.createElement("div");
+  head.className = "modal-head";
+  const title = document.createElement("h3");
+  title.textContent = t("scenarios.editorTitle");
+  const close = document.createElement("button");
+  close.type = "button";
+  close.className = "icon-btn modal-close-btn";
+  close.textContent = "×";
+  close.setAttribute("aria-label", t("aria.close"));
+  head.append(title, close);
+  const body = document.createElement("div");
+  body.className = "scenario-editor-body";
+  const nameLabel = document.createElement("label");
+  nameLabel.className = "compact-field";
+  const nameCaption = document.createElement("span");
+  nameCaption.textContent = t("scenarios.name");
+  const nameInput = document.createElement("input");
+  nameInput.type = "text";
+  nameInput.maxLength = 120;
+  nameInput.value = String(scenario.name ?? "");
+  nameInput.placeholder = t("scenarios.namePlaceholder");
+  nameLabel.append(nameCaption, nameInput);
+  body.appendChild(nameLabel);
+  const executionTitle = document.createElement("h4");
+  executionTitle.className = "scenario-execution-title";
+  executionTitle.textContent = t("scenarios.timeBase");
+  body.appendChild(executionTitle);
+  const execution = scenario.execution || currentScenarioExecution();
+  [
+    ["t0", t("label.timeStart")],
+    ["dt", t("label.timeStep")],
+    ["t1", t("label.timeEnd")],
+  ].forEach(([key, labelText]) => {
+    const label = document.createElement("label");
+    label.className = "compact-field";
+    const caption = document.createElement("span");
+    caption.textContent = labelText;
+    const input = document.createElement("input");
+    input.type = "text";
+    input.inputMode = "decimal";
+    input.dataset.executionKey = key;
+    input.value = String(execution[key] ?? graph.execution[key]);
+    label.append(caption, input);
+    body.appendChild(label);
+  });
+  const integratorLabel = document.createElement("label");
+  integratorLabel.className = "compact-field";
+  const integratorCaption = document.createElement("span");
+  integratorCaption.textContent = t("label.integrator");
+  const integrator = document.createElement("select");
+  integrator.dataset.executionKey = "integrator";
+  ["euler", "rk4"].forEach((value) => {
+    const option = document.createElement("option");
+    option.value = value;
+    option.textContent = t(`integrator.${value}`);
+    integrator.appendChild(option);
+  });
+  integrator.value = ["euler", "rk4"].includes(String(execution.integrator)) ? String(execution.integrator) : "euler";
+  integratorLabel.append(integratorCaption, integrator);
+  body.appendChild(integratorLabel);
+  scenarioTargetNodes().forEach((node) => {
+    const widget = scenarioInputWidget(node.name);
+    const stored = saved.get(node.name);
+    const label = document.createElement("label");
+    label.className = "compact-field";
+    const caption = document.createElement("span");
+    caption.textContent = node.name;
+    const input = document.createElement("input");
+    input.type = "text";
+    input.dataset.nodeName = node.name;
+    input.dataset.widget = widget ? "true" : "false";
+    input.value = widget
+      ? scenarioWidgetValueText(widget, stored?.widgetValue ?? widget.value)
+      : String(stored?.valueExpression ?? node.valueExpression ?? "");
+    label.append(caption, input);
+    body.appendChild(label);
+  });
+  const actions = document.createElement("div");
+  actions.className = "modal-actions";
+  const cancel = document.createElement("button");
+  cancel.type = "button";
+  cancel.textContent = t("scenarios.cancel");
+  const save = document.createElement("button");
+  save.type = "button";
+  save.textContent = t("scenarios.save");
+  actions.append(cancel, save);
+  const dismiss = () => backdrop.remove();
+  close.addEventListener("click", dismiss);
+  cancel.addEventListener("click", dismiss);
+  backdrop.addEventListener("pointerdown", (event) => { if (event.target === backdrop) dismiss(); });
+  save.addEventListener("click", () => {
+    const name = String(nameInput.value ?? "").trim();
+    if (!name) { nameInput.focus(); return; }
+    const values = Array.from(body.querySelectorAll("input[data-node-name]")).map((input) => {
+      const node = graph.nodes.find((candidate) => candidate.name === input.dataset.nodeName);
+      const widget = node ? scenarioInputWidget(node.name) : null;
+      return {
+        name: String(input.dataset.nodeName),
+        valueExpression: widget ? String(node?.valueExpression ?? "") : String(input.value ?? ""),
+        widgetValue: widget ? scenarioWidgetValueFromText(widget, input.value) : undefined,
+      };
+    });
+    const scenarioExecution = {};
+    body.querySelectorAll("[data-execution-key]").forEach((input) => {
+      const key = String(input.dataset.executionKey);
+      scenarioExecution[key] = key === "integrator" ? String(input.value) : Number(String(input.value ?? "").replace(",", "."));
+    });
+    if (![scenarioExecution.t0, scenarioExecution.dt, scenarioExecution.t1].every(Number.isFinite)) return;
+    onSave({ id: scenario.id || createScenarioId(), name, values, execution: scenarioExecution });
+    dismiss();
+  });
+  card.append(head, body, actions);
+  backdrop.appendChild(card);
+  document.body.appendChild(backdrop);
+  window.setTimeout(() => nameInput.focus(), 0);
+}
+
+function openScenarioManager() {
+  const backdrop = document.createElement("div");
+  backdrop.className = "modal-backdrop modal-modeless scenario-manager-backdrop";
+  const card = document.createElement("div");
+  card.className = "modal-card scenario-manager-card";
+  card.setAttribute("role", "dialog");
+  card.setAttribute("aria-modal", "true");
+  const head = document.createElement("div");
+  head.className = "modal-head";
+  const title = document.createElement("h3");
+  title.textContent = t("scenarios.title");
+  const close = document.createElement("button");
+  close.type = "button";
+  close.className = "icon-btn modal-close-btn";
+  close.textContent = "×";
+  close.setAttribute("aria-label", t("aria.close"));
+  head.append(title, close);
+  const list = document.createElement("div");
+  list.className = "scenario-manager-list";
+  const actions = document.createElement("div");
+  actions.className = "modal-actions";
+  const saveCurrent = document.createElement("button");
+  saveCurrent.type = "button";
+  saveCurrent.textContent = t("scenarios.saveCurrent");
+  actions.appendChild(saveCurrent);
+  const dismiss = () => backdrop.remove();
+  close.addEventListener("click", dismiss);
+  backdrop.addEventListener("pointerdown", (event) => { if (event.target === backdrop) dismiss(); });
+  const renderList = () => {
+    list.innerHTML = "";
+    if (!graph.scenarios.length) {
+      const empty = document.createElement("div");
+      empty.className = "empty-props";
+      empty.textContent = t("scenarios.empty");
+      list.appendChild(empty);
+      return;
+    }
+    graph.scenarios.forEach((scenario, index) => {
+      const row = document.createElement("div");
+      row.className = "scenario-manager-row";
+      const name = document.createElement("strong");
+      name.textContent = scenario.name;
+      const buttons = document.createElement("div");
+      buttons.className = "scenario-manager-actions";
+      const add = (key, callback) => {
+        const button = document.createElement("button");
+        button.type = "button";
+        button.textContent = t(key);
+        button.addEventListener("click", callback);
+        buttons.appendChild(button);
+      };
+      add("scenarios.apply", () => applyScenario(scenario));
+      add("scenarios.edit", () => openScenarioEditor(scenario, (updated) => {
+        runAction(() => { graph.scenarios[index] = updated; });
+        renderList();
+      }));
+      add("scenarios.duplicate", () => openScenarioEditor({ ...deepClone(scenario), id: "", name: `${scenario.name} 2` }, (copy) => {
+        runAction(() => { graph.scenarios.push(copy); });
+        renderList();
+      }));
+      add("action.delete", () => {
+        runAction(() => { graph.scenarios.splice(index, 1); });
+        renderList();
+      });
+      row.append(name, buttons);
+      list.appendChild(row);
+    });
+  };
+  saveCurrent.addEventListener("click", () => openScenarioEditor(null, (scenario) => {
+    runAction(() => { graph.scenarios.push(scenario); });
+    renderList();
+  }));
+  renderList();
+  card.append(head, list, actions);
+  backdrop.appendChild(card);
+  document.body.appendChild(backdrop);
+  bindModalDragHandle(backdrop, ".scenario-manager-card", { allowCompactTouch: true });
+  window.setTimeout(() => saveCurrent.focus(), 0);
+}
+
+function renderUnitDefinitionsEditor() {
+  if (!unitDefinitionsList) {
+    return;
+  }
+  unitDefinitionsList.innerHTML = "";
+  graph.unitDefinitions.forEach((definition, index) => {
+    const row = document.createElement("div");
+    row.className = "unit-definition-row";
+    const symbol = document.createElement("input");
+    symbol.type = "text";
+    symbol.value = String(definition?.symbol ?? "");
+    symbol.placeholder = "N";
+    symbol.setAttribute("aria-label", t("label.unitDefinitionSymbol"));
+    symbol.title = t("label.unitDefinitionSymbol");
+    const expression = document.createElement("input");
+    expression.type = "text";
+    expression.value = String(definition?.expression ?? "");
+    expression.placeholder = "kg*m/s^2";
+    expression.setAttribute("aria-label", t("label.unitDefinitionExpression"));
+    expression.title = t("label.unitDefinitionExpression");
+    const update = () => {
+      if (!graph.unitDefinitions[index]) return;
+      graph.unitDefinitions[index].symbol = String(symbol.value ?? "").trim();
+      graph.unitDefinitions[index].expression = String(expression.value ?? "").trim();
+      analyzeModelStaticIssues();
+      scheduleFileStatusRefresh();
+    };
+    symbol.addEventListener("input", update);
+    expression.addEventListener("input", update);
+    const remove = document.createElement("button");
+    remove.type = "button";
+    remove.className = "unit-definition-remove";
+    remove.textContent = "×";
+    remove.setAttribute("aria-label", t("action.delete"));
+    remove.title = t("action.delete");
+    remove.addEventListener("click", () => {
+      graph.unitDefinitions.splice(index, 1);
+      analyzeModelStaticIssues();
+      scheduleFileStatusRefresh();
+      refreshSidebar();
+    });
+    row.append(symbol, expression, remove);
+    unitDefinitionsList.appendChild(row);
+  });
+}
+
+function renderSiUnitDefinitions() {
+  if (!siUnitDefinitionsList) return;
+  const baseSymbols = ["m", "kg", "s", "A", "K", "mol", "cd"];
+  const derived = globalThis.STGraphXUnitAnalysisCore?.siUnitDefinitions || [];
+  siUnitDefinitionsList.innerHTML = "";
+  baseSymbols.forEach((symbol) => {
+    const row = document.createElement("div");
+    row.className = "si-unit-definition-row";
+    row.textContent = `${symbol} — ${t("units.base")}`;
+    siUnitDefinitionsList.appendChild(row);
+  });
+  derived.forEach((definition) => {
+    const row = document.createElement("div");
+    row.className = "si-unit-definition-row";
+    row.textContent = `${definition.symbol} = ${definition.expression}`;
+    siUnitDefinitionsList.appendChild(row);
+  });
+}
+
+function openUnitDefinitions() {
+  if (!unitDefinitionsModal) return;
+  renderSiUnitDefinitions();
+  renderUnitDefinitionsEditor();
+  unitDefinitionsModal.classList.remove("hidden");
+  window.setTimeout(() => unitDefinitionsList?.querySelector("input")?.focus(), 0);
+}
+
+function closeUnitDefinitions() {
+  unitDefinitionsModal?.classList.add("hidden");
+}
+
+function normalizeEdgeInfluence(value) {
+  return runtimeShared.normalizeEdgeInfluence(value);
+}
+
+function normalizeEdgeColor(value) {
+  return runtimeShared.normalizeEdgeColor(value);
+}
+
+function propagateNodeRenameInExpressions(oldName, newName) {
+  if (!oldName || !newName || oldName === newName) {
+    return;
+  }
+  graph.nodes.forEach((node) => {
+    node.valueExpression = semantics.replaceIdentifierInExpression(
+      node.valueExpression,
+      oldName,
+      newName,
+    );
+    node.initialStateExpression = semantics.replaceIdentifierInExpression(
+      node.initialStateExpression,
+      oldName,
+      newName,
+    );
+  });
+  graph.widgets.forEach((widget) => {
+    if (widget.type === "table" && Array.isArray(widget.columns)) {
+      widget.columns = widget.columns.map((name) => (name === oldName ? newName : name));
+    }
+    if (widget.type === "matrix" && widget.source === oldName) {
+      widget.source = newName;
+    }
+    if (widget.type === "text" && widget.source === oldName) {
+      widget.source = newName;
+    }
+    if (widget.type === "led" && widget.source === oldName) {
+      widget.source = newName;
+    }
+    if (widget.type === "xychart") {
+      if (Array.isArray(widget.xyPairs)) {
+        widget.xyPairs = widget.xyPairs.map((pair) => ({
+          ...pair,
+          xSource: pair.xSource === oldName ? newName : pair.xSource,
+          ySource: pair.ySource === oldName ? newName : pair.ySource,
+        }));
+      }
+    }
+    if ((widget.type === "slider" || widget.type === "numeric" || widget.type === "button" || widget.type === "select") && widget.source === oldName) {
+      widget.source = newName;
+    }
+  });
+}
+
+function removeNodeFromAllWidgetDisplays(nodeName) {
+  if (!nodeName) {
+    return;
+  }
+  graph.widgets.forEach((widget) => {
+    if (widget.type === "table" && Array.isArray(widget.columns)) {
+      widget.columns = widget.columns.filter((name) => name !== nodeName);
+    }
+    if (widget.type === "matrix" && widget.source === nodeName) {
+      widget.source = "";
+    }
+    if (widget.type === "text" && widget.source === nodeName) {
+      widget.source = "";
+    }
+    if (widget.type === "led" && widget.source === nodeName) {
+      widget.source = "";
+    }
+    if (widget.type === "xychart") {
+      if (Array.isArray(widget.xyPairs)) {
+        widget.xyPairs = widget.xyPairs.filter((pair) => pair.xSource !== nodeName && pair.ySource !== nodeName);
+      }
+    }
+  });
+}
+
+function removeNodeFromInputWidgetBindings(nodeName) {
+  if (!nodeName) {
+    return;
+  }
+  graph.widgets.forEach((widget) => {
+    if ((widget.type === "slider" || widget.type === "numeric" || widget.type === "button" || widget.type === "select") && widget.source === nodeName) {
+      widget.source = "";
+    }
+  });
+}
+
+function removeNodeFromSubmodelInputBindings(nodeName) {
+  const sourceName = String(nodeName ?? "").trim();
+  if (!sourceName) {
+    return;
+  }
+  graph.nodes.forEach((node) => {
+    if (!isSubmodelNode(node) || !node.inputBindings || typeof node.inputBindings !== "object") {
+      return;
+    }
+    Object.entries(node.inputBindings).forEach(([inputName, binding]) => {
+      if (String(binding ?? "").trim() === sourceName) {
+        delete node.inputBindings[inputName];
+      }
+    });
+  });
+}
+
+function removeSubmodelInputBindingsForRemovedEdge(edge) {
+  const sourceNode = getNodeById(edge?.from);
+  const submodelNode = getNodeById(edge?.to);
+  const sourceName = String(sourceNode?.name ?? "").trim();
+  if (!sourceName || !submodelNode || !isSubmodelNode(submodelNode)) {
+    return;
+  }
+  const sourceIsStillConnected = graph.edges.some((candidate) => candidate.id !== edge.id
+    && candidate.from === edge.from
+    && candidate.to === edge.to);
+  if (sourceIsStillConnected || !submodelNode.inputBindings || typeof submodelNode.inputBindings !== "object") {
+    return;
+  }
+  Object.entries(submodelNode.inputBindings).forEach(([inputName, binding]) => {
+    if (String(binding ?? "").trim() === sourceName) {
+      delete submodelNode.inputBindings[inputName];
+    }
+  });
+}
+
+function clampZoom(value) {
+  return Math.min(MAX_ZOOM, Math.max(MIN_ZOOM, value));
+}
+
+function isStateNode(node) {
+  return node?.shape === "rect";
+}
+
+function isDraftNode(node) {
+  return node?.shape === "draft";
+}
+
+function isAlgebraicNode(node) {
+  return node?.shape === "ellipse";
+}
+
+function isSubmodelNode(node) {
+  return node?.shape === "submodel";
+}
+
+function nodeHasIncomingEdges(nodeId) {
+  return graph.edges.some((edge) => edge.to === nodeId);
+}
+
+function canMarkNodeAsInput(node) {
+  return !isDraftNode(node) && isAlgebraicNode(node) && !nodeHasIncomingEdges(node.id);
+}
+
+function canMarkNodeAsGlobal(node) {
+  return Boolean(node && node.shape === "diamond");
+}
+
+function isGlobalParameterNode(node) {
+  return Boolean(node && node.shape === "diamond" && node.global);
+}
+
+function nodeHasRuntimeError(node) {
+  return Boolean(
+    node
+    && (
+      String(node.computedError || "").trim()
+      || String(node.pendingStateError || "").trim()
+    ),
+  );
+}
+
+function globalParameterNodesForModel(model = graph, excludeId = null) {
+  return (model?.nodes || []).filter((node) => isGlobalParameterNode(node) && node.id !== excludeId);
+}
+
+function globalParameterNameSetForModel(model = graph, excludeId = null) {
+  return new Set(globalParameterNodesForModel(model, excludeId).map((node) => String(node.name ?? "")).filter(Boolean));
+}
+
+function referencedGlobalParameterNodesForTarget(model, targetNode, fieldKey = "value") {
+  if (!targetNode) {
+    return [];
+  }
+  const refs = fieldKey === "initial"
+    ? expressionReferencesForAnalysis(targetNode, "initial")
+    : expressionReferencesForAnalysis(targetNode, "value");
+  return globalParameterNodesForModel(model, targetNode.id)
+    .filter((node) => refs.has(String(node.name ?? "")));
+}
+
+function canBindButtonToNode(node) {
+  return Boolean(node && (node.shape === "diamond" || node.input));
+}
+
+function canBindSliderToNode(node) {
+  return Boolean(node && (node.shape === "diamond" || node.input));
+}
+
+function normalizeSubmodelPath(value) {
+  return runtimeShared.normalizeSubmodelPath(value);
+}
+
+function expressionUsesReadData(expression) {
+  return READ_DATA_CALL_PATTERN.test(String(expression ?? ""));
+}
+
+function decodeExpressionStringLiteral(quote, body) {
+  const raw = String(body ?? "");
+  return raw.replace(/\\([\\'"nrt])/g, (_match, escaped) => {
+    if (escaped === "n") {
+      return "\n";
+    }
+    if (escaped === "r") {
+      return "\r";
+    }
+    if (escaped === "t") {
+      return "\t";
+    }
+    return escaped;
+  });
+}
+
+function extractReadDataPaths(expression) {
+  const text = String(expression ?? "");
+  const paths = [];
+  READ_DATA_LITERAL_CALL_PATTERN.lastIndex = 0;
+  let match = READ_DATA_LITERAL_CALL_PATTERN.exec(text);
+  while (match) {
+    paths.push(decodeExpressionStringLiteral(match[1], match[2]));
+    match = READ_DATA_LITERAL_CALL_PATTERN.exec(text);
+  }
+  return paths;
+}
+
+function normalizeReadDataPath(value) {
+  return runtimeShared.normalizeReadDataPath(value);
+}
+
+function validateReadDataExpressionUsage(expression, options = {}) {
+  const text = String(expression ?? "");
+  if (!expressionUsesReadData(text)) {
+    return { ok: true };
+  }
+  if (!options.allowReadData) {
+    return { ok: false, message: "readData is only available in parameters" };
+  }
+  const callCount = (text.match(/\breadData\s*\(/g) || []).length;
+  const paths = extractReadDataPaths(text);
+  if (paths.length !== callCount) {
+    return { ok: false, message: "readData expects a string literal path" };
+  }
+  const invalidPath = paths.find((path) => !normalizeReadDataPath(path));
+  if (invalidPath !== undefined) {
+    return { ok: false, message: "readData path is invalid" };
+  }
+  return { ok: true };
+}
+
+function splitCsvLine(line) {
+  const fields = [];
+  let current = "";
+  let inQuotes = false;
+  for (let idx = 0; idx < line.length; idx += 1) {
+    const ch = line[idx];
+    if (ch === '"') {
+      if (inQuotes && line[idx + 1] === '"') {
+        current += '"';
+        idx += 1;
+      } else {
+        inQuotes = !inQuotes;
+      }
+      continue;
+    }
+    if (ch === "," && !inQuotes) {
+      fields.push(current);
+      current = "";
+      continue;
+    }
+    current += ch;
+  }
+  if (inQuotes) {
+    throw new Error("readData CSV contains an unterminated quoted field");
+  }
+  fields.push(current);
+  return fields;
+}
+
+function parseCsvMatrix(text, sourcePath = "") {
+  const normalizedText = String(text ?? "").replace(/^\uFEFF/, "");
+  const lines = normalizedText
+    .split(/\r?\n/)
+    .map((line) => line.replace(/\r$/, ""))
+    .filter((line) => line.trim().length > 0);
+  if (!lines.length) {
+    throw new Error("readData CSV is empty");
+  }
+  const matrix = lines.map((line, rowIndex) => splitCsvLine(line).map((cell, colIndex) => {
+    const trimmed = String(cell ?? "").trim();
+    if (!trimmed) {
+      return "";
+    }
+    const value = Number(trimmed);
+    if (Number.isFinite(value)) {
+      return value;
+    }
+    return trimmed;
+  }));
+  const width = matrix[0].length;
+  if (!width) {
+    throw new Error("readData CSV is empty");
+  }
+  if (matrix.some((row) => row.length !== width)) {
+    throw new Error("readData CSV must be rectangular");
+  }
+  return matrix;
+}
+
+function submodelInterfaceSummary(node) {
+  const inputs = Array.isArray(node?.interfaceCache?.inputs) ? node.interfaceCache.inputs : [];
+  const outputs = Array.isArray(node?.interfaceCache?.outputs) ? node.interfaceCache.outputs : [];
+  return t("text.submodelInterfaceSummary", {
+    inputs: inputs.length ? inputs.join(", ") : "-",
+    outputs: outputs.length ? outputs.join(", ") : "-",
+  });
+}
+
+function canShowSubmodelNode(node) {
+  if (!node || !isSubmodelNode(node)) {
+    return false;
+  }
+  const normalizedPath = normalizeSubmodelPath(node.modelPath);
+  if (!normalizedPath) {
+    return false;
+  }
+  return Boolean(
+    currentModelDirectoryHandle ||
+    submodelTemplateCache.has(normalizedPath) ||
+    submodelSourceCache.has(normalizedPath),
+  );
+}
+
+async function chooseSubmodelFileForNode(node) {
+  if (!node || !isSubmodelNode(node)) {
+    return false;
+  }
+  let entry = null;
+  if (supportsOpenFilePicker()) {
+    const handles = await showOpenFilePickerCompat({
+      multiple: false,
+      types: [{
+        description: "JSON",
+        accept: { "application/json": [".json"] },
+      }],
+    });
+    entry = handles?.[0] || null;
+  } else {
+    entry = await pickSubmodelFileWithInput();
+  }
+  if (!entry) {
+    throw new Error(t("error.loadCancelled"));
+  }
+  const item = await parseSelectedJsonEntry(entry);
+  const normalizedPath = normalizeSubmodelPath(item?.name);
+  if (!normalizedPath) {
+    throw new Error(t("error.submodelPathInvalid"));
+  }
+  node.modelPath = normalizedPath;
+  node.interfaceCache = emptySubmodelInterfaceCache();
+  node.submodelError = "";
+  node.__runtimeSubmodel = null;
+  node.__runtimeSubmodelPath = "";
+  submodelSourceCache.set(normalizedPath, item.text);
+  if (item.fileHandle) {
+    submodelFileHandleCache.set(normalizedPath, item.fileHandle);
+  }
+  try {
+    const data = JSON.parse(item.text);
+    submodelTemplateCache.set(normalizedPath, buildRuntimeModelFromData(data, {
+      directoryPath: String(item.directoryHandle?.path ?? ""),
+    }));
+  } catch (_err) {
+    // Parsing/semantic errors are surfaced by the normal refresh path below.
+  }
+  sanitizeSubmodelBindings(node);
+  sanitizeAllEdgesForNode(node.id);
+  invalidateExecutionPlan();
+  ui.submodelsPrepared = false;
+  scheduleFileStatusRefresh();
+  return true;
+}
+
+function sanitizeSubmodelBindings(node) {
+  if (!node || !isSubmodelNode(node)) {
+    return;
+  }
+  const allowedInputs = new Set(
+    Array.isArray(node.interfaceCache?.inputs)
+      ? node.interfaceCache.inputs.map((value) => String(value).trim()).filter(Boolean)
+      : [],
+  );
+  const source = node.inputBindings && typeof node.inputBindings === "object" ? node.inputBindings : {};
+  if (allowedInputs.size === 0) {
+    node.inputBindings = Object.fromEntries(
+      Object.entries(source)
+        .map(([key, value]) => [String(key || "").trim(), String(value ?? "").trim()])
+        .filter(([key, value]) => key && value),
+    );
+    return;
+  }
+  const next = {};
+  Object.entries(source).forEach(([key, value]) => {
+    const inputName = String(key || "").trim();
+    if (!inputName || !allowedInputs.has(inputName)) {
+      return;
+    }
+    const binding = String(value ?? "").trim();
+    if (binding) {
+      next[inputName] = binding;
+    }
+  });
+  node.inputBindings = next;
+}
+
+function sanitizeAllEdgesForNode(nodeId) {
+  void nodeId;
+}
+
+function emptySubmodelInterfaceCache() {
+  return { modelTitle: "", inputs: [], outputs: [], inputDetails: {}, outputDetails: {} };
+}
+
+function normalizeSubmodelInterfaceCache(cache) {
+  const source = cache && typeof cache === "object" ? cache : {};
+  const inputs = Array.isArray(source.inputs) ? source.inputs.map((value) => String(value)) : [];
+  const outputs = Array.isArray(source.outputs) ? source.outputs.map((value) => String(value)) : [];
+  const inputDetails = {};
+  const outputDetails = {};
+  if (source.inputDetails && typeof source.inputDetails === "object") {
+    Object.entries(source.inputDetails).forEach(([name, detail]) => {
+      const key = String(name ?? "").trim();
+      if (!key) {
+        return;
+      }
+      inputDetails[key] = {
+        description: String(detail?.description ?? "").trim(),
+      };
+    });
+  }
+  if (source.outputDetails && typeof source.outputDetails === "object") {
+    Object.entries(source.outputDetails).forEach(([name, detail]) => {
+      const key = String(name ?? "").trim();
+      if (!key) {
+        return;
+      }
+      outputDetails[key] = {
+        description: String(detail?.description ?? "").trim(),
+      };
+    });
+  }
+  return {
+    modelTitle: String(source.modelTitle ?? "").trim(),
+    inputs,
+    outputs,
+    inputDetails,
+    outputDetails,
+  };
+}
+
+const SUBMODEL_LIBRARY_ICONS = Object.freeze({
+  module: "◆",
+  layers: "▤",
+  network: "⌘",
+  grid: "▦",
+  process: "◈",
+});
+const MAX_SUBMODEL_ICON_DATA_URL_LENGTH = 1_500_000;
+
+function normalizeSubmodelIcon(icon) {
+  if (!icon || typeof icon !== "object") {
+    return null;
+  }
+  const type = String(icon.type ?? "").trim();
+  const value = String(icon.value ?? "").trim();
+  if (type === "library" && Object.prototype.hasOwnProperty.call(SUBMODEL_LIBRARY_ICONS, value)) {
+    return { type, value };
+  }
+  if (
+    type === "image"
+    && value.length <= MAX_SUBMODEL_ICON_DATA_URL_LENGTH
+    && /^data:image\/(?:png|jpeg|gif|webp|svg\+xml);base64,[a-z0-9+/=]+$/i.test(value)
+  ) {
+    return { type, value };
+  }
+  return null;
+}
+
+function submodelIconSelectValue(node) {
+  const icon = normalizeSubmodelIcon(node?.submodelIcon);
+  if (!icon) {
+    return "";
+  }
+  return icon.type === "image" ? "image" : icon.value;
+}
+
+function readImageFileAsDataUrl(file) {
+  return new Promise((resolve, reject) => {
+    if (!file || typeof FileReader === "undefined") {
+      reject(new Error(t("error.submodelIconRead")));
+      return;
+    }
+    const reader = new FileReader();
+    reader.onerror = () => reject(new Error(t("error.submodelIconRead")));
+    reader.onload = () => {
+      const icon = normalizeSubmodelIcon({ type: "image", value: String(reader.result ?? "") });
+      if (!icon) {
+        reject(new Error(t("error.submodelIconInvalid")));
+        return;
+      }
+      resolve(icon);
+    };
+    reader.readAsDataURL(file);
+  });
+}
+
+function chooseSubmodelIconFile() {
+  return new Promise((resolve) => {
+    const input = document.createElement("input");
+    let settled = false;
+    const finish = (file = null) => {
+      if (settled) {
+        return;
+      }
+      settled = true;
+      window.removeEventListener("focus", onWindowFocus);
+      resolve(file);
+    };
+    const onWindowFocus = () => {
+      window.setTimeout(() => finish(input.files?.[0] || null), 150);
+    };
+    input.type = "file";
+    input.accept = "image/png,image/jpeg,image/gif,image/webp,image/svg+xml";
+    input.addEventListener("change", () => finish(input.files?.[0] || null), { once: true });
+    input.addEventListener("cancel", () => finish(null), { once: true });
+    window.addEventListener("focus", onWindowFocus, { once: true });
+    input.click();
+  });
+}
+
+function submodelInputHelpText(node, inputName) {
+  const key = String(inputName ?? "").trim();
+  if (!key) {
+    return "";
+  }
+  return String(node?.interfaceCache?.inputDetails?.[key]?.description ?? "").trim();
+}
+
+function createSubmodelInterfaceProxyNode({ baseName, expression, x, y, description }) {
+  const node = {
+    id: nodeCounter++,
+    name: semantics.makeUniqueName(graph.nodes, baseName, null, "n"),
+    input: false,
+    output: false,
+    global: false,
+    shape: "ellipse",
+    x: snap(x),
+    y: snap(y),
+    width: 120,
+    height: 70,
+    fillColor: "",
+    strokeColor: "",
+    valueExpression: expression,
+    initialStateExpression: "",
+    modelPath: "",
+    inputBindings: {},
+    interfaceCache: emptySubmodelInterfaceCache(),
+    submodelError: "",
+    computedValue: null,
+    computedError: "",
+    pendingStateValue: null,
+    pendingStateError: "",
+    properties: [],
+  };
+  const descriptionProperty = normalizeNodeDescriptionProperty(node);
+  if (descriptionProperty) {
+    descriptionProperty.value = String(description ?? "").trim();
+  }
+  normalizeNodeFormulaNotesProperty(node);
+  sanitizeNodeVisualOptions(node);
+  graph.nodes.push(node);
+  return node;
+}
+
+async function createSubmodelInterfaceNodes(node) {
+  const submodelNode = getNodeById(node?.id);
+  if (!submodelNode || !isSubmodelNode(submodelNode)) {
+    return;
+  }
+
+  const hasInterface = Array.isArray(submodelNode.interfaceCache?.inputs)
+    && Array.isArray(submodelNode.interfaceCache?.outputs)
+    && (submodelNode.interfaceCache.inputs.length > 0 || submodelNode.interfaceCache.outputs.length > 0);
+  if (!hasInterface && String(submodelNode.modelPath ?? "").trim()) {
+    await refreshSubmodelInterface(submodelNode, false);
+  }
+
+  const inputs = Array.isArray(submodelNode.interfaceCache?.inputs)
+    ? submodelNode.interfaceCache.inputs.map((value) => String(value).trim()).filter(Boolean)
+    : [];
+  const outputs = Array.isArray(submodelNode.interfaceCache?.outputs)
+    ? submodelNode.interfaceCache.outputs.map((value) => String(value).trim()).filter(Boolean)
+    : [];
+  if (!inputs.length && !outputs.length) {
+    setStatusKey("error.submodelInterfaceUnavailable");
+    return;
+  }
+
+  const createdNodeIds = [];
+  runAction(() => {
+    if (!submodelNode.inputBindings || typeof submodelNode.inputBindings !== "object") {
+      submodelNode.inputBindings = {};
+    }
+    const spacing = 88;
+    const inputStartY = submodelNode.y - ((inputs.length - 1) * spacing) / 2;
+    inputs.forEach((inputName, index) => {
+      if (String(submodelNode.inputBindings[inputName] ?? "").trim()) {
+        return;
+      }
+      const proxy = createSubmodelInterfaceProxyNode({
+        baseName: `${submodelNode.name}_${inputName}`,
+        expression: "0",
+        x: submodelNode.x - 220,
+        y: inputStartY + index * spacing,
+        description: submodelInputHelpText(submodelNode, inputName),
+      });
+      addEdge(proxy.id, submodelNode.id);
+      submodelNode.inputBindings[inputName] = proxy.name;
+      createdNodeIds.push(proxy.id);
+    });
+
+    const outputStartY = submodelNode.y - ((outputs.length - 1) * spacing) / 2;
+    outputs.forEach((outputName, index) => {
+      const expression = `${submodelNode.name}.${outputName}`;
+      const existing = graph.nodes.some((candidate) => candidate.id !== submodelNode.id
+        && String(candidate.valueExpression ?? "").trim() === expression
+        && graph.edges.some((edge) => edge.from === submodelNode.id && edge.to === candidate.id));
+      if (existing) {
+        return;
+      }
+      const proxy = createSubmodelInterfaceProxyNode({
+        baseName: `${submodelNode.name}_${outputName}`,
+        expression,
+        x: submodelNode.x + 220,
+        y: outputStartY + index * spacing,
+        description: String(submodelNode.interfaceCache?.outputDetails?.[outputName]?.description ?? "").trim(),
+      });
+      addEdge(submodelNode.id, proxy.id);
+      createdNodeIds.push(proxy.id);
+    });
+    if (createdNodeIds.length) {
+      setNodeSelection(createdNodeIds);
+    }
+  });
+  recalculateAfterNodeDefinitionChange();
+  setStatusKey("status.submodelInterfaceNodesCreated", { count: createdNodeIds.length });
+}
+
+function getSubmodelBindingSourceChoices(node) {
+  if (!node || !isSubmodelNode(node)) {
+    return [];
+  }
+  const names = new Set();
+  incomingEdgesForNode(node.id).forEach((edge) => {
+    const fromNode = getNodeById(edge.from);
+    const name = String(fromNode?.name ?? "").trim();
+    if (name) {
+      names.add(name);
+    }
+  });
+  return [...names].sort((a, b) => a.localeCompare(b, undefined, { sensitivity: "base" }));
+}
+
+function renderSubmodelBindingsEditor(node) {
+  if (!nodeSubmodelBindings) {
+    return;
+  }
+  nodeSubmodelBindings.innerHTML = "";
+  if (!node || !isSubmodelNode(node)) {
+    nodeSubmodelBindings.classList.add("hidden");
+    return;
+  }
+  sanitizeSubmodelBindings(node);
+  nodeSubmodelBindings.classList.remove("hidden");
+
+  const note = document.createElement("div");
+  note.className = "submodel-bindings-note";
+  note.textContent = t("text.submodelBindingDefault");
+  nodeSubmodelBindings.appendChild(note);
+
+  const inputs = Array.isArray(node.interfaceCache?.inputs)
+    ? node.interfaceCache.inputs.map((value) => String(value).trim()).filter(Boolean)
+    : [];
+  if (!inputs.length) {
+    const empty = document.createElement("div");
+    empty.className = "empty-props";
+    empty.textContent = t("text.submodelNoInputs");
+    nodeSubmodelBindings.appendChild(empty);
+    return;
+  }
+
+  const sourceChoices = getSubmodelBindingSourceChoices(node);
+  inputs.forEach((inputName) => {
+    const row = document.createElement("div");
+    row.className = "submodel-binding-row";
+    const label = document.createElement("label");
+    const inputId = `submodel-binding-${node.id}-${inputName.replace(/[^a-zA-Z0-9_-]+/g, "_")}`;
+    label.htmlFor = inputId;
+    label.textContent = inputName;
+    const helpText = submodelInputHelpText(node, inputName);
+    if (helpText) {
+      setTooltipText(label, helpText);
+    }
+    const select = document.createElement("select");
+    select.id = inputId;
+    select.setAttribute("data-title-i18n", "tooltip.node.submodelBinding");
+    const currentValue = String(node.inputBindings?.[inputName] ?? "").trim();
+    const emptyOption = document.createElement("option");
+    emptyOption.value = "";
+    emptyOption.textContent = t("widget.noneOption");
+    select.appendChild(emptyOption);
+    sourceChoices.forEach((sourceName) => {
+      const option = document.createElement("option");
+      option.value = sourceName;
+      option.textContent = sourceName;
+      select.appendChild(option);
+    });
+    if (currentValue && !sourceChoices.includes(currentValue)) {
+      const missingOption = document.createElement("option");
+      missingOption.value = currentValue;
+      missingOption.textContent = currentValue;
+      select.appendChild(missingOption);
+    }
+    select.value = currentValue;
+    select.addEventListener("change", () => {
+      beginTransaction();
+      const expr = String(select.value ?? "").trim();
+      if (!node.inputBindings || typeof node.inputBindings !== "object") {
+        node.inputBindings = {};
+      }
+      if (expr) {
+        node.inputBindings[inputName] = expr;
+      } else {
+        delete node.inputBindings[inputName];
+      }
+      dirtySinceLastSave = true;
+      updateFileStatusLabel(true);
+      scheduleFileStatusRefresh();
+      commitTransaction();
+      recalculateAfterNodeDefinitionChange();
+    });
+    row.appendChild(label);
+    row.appendChild(select);
+    nodeSubmodelBindings.appendChild(row);
+  });
+
+  applyI18nTooltipsToSubtree(nodeSubmodelBindings);
+}
+
+function hasExternalValue(node) {
+  return Boolean(node?.externalValueEnabled);
+}
+
+function hasSliderBinding(node) {
+  return Boolean(node && graph.widgets.some((widget) => widget.type === "slider" && widget.source === node.name));
+}
+
+function hasButtonBinding(node) {
+  return Boolean(node && graph.widgets.some((widget) => widget.type === "button" && widget.source === node.name));
+}
+
+function hasSelectBinding(node) {
+  return Boolean(node && graph.widgets.some((widget) => widget.type === "select" && widget.source === node.name));
+}
+
+function hasNumericBinding(node) {
+  return Boolean(node && graph.widgets.some((widget) => widget.type === "numeric" && widget.source === node.name));
+}
+
+function hasInputWidgetBinding(node) {
+  return hasSliderBinding(node) || hasNumericBinding(node) || hasButtonBinding(node) || hasSelectBinding(node);
+}
+
+function isWidgetControlledExpressionNode(node) {
+  return Boolean(node && !isStateNode(node) && !isSubmodelNode(node) && hasInputWidgetBinding(node));
+}
+
+function normalizeInputNodeFlags() {
+  graph.nodes.forEach((node) => {
+    if (!canMarkNodeAsInput(node)) {
+      node.input = false;
+    }
+    if (!canMarkNodeAsGlobal(node)) {
+      node.global = false;
+    }
+  });
+}
+
+function inputWidgetBoundNodeNameSet(excludeWidgetId = null) {
+  const bound = new Set();
+  graph.widgets.forEach((widget) => {
+    if (!widget || (excludeWidgetId != null && Number(widget.id) === Number(excludeWidgetId))) {
+      return;
+    }
+    if (widget.type !== "slider" && widget.type !== "numeric" && widget.type !== "button" && widget.type !== "select") {
+      return;
+    }
+    const source = String(widget.source ?? "").trim();
+    if (source) {
+      bound.add(source);
+    }
+  });
+  return bound;
+}
+
+function bindableInputNodeNames(predicate, excludeWidgetId = null, preserveName = "") {
+  const blocked = inputWidgetBoundNodeNameSet(excludeWidgetId);
+  const keepName = String(preserveName ?? "").trim();
+  if (keepName) {
+    blocked.delete(keepName);
+  }
+  return graph.nodes
+    .filter((node) => predicate(node) && !blocked.has(String(node.name ?? "")))
+    .map((node) => node.name)
+    .sort((left, right) => String(left).localeCompare(String(right), undefined, { numeric: true, sensitivity: "base" }));
+}
+
+function buttonBindableNodeNames(excludeWidgetId = null, preserveName = "") {
+  return bindableInputNodeNames((node) => canBindButtonToNode(node), excludeWidgetId, preserveName);
+}
+
+function selectBindableNodeNames(excludeWidgetId = null, preserveName = "") {
+  return bindableInputNodeNames((node) => canBindSliderToNode(node), excludeWidgetId, preserveName);
+}
+
+function sliderBindableNodeNames(excludeWidgetId = null, preserveName = "") {
+  return bindableInputNodeNames((node) => canBindSliderToNode(node), excludeWidgetId, preserveName);
+}
+
+function selectedNodesList() {
+  return [...ui.selectedNodes]
+    .map((id) => getNodeById(id))
+    .filter(Boolean);
+}
+
+function normalizePresentationGroupName(value, fallbackIndex = 1) {
+  const name = String(value ?? "").trim().replace(/\s+/g, " ");
+  return name || `${t("presentationGroups.defaultName")} ${fallbackIndex}`;
+}
+
+function sanitizePresentationGroups(rawGroups, nodes = graph.nodes) {
+  const validNodeIds = new Set((Array.isArray(nodes) ? nodes : []).map((node) => node.id));
+  const usedIds = new Set();
+  const usedNames = new Set();
+  const groups = [];
+  (Array.isArray(rawGroups) ? rawGroups : []).forEach((rawGroup, index) => {
+    let id = Number(rawGroup?.id);
+    if (!Number.isInteger(id) || id < 1 || usedIds.has(id)) {
+      id = index + 1;
+      while (usedIds.has(id)) {
+        id += 1;
+      }
+    }
+    usedIds.add(id);
+    const baseName = normalizePresentationGroupName(rawGroup?.name, groups.length + 1);
+    let name = baseName;
+    let suffix = 2;
+    while (usedNames.has(name.toLocaleLowerCase())) {
+      name = `${baseName} (${suffix})`;
+      suffix += 1;
+    }
+    usedNames.add(name.toLocaleLowerCase());
+    const nodeIds = [...new Set(Array.isArray(rawGroup?.nodeIds) ? rawGroup.nodeIds : [])]
+      .filter((nodeId) => validNodeIds.has(nodeId));
+    groups.push({
+      id,
+      name,
+      nodeIds,
+      visible: rawGroup?.visible !== false,
+      showFrame: rawGroup?.showFrame !== false,
+    });
+  });
+  return groups;
+}
+
+function syncPresentationGroups() {
+  graph.presentationGroups = sanitizePresentationGroups(graph.presentationGroups);
+  const maxId = graph.presentationGroups.reduce((max, group) => Math.max(max, group.id), 0);
+  presentationGroupCounter = Math.max(presentationGroupCounter, maxId + 1);
+}
+
+function visiblePresentationNodeIds() {
+  const memberships = new Map();
+  graph.presentationGroups.forEach((group) => {
+    group.nodeIds.forEach((nodeId) => {
+      const item = memberships.get(nodeId) || [];
+      item.push(group);
+      memberships.set(nodeId, item);
+    });
+  });
+  return new Set(graph.nodes
+    .filter((node) => {
+      const groups = memberships.get(node.id);
+      return !groups || groups.some((group) => group.visible);
+    })
+    .map((node) => node.id));
+}
+
+function presentationGroupBounds(group) {
+  const nodes = group.nodeIds.map((id) => getNodeById(id)).filter(Boolean);
+  if (!nodes.length) {
+    return null;
+  }
+  const padding = 22;
+  const minX = Math.min(...nodes.map((node) => node.x - node.width / 2)) - padding;
+  const minY = Math.min(...nodes.map((node) => node.y - node.height / 2)) - padding;
+  const maxX = Math.max(...nodes.map((node) => node.x + node.width / 2)) + padding;
+  const maxY = Math.max(...nodes.map((node) => node.y + node.height / 2)) + padding;
+  return { minX, minY, width: maxX - minX, height: maxY - minY };
+}
+
+function defaultDashboard() {
+  return {
+    visible: true,
+    x: 80,
+    y: 80,
+    width: 760,
+    height: 520,
+    activePageId: 1,
+    nextPageId: 2,
+    pages: [{ id: 1, title: t("dashboard.defaultPage") }],
+  };
+}
+
+function normalizeDashboardPageId(value) {
+  const pageId = Number(value);
+  return Number.isInteger(pageId) && pageId > 0 ? pageId : null;
+}
+
+function sanitizeDashboard(rawDashboard) {
+  if (!rawDashboard || typeof rawDashboard !== "object") {
+    return null;
+  }
+  const usedIds = new Set();
+  const pages = (Array.isArray(rawDashboard.pages) ? rawDashboard.pages : [])
+    .map((rawPage, index) => {
+      let id = Number(rawPage?.id);
+      if (!Number.isInteger(id) || id < 1 || usedIds.has(id)) {
+        id = index + 1;
+        while (usedIds.has(id)) id += 1;
+      }
+      usedIds.add(id);
+      return {
+        id,
+        title: String(rawPage?.title ?? "").trim() || `${t("dashboard.defaultPage")} ${index + 1}`,
+      };
+    });
+  if (!pages.length) {
+    pages.push({ id: 1, title: t("dashboard.defaultPage") });
+  }
+  const activePageId = Number(rawDashboard.activePageId);
+  const pageIds = new Set(pages.map((page) => page.id));
+  const maxPageId = Math.max(...pages.map((page) => page.id));
+  return {
+    visible: rawDashboard.visible !== false,
+    x: Number.isFinite(Number(rawDashboard.x)) ? Number(rawDashboard.x) : 80,
+    y: Number.isFinite(Number(rawDashboard.y)) ? Number(rawDashboard.y) : 80,
+    width: clamp(Number(rawDashboard.width) || 760, 320, 1600),
+    height: clamp(Number(rawDashboard.height) || 520, 220, 1200),
+    activePageId: pageIds.has(activePageId) ? activePageId : pages[0].id,
+    nextPageId: Math.max(Number(rawDashboard.nextPageId) || 0, maxPageId + 1),
+    pages,
+  };
+}
+
+function syncDashboard() {
+  graph.dashboard = sanitizeDashboard(graph.dashboard);
+  if (!graph.dashboard) {
+    graph.widgets.forEach((widget) => { widget.dashboardPageId = null; });
+    graph.textItems.forEach((item) => { item.dashboardPageId = null; });
+    return;
+  }
+  const pageIds = new Set(graph.dashboard.pages.map((page) => page.id));
+  [...graph.widgets, ...graph.textItems].forEach((item) => {
+    const pageId = normalizeDashboardPageId(item?.dashboardPageId);
+    item.dashboardPageId = pageIds.has(pageId) ? pageId : null;
+  });
+}
+
+function dashboardContentOrigin(dashboard = graph.dashboard) {
+  return { x: Number(dashboard?.x || 0) + 16, y: Number(dashboard?.y || 0) + 76 };
+}
+
+function isDashboardItemVisible(item) {
+  const pageId = normalizeDashboardPageId(item?.dashboardPageId);
+  if (pageId == null) return true;
+  return Boolean(graph.dashboard && graph.dashboard.visible !== false && graph.dashboard.activePageId === pageId);
+}
+
+function dashboardItemPosition(item) {
+  if (normalizeDashboardPageId(item?.dashboardPageId) == null) {
+    return { x: item.x, y: item.y };
+  }
+  const origin = dashboardContentOrigin();
+  return { x: origin.x + item.x, y: origin.y + item.y };
+}
+
+function commitDashboardChange(mutator) {
+  const beforeState = exportGraphData();
+  mutator();
+  syncDashboard();
+  const afterState = exportGraphData();
+  if (JSON.stringify(beforeState) !== JSON.stringify(afterState)) {
+    pushUndoState(beforeState);
+    history.redo = [];
+    dirtySinceLastSave = true;
+    updateFileStatusLabel(true);
+    updateHistoryButtons();
+  }
+  render();
+}
+
+function commitPresentationGroupsChange(mutator) {
+  const beforeState = exportGraphData();
+  mutator();
+  syncPresentationGroups();
+  const afterState = exportGraphData();
+  if (JSON.stringify(beforeState) !== JSON.stringify(afterState)) {
+    pushUndoState(beforeState);
+    history.redo = [];
+    dirtySinceLastSave = true;
+    updateFileStatusLabel(true);
+    updateHistoryButtons();
+  }
+  render();
+}
+
+function serializeNodeType(shape) {
+  return runtimeShared.serializeNodeType(shape);
+}
+
+function deserializeNodeType(type) {
+  return runtimeShared.deserializeNodeType(type);
+}
+
+function graphBounds() {
+  let minX = 0;
+  let minY = 0;
+  let maxX = BASE_CANVAS_WIDTH;
+  let maxY = BASE_CANVAS_HEIGHT;
+
+  const visibleNodeIds = visiblePresentationNodeIds();
+  graph.nodes.filter((node) => visibleNodeIds.has(node.id)).forEach((node) => {
+    const hw = node.width / 2;
+    const hh = node.height / 2;
+    minX = Math.min(minX, node.x - hw);
+    minY = Math.min(minY, node.y - hh);
+    maxX = Math.max(maxX, node.x + hw);
+    maxY = Math.max(maxY, node.y + hh);
+  });
+
+  graph.edges.filter((edge) => visibleNodeIds.has(edge.from) && visibleNodeIds.has(edge.to)).forEach((edge) => {
+    (edge.controlPoints || []).forEach((cp) => {
+      minX = Math.min(minX, cp.x);
+      minY = Math.min(minY, cp.y);
+      maxX = Math.max(maxX, cp.x);
+      maxY = Math.max(maxY, cp.y);
+    });
+  });
+
+  graph.widgets.forEach((widget) => {
+    if (!isDashboardItemVisible(widget)) return;
+    const position = dashboardItemPosition(widget);
+    const width = Number(widget.width) || 0;
+    const height = Number(widget.minimized ? 36 : widget.height) || 0;
+    minX = Math.min(minX, position.x);
+    minY = Math.min(minY, position.y);
+    maxX = Math.max(maxX, position.x + width);
+    maxY = Math.max(maxY, position.y + height);
+  });
+
+  graph.textItems.forEach((item) => {
+    if (!isDashboardItemVisible(item)) return;
+    const position = dashboardItemPosition(item);
+    minX = Math.min(minX, position.x);
+    minY = Math.min(minY, position.y);
+    maxX = Math.max(maxX, position.x + item.width);
+    maxY = Math.max(maxY, position.y + item.height);
+  });
+
+  if (graph.dashboard && graph.dashboard.visible !== false) {
+    minX = Math.min(minX, graph.dashboard.x);
+    minY = Math.min(minY, graph.dashboard.y);
+    maxX = Math.max(maxX, graph.dashboard.x + graph.dashboard.width);
+    maxY = Math.max(maxY, graph.dashboard.y + graph.dashboard.height);
+  }
+
+  const margin = 180;
+  minX -= margin;
+  minY -= margin;
+  maxX += margin;
+  maxY += margin;
+
+  return {
+    minX,
+    minY,
+    width: Math.max(200, maxX - minX),
+    height: Math.max(200, maxY - minY),
+  };
+}
+
+function updateCanvasSize(anchorClientX = null, anchorClientY = null, force = false) {
+  if (!force && (ui.drag || ui.resize || ui.controlPointDrag || ui.edgeCreate || ui.marquee || ui.textDrag || ui.textResize || ui.dashboardDrag || ui.dashboardResize)) {
+    return;
+  }
+
+  const rect = graphViewport.getBoundingClientRect();
+  const ax = anchorClientX ?? rect.left;
+  const ay = anchorClientY ?? rect.top;
+  const localX = Math.max(0, Math.min(rect.width, ax - rect.left));
+  const localY = Math.max(0, Math.min(rect.height, ay - rect.top));
+
+  const oldVB = svg.viewBox.baseVal;
+  const oldView = {
+    x: oldVB?.x ?? 0,
+    y: oldVB?.y ?? 0,
+    width: oldVB?.width || BASE_CANVAS_WIDTH,
+    height: oldVB?.height || BASE_CANVAS_HEIGHT,
+  };
+
+  const oldPixelWidth = svg.clientWidth || Math.round(oldView.width * ui.zoom);
+  const oldPixelHeight = svg.clientHeight || Math.round(oldView.height * ui.zoom);
+  const oldContentX = graphViewport.scrollLeft + localX;
+  const oldContentY = graphViewport.scrollTop + localY;
+  const worldX = oldView.x + (oldContentX / Math.max(1, oldPixelWidth)) * oldView.width;
+  const worldY = oldView.y + (oldContentY / Math.max(1, oldPixelHeight)) * oldView.height;
+
+  const bounds = graphBounds();
+  const zoomedWidth = Math.round(bounds.width * ui.zoom);
+  const zoomedHeight = Math.round(bounds.height * ui.zoom);
+  const targetWidth = Math.max(1, zoomedWidth);
+  const targetHeight = Math.max(1, zoomedHeight);
+
+  const currentWidth = parseInt(svg.style.width, 10) || svg.clientWidth;
+  const currentHeight = parseInt(svg.style.height, 10) || svg.clientHeight;
+  const sameView =
+    Math.abs(oldView.x - bounds.minX) < 0.001 &&
+    Math.abs(oldView.y - bounds.minY) < 0.001 &&
+    Math.abs(oldView.width - bounds.width) < 0.001 &&
+    Math.abs(oldView.height - bounds.height) < 0.001;
+  const sameSize = currentWidth === targetWidth && currentHeight === targetHeight;
+  if (!force && sameView && sameSize) {
+    return;
+  }
+
+  svg.setAttribute("viewBox", `${bounds.minX} ${bounds.minY} ${bounds.width} ${bounds.height}`);
+
+  svg.style.width = `${targetWidth}px`;
+  svg.style.height = `${targetHeight}px`;
+
+  const newContentX = ((worldX - bounds.minX) / bounds.width) * targetWidth;
+  const newContentY = ((worldY - bounds.minY) / bounds.height) * targetHeight;
+  graphViewport.scrollLeft = newContentX - localX;
+  graphViewport.scrollTop = newContentY - localY;
+  updateCanvasGridAppearance();
+}
+
+function updateZoomButtons() {
+  zoomInItem.disabled = ui.zoom >= MAX_ZOOM;
+  zoomOutItem.disabled = ui.zoom <= MIN_ZOOM;
+  zoomResetItem.disabled = Math.abs(ui.zoom - 1) < 0.001;
+  if (zoomRangeInput && document.activeElement !== zoomRangeInput) {
+    zoomRangeInput.value = String(Math.round(ui.zoom * 100));
+  }
+  if (zoomRangeValue) {
+    zoomRangeValue.textContent = `${Math.round(ui.zoom * 100)}%`;
+  }
+}
+
+function applyCanvasVisibility() {
+  svg.style.display = "block";
+  presentationGroupsLayer.style.display = ui.showGraph ? "" : "none";
+  dashboardLayer.style.display = ui.showWidgets && graph.dashboard && graph.dashboard.visible !== false ? "" : "none";
+  edgesLayer.style.display = ui.showGraph ? "" : "none";
+  previewLayer.style.display = ui.showGraph ? "" : "none";
+  nodesLayer.style.display = ui.showGraph ? "" : "none";
+  controlsLayer.style.display = ui.showGraph ? "" : "none";
+  marqueeLayer.style.display = ui.showGraph ? "" : "none";
+  widgetLayer.style.display = ui.showWidgets ? "" : "none";
+  textLayer.style.display = ui.showWidgets ? "" : "none";
+  const graphLabel = ui.showGraph ? t("view.btn.hideGraph") : t("view.btn.showGraph");
+  const widgetsLabel = ui.showWidgets ? t("view.btn.hideWidgets") : t("view.btn.showWidgets");
+  if (toggleGraphBtn) {
+    toggleGraphBtn.textContent = graphLabel;
+  }
+  if (toggleWidgetsBtn) {
+    toggleWidgetsBtn.textContent = widgetsLabel;
+  }
+  if (toggleGraphItem) {
+    toggleGraphItem.textContent = graphLabel;
+  }
+  if (toggleWidgetsItem) {
+    toggleWidgetsItem.textContent = widgetsLabel;
+  }
+  if (manageDashboardItem) {
+    manageDashboardItem.textContent = !graph.dashboard
+      ? t("dashboard.create")
+      : (graph.dashboard.visible === false ? t("dashboard.show") : t("dashboard.hide"));
+  }
+  updateCanvasGridAppearance();
+}
+
+function updateModelRunButtons() {
+  const blocked = hasStrictExecutionBlock();
+  if (topRunEvalBtn) {
+    setTooltipText(topRunEvalBtn, `${t("menu.run.execute")} (F7)`);
+    topRunEvalBtn.disabled = blocked;
+  }
+  if (tabletRunBtn) {
+    setTooltipText(tabletRunBtn, t("menu.run.execute"));
+    tabletRunBtn.disabled = blocked;
+  }
+  if (topRunStepBtn) {
+    setTooltipText(topRunStepBtn, `${t("menu.run.step")} (F8)`);
+    topRunStepBtn.disabled = blocked;
+  }
+  if (tabletStepBtn) {
+    setTooltipText(tabletStepBtn, t("menu.run.step"));
+    tabletStepBtn.disabled = blocked;
+  }
+  if (topRunTimedBtn) {
+    const timedKey = ui.timedRunHandle == null ? "action.timedStart" : "action.timedStop";
+    topRunTimedBtn.textContent = ui.timedRunHandle == null ? "▶⏱" : "⏸";
+    setTooltipText(topRunTimedBtn, `${t(timedKey)} (F9)`);
+    topRunTimedBtn.disabled = blocked && ui.timedRunHandle == null;
+    topRunTimedBtn.classList.toggle("active", ui.timedRunHandle != null);
+  }
+  if (tabletTimedBtn) {
+    const timedKey = ui.timedRunHandle == null ? "action.timedStart" : "action.timedStop";
+    tabletTimedBtn.textContent = ui.timedRunHandle == null ? "▶⏱" : "⏸";
+    setTooltipText(tabletTimedBtn, t(timedKey));
+    tabletTimedBtn.disabled = blocked && ui.timedRunHandle == null;
+    tabletTimedBtn.classList.toggle("active", ui.timedRunHandle != null);
+  }
+  if (topRunResetBtn) {
+    setTooltipText(topRunResetBtn, `${t("menu.run.reset")} (F10)`);
+  }
+  if (tabletResetBtn) {
+    setTooltipText(tabletResetBtn, t("menu.run.reset"));
+  }
+  if (tabletFitBtn) {
+    setTooltipText(tabletFitBtn, t("menu.view.fit"));
+  }
+  updateTabletCanvasModeUi();
+  if (runFullModelBtn) {
+    setTooltipText(runFullModelBtn, `${t("menu.run.execute")} (F7)`);
+    runFullModelBtn.disabled = blocked;
+  }
+  if (manualStepBtn) {
+    setTooltipText(manualStepBtn, `${t("menu.run.step")} (F8)`);
+    manualStepBtn.disabled = blocked;
+  }
+  if (timedToggleBtn) {
+    const timedKey = ui.timedRunHandle == null ? "action.timedStart" : "action.timedStop";
+    timedToggleBtn.textContent = ui.timedRunHandle == null ? "▶⏱" : "⏸";
+    setTooltipText(timedToggleBtn, `${t(timedKey)} (F9)`);
+    timedToggleBtn.disabled = blocked && ui.timedRunHandle == null;
+  }
+  if (resetExecBtn) {
+    setTooltipText(resetExecBtn, `${t("menu.run.reset")} (F10)`);
+  }
+  if (runEvalBtn) {
+    runEvalBtn.disabled = blocked;
+  }
+  if (runRustEngineBtn) {
+    runRustEngineBtn.disabled = blocked || !globalThis.STGraphXRustEngine;
+  }
+  if (runStepBtn) {
+    runStepBtn.disabled = blocked;
+  }
+  if (runTimedToggleBtn) {
+    runTimedToggleBtn.disabled = blocked && ui.timedRunHandle == null;
+  }
+  if (runStrictDefinitionsInput) {
+    runStrictDefinitionsInput.checked = Boolean(graph.execution.strictDefinitions);
+  }
+  if (runStopOnRuntimeErrorInput) {
+    runStopOnRuntimeErrorInput.checked = Boolean(graph.execution.stopOnRuntimeError);
+  }
+  if (strictDefinitionsInput) {
+    strictDefinitionsInput.checked = Boolean(graph.execution.strictDefinitions);
+  }
+}
+
+function updateDeleteActionLabel() {
+  if (!deleteBtnLabel) {
+    return;
+  }
+  deleteBtnLabel.textContent = t("menu.edit.delete");
+}
+
+function selectAllNodes() {
+  if (graph.nodes.length === 0) {
+    return;
+  }
+  setNodeSelection(graph.nodes.map((n) => n.id), false);
+  render();
+}
+
+function toggleGraphVisibility() {
+  ui.showGraph = !ui.showGraph;
+  applyCanvasVisibility();
+}
+
+function toggleWidgetsVisibility() {
+  ui.showWidgets = !ui.showWidgets;
+  applyCanvasVisibility();
+}
+
+function applyZoom(nextZoom, anchorClientX = null, anchorClientY = null) {
+  const targetZoom = clampZoom(nextZoom);
+  if (Math.abs(targetZoom - ui.zoom) < 0.0001) {
+    return;
+  }
+
+  ui.zoom = targetZoom;
+  updateCanvasSize(anchorClientX, anchorClientY, true);
+  renderWidgets();
+
+  updateZoomButtons();
+  refreshSidebar();
+  scheduleFileStatusRefresh();
+  setStatusKey("status.zoom", { value: Math.round(ui.zoom * 100) });
+}
+
+function handleCompactTouchViewportPointerDown(evt) {
+  const canStartGesture = isBackgroundTouchCanvasTarget(evt.target) || isTabletCanvasPanMode();
+  if (!isCompactTouchPointerEvent(evt) || !canStartGesture) {
+    return;
+  }
+  const gesture = ensureTouchViewportGesture();
+  gesture.target = graphViewport;
+  gesture.pointers.set(evt.pointerId, {
+    clientX: evt.clientX,
+    clientY: evt.clientY,
+  });
+  refreshTouchViewportGestureMode();
+  evt.preventDefault();
+}
+
+function handleCompactTouchViewportPointerMove(evt) {
+  const gesture = ui.touchViewportGesture;
+  if (!gesture || gesture.target !== graphViewport || !gesture.pointers.has(evt.pointerId)) {
+    return false;
+  }
+  gesture.pointers.set(evt.pointerId, {
+    clientX: evt.clientX,
+    clientY: evt.clientY,
+  });
+  const points = [...gesture.pointers.values()];
+  if (gesture.mode === "pinch" && points.length >= 2) {
+    const [a, b] = points;
+    const mid = touchGestureMidpoint(a, b);
+    const dist = Math.max(1, touchGestureDistance(a, b));
+    const factor = dist / Math.max(1, gesture.lastDistance || dist);
+    if (Number.isFinite(factor) && factor > 0) {
+      applyZoom(ui.zoom * factor, mid.x, mid.y);
+    }
+    graphViewport.scrollLeft -= (mid.x - gesture.lastMidClientX);
+    graphViewport.scrollTop -= (mid.y - gesture.lastMidClientY);
+    gesture.lastDistance = dist;
+    gesture.lastMidClientX = mid.x;
+    gesture.lastMidClientY = mid.y;
+    evt.preventDefault();
+    return true;
+  }
+  if (gesture.mode === "pan" && points.length === 1) {
+    const point = points[0];
+    graphViewport.scrollLeft = gesture.startScrollLeft - (point.clientX - gesture.startClientX);
+    graphViewport.scrollTop = gesture.startScrollTop - (point.clientY - gesture.startClientY);
+    evt.preventDefault();
+    return true;
+  }
+  return false;
+}
+
+function handleCompactTouchViewportPointerEnd(evt) {
+  const gesture = ui.touchViewportGesture;
+  if (!gesture || !gesture.pointers.has(evt.pointerId)) {
+    return false;
+  }
+  gesture.pointers.delete(evt.pointerId);
+  if (gesture.pointers.size === 0) {
+    clearTouchViewportGesture();
+  } else {
+    refreshTouchViewportGestureMode();
+  }
+  return true;
+}
+
+function fitToContent() {
+  const rect = graphViewport.getBoundingClientRect();
+  if (rect.width < 10 || rect.height < 10) {
+    return;
+  }
+
+  const bounds = graphBounds();
+  const zx = rect.width / Math.max(1, bounds.width);
+  const zy = rect.height / Math.max(1, bounds.height);
+  ui.zoom = clampZoom(Math.min(zx, zy));
+  updateCanvasSize(rect.left + rect.width / 2, rect.top + rect.height / 2, true);
+  renderWidgets();
+
+  graphViewport.scrollLeft = Math.max(0, (svg.clientWidth - rect.width) / 2);
+  graphViewport.scrollTop = Math.max(0, (svg.clientHeight - rect.height) / 2);
+
+  updateZoomButtons();
+  scheduleFileStatusRefresh();
+  setStatusKey("status.fit", { value: Math.round(ui.zoom * 100) });
+}
+
+let menuUi = null;
+
+function getMenuUi() {
+  if (menuUi) {
+    return menuUi;
+  }
+  const factory = globalThis.STGraphXMenuUi?.createMenuUi;
+  if (typeof factory !== "function") {
+    throw new Error("STGraphX menu UI helpers are unavailable");
+  }
+  menuUi = factory({
+    menuRoots,
+    menuTitles,
+    menuCommands,
+    contextMenu,
+    isCompactLayout: isCompactTabletLayout,
+  });
+  return menuUi;
+}
+
+function closeTopMenus() {
+  getMenuUi().closeTopMenus();
+}
+
+function positionCompactTopMenu(root) {
+  getMenuUi().positionCompactTopMenu(root);
+}
+
+function toggleTopMenu(root) {
+  getMenuUi().toggleTopMenu(root);
+}
+
+function hideContextMenu() {
+  getMenuUi().hideContextMenu();
+}
+
+function showContextMenu(clientX, clientY, items) {
+  getMenuUi().showContextMenu(clientX, clientY, items);
+}
+
+function getNodeById(id) {
+  return graph.nodes.find((n) => n.id === id);
+}
+
+function getEdgeById(id) {
+  return graph.edges.find((e) => e.id === id);
+}
+
+function getWidgetById(id) {
+  return graph.widgets.find((w) => w.id === id);
+}
+
+function nodeExists(id) {
+  return graph.nodes.some((n) => n.id === id);
+}
+
+function textItemExists(id) {
+  return graph.textItems.some((item) => item.id === id);
+}
+
+function getTextItemById(id) {
+  return graph.textItems.find((item) => item.id === id) || null;
+}
+
+function selectionExistenceOptions() {
+  return {
+    nodeExists,
+    widgetExists: (id) => Boolean(getWidgetById(id)),
+    textExists: textItemExists,
+  };
+}
+
+function clearAllSelection() {
+  requestExpressionEditorSelectionChange(() => {
+    selectionStateHelpers.clearSelection(ui);
+    refreshSidebar();
+  }, "");
+}
+
+function syncNodeSelectionFocus() {
+  selectionStateHelpers.synchronizeSelection(ui, selectionExistenceOptions());
+}
+
+function selectEdge(id) {
+  requestExpressionEditorSelectionChange(() => {
+    selectionStateHelpers.selectTarget(ui, "edge", id);
+    refreshSidebar();
+  }, `edge:${id}`);
+}
+
+function selectWidget(id) {
+  requestExpressionEditorSelectionChange(() => {
+    selectionStateHelpers.selectTarget(ui, "widget", id);
+    refreshSidebar();
+  }, `widget:${id}`);
+}
+
+function selectTextItem(id) {
+  requestExpressionEditorSelectionChange(() => {
+    selectionStateHelpers.selectTarget(ui, "text", id);
+    refreshSidebar();
+  }, `text:${id}`);
+}
+
+function isTextEditorOpen() {
+  return Boolean(textEditorModal && !textEditorModal.classList.contains("hidden"));
+}
+
+function syncSelectedTextInputs(item = null) {
+  const target = item || (ui.selected?.type === "text" ? getTextItemById(ui.selected.id) : null);
+  if (!target) {
+    return;
+  }
+  const value = textItemMarkdown(target);
+  if (textHtmlInput && document.activeElement !== textHtmlInput) {
+    textHtmlInput.value = value;
+  }
+  if (textEditorInput && document.activeElement !== textEditorInput) {
+    textEditorInput.value = value;
+  }
+}
+
+function closeTextEditor() {
+  if (!textEditorModal) {
+    return;
+  }
+  textEditorModal.classList.add("hidden");
+}
+
+function modelNotesTemplate() {
+  return [
+    `# ${graph.modelTitle || t("text.unnamed")}`, "",
+    `## ${t("modelNotes.objectives")}`, "", `## ${t("modelNotes.use")}`, "",
+    `## ${t("modelNotes.scenarios")}`, "", `## ${t("modelNotes.observations")}`, "",
+    `## ${t("modelNotes.questions")}`, "",
+  ].join("\n");
+}
+
+function renderModelNotesPreview() {
+  const markdown = modelNotesInput?.value ?? graph.notes?.markdown ?? "";
+  const html = markdown.trim()
+    ? (globalThis.STGraphXMarkdown?.renderMarkdownToHtml(markdown) ?? "")
+    : `<p class="empty-props">${t("modelNotes.empty")}</p>`;
+  if (modelNotesPreview) modelNotesPreview.innerHTML = html;
+  if (modelNotesReadOnly) modelNotesReadOnly.innerHTML = html;
+}
+
+function setModelNotesEditing(editing) {
+  modelNotesReadOnly?.classList.toggle("hidden", editing);
+  modelNotesEditor?.classList.toggle("hidden", !editing);
+  modelNotesEditBtn?.classList.toggle("hidden", editing);
+  if (editing) window.requestAnimationFrame(() => modelNotesInput?.focus());
+}
+
+function openModelNotes(editing = false) {
+  if (!modelNotesModal || !modelNotesInput) return;
+  modelNotesInput.value = graph.notes?.markdown || "";
+  renderModelNotesPreview();
+  setModelNotesEditing(editing);
+  modelNotesModal.classList.remove("hidden");
+}
+
+function closeModelNotes() { modelNotesModal?.classList.add("hidden"); }
+
+function revealNodeFromModelNotes(nodeName) {
+  const node = graph.nodes.find((entry) => String(entry.name) === String(nodeName).trim());
+  if (!node) return;
+  selectSingleNode(node.id);
+  graphViewport.scrollLeft = Math.max(0, node.x * ui.zoom - graphViewport.clientWidth / 2);
+  graphViewport.scrollTop = Math.max(0, node.y * ui.zoom - graphViewport.clientHeight / 2);
+  render();
+}
+
+function modelNotesSelectionText() {
+  if (!modelNotesInput) return "";
+  const start = modelNotesInput.selectionStart ?? 0;
+  const end = modelNotesInput.selectionEnd ?? start;
+  return modelNotesInput.value.slice(start, end);
+}
+
+function replaceModelNotesSelection(text) {
+  if (!modelNotesInput) return false;
+  const start = modelNotesInput.selectionStart ?? 0;
+  const end = modelNotesInput.selectionEnd ?? start;
+  const value = String(text ?? "");
+  modelNotesInput.value = `${modelNotesInput.value.slice(0, start)}${value}${modelNotesInput.value.slice(end)}`;
+  const caret = start + value.length;
+  modelNotesInput.focus();
+  modelNotesInput.setSelectionRange(caret, caret);
+  modelNotesInput.dispatchEvent(new Event("input", { bubbles: true }));
+  return true;
+}
+
+async function copyModelNotesSelection() {
+  const text = modelNotesSelectionText();
+  if (!text) return false;
+  const ok = await copyTextToClipboard(text);
+  if (ok) setStatusKey("status.clipboardTextCopied");
+  else setStatusKey("error.clipboardTextCopyFailed");
+  return ok;
+}
+
+async function readPlainClipboardText() {
+  try {
+    const platformText = await Promise.resolve(globalThis.STGraphXPlatform?.readClipboardText?.());
+    if (typeof platformText === "string") return platformText;
+  } catch {}
+  try {
+    if (navigator.clipboard?.readText) return await navigator.clipboard.readText();
+  } catch {}
+  return "";
+}
+
+async function pasteModelNotesText() {
+  const text = await readPlainClipboardText();
+  if (!text) return false;
+  replaceModelNotesSelection(text);
+  return true;
+}
+
+async function cutModelNotesSelection() {
+  if (!await copyModelNotesSelection()) return false;
+  return replaceModelNotesSelection("");
+}
+
+function openModelNotesInputContextMenu(evt) {
+  evt.preventDefault();
+  const hasSelection = Boolean(modelNotesSelectionText());
+  showContextMenu(evt.clientX, evt.clientY, [
+    { label: t("menu.edit.selectAll"), action: () => { modelNotesInput?.focus(); modelNotesInput?.select(); } },
+    { separator: true },
+    { label: t("menu.edit.cut"), disabled: !hasSelection, action: () => { void cutModelNotesSelection(); } },
+    { label: t("menu.edit.copy"), disabled: !hasSelection, action: () => { void copyModelNotesSelection(); } },
+    { label: t("menu.edit.paste"), action: () => { void pasteModelNotesText(); } },
+  ]);
+}
+
+function openTextEditor() {
+  const item = ui.selected?.type === "text" ? getTextItemById(ui.selected.id) : null;
+  if (!item || !textEditorModal) {
+    return;
+  }
+  syncSelectedTextInputs(item);
+  textEditorModal.classList.remove("hidden");
+  window.requestAnimationFrame(() => {
+    textEditorInput?.focus();
+  });
+}
+
+function selectSingleNode(id) {
+  requestExpressionEditorSelectionChange(() => {
+    selectionStateHelpers.selectSingleNode(ui, id);
+    refreshSidebar();
+  }, `node:${id}`);
+}
+
+function addNodeToSelection(id) {
+  if (ui.selectedNodes.has(id)) {
+    return;
+  }
+  requestExpressionEditorSelectionChange(() => {
+    selectionStateHelpers.addNode(ui, id, selectionExistenceOptions());
+    refreshSidebar();
+  }, "");
+}
+
+function setNodeSelection(ids, additive = false) {
+  const nextIds = new Set(additive ? [...ui.selectedNodes] : []);
+  ids.forEach((id) => nextIds.add(id));
+  const nextSelectionKey = nextIds.size === 1 ? `node:${[...nextIds][0]}` : "";
+  requestExpressionEditorSelectionChange(() => {
+    selectionStateHelpers.setNodes(ui, ids, additive, selectionExistenceOptions());
+    refreshSidebar();
+  }, nextSelectionKey);
+}
+
+function exportGraphData() {
+  syncPresentationGroups();
+  syncDashboard();
+  return {
+    version: 1,
+    modelTitle: String(graph.modelTitle ?? ""),
+    localFunctions: sanitizeLocalFunctions(graph).map((definition) => ({
+      name: definition.name,
+      params: definition.params.slice(),
+      expression: definition.expression,
+      description: definition.description,
+    })),
+    view: {
+      zoom: clampZoom(Number(ui.zoom) || 1),
+      showGrid: ui.showGrid !== false,
+      highlightNodeEdges: ui.highlightNodeEdges === true,
+      showNodeValues: ui.showNodeValues === true,
+      checkUnits: ui.checkUnits !== false,
+      gridSize: clamp(Number(ui.gridSize) || 20, 5, 100),
+      tooltipDelayMs: normalizeTooltipDelayMs(ui.tooltipDelayMs),
+      scrollLeft: Math.max(0, Number(graphViewport?.scrollLeft) || 0),
+      scrollTop: Math.max(0, Number(graphViewport?.scrollTop) || 0),
+    },
+    debug: {
+      watches: sanitizeDebugConfig(graph).watches.slice(),
+      breakpointEnabled: Boolean(ensureDebugConfig(graph).breakpointEnabled),
+      breakpointExpression: String(ensureDebugConfig(graph).breakpointExpression ?? ""),
+      breakpointMessage: String(ensureDebugConfig(graph).breakpointMessage ?? ""),
+    },
+    modelProperties: graph.properties.map((p) => ({ key: String(p.key), value: String(p.value) })),
+    unitDefinitions: graph.unitDefinitions
+      .map((definition) => ({ symbol: String(definition?.symbol ?? "").trim(), expression: String(definition?.expression ?? "").trim() }))
+      .filter((definition) => definition.symbol || definition.expression),
+    scenarios: normalizeScenarios(graph.scenarios),
+    nodeCounter,
+    edgeCounter,
+    widgetCounter,
+    textItemCounter,
+    presentationGroupCounter,
+    presentationGroups: graph.presentationGroups.map((group) => ({
+      id: group.id,
+      name: group.name,
+      nodeIds: group.nodeIds.slice(),
+      visible: group.visible !== false,
+      showFrame: group.showFrame !== false,
+    })),
+    dashboard: graph.dashboard ? {
+      visible: graph.dashboard.visible !== false,
+      x: graph.dashboard.x,
+      y: graph.dashboard.y,
+      width: graph.dashboard.width,
+      height: graph.dashboard.height,
+      activePageId: graph.dashboard.activePageId,
+      nextPageId: graph.dashboard.nextPageId,
+      pages: graph.dashboard.pages.map((page) => ({ id: page.id, title: page.title })),
+    } : null,
+    execution: {
+      t0: graph.execution.t0,
+      dt: graph.execution.dt,
+      timeUnit: String(graph.execution.timeUnit ?? "s"),
+      t1: graph.execution.t1,
+      delayMs: graph.execution.delayMs,
+      renderEverySteps: graph.execution.renderEverySteps,
+      decimals: clampDisplayDecimals(graph.execution.decimals),
+      integrator: String(graph.execution.integrator ?? "euler"),
+      strictDefinitions: Boolean(graph.execution.strictDefinitions),
+      stopOnRuntimeError: Boolean(graph.execution.stopOnRuntimeError),
+      randomSeed: runtimeShared.normalizeRandomSeed(graph.execution.randomSeed),
+    },
+    nodes: graph.nodes.map((n) => {
+      normalizeNodeDescriptionProperty(n);
+      normalizeNodeFormulaNotesProperty(n);
+      const type = serializeNodeType(n.shape);
+      const out = {
+        id: n.id,
+        name: n.name,
+        output: Boolean(n.output),
+        global: Boolean(n.global),
+        type,
+        x: n.x,
+        y: n.y,
+        width: n.width,
+        height: n.height,
+        fillColor: String(n.fillColor ?? ""),
+        strokeColor: String(n.strokeColor ?? ""),
+        unit: type === "draft" ? "" : String(n.unit ?? "").trim(),
+        properties: n.properties.map((p) => ({ key: String(p.key), value: String(p.value) })),
+      };
+      if (type === "algebraic") {
+        out.input = Boolean(n.input);
+      }
+      if (type === "algebraic") {
+        out.valueExpression = String(n.valueExpression ?? "");
+      } else if (type === "state") {
+        out.stateTransition = String(n.valueExpression ?? "");
+        out.initialState = String(n.initialStateExpression ?? "");
+      } else if (type === "submodel") {
+        out.modelPath = String(n.modelPath ?? "");
+        out.submodelIcon = normalizeSubmodelIcon(n.submodelIcon);
+        out.inputBindings = n.inputBindings && typeof n.inputBindings === "object"
+          ? Object.fromEntries(
+            Object.entries(n.inputBindings)
+              .map(([key, value]) => [String(key), String(value ?? "")])
+              .filter(([key]) => key.trim()),
+          )
+          : {};
+        out.interfaceCache = normalizeSubmodelInterfaceCache(n.interfaceCache);
+      } else if (type !== "draft") {
+        out.valueExpression = String(n.valueExpression ?? "");
+      }
+      return out;
+    }),
+    edges: graph.edges.map((e) => ({
+      id: e.id,
+      from: e.from,
+      to: e.to,
+      color: normalizeEdgeColor(e.color),
+      influence: normalizeEdgeInfluence(e.influence),
+      controlPoints: (e.controlPoints || []).map((cp) => ({ x: cp.x, y: cp.y })),
+    })),
+    notes: normalizeModelNotes(graph.notes),
+    textItems: graph.textItems.map((item) => ({
+      id: item.id, x: item.x, y: item.y, width: item.width, height: item.height,
+      fillColor: String(item.fillColor ?? ""), strokeColor: String(item.strokeColor ?? ""),
+      dashboardPageId: normalizeDashboardPageId(item.dashboardPageId),
+      ...(typeof item.markdown === "string" ? { markdown: item.markdown } : { html: String(item.html ?? "") }),
+    })),
+    widgets: graph.widgets.map((w) => ({
+      id: w.id,
+      type: w.type,
+      customTitle: String(w.customTitle ?? ""),
+      x: w.x,
+      y: w.y,
+      width: w.width,
+      height: w.height,
+      dashboardPageId: normalizeDashboardPageId(w.dashboardPageId),
+      minimized: Boolean(w.minimized),
+      showTitleBar: w.showTitleBar !== false,
+      fontSize: Number.isFinite(Number(w.fontSize))
+        ? clamp(Math.round(Number(w.fontSize)), 8, 32)
+        : (Number.isFinite(Number(w.tableFontSize)) ? clamp(Math.round(Number(w.tableFontSize)), 8, 32) : 13),
+      outputOnly: Boolean(w.outputOnly),
+      showHistory: Boolean(w.showHistory),
+      expandNonScalarValues: Boolean(w.expandNonScalarValues),
+      tableTextAlign: ["left", "center", "right"].includes(String(w.tableTextAlign ?? "")) ? String(w.tableTextAlign) : "left",
+      tableDecimalDigits: Number.isInteger(Number(w.tableDecimalDigits)) && Number(w.tableDecimalDigits) >= 0 && Number(w.tableDecimalDigits) <= 12
+        ? Number(w.tableDecimalDigits)
+        : null,
+      tableColumnFormats: normalizeTableColumnFormats(w.tableColumnFormats),
+      xMin: serializeAutoNullableNumber(w.xMin),
+      xMax: serializeAutoNullableNumber(w.xMax),
+      yMin: serializeAutoNullableNumber(w.yMin),
+      yMax: serializeAutoNullableNumber(w.yMax),
+      xGridStep: Number.isFinite(Number(w.xGridStep)) && Number(w.xGridStep) > 0 ? Number(w.xGridStep) : null,
+      yGridStep: Number.isFinite(Number(w.yGridStep)) && Number(w.yGridStep) > 0 ? Number(w.yGridStep) : null,
+      xAxisLabel: String(w.xAxisLabel ?? ""),
+      yAxisLabel: String(w.yAxisLabel ?? ""),
+      showGrid: w.showGrid !== false,
+      showAxes: w.showAxes !== false,
+      legendPosition: ["none", "top-right", "top-left", "bottom-right", "bottom-left"].includes(String(w.legendPosition ?? ""))
+        ? String(w.legendPosition)
+        : "top-right",
+      source: String(w.source ?? ""),
+      showNumericValues: w.showNumericValues !== false,
+      showIndices: w.showIndices !== false,
+      autoFitCells: w.autoFitCells !== false,
+      cellSize: Number.isFinite(Number(w.cellSize)) ? clamp(Number(w.cellSize), 2, 96) : 28,
+      valueMin: serializeAutoNullableNumber(w.valueMin),
+      valueMax: serializeAutoNullableNumber(w.valueMax),
+      displayRows: Number.isInteger(Number(w.displayRows)) && Number(w.displayRows) > 0 ? Number(w.displayRows) : null,
+      displayCols: Number.isInteger(Number(w.displayCols)) && Number(w.displayCols) > 0 ? Number(w.displayCols) : null,
+      colorScheme: ["blue", "heat", "grayscale", "diverging", "viridis", "plasma", "terrain", "categorical", "none"].includes(String(w.colorScheme ?? ""))
+        ? String(w.colorScheme)
+        : "blue",
+      viewMode: ["grid", "surface"].includes(String(w.viewMode ?? "")) ? String(w.viewMode) : "grid",
+      surfaceStyle: ["solid", "wireframe"].includes(String(w.surfaceStyle ?? "")) ? String(w.surfaceStyle) : "solid",
+      surfaceAzimuth: Number.isFinite(Number(w.surfaceAzimuth)) ? clamp(Number(w.surfaceAzimuth), -180, 180) : 45,
+      surfaceElevation: Number.isFinite(Number(w.surfaceElevation)) ? clamp(Number(w.surfaceElevation), 5, 85) : 32,
+      surfaceHeightScale: Number.isFinite(Number(w.surfaceHeightScale)) ? clamp(Number(w.surfaceHeightScale), 0.1, 10) : 1,
+      min: Number.isFinite(Number(w.min)) ? Number(w.min) : 0,
+      max: Number.isFinite(Number(w.max)) ? Number(w.max) : 100,
+      step: Number.isFinite(Number(w.step)) ? Number(w.step) : 1,
+      inputRows: w.type === "numeric" ? w.inputRows : undefined,
+      inputCols: w.type === "numeric" ? w.inputCols : undefined,
+      value: w.type === "numeric"
+        ? deepClone(w.value)
+        : w.type === "button"
+          ? Boolean(w.initialValue ?? w.value)
+          : (Number.isFinite(Number(w.value)) ? Number(w.value) : 0),
+      initialValue: w.type === "button" ? Boolean(w.initialValue ?? w.value) : undefined,
+      falseLabel: String(w.falseLabel ?? ""),
+      trueLabel: String(w.trueLabel ?? ""),
+      options: Array.isArray(w.options)
+        ? w.options.map((option) => ({
+          label: String(option?.label ?? ""),
+          value: Number.isFinite(Number(option?.value)) ? Number(option.value) : 0,
+        }))
+        : [],
+      mappings: Array.isArray(w.mappings)
+        ? w.mappings.map((mapping) => ({
+          value: Number.isFinite(Number(mapping?.value)) ? Number(mapping.value) : 0,
+          label: String(mapping?.label ?? ""),
+        }))
+        : [],
+      columns: Array.isArray(w.columns) ? w.columns.map(normalizeTableColumnName) : [],
+      xyPairs: Array.isArray(w.xyPairs)
+        ? w.xyPairs.map((pair, idx) => ({
+          xSource: String(pair.xSource ?? "time"),
+          ySource: String(pair.ySource ?? ""),
+          showTimeSeries: normalizeChartSeriesToggle(pair?.showTimeSeries, pair?.seriesMode !== "instant"),
+          showInstantProfile: normalizeChartSeriesToggle(pair?.showInstantProfile, pair?.seriesMode === "instant" ? true : false),
+          color: /^#[0-9a-fA-F]{6}$/.test(String(pair?.color ?? "")) ? String(pair.color) : defaultChartSeriesColor(idx),
+          pointColor: /^#[0-9a-fA-F]{6}$/.test(String(pair?.pointColor ?? "")) ? String(pair.pointColor) : (/^#[0-9a-fA-F]{6}$/.test(String(pair?.color ?? "")) ? String(pair.color) : defaultChartSeriesColor(idx)),
+          showLine: pair?.showLine !== false,
+          lineWidth: Number.isFinite(Number(pair?.lineWidth)) ? clamp(Number(pair.lineWidth), 1, 8) : 2.2,
+          lineStyle: normalizeChartLineStyle(pair?.lineStyle),
+          barMode: normalizeChartBarMode(pair?.barMode, pair?.showBars),
+          showBars: normalizeChartBarMode(pair?.barMode, pair?.showBars) !== "none",
+          barColor: /^#[0-9a-fA-F]{6}$/.test(String(pair?.barColor ?? "")) ? String(pair.barColor) : (/^#[0-9a-fA-F]{6}$/.test(String(pair?.color ?? "")) ? String(pair.color) : defaultChartSeriesColor(idx)),
+          barWidth: Number.isFinite(Number(pair?.barWidth)) ? clamp(Number(pair.barWidth), 1, 40) : 2.2,
+          showArea: pair?.showArea === true,
+          areaColor: /^#[0-9a-fA-F]{6}$/.test(String(pair?.areaColor ?? "")) ? String(pair.areaColor) : (/^#[0-9a-fA-F]{6}$/.test(String(pair?.color ?? "")) ? String(pair.color) : defaultChartSeriesColor(idx)),
+          pointMode: normalizeChartPointMode(pair?.pointMode, pair?.showPoints),
+          pointSize: Number.isFinite(Number(pair?.pointSize)) ? clamp(Number(pair.pointSize), 1, 12) : 2.4,
+        }))
+        : [],
+    })),
+  };
+}
+
+function currentSnapshot() {
+  return JSON.stringify(exportGraphData());
+}
+
+function captureCurrentModelContext(nodeName = "") {
+  return {
+    data: exportGraphData(),
+    currentFileHandle,
+    currentFileName,
+    currentModelDirectoryHandle,
+    lastSavedSnapshot,
+    dirtySinceLastSave,
+    statusMessage: String(statusText?.textContent || ""),
+    history: {
+      undo: deepClone(history.undo),
+      redo: deepClone(history.redo),
+    },
+    view: {
+      zoom: ui.zoom,
+      showGrid: ui.showGrid,
+      highlightNodeEdges: ui.highlightNodeEdges,
+      showNodeValues: ui.showNodeValues,
+      checkUnits: ui.checkUnits,
+      gridSize: ui.gridSize,
+      tooltipDelayMs: normalizeTooltipDelayMs(ui.tooltipDelayMs),
+      scrollLeft: graphViewport.scrollLeft,
+      scrollTop: graphViewport.scrollTop,
+    },
+    nodeName: String(nodeName || ""),
+  };
+}
+
+function restoreModelContext(context) {
+  if (!context) {
+    return;
+  }
+  stopTimedExecution(false);
+  applyGraphData(context.data);
+  currentFileHandle = context.currentFileHandle || null;
+  currentFileName = context.currentFileName || "";
+  currentModelDirectoryHandle = context.currentModelDirectoryHandle || null;
+  lastSavedSnapshot = String(context.lastSavedSnapshot || "");
+  dirtySinceLastSave = Boolean(context.dirtySinceLastSave);
+  history.undo = Array.isArray(context.history?.undo) ? deepClone(context.history.undo) : [];
+  history.redo = Array.isArray(context.history?.redo) ? deepClone(context.history.redo) : [];
+  history.transactionStart = null;
+  clearAllSelection();
+  ui.zoom = clampZoom(Number(context.view?.zoom) || 1);
+  ui.showGrid = context.view?.showGrid !== false;
+  ui.highlightNodeEdges = context.view?.highlightNodeEdges !== false;
+  ui.showNodeValues = context.view?.showNodeValues !== false;
+  ui.checkUnits = context.view?.checkUnits !== false;
+  ui.gridSize = clamp(Number(context.view?.gridSize) || ui.gridSize || 20, 5, 100);
+  ui.tooltipDelayMs = normalizeTooltipDelayMs(context.view?.tooltipDelayMs);
+  setStatus(String(context.statusMessage || t("status.ready")));
+  updateHistoryButtons();
+  updateFileStatusLabel(dirtySinceLastSave);
+  render();
+  window.requestAnimationFrame(() => {
+    graphViewport.scrollLeft = Number(context.view?.scrollLeft) || 0;
+    graphViewport.scrollTop = Number(context.view?.scrollTop) || 0;
+  });
+}
+
+function markSavedSnapshot() {
+  lastSavedSnapshot = currentSnapshot();
+  dirtySinceLastSave = false;
+  updateFileStatusLabel(false);
+}
+
+function hasUnsavedChanges() {
+  return currentSnapshot() !== lastSavedSnapshot;
+}
+
+function applyGraphData(data) {
+  ui.feedbackLoopSelection = null;
+  ui.feedbackLoopFocus = null;
+  stopTimedExecution(false);
+  clearRuntimeSubmodelState();
+  ui.submodelsPrepared = false;
+  ui.localFunctionsEditor = null;
+  const execCfg = normalizeExecutionConfig(data.execution);
+  const savedView = data?.view && typeof data.view === "object" ? data.view : null;
+  graph.modelTitle = String(data?.modelTitle ?? "");
+  graph.notes = normalizeModelNotes(data?.notes);
+  graph.properties = Array.isArray(data?.modelProperties)
+    ? data.modelProperties.map((p) => ({ key: String(p?.key ?? ""), value: String(p?.value ?? "") }))
+    : [];
+  graph.unitDefinitions = Array.isArray(data?.unitDefinitions)
+    ? data.unitDefinitions.map((definition) => ({ symbol: String(definition?.symbol ?? definition?.name ?? "").trim(), expression: String(definition?.expression ?? definition?.value ?? "").trim() }))
+    : [];
+  graph.scenarios = normalizeScenarios(data?.scenarios);
+  graph.localFunctions = Array.isArray(data?.localFunctions)
+    ? data.localFunctions.map((definition) => sanitizeLocalFunctionDefinition(definition))
+    : [];
+  graph.presentationGroups = sanitizePresentationGroups(data?.presentationGroups, data?.nodes);
+  graph.dashboard = sanitizeDashboard(data?.dashboard);
+  graph.debug = {
+    watches: Array.isArray(data?.debug?.watches) ? data.debug.watches.map((name) => String(name ?? "")) : [],
+    breakpointEnabled: Boolean(data?.debug?.breakpointEnabled),
+    breakpointExpression: String(data?.debug?.breakpointExpression ?? ""),
+    breakpointMessage: String(data?.debug?.breakpointMessage ?? ""),
+  };
+  graph.execution = {
+    t0: execCfg.t0,
+    dt: execCfg.dt,
+    timeUnit: execCfg.timeUnit,
+    t1: execCfg.t1,
+    delayMs: execCfg.delayMs,
+    renderEverySteps: execCfg.renderEverySteps,
+    decimals: execCfg.decimals,
+    integrator: execCfg.integrator,
+    strictDefinitions: execCfg.strictDefinitions,
+    stopOnRuntimeError: execCfg.stopOnRuntimeError,
+    randomSeed: execCfg.randomSeed,
+    randomState: execCfg.randomSeed,
+    currentTime: null,
+  };
+
+  graph.nodes = data.nodes.map((n) => {
+    const shape = deserializeNodeType(n.type);
+    const node = {
+      id: n.id,
+      name: n.name,
+      input: shape === "ellipse" ? Boolean(n.input) : false,
+      output: shape === "draft" ? false : Boolean(n.output),
+      global: shape === "diamond" ? Boolean(n.global) : false,
+      shape,
+      x: n.x,
+      y: n.y,
+      width: n.width,
+      height: n.height,
+      fillColor: normalizeColorString(n.fillColor),
+      strokeColor: normalizeColorString(n.strokeColor),
+      unit: shape === "draft" ? "" : String(n.unit ?? "").trim(),
+      valueExpression: shape === "rect"
+        ? String(n.stateTransition ?? "")
+        : String(n.valueExpression ?? ""),
+      initialStateExpression: shape === "rect"
+        ? String(n.initialState ?? "")
+        : String(n.initialStateExpression ?? ""),
+      modelPath: shape === "submodel" ? String(n.modelPath ?? "") : "",
+      submodelIcon: shape === "submodel" ? normalizeSubmodelIcon(n.submodelIcon) : null,
+      inputBindings: shape === "submodel" && n.inputBindings && typeof n.inputBindings === "object"
+        ? Object.fromEntries(
+          Object.entries(n.inputBindings)
+            .map(([key, value]) => [String(key), String(value ?? "")])
+            .filter(([key]) => key.trim()),
+        )
+        : {},
+      interfaceCache: shape === "submodel"
+        ? normalizeSubmodelInterfaceCache(n.interfaceCache)
+        : emptySubmodelInterfaceCache(),
+      submodelError: "",
+      computedValue: null,
+      computedError: "",
+      pendingStateValue: null,
+      pendingStateError: "",
+      properties: n.properties.map((p) => ({ key: p.key, value: p.value })),
+    };
+    normalizeNodeDescriptionProperty(node);
+    normalizeNodeFormulaNotesProperty(node);
+    sanitizeNodeVisualOptions(node);
+    return node;
+  });
+  graph.edges = data.edges.map((e) => ({
+    id: e.id,
+    from: e.from,
+    to: e.to,
+    color: normalizeEdgeColor(e.color),
+    influence: normalizeEdgeInfluence(e.influence),
+    controlPoints: (e.controlPoints || []).map((cp) => ({ x: cp.x, y: cp.y })),
+  }));
+  graph.textItems = Array.isArray(data.textItems)
+    ? data.textItems.map((item) => {
+      const out = {
+        id: item.id,
+        x: item.x,
+        y: item.y,
+        width: item.width,
+        height: item.height,
+        fillColor: normalizeColorString(item.fillColor),
+        strokeColor: normalizeColorString(item.strokeColor),
+        dashboardPageId: item.dashboardPageId,
+        markdown: typeof item.markdown === "string" ? item.markdown : null,
+        html: String(item.html ?? ""),
+      };
+      sanitizeTextItem(out);
+      return out;
+    })
+    : [];
+  graph.widgets = Array.isArray(data.widgets)
+    ? data.widgets
+      .filter((w) => Number.isInteger(w.id) && (w.type === "table" || w.type === "xychart" || w.type === "slider" || w.type === "numeric" || w.type === "matrix" || w.type === "button" || w.type === "led" || w.type === "select" || w.type === "text"))
+      .map((w) => ({
+        id: w.id,
+        type: w.type,
+        customTitle: String(w.customTitle ?? ""),
+        x: Number.isFinite(Number(w.x)) ? Number(w.x) : 40,
+        y: Number.isFinite(Number(w.y)) ? Number(w.y) : 40,
+        width: clamp(Number(w.width) || 320, widgetMinDimensions(w).width, 1200),
+        height: clamp(Number(w.height) || 160, widgetMinDimensions(w).height, 900),
+        dashboardPageId: normalizeDashboardPageId(w.dashboardPageId),
+        minimized: Boolean(w.minimized),
+        showTitleBar: w.showTitleBar !== false,
+        fontSize: Number.isFinite(Number(w.fontSize))
+          ? clamp(Math.round(Number(w.fontSize)), 8, 32)
+          : (Number.isFinite(Number(w.tableFontSize)) ? clamp(Math.round(Number(w.tableFontSize)), 8, 32) : 13),
+        outputOnly: Boolean(w.outputOnly),
+        showHistory: Boolean(w.showHistory),
+        expandNonScalarValues: Boolean(w.expandNonScalarValues) && !Boolean(w.showHistory),
+        tableTextAlign: ["left", "center", "right"].includes(String(w.tableTextAlign ?? "")) ? String(w.tableTextAlign) : "left",
+        tableDecimalDigits: Number.isInteger(Number(w.tableDecimalDigits)) && Number(w.tableDecimalDigits) >= 0 && Number(w.tableDecimalDigits) <= 12
+          ? Number(w.tableDecimalDigits)
+          : null,
+        tableColumnFormats: normalizeTableColumnFormats(w.tableColumnFormats),
+        xMin: parseAutoNullableNumber(w.xMin),
+        xMax: parseAutoNullableNumber(w.xMax),
+        yMin: parseAutoNullableNumber(w.yMin),
+        yMax: parseAutoNullableNumber(w.yMax),
+        xGridStep: Number.isFinite(Number(w.xGridStep)) && Number(w.xGridStep) > 0 ? Number(w.xGridStep) : null,
+        yGridStep: Number.isFinite(Number(w.yGridStep)) && Number(w.yGridStep) > 0 ? Number(w.yGridStep) : null,
+        xAxisLabel: String(w.xAxisLabel ?? "").trim(),
+        yAxisLabel: String(w.yAxisLabel ?? "").trim(),
+        showGrid: w.showGrid !== false,
+        showAxes: w.showAxes !== false,
+        legendPosition: ["none", "top-right", "top-left", "bottom-right", "bottom-left"].includes(String(w.legendPosition ?? ""))
+          ? String(w.legendPosition)
+          : "top-right",
+        source: String(w.source ?? ""),
+        showNumericValues: w.showNumericValues !== false,
+        showIndices: w.showIndices !== false,
+        autoFitCells: w.autoFitCells !== false,
+        cellSize: Number.isFinite(Number(w.cellSize)) ? clamp(Number(w.cellSize), 2, 96) : 28,
+        valueMin: parseAutoNullableNumber(w.valueMin),
+        valueMax: parseAutoNullableNumber(w.valueMax),
+        displayRows: Number.isInteger(Number(w.displayRows)) && Number(w.displayRows) > 0 ? Number(w.displayRows) : null,
+        displayCols: Number.isInteger(Number(w.displayCols)) && Number(w.displayCols) > 0 ? Number(w.displayCols) : null,
+        colorScheme: ["blue", "heat", "grayscale", "diverging", "viridis", "plasma", "terrain", "categorical", "none"].includes(String(w.colorScheme ?? ""))
+          ? String(w.colorScheme)
+          : "blue",
+        viewMode: ["grid", "surface"].includes(String(w.viewMode ?? "")) ? String(w.viewMode) : "grid",
+        surfaceStyle: ["solid", "wireframe"].includes(String(w.surfaceStyle ?? "")) ? String(w.surfaceStyle) : "solid",
+        surfaceAzimuth: Number.isFinite(Number(w.surfaceAzimuth)) ? clamp(Number(w.surfaceAzimuth), -180, 180) : 45,
+        surfaceElevation: Number.isFinite(Number(w.surfaceElevation)) ? clamp(Number(w.surfaceElevation), 5, 85) : 32,
+        surfaceHeightScale: Number.isFinite(Number(w.surfaceHeightScale)) ? clamp(Number(w.surfaceHeightScale), 0.1, 10) : 1,
+        min: Number.isFinite(Number(w.min)) ? Number(w.min) : 0,
+        max: Number.isFinite(Number(w.max)) ? Number(w.max) : 100,
+        step: Number.isFinite(Number(w.step)) ? Number(w.step) : 1,
+        inputRows: w.type === "numeric" ? w.inputRows : undefined,
+        inputCols: w.type === "numeric" ? w.inputCols : undefined,
+        value: w.type === "numeric"
+          ? deepClone(w.value)
+          : w.type === "button"
+          ? (w.initialValue === true || w.initialValue === "true" || w.initialValue === 1 || w.initialValue === "1"
+            || ((w.initialValue == null) && (w.value === true || w.value === "true" || w.value === 1 || w.value === "1")))
+          : (Number.isFinite(Number(w.value)) ? Number(w.value) : 0),
+        initialValue: w.type === "button"
+          ? (w.initialValue === true || w.initialValue === "true" || w.initialValue === 1 || w.initialValue === "1"
+            || ((w.initialValue == null) && (w.value === true || w.value === "true" || w.value === 1 || w.value === "1")))
+          : undefined,
+        falseLabel: String(w.falseLabel ?? ""),
+        trueLabel: String(w.trueLabel ?? ""),
+        options: Array.isArray(w.options)
+          ? w.options.map((option) => ({
+            label: String(option?.label ?? ""),
+            value: Number.isFinite(Number(option?.value)) ? Number(option.value) : 0,
+          }))
+          : [],
+        mappings: Array.isArray(w.mappings)
+          ? w.mappings.map((mapping) => ({
+            value: Number.isFinite(Number(mapping?.value)) ? Number(mapping.value) : 0,
+            label: String(mapping?.label ?? ""),
+          }))
+          : [],
+        rows: [],
+        columns: Array.isArray(w.columns) ? w.columns.map(normalizeTableColumnName) : [],
+        xyPairs: Array.isArray(w.xyPairs)
+          ? w.xyPairs.map((pair, idx) => ({
+            xSource: String(pair.xSource ?? "time"),
+            ySource: String(pair.ySource ?? ""),
+            showTimeSeries: normalizeChartSeriesToggle(pair?.showTimeSeries, pair?.seriesMode !== "instant"),
+            showInstantProfile: normalizeChartSeriesToggle(pair?.showInstantProfile, pair?.seriesMode === "instant" ? true : false),
+            color: /^#[0-9a-fA-F]{6}$/.test(String(pair?.color ?? "")) ? String(pair.color) : defaultChartSeriesColor(idx),
+            pointColor: /^#[0-9a-fA-F]{6}$/.test(String(pair?.pointColor ?? "")) ? String(pair.pointColor) : (/^#[0-9a-fA-F]{6}$/.test(String(pair?.color ?? "")) ? String(pair.color) : defaultChartSeriesColor(idx)),
+            showLine: pair?.showLine !== false,
+            lineWidth: Number.isFinite(Number(pair?.lineWidth)) ? clamp(Number(pair.lineWidth), 1, 8) : 2.2,
+            lineStyle: normalizeChartLineStyle(pair?.lineStyle),
+            barMode: normalizeChartBarMode(pair?.barMode, pair?.showBars),
+            showBars: normalizeChartBarMode(pair?.barMode, pair?.showBars) !== "none",
+            barColor: /^#[0-9a-fA-F]{6}$/.test(String(pair?.barColor ?? "")) ? String(pair.barColor) : (/^#[0-9a-fA-F]{6}$/.test(String(pair?.color ?? "")) ? String(pair.color) : defaultChartSeriesColor(idx)),
+            barWidth: Number.isFinite(Number(pair?.barWidth)) ? clamp(Number(pair.barWidth), 1, 40) : 2.2,
+            showArea: pair?.showArea === true,
+            areaColor: /^#[0-9a-fA-F]{6}$/.test(String(pair?.areaColor ?? "")) ? String(pair.areaColor) : (/^#[0-9a-fA-F]{6}$/.test(String(pair?.color ?? "")) ? String(pair.color) : defaultChartSeriesColor(idx)),
+            pointMode: normalizeChartPointMode(pair?.pointMode, pair?.showPoints),
+            pointSize: Number.isFinite(Number(pair?.pointSize)) ? clamp(Number(pair.pointSize), 1, 12) : 2.4,
+            points: [],
+          }))
+          : (() => {
+            const legacyX = String(w.xSource ?? w.xNode ?? "time");
+            const legacyYNodes = Array.isArray(w.yNodes)
+              ? w.yNodes.map((n) => String(n))
+              : (w.yNode ? [String(w.yNode)] : []);
+            return legacyYNodes.map((yNode, idx) => ({
+              xSource: legacyX,
+              ySource: yNode,
+              showTimeSeries: true,
+              showInstantProfile: false,
+              color: defaultChartSeriesColor(idx),
+              showLine: true,
+              lineWidth: 2.2,
+              lineStyle: "solid",
+              barMode: "none",
+              showBars: false,
+              barColor: defaultChartSeriesColor(idx),
+              barWidth: 2.2,
+              showArea: false,
+              areaColor: defaultChartSeriesColor(idx),
+              pointMode: "all",
+              pointSize: 2.4,
+              points: [],
+            }));
+          })(),
+      }))
+    : [];
+  syncDashboard();
+  clearSimulationOutputHistory();
+  sanitizeDebugConfig(graph);
+  sanitizeLocalFunctions(graph);
+  ui.watchPreviousSnapshot = new Map();
+  ui.breakpointLastResult = null;
+
+  nodeCounter = Number(data.nodeCounter) || 1;
+  edgeCounter = Number(data.edgeCounter) || 1;
+  widgetCounter = Number(data.widgetCounter) || 1;
+  textItemCounter = Number(data.textItemCounter) || 1;
+  presentationGroupCounter = Math.max(
+    Number(data.presentationGroupCounter) || 1,
+    graph.presentationGroups.reduce((max, group) => Math.max(max, group.id + 1), 1),
+  );
+  ui.zoom = clampZoom(Number(savedView?.zoom) || 1);
+  ui.showGrid = savedView?.showGrid !== false;
+  ui.highlightNodeEdges = savedView?.highlightNodeEdges !== false;
+  ui.showNodeValues = savedView?.showNodeValues !== false;
+  ui.checkUnits = savedView?.checkUnits !== false;
+  ui.gridSize = clamp(Number(savedView?.gridSize) || ui.gridSize || 20, 5, 100);
+  ui.tooltipDelayMs = normalizeTooltipDelayMs(savedView?.tooltipDelayMs);
+  normalizeInputNodeFlags();
+  initializeStateNodes(graph.execution.t0);
+  analyzeModelStaticIssues();
+
+  ui.drag = null;
+  ui.resize = null;
+  ui.edgeCreate = null;
+  ui.edgeCreateHoverId = null;
+  ui.edgeCreateLastPoint = null;
+  ui.controlPointDrag = null;
+  ui.marquee = null;
+  ui.widgetDrag = null;
+  ui.widgetResize = null;
+  ui.textDrag = null;
+  ui.textResize = null;
+  invalidateExecutionPlan();
+  clearAllSelection();
+  window.requestAnimationFrame(() => {
+    graphViewport.scrollLeft = Math.max(0, Number(savedView?.scrollLeft) || 0);
+    graphViewport.scrollTop = Math.max(0, Number(savedView?.scrollTop) || 0);
+  });
+}
+
+function pushUndoState(state) {
+  history.undo.push(deepClone(state));
+  if (history.undo.length > MAX_HISTORY) {
+    history.undo.shift();
+  }
+}
+
+function invalidateExecutionPlan() {
+  ui.executionPlan = null;
+  ui.submodelsPrepared = false;
+  runtimeCore.invalidateExecutionPlan?.(graph);
+}
+
+function beginTransaction() {
+  if (!history.transactionStart) {
+    history.transactionStart = exportGraphData();
+  }
+}
+
+function commitTransaction() {
+  if (!history.transactionStart) {
+    return;
+  }
+
+  const before = JSON.stringify(history.transactionStart);
+  const afterState = exportGraphData();
+  const after = JSON.stringify(afterState);
+  if (before !== after) {
+    pushUndoState(history.transactionStart);
+    history.redo = [];
+    dirtySinceLastSave = true;
+    invalidateExecutionPlan();
+    updateFileStatusLabel(true);
+  }
+  history.transactionStart = null;
+  updateHistoryButtons();
+}
+
+function cancelTransaction() {
+  history.transactionStart = null;
+}
+
+function runAction(mutator) {
+  if (isExecutionFrozen()) {
+    resetExecution();
+  }
+  beginTransaction();
+  mutator();
+  ui.modelAnalysisIssues = null;
+  commitTransaction();
+  if (graph.execution.strictDefinitions) {
+    analyzeModelStaticIssues();
+  }
+  render();
+}
+
+function updateHistoryButtons() {
+  const frozen = isEditingUiLocked();
+  const hasPasteData = Boolean(clipboard.data || readStoredModelClipboardRaw() || hasPlatformApi("readClipboardText"));
+  undoBtn.disabled = frozen || history.undo.length === 0;
+  redoBtn.disabled = frozen || history.redo.length === 0;
+  pasteBtn.disabled = frozen || !hasPasteData;
+}
+
+function hasClipboardSelection() {
+  return ui.selectedNodes.size > 0;
+}
+
+function hasAnySelection() {
+  return Boolean(
+    ui.selectedNodes.size > 0 ||
+    ui.selectedControlPoint ||
+    ui.selected?.type === "edge" ||
+    ui.selected?.type === "widget" ||
+    ui.selected?.type === "text",
+  );
+}
+
+function updateEditActionButtons() {
+  const frozen = isEditingUiLocked();
+  const selectedNode = selectedNodeForSidebar();
+  const selectedText = ui.selected?.type === "text" ? getTextItemById(ui.selected.id) : null;
+  const canRenameNode = Boolean(selectedNode && !frozen);
+  const canEditText = Boolean(selectedText && !frozen);
+  const canEditNodeExpression = Boolean(
+    selectedNode
+    && !frozen
+    && !isSubmodelNode(selectedNode)
+    && !isWidgetControlledExpressionNode(selectedNode),
+  );
+  if (selectAllBtn) {
+    selectAllBtn.disabled = graph.nodes.length === 0;
+  }
+  if (cutBtn) {
+    cutBtn.disabled = frozen || !hasClipboardSelection();
+  }
+  if (copyBtn) {
+    copyBtn.disabled = !hasClipboardSelection();
+  }
+  if (deleteBtn) {
+    deleteBtn.disabled = frozen || !hasAnySelection();
+  }
+  if (renameNodeBtn) {
+    renameNodeBtn.disabled = !canRenameNode && !canEditText;
+    const actionKey = selectedText ? "menu.edit.editText" : "menu.edit.renameNode";
+    const tooltipKey = selectedText ? "tooltip.menu.edit.editText" : "tooltip.menu.edit.renameNode";
+    if (renameSelectionLabel) {
+      renameSelectionLabel.dataset.i18n = actionKey;
+      renameSelectionLabel.textContent = t(actionKey);
+    }
+    renameNodeBtn.dataset.titleI18n = tooltipKey;
+    setTooltipText(renameNodeBtn, t(tooltipKey));
+  }
+  if (editNodeExpressionBtn) {
+    editNodeExpressionBtn.disabled = !canEditNodeExpression;
+  }
+}
+
+function isExecutionFrozen() {
+  if (ui.fullRunRunning || ui.timedRunHandle != null || ui.timedStepRunning) {
+    return true;
+  }
+  if (graph.execution.currentTime == null) {
+    return false;
+  }
+  const t0 = Number(graph.execution.t0);
+  const dt = Number(graph.execution.dt);
+  const t1 = Number(graph.execution.t1);
+  if (!Number.isFinite(t0) || !Number.isFinite(dt) || !Number.isFinite(t1) || dt === 0) {
+    return false;
+  }
+  if ((dt > 0 && t0 > t1) || (dt < 0 && t0 < t1)) {
+    return false;
+  }
+  return !isExecutionEnded({ t0, dt, t1 });
+}
+
+function executionProgressFraction(timeValue = graph.execution.currentTime) {
+  if (ui.sensitivityRunning) {
+    return clamp(Number(ui.sensitivityProgressFraction) || 0, 0, 1);
+  }
+  const t0 = Number(graph.execution.t0);
+  const t1 = Number(graph.execution.t1);
+  const time = Number(timeValue);
+  if (!Number.isFinite(t0) || !Number.isFinite(t1) || !Number.isFinite(time)) {
+    return 0;
+  }
+  const span = Math.abs(t1 - t0);
+  if (span <= Number.EPSILON) {
+    return 1;
+  }
+  return clamp(Math.abs(time - t0) / span, 0, 1);
+}
+
+function updateExecutionProgress(timeValue = graph.execution.currentTime) {
+  if (!executionProgress || !executionProgressBar) {
+    return;
+  }
+  const viewportRect = graphViewport?.getBoundingClientRect();
+  if (viewportRect) {
+    const inset = 10;
+    executionProgress.style.left = `${Math.round(viewportRect.left + inset)}px`;
+    executionProgress.style.width = `${Math.max(0, Math.round(viewportRect.width - inset * 2))}px`;
+    // Keep the indicator away from the horizontal scrollbar at the bottom of
+    // a scrollable canvas. The top edge remains visible in every viewport.
+    executionProgress.style.top = `${Math.max(inset, Math.round(viewportRect.top + inset))}px`;
+    executionProgress.style.bottom = "auto";
+  }
+  executionProgressBar.style.transform = `scaleX(${executionProgressFraction(timeValue)})`;
+  executionProgress.classList.toggle("active", isExecutionFrozen() || ui.sensitivityRunning);
+}
+
+function clearTimedExecutionStateSilently() {
+  if (ui.timedRunHandle != null) {
+    window.clearInterval(ui.timedRunHandle);
+  }
+  ui.timedRunHandle = null;
+  ui.timedStepRunning = false;
+  ui.timedRunStartedAt = 0;
+  ui.timedStepLastActivityAt = 0;
+}
+
+function staleTimedExecutionThresholdMs() {
+  const delayMs = Number(graph.execution.delayMs);
+  if (Number.isFinite(delayMs) && delayMs > 0) {
+    return Math.max(4000, delayMs * 3);
+  }
+  return 4000;
+}
+
+function hasStaleTimedExecutionLock(now = Date.now()) {
+  if (ui.timedRunHandle == null || ui.timedStepRunning) {
+    return false;
+  }
+  const lastActivity = Math.max(Number(ui.timedStepLastActivityAt) || 0, Number(ui.timedRunStartedAt) || 0);
+  if (lastActivity <= 0) {
+    return false;
+  }
+  return now - lastActivity > staleTimedExecutionThresholdMs();
+}
+
+function ensureEditingUiUnlockedIfIdle() {
+  if (!hasStaleTimedExecutionLock()) {
+    return false;
+  }
+  clearTimedExecutionStateSilently();
+  updateEditingLockUi();
+  render();
+  return true;
+}
+
+function isEditingUiLocked() {
+  if (ui.timedRunHandle == null && ui.timedStepRunning) {
+    ui.timedStepRunning = false;
+  }
+  if (hasStaleTimedExecutionLock()) {
+    clearTimedExecutionStateSilently();
+  }
+  return ui.fullRunRunning || ui.timedRunHandle != null || ui.timedStepRunning;
+}
+
+function setControlsDisabled(root, disabled, allowedControls = []) {
+  if (!root) {
+    return;
+  }
+  const allowed = new Set((allowedControls || []).filter(Boolean));
+  root.querySelectorAll("input, select, textarea, button").forEach((control) => {
+    if (allowed.has(control)) {
+      return;
+    }
+    if (disabled) {
+      if (!control.disabled) {
+        control.dataset.executionDisabled = "1";
+        control.disabled = true;
+      }
+      return;
+    }
+    if (control.dataset.executionDisabled === "1") {
+      control.disabled = false;
+      delete control.dataset.executionDisabled;
+    }
+  });
+}
+
+function setExplicitControlDisabled(control, disabled) {
+  if (!control) {
+    return;
+  }
+  control.disabled = Boolean(disabled);
+  if (!disabled && control.dataset.executionDisabled === "1") {
+    delete control.dataset.executionDisabled;
+  }
+}
+
+function releaseExecutionDisabledControls(root = document) {
+  if (!root || typeof root.querySelectorAll !== "function") {
+    return;
+  }
+  root.querySelectorAll("[data-execution-disabled='1']").forEach((control) => {
+    control.disabled = false;
+    delete control.dataset.executionDisabled;
+  });
+}
+
+function updateEditingLockUi() {
+  const frozen = isEditingUiLocked();
+  // A manual step is still an execution session, even though editing remains
+  // available. Keep the same visual cue used while a timed run is active.
+  const executionActive = isExecutionFrozen();
+  sidebar?.classList.toggle("execution-frozen", executionActive);
+  [globalPanel, nodePanel, textPanel, edgePanel, widgetPanel].forEach((panel) => {
+    panel?.classList.toggle("execution-frozen", executionActive);
+  });
+  [
+    addDraftNodeItem,
+    addRectNodeItem,
+    addEllipseNodeItem,
+    addDiamondNodeItem,
+    addSubmodelNodeItem,
+    addTextItem,
+    addButtonWidgetItem,
+    addSelectWidgetItem,
+    addSliderWidgetItem,
+    addNumericWidgetItem,
+    addLedWidgetItem,
+    addTextWidgetItem,
+    addMatrixWidgetItem,
+    addTableWidgetItem,
+    addXYChartWidgetItem,
+  ].forEach((btn) => {
+    if (btn) {
+      btn.disabled = frozen;
+    }
+  });
+
+  setControlsDisabled(globalPanel, frozen, [runFullModelBtn, manualStepBtn, timedToggleBtn, resetExecBtn]);
+  setControlsDisabled(nodePanel, frozen);
+  setControlsDisabled(textPanel, frozen);
+  setControlsDisabled(edgePanel, frozen);
+  setControlsDisabled(widgetPanel, frozen);
+  setControlsDisabled(watchDebuggerModal, frozen, [watchDebuggerCloseBtn, watchDebuggerDismissBtn]);
+  setControlsDisabled(localFunctionsModal, frozen, [localFunctionsCloseBtn, localFunctionsCancelBtn, localFunctionsApplyBtn]);
+  setControlsDisabled(textEditorModal, frozen, [textEditorCloseBtn, textEditorDismissBtn]);
+
+  [
+    modelTitleInput,
+    timeStartInput,
+    timeStepInput,
+    timeEndInput,
+    timeDelayInput,
+    renderEveryStepsInput,
+    decimalDigitsInput,
+    nodeNameInput,
+    nodeInitialStateInput,
+    nodeModelPathInput,
+    textWidthInput,
+    textHeightInput,
+    textHtmlInput,
+    textEditorInput,
+  ].forEach((control) => {
+    setExplicitControlDisabled(control, frozen);
+  });
+
+  setExplicitControlDisabled(
+    nodeValueExprInput,
+    frozen || isWidgetControlledExpressionNode(selectedNodeForSidebar()),
+  );
+  setExplicitControlDisabled(
+    editNodeValueExprBtn,
+    frozen || isWidgetControlledExpressionNode(selectedNodeForSidebar()),
+  );
+
+  if (expressionEditorTextarea) {
+    const editorNode = ui.expressionEditor?.nodeId ? getNodeById(ui.expressionEditor.nodeId) : null;
+    setExplicitControlDisabled(expressionEditorTextarea, frozen || isWidgetControlledExpressionNode(editorNode));
+  }
+  if (expressionStateInitialInput) {
+    setExplicitControlDisabled(
+      expressionStateInitialInput,
+      frozen || expressionStateInitialBlock?.classList.contains("hidden"),
+    );
+  }
+  if (expressionDescriptionInput) {
+    setExplicitControlDisabled(
+      expressionDescriptionInput,
+      frozen || !Boolean(ui.expressionEditor?.nodeId && ui.expressionEditor?.fieldKey !== "__custom__"),
+    );
+  }
+  if (expressionFormulaNotesInput) {
+    setExplicitControlDisabled(
+      expressionFormulaNotesInput,
+      frozen || !Boolean(ui.expressionEditor?.nodeId && ui.expressionEditor?.fieldKey !== "__custom__"),
+    );
+  }
+  if (expressionSymbolsFilter) {
+    setExplicitControlDisabled(expressionSymbolsFilter, frozen);
+  }
+  if (expressionEditorApplyBtn) {
+    expressionEditorApplyBtn.disabled = frozen || Boolean(ui.expressionEditor && !ui.expressionEditor.syntaxOk);
+  }
+  if (runStrictDefinitionsInput) {
+    runStrictDefinitionsInput.disabled = frozen;
+  }
+  if (!frozen) {
+    releaseExecutionDisabledControls(document);
+  }
+}
+
+function collectSelectedForClipboard() {
+  const ids = new Set(ui.selectedNodes);
+  const nodes = graph.nodes
+    .filter((n) => ids.has(n.id))
+    .map((n) => ({
+      id: n.id,
+      name: n.name,
+      input: n.shape === "ellipse" ? Boolean(n.input) : false,
+      output: Boolean(n.output),
+      global: Boolean(n.global),
+      shape: n.shape,
+      x: n.x,
+      y: n.y,
+      width: n.width,
+      height: n.height,
+      fillColor: String(n.fillColor ?? ""),
+      strokeColor: String(n.strokeColor ?? ""),
+      valueExpression: n.valueExpression,
+      initialStateExpression: n.initialStateExpression,
+      modelPath: n.modelPath,
+      submodelIcon: deepClone(normalizeSubmodelIcon(n.submodelIcon)),
+      inputBindings: deepClone(n.inputBindings || {}),
+      interfaceCache: deepClone(normalizeSubmodelInterfaceCache(n.interfaceCache)),
+      computedValue: n.computedValue,
+      computedError: n.computedError,
+      pendingStateValue: n.pendingStateValue,
+      pendingStateError: n.pendingStateError,
+      properties: n.properties.map((p) => ({ key: p.key, value: p.value })),
+    }));
+  const edges = graph.edges
+    .filter((e) => ids.has(e.from) && ids.has(e.to))
+    .map((e) => ({
+      from: e.from,
+      to: e.to,
+      color: normalizeEdgeColor(e.color),
+      influence: normalizeEdgeInfluence(e.influence),
+      controlPoints: (e.controlPoints || []).map((cp) => ({ x: cp.x, y: cp.y })),
+    }));
+  const selectedText = ui.selected?.type === "text" ? getTextItemById(ui.selected.id) : null;
+  const textItems = selectedText
+    ? [{
+      id: selectedText.id,
+      x: selectedText.x,
+      y: selectedText.y,
+      width: selectedText.width,
+      height: selectedText.height,
+      fillColor: String(selectedText.fillColor ?? ""),
+      strokeColor: String(selectedText.strokeColor ?? ""),
+      dashboardPageId: normalizeDashboardPageId(selectedText.dashboardPageId),
+      markdown: typeof selectedText.markdown === "string" ? selectedText.markdown : null,
+      html: String(selectedText.html ?? ""),
+    }]
+    : [];
+  return nodes.length > 0 || textItems.length > 0 ? { nodes, edges, textItems } : null;
+}
+
+function copySelectionToClipboard() {
+  const payload = collectSelectedForClipboard();
+  if (!payload) {
+    setStatusKey("status.clipboardNothingToCopy");
+    return false;
+  }
+  const raw = serializeModelClipboardPayload(payload);
+  clipboard.data = deepClone(payload);
+  clipboard.pasteCount = 0;
+  clipboard.signature = raw;
+  persistSharedModelClipboard(raw);
+  updateHistoryButtons();
+  setStatusKey(payload.textItems?.length ? "status.clipboardCopiedText" : "status.clipboardCopied", {
+    count: payload.nodes.length,
+  });
+  return true;
+}
+
+function cutSelectionToClipboard() {
+  const copied = copySelectionToClipboard();
+  if (!copied) {
+    return;
+  }
+  removeSelected();
+  setStatusKey("status.clipboardCut");
+}
+
+async function pasteFromClipboard() {
+  await syncClipboardFromSharedSource();
+  if (!isValidModelClipboardPayload({ type: "stgraphx-model-clipboard", version: 1 }, clipboard.data)) {
+    setStatusKey("status.clipboardEmpty");
+    return;
+  }
+  if (isExecutionFrozen()) {
+    resetExecution();
+  }
+
+  const offset = 30 * (clipboard.pasteCount + 1);
+  let pastedCount = 0;
+  runAction(() => {
+    const idMap = new Map();
+    const newNodeIds = [];
+    const newTextIds = [];
+
+    clipboard.data.nodes.forEach((n) => {
+      const newId = nodeCounter++;
+      const uniqueName = semantics.makeUniqueName(graph.nodes, n.name, null, "n");
+      const node = {
+        id: newId,
+        name: uniqueName,
+        input: n.shape === "ellipse" ? Boolean(n.input) : false,
+        output: Boolean(n.output),
+        global: Boolean(n.global),
+        shape: n.shape,
+        x: snap(n.x + offset),
+        y: snap(n.y + offset),
+        width: n.width,
+        height: n.height,
+        fillColor: normalizeColorString(n.fillColor),
+        strokeColor: normalizeColorString(n.strokeColor),
+        valueExpression: String(n.valueExpression ?? ""),
+        initialStateExpression: String(n.initialStateExpression ?? ""),
+        modelPath: String(n.modelPath ?? ""),
+        submodelIcon: normalizeSubmodelIcon(n.submodelIcon),
+        inputBindings: deepClone(n.inputBindings || {}),
+        interfaceCache: deepClone(normalizeSubmodelInterfaceCache(n.interfaceCache)),
+        submodelError: "",
+        computedValue: n.computedValue ?? null,
+        computedError: String(n.computedError ?? ""),
+        pendingStateValue: n.pendingStateValue ?? null,
+        pendingStateError: String(n.pendingStateError ?? ""),
+        properties: (n.properties || []).map((p) => ({ key: String(p.key), value: String(p.value) })),
+      };
+      normalizeNodeDescriptionProperty(node);
+      normalizeNodeFormulaNotesProperty(node);
+      sanitizeNodeVisualOptions(node);
+      graph.nodes.push(node);
+      idMap.set(n.id, newId);
+      newNodeIds.push(newId);
+    });
+
+    clipboard.data.edges.forEach((e) => {
+      const from = idMap.get(e.from);
+      const to = idMap.get(e.to);
+      if (!from || !to || from === to) {
+        return;
+      }
+      graph.edges.push({
+        id: edgeCounter++,
+        from,
+        to,
+        color: normalizeEdgeColor(e.color),
+        influence: normalizeEdgeInfluence(e.influence),
+        controlPoints: (e.controlPoints || []).map((cp) => ({
+          x: snap(cp.x + offset),
+          y: snap(cp.y + offset),
+        })),
+      });
+    });
+
+    (clipboard.data.textItems || []).forEach((item) => {
+      const textItem = {
+        id: textItemCounter++,
+        x: snap(Number(item.x) + offset),
+        y: snap(Number(item.y) + offset),
+        width: Number(item.width),
+        height: Number(item.height),
+        fillColor: normalizeColorString(item.fillColor),
+        strokeColor: normalizeColorString(item.strokeColor),
+        dashboardPageId: normalizeDashboardPageId(item.dashboardPageId),
+        markdown: typeof item.markdown === "string" ? item.markdown : null,
+        html: String(item.html ?? ""),
+      };
+      sanitizeTextItem(textItem);
+      graph.textItems.push(textItem);
+      newTextIds.push(textItem.id);
+    });
+
+    normalizeInputNodeFlags();
+    if (newNodeIds.length > 0) {
+      setNodeSelection(newNodeIds, false);
+    } else if (newTextIds.length > 0) {
+      selectTextItem(newTextIds[newTextIds.length - 1]);
+    }
+    pastedCount = newNodeIds.length + newTextIds.length;
+  });
+
+  clipboard.pasteCount += 1;
+  updateHistoryButtons();
+  setStatusKey(clipboard.data.textItems?.length ? "status.clipboardPastedText" : "status.clipboardPasted", { count: pastedCount });
+}
+
+function undo() {
+  if (history.undo.length === 0) {
+    return;
+  }
+  if (isExecutionFrozen()) {
+    resetExecution();
+  }
+  const current = exportGraphData();
+  history.redo.push(current);
+  const prev = history.undo.pop();
+  applyGraphData(prev);
+  render();
+  setStatusKey("status.undo");
+  updateHistoryButtons();
+}
+
+function redo() {
+  if (history.redo.length === 0) {
+    return;
+  }
+  if (isExecutionFrozen()) {
+    resetExecution();
+  }
+  const current = exportGraphData();
+  pushUndoState(current);
+  const next = history.redo.pop();
+  applyGraphData(next);
+  render();
+  setStatusKey("status.redo");
+  updateHistoryButtons();
+}
+
+function diamondPoints(node) {
+  const w = node.width / 2;
+  const h = node.height / 2;
+  return [
+    `${node.x},${node.y - h}`,
+    `${node.x + w},${node.y}`,
+    `${node.x},${node.y + h}`,
+    `${node.x - w},${node.y}`,
+  ].join(" ");
+}
+
+function nodeBoundaryPoint(node, targetX, targetY) {
+  const dx = targetX - node.x;
+  const dy = targetY - node.y;
+  if (dx === 0 && dy === 0) {
+    return { x: node.x, y: node.y };
+  }
+
+  const hw = node.width / 2;
+  const hh = node.height / 2;
+  let scale = 1;
+
+  if (node.shape === "ellipse" || isDraftNode(node)) {
+    const denom = Math.sqrt((dx * dx) / (hw * hw) + (dy * dy) / (hh * hh)) || 1;
+    scale = 1 / denom;
+  } else if (node.shape === "diamond") {
+    const denom = Math.abs(dx) / hw + Math.abs(dy) / hh || 1;
+    scale = 1 / denom;
+  } else {
+    const denom = Math.max(Math.abs(dx) / hw, Math.abs(dy) / hh) || 1;
+    scale = 1 / denom;
+  }
+
+  return {
+    x: node.x + dx * scale,
+    y: node.y + dy * scale,
+  };
+}
+
+function buildSplinePath(points) {
+  if (points.length < 2) {
+    return "";
+  }
+  if (points.length === 2) {
+    return `M ${points[0].x} ${points[0].y} L ${points[1].x} ${points[1].y}`;
+  }
+  if (points.length === 3) {
+    return `M ${points[0].x} ${points[0].y} Q ${points[1].x} ${points[1].y} ${points[2].x} ${points[2].y}`;
+  }
+
+  let d = `M ${points[0].x} ${points[0].y}`;
+  for (let i = 1; i < points.length - 1; i += 1) {
+    const p = points[i];
+    const next = points[i + 1];
+    if (i < points.length - 2) {
+      const mx = (p.x + next.x) / 2;
+      const my = (p.y + next.y) / 2;
+      d += ` Q ${p.x} ${p.y} ${mx} ${my}`;
+    } else {
+      d += ` Q ${p.x} ${p.y} ${next.x} ${next.y}`;
+    }
+  }
+  return d;
+}
+
+function buildEdgeGeometry(edge) {
+  const fromNode = getNodeById(edge.from);
+  const toNode = getNodeById(edge.to);
+  if (!fromNode || !toNode) {
+    return null;
+  }
+
+  const cps = edge.controlPoints || [];
+  const firstTarget = cps[0] || { x: toNode.x, y: toNode.y };
+  const lastTarget = cps[cps.length - 1] || { x: fromNode.x, y: fromNode.y };
+
+  const start = nodeBoundaryPoint(fromNode, firstTarget.x, firstTarget.y);
+  const end = nodeBoundaryPoint(toNode, lastTarget.x, lastTarget.y);
+  const points = [start, ...cps, end];
+
+  const path = buildSplinePath(points);
+
+  return { path, points };
+}
+
+function edgeInfluenceSymbol(value) {
+  return ({ positive: "+", negative: "−", unknown: "?" })[normalizeEdgeInfluence(value)] || "";
+}
+
+function edgeInfluenceLabelPosition(points) {
+  if (points.length < 2) {
+    return null;
+  }
+  const samples = [points[0]];
+  const addQuadraticSamples = (from, control, to) => {
+    for (let step = 1; step <= 12; step += 1) {
+      const ratio = step / 12;
+      const inverse = 1 - ratio;
+      samples.push({
+        x: inverse * inverse * from.x + 2 * inverse * ratio * control.x + ratio * ratio * to.x,
+        y: inverse * inverse * from.y + 2 * inverse * ratio * control.y + ratio * ratio * to.y,
+      });
+    }
+  };
+  if (points.length === 2) {
+    samples.push(points[1]);
+  } else {
+    let from = points[0];
+    for (let index = 1; index < points.length - 1; index += 1) {
+      const control = points[index];
+      const to = index < points.length - 2
+        ? { x: (control.x + points[index + 1].x) / 2, y: (control.y + points[index + 1].y) / 2 }
+        : points[index + 1];
+      addQuadraticSamples(from, control, to);
+      from = to;
+    }
+  }
+  const lengths = samples.slice(1).map((point, index) => Math.hypot(point.x - samples[index].x, point.y - samples[index].y));
+  const total = lengths.reduce((sum, length) => sum + length, 0);
+  let remaining = total / 2;
+  for (let index = 0; index < lengths.length; index += 1) {
+    if (remaining <= lengths[index]) {
+      const ratio = lengths[index] ? remaining / lengths[index] : 0;
+      return {
+        x: samples[index].x + (samples[index + 1].x - samples[index].x) * ratio,
+        y: samples[index].y + (samples[index + 1].y - samples[index].y) * ratio,
+      };
+    }
+    remaining -= lengths[index];
+  }
+  return samples[samples.length - 1];
+}
+
+function rectangleOverlapArea(left, right, gap = 0) {
+  const leftEdge = Math.max(left.x - gap, right.x);
+  const topEdge = Math.max(left.y - gap, right.y);
+  const rightEdge = Math.min(left.x + left.width + gap, right.x + right.width);
+  const bottomEdge = Math.min(left.y + left.height + gap, right.y + right.height);
+  return Math.max(0, rightEdge - leftEdge) * Math.max(0, bottomEdge - topEdge);
+}
+
+function visibleCanvasBounds() {
+  const rect = graphViewport.getBoundingClientRect();
+  const inset = Math.min(32, Math.max(8, Math.min(rect.width, rect.height) / 12));
+  const topLeft = svgPointFromClient(rect.left + inset, rect.top + inset);
+  const bottomRight = svgPointFromClient(rect.right - inset, rect.bottom - inset);
+  return {
+    x: Math.min(topLeft.x, bottomRight.x),
+    y: Math.min(topLeft.y, bottomRight.y),
+    width: Math.abs(bottomRight.x - topLeft.x),
+    height: Math.abs(bottomRight.y - topLeft.y),
+  };
+}
+
+function visibleCanvasObstacles() {
+  const obstacles = [];
+  const visibleNodeIds = visiblePresentationNodeIds();
+  graph.nodes.filter((node) => visibleNodeIds.has(node.id)).forEach((node) => {
+    obstacles.push({
+      x: node.x - node.width / 2,
+      y: node.y - node.height / 2,
+      width: node.width,
+      height: node.height,
+    });
+  });
+  if (!ui.showWidgets) {
+    return obstacles;
+  }
+  graph.widgets.filter((widget) => widget && isDashboardItemVisible(widget)).forEach((widget) => {
+    const position = dashboardItemPosition(widget);
+    if (!position || !Number.isFinite(Number(position.x)) || !Number.isFinite(Number(position.y))) {
+      return;
+    }
+    obstacles.push({
+      x: position.x,
+      y: position.y,
+      width: Number(widget.width) || 0,
+      height: Number(widget.minimized ? 36 : widget.height) || 0,
+    });
+  });
+  graph.textItems.filter((item) => item && isDashboardItemVisible(item)).forEach((item) => {
+    const position = dashboardItemPosition(item);
+    if (!position || !Number.isFinite(Number(position.x)) || !Number.isFinite(Number(position.y))) {
+      return;
+    }
+    obstacles.push({ x: position.x, y: position.y, width: item.width, height: item.height });
+  });
+  if (graph.dashboard && graph.dashboard.visible !== false) {
+    obstacles.push({
+      x: graph.dashboard.x,
+      y: graph.dashboard.y,
+      width: graph.dashboard.width,
+      height: graph.dashboard.height,
+    });
+  }
+  return obstacles;
+}
+
+// Returns a top-left graph coordinate that is visible and does not cover existing content.
+function getSmartCanvasInsertionPoint({ width, height, anchor = null } = {}) {
+  const itemWidth = Math.max(1, Number(width) || 1);
+  const itemHeight = Math.max(1, Number(height) || 1);
+  const visible = visibleCanvasBounds();
+  const minX = visible.x;
+  const minY = visible.y;
+  const maxX = Math.max(minX, visible.x + visible.width - itemWidth);
+  const maxY = Math.max(minY, visible.y + visible.height - itemHeight);
+  const centerX = Number.isFinite(Number(anchor?.x)) ? Number(anchor.x) : visible.x + visible.width / 2;
+  const centerY = Number.isFinite(Number(anchor?.y)) ? Number(anchor.y) : visible.y + visible.height / 2;
+  const initial = {
+    x: clamp(centerX - itemWidth / 2, minX, maxX),
+    y: clamp(centerY - itemHeight / 2, minY, maxY),
+  };
+  const snapTopLeft = (x, y) => {
+    if (!ui.snapToGrid) return { x, y };
+    return {
+      x: clamp(snap(x + itemWidth / 2) - itemWidth / 2, minX, maxX),
+      y: clamp(snap(y + itemHeight / 2) - itemHeight / 2, minY, maxY),
+    };
+  };
+  const obstacles = visibleCanvasObstacles();
+  const step = Math.max(24, ui.gridSize || 20);
+  const offsets = [{ x: 0, y: 0 }];
+  // Cover the whole visible canvas, not just a fixed area around its centre.
+  const maxRing = Math.min(100, Math.ceil(Math.max(visible.width, visible.height) / step) + 1);
+  for (let ring = 1; ring <= maxRing; ring += 1) {
+    for (let dx = -ring; dx <= ring; dx += 1) {
+      offsets.push({ x: dx, y: -ring }, { x: dx, y: ring });
+    }
+    for (let dy = -ring + 1; dy < ring; dy += 1) {
+      offsets.push({ x: -ring, y: dy }, { x: ring, y: dy });
+    }
+  }
+  const seen = new Set();
+  let leastObstructed = null;
+  for (const offset of offsets) {
+    const topLeft = snapTopLeft(
+      clamp(initial.x + offset.x * step, minX, maxX),
+      clamp(initial.y + offset.y * step, minY, maxY),
+    );
+    const candidate = {
+      x: topLeft.x,
+      y: topLeft.y,
+      width: itemWidth,
+      height: itemHeight,
+    };
+    const key = `${candidate.x}:${candidate.y}`;
+    if (seen.has(key)) continue;
+    seen.add(key);
+    const overlapArea = obstacles.reduce(
+      (total, obstacle) => total + rectangleOverlapArea(candidate, obstacle, 16),
+      0,
+    );
+    if (overlapArea === 0) {
+      return { x: candidate.x, y: candidate.y };
+    }
+    if (!leastObstructed || overlapArea < leastObstructed.overlapArea) {
+      leastObstructed = { x: candidate.x, y: candidate.y, overlapArea };
+    }
+  }
+  if (leastObstructed) {
+    return { x: leastObstructed.x, y: leastObstructed.y };
+  }
+  return snapTopLeft(initial.x, initial.y);
+}
+
+function addNode(shape, atPoint = null) {
+  const id = nodeCounter++;
+  const width = shape === "draft" ? 54 : 120;
+  const height = shape === "draft" ? 54 : 70;
+  const position = getSmartCanvasInsertionPoint({ width, height, anchor: atPoint });
+  const px = position.x + width / 2;
+  const py = position.y + height / 2;
+  const defaultName = semantics.makeUniqueName(graph.nodes, t("node.defaultName", { id }), null, "n");
+  const node = {
+    id,
+    name: defaultName,
+    input: false,
+    output: false,
+    global: false,
+    shape,
+    x: px,
+    y: py,
+    width,
+    height,
+    fillColor: shape === "draft" ? "transparent" : "",
+    strokeColor: shape === "draft" ? "transparent" : "",
+    unit: "",
+    valueExpression: "",
+    initialStateExpression: "",
+    modelPath: "",
+    submodelIcon: null,
+    inputBindings: {},
+    interfaceCache: emptySubmodelInterfaceCache(),
+    submodelError: "",
+    computedValue: null,
+    computedError: "",
+    pendingStateValue: null,
+    pendingStateError: "",
+    properties: [],
+  };
+  normalizeNodeDescriptionProperty(node);
+  normalizeNodeFormulaNotesProperty(node);
+  sanitizeNodeVisualOptions(node);
+  graph.nodes.push(node);
+  selectSingleNode(node.id);
+}
+
+function addEdge(fromId, toId) {
+  if (fromId === toId) {
+    setStatusKey("error.edgeDifferentNodes");
+    return null;
+  }
+
+  const targetNode = getNodeById(toId);
+  if (targetNode?.shape === "diamond") {
+    setStatusKey("error.parameterIncomingEdge");
+    return null;
+  }
+
+  const exists = graph.edges.some((e) => e.from === fromId && e.to === toId);
+  if (exists) {
+    setStatusKey("error.edgeExists");
+    return null;
+  }
+
+  const edge = {
+    id: edgeCounter++,
+    from: fromId,
+    to: toId,
+    color: "",
+    influence: "none",
+    controlPoints: [],
+  };
+  graph.edges.push(edge);
+  if (targetNode?.input) {
+    removeNodeFromInputWidgetBindings(targetNode.name);
+    targetNode.input = false;
+  }
+  selectEdge(edge.id);
+  return edge;
+}
+
+
+function refreshSidebar() {
+  syncNodeSelectionFocus();
+  syncExpressionEditorToSelectedNode();
+  updateDeleteActionLabel();
+  updateEditActionButtons();
+
+  if (ui.selected?.type === "edge") {
+    delete propsList.dataset.ownerKey;
+    noSelection.classList.add("hidden");
+    globalPanel.classList.add("hidden");
+    textPanel.classList.add("hidden");
+    widgetPanel.classList.add("hidden");
+    nodePanel.classList.add("hidden");
+    edgePanel.classList.remove("hidden");
+
+    const edgeId = ui.selected.id;
+    const edge = getEdgeById(edgeId);
+    if (!edge) {
+      clearAllSelection();
+      refreshSidebar();
+      return;
+    }
+
+    const from = getNodeById(edge.from);
+    const to = getNodeById(edge.to);
+    edgeInfo.innerHTML = "";
+
+    const summary = document.createElement("div");
+    summary.textContent = `${from?.name || edge.from} -> ${to?.name || edge.to}`;
+    edgeInfo.appendChild(summary);
+
+    const influenceRow = document.createElement("div");
+    influenceRow.className = "panel-section compact-panel-section";
+    const influenceLabel = document.createElement("label");
+    influenceLabel.textContent = t("label.edgeInfluence");
+    const influenceInput = document.createElement("select");
+    influenceInput.setAttribute("aria-label", influenceLabel.textContent);
+    setTooltipText(influenceLabel, t("tooltip.edge.influence"));
+    ["none", "positive", "negative", "unknown"].forEach((value) => {
+      const option = document.createElement("option");
+      option.value = value;
+      option.textContent = t(`edge.influence.${value}`);
+      influenceInput.appendChild(option);
+    });
+    influenceInput.value = normalizeEdgeInfluence(edge.influence);
+    const updateInfluenceTooltip = () => {
+      setTooltipText(influenceInput, t(`tooltip.edge.influence.${normalizeEdgeInfluence(influenceInput.value)}`));
+      Array.from(influenceInput.options).forEach((option) => {
+        option.title = t(`tooltip.edge.influence.${option.value}`);
+      });
+    };
+    updateInfluenceTooltip();
+    influenceInput.addEventListener("change", () => {
+      updateInfluenceTooltip();
+      runAction(() => {
+        const target = getEdgeById(edgeId);
+        if (target) {
+          target.influence = normalizeEdgeInfluence(influenceInput.value);
+        }
+      });
+    });
+    influenceRow.append(influenceLabel, influenceInput);
+    edgeInfo.appendChild(influenceRow);
+
+    const colorRow = document.createElement("div");
+    colorRow.className = "panel-section compact-panel-section";
+    const colorLabel = document.createElement("label");
+    colorLabel.textContent = t("label.edgeColor");
+    const colorInput = document.createElement("select");
+    colorInput.setAttribute("aria-label", colorLabel.textContent);
+    setTooltipText(colorLabel, t("tooltip.edge.color"));
+    setTooltipText(colorInput, t("tooltip.edge.color"));
+    EDGE_COLOR_PRESETS.forEach((preset) => {
+      const option = document.createElement("option");
+      option.value = preset.value;
+      option.textContent = t(`color.${preset.key}`);
+      colorInput.appendChild(option);
+    });
+    colorInput.value = normalizeEdgeColor(edge.color);
+    colorInput.addEventListener("change", () => {
+      runAction(() => {
+        const target = getEdgeById(edgeId);
+        if (target) {
+          target.color = normalizeEdgeColor(colorInput.value);
+        }
+      });
+    });
+    colorRow.append(colorLabel, colorInput);
+    edgeInfo.appendChild(colorRow);
+
+    return;
+  }
+
+  if (ui.selected?.type === "widget") {
+    ui.sidebarNodeId = null;
+    delete propsList.dataset.ownerKey;
+    noSelection.classList.add("hidden");
+    globalPanel.classList.add("hidden");
+    textPanel.classList.add("hidden");
+    nodePanel.classList.add("hidden");
+    edgePanel.classList.add("hidden");
+    widgetPanel.classList.remove("hidden");
+    const widget = getWidgetById(ui.selected.id);
+    if (!widget) {
+      clearAllSelection();
+      refreshSidebar();
+      return;
+    }
+    if (widgetPanelTitle) {
+      widgetPanelTitle.textContent = widget.type === "xychart"
+        ? t("panel.widgetChart")
+        : widget.type === "slider"
+          ? t("panel.widgetSlider")
+          : widget.type === "numeric"
+            ? t("panel.widgetNumeric")
+          : widget.type === "select"
+            ? t("panel.widgetSelect")
+            : widget.type === "text"
+              ? t("panel.widgetText")
+              : widget.type === "button"
+                ? t("panel.widgetButton")
+                : widget.type === "led"
+                  ? t("panel.widgetLed")
+                  : (widget.type === "matrix" ? t("panel.widgetMatrix") : t("panel.widgetTable"));
+    }
+    refreshWidgetConfigPanel(widget);
+    return;
+  }
+
+  if (ui.selected?.type === "text") {
+    ui.sidebarNodeId = null;
+    delete propsList.dataset.ownerKey;
+    noSelection.classList.add("hidden");
+    globalPanel.classList.add("hidden");
+    nodePanel.classList.add("hidden");
+    edgePanel.classList.add("hidden");
+    widgetPanel.classList.add("hidden");
+    textPanel.classList.remove("hidden");
+    const item = getTextItemById(ui.selected.id);
+    if (!item) {
+      clearAllSelection();
+      refreshSidebar();
+      return;
+    }
+    if (document.activeElement !== textWidthInput) {
+      textWidthInput.value = String(item.width);
+    }
+    if (document.activeElement !== textHeightInput) {
+      textHeightInput.value = String(item.height);
+    }
+    if (document.activeElement !== textFillColorInput && textFillColorInput) {
+      textFillColorInput.value = item.fillColor || "";
+    }
+    if (document.activeElement !== textStrokeColorInput && textStrokeColorInput) {
+      textStrokeColorInput.value = item.strokeColor || "";
+    }
+    syncSelectedTextInputs(item);
+    return;
+  }
+
+  if (isTextEditorOpen()) {
+    closeTextEditor();
+  }
+
+  if (ui.selectedNodes.size === 1) {
+    const nodeId = [...ui.selectedNodes][0];
+    const node = getNodeById(nodeId);
+    if (!node) {
+      clearAllSelection();
+      refreshSidebar();
+      return;
+    }
+
+    noSelection.classList.add("hidden");
+    globalPanel.classList.add("hidden");
+    textPanel.classList.add("hidden");
+    widgetPanel.classList.add("hidden");
+    nodePanel.classList.remove("hidden");
+    edgePanel.classList.add("hidden");
+
+    nodeIdentitySection?.classList.remove("hidden");
+    nodeFormulaSection?.classList.remove("hidden");
+    nodeValueSection?.classList.remove("hidden");
+    nodeColorSection?.classList.remove("hidden");
+    nodePropsSection?.classList.remove("hidden");
+    nodeNameLabel?.classList.remove("hidden");
+    nodeValueOutputLabel?.classList.remove("hidden");
+    nodeNameInput?.classList.remove("hidden");
+    nodeShapeInput?.classList.remove("hidden");
+    propsList?.classList.remove("hidden");
+    nodePropsTitle?.classList.remove("hidden");
+    addPropBtn?.classList.remove("hidden");
+
+    const sameSidebarNode = ui.sidebarNodeId === node.id;
+
+    if (!sameSidebarNode || document.activeElement !== nodeNameInput) {
+      nodeNameInput.value = node.name;
+    }
+    if (!sameSidebarNode || document.activeElement !== nodeUnitInput) {
+      const declaredUnit = String(node.unit ?? "").trim();
+      const unitMayBeDeclared = canDeclareNodeUnit(node);
+      nodeUnitInput.value = declaredUnit || (unitMayBeDeclared ? "" : String(node.inferredUnit ?? ""));
+      nodeUnitInput.readOnly = !declaredUnit && Boolean(node.inferredUnit) && !unitMayBeDeclared;
+      nodeUnitInput.classList.toggle("inferred-unit", nodeUnitInput.readOnly);
+    }
+    if (!sameSidebarNode || document.activeElement !== nodeShapeInput) {
+      nodeShapeInput.value = node.shape;
+    }
+    Array.from(nodeShapeInput?.options || []).forEach((option) => {
+      option.title = t(`tooltip.node.type.${option.value}`);
+    });
+    setTooltipText(nodeShapeInput, t(`tooltip.node.type.${node.shape}`));
+    const showInputToggle = canMarkNodeAsInput(node);
+    const showGlobalToggle = canMarkNodeAsGlobal(node);
+    const submodelNode = isSubmodelNode(node);
+    const draftNode = isDraftNode(node);
+    nodePanel.classList.toggle("draft-node-panel", draftNode);
+    nodeFormulaSection?.classList.toggle("hidden", draftNode);
+    nodeValueSection?.classList.toggle("hidden", draftNode);
+    nodeColorSection?.classList.toggle("hidden", draftNode);
+    nodePropsSection?.classList.toggle("hidden", draftNode);
+    nodeUnitLabel?.classList.toggle("hidden", submodelNode || draftNode);
+    nodeUnitInput?.classList.toggle("hidden", submodelNode || draftNode);
+    if (nodeUnitInput) nodeUnitInput.disabled = submodelNode || draftNode || isEditingUiLocked();
+    nodeInputInput.checked = Boolean(node.input);
+    nodeOutputInput.checked = Boolean(node.output);
+    nodeOutputInput.indeterminate = false;
+    nodeGlobalInput.checked = Boolean(node.global);
+    nodeGlobalInput.indeterminate = false;
+    sanitizeNodeVisualOptions(node);
+    if (nodeFillColorInput) {
+      nodeFillColorInput.value = node.fillColor || "";
+    }
+    if (nodeStrokeColorInput) {
+      nodeStrokeColorInput.value = node.strokeColor || "";
+    }
+    if (nodeInputLabel) {
+      nodeInputLabel.classList.toggle("hidden", !showInputToggle);
+    }
+    nodeInputInput.disabled = !showInputToggle;
+    if (nodeGlobalLabel) {
+      nodeGlobalLabel.classList.toggle("hidden", !showGlobalToggle);
+    }
+    nodeGlobalInput.disabled = !showGlobalToggle;
+    const stateNode = isStateNode(node);
+    const parameterNode = node.shape === "diamond";
+    if (nodeOutputInput?.closest("label")) {
+      nodeOutputInput.closest("label").classList.toggle("hidden", submodelNode || draftNode);
+    }
+    if (submodelNode && !sameSidebarNode) {
+      nodeOutputInput.checked = false;
+    }
+    if (nodeModelPathLabel) {
+      nodeModelPathLabel.classList.toggle("hidden", !submodelNode);
+    }
+    if (nodeModelPathInput) {
+      nodeModelPathInput.classList.toggle("hidden", !submodelNode);
+      if (submodelNode && (!sameSidebarNode || document.activeElement !== nodeModelPathInput)) {
+        nodeModelPathInput.value = node.modelPath || "";
+      }
+    }
+    if (submodelActionRow) {
+      submodelActionRow.classList.toggle("hidden", !submodelNode);
+    }
+    if (submodelIconSection) {
+      submodelIconSection.classList.toggle("hidden", !submodelNode);
+    }
+    if (submodelIconSelect) {
+      submodelIconSelect.disabled = !submodelNode;
+      if (submodelNode && (!sameSidebarNode || document.activeElement !== submodelIconSelect)) {
+        submodelIconSelect.value = submodelIconSelectValue(node);
+      }
+    }
+    if (chooseSubmodelIconBtn) {
+      chooseSubmodelIconBtn.classList.toggle("hidden", !submodelNode);
+      chooseSubmodelIconBtn.disabled = !submodelNode;
+    }
+    if (clearSubmodelIconBtn) {
+      clearSubmodelIconBtn.classList.toggle("hidden", !submodelNode);
+      clearSubmodelIconBtn.disabled = !submodelNode || !normalizeSubmodelIcon(node.submodelIcon);
+    }
+    if (loadSubmodelBtn) {
+      loadSubmodelBtn.classList.toggle("hidden", !submodelNode);
+      loadSubmodelBtn.disabled = !submodelNode;
+    }
+    if (showSubmodelBtn) {
+      showSubmodelBtn.classList.toggle("hidden", !submodelNode);
+      showSubmodelBtn.disabled = !submodelNode || !canShowSubmodelNode(node);
+    }
+    if (nodeSubmodelInfo) {
+      if (submodelNode) {
+        if (
+          (!Array.isArray(node.interfaceCache?.inputs) || node.interfaceCache.inputs.length === 0) &&
+          (!Array.isArray(node.interfaceCache?.outputs) || node.interfaceCache.outputs.length === 0) &&
+          String(node.modelPath ?? "").trim() &&
+          !node.submodelError
+        ) {
+          void refreshSubmodelInterface(node, false, { allowPrompt: false });
+        }
+        const summary = node.submodelError
+          ? t("text.submodelError", { reason: node.submodelError })
+          : submodelInterfaceSummary(node);
+        nodeSubmodelInfo.textContent = summary;
+        nodeSubmodelInfo.classList.remove("hidden");
+        nodeSubmodelInfo.classList.toggle("error", Boolean(node.submodelError));
+        nodeSubmodelInfo.classList.toggle("ok", !node.submodelError);
+      } else {
+        nodeSubmodelInfo.classList.add("hidden");
+        nodeSubmodelInfo.classList.remove("error", "ok");
+        nodeSubmodelInfo.textContent = "";
+      }
+    }
+    renderSubmodelBindingsEditor(submodelNode ? node : null);
+    if (nodeValueExprLabel) {
+      nodeValueExprLabel.textContent = parameterNode
+        ? t("label.value")
+        : (stateNode ? t("label.stateTransition") : t("label.behaviorFunction"));
+    }
+    updateNodeExpressionTooltips(node);
+    if (!submodelNode && (!sameSidebarNode || document.activeElement !== nodeValueExprInput)) {
+      nodeValueExprInput.value = node.valueExpression || "";
+    }
+    nodeValueExprLabel.classList.toggle("hidden", submodelNode || draftNode);
+    nodeValueExprRow?.classList.toggle("hidden", submodelNode || draftNode);
+    nodeValueExprStatus.classList.toggle("hidden", submodelNode || draftNode);
+    if (!submodelNode && !draftNode) {
+      updateExpressionFieldState(nodeValueExprInput, nodeValueExprStatus, node.valueExpression || "", false, "value");
+      setExplicitControlDisabled(
+        nodeValueExprInput,
+        isEditingUiLocked() || isWidgetControlledExpressionNode(node),
+      );
+      setExplicitControlDisabled(
+        editNodeValueExprBtn,
+        isEditingUiLocked() || isWidgetControlledExpressionNode(node),
+      );
+    } else {
+      nodeValueExprInput.classList.remove("invalid");
+      hideExpressionStatus(nodeValueExprStatus);
+      setExplicitControlDisabled(editNodeValueExprBtn, true);
+    }
+    if (nodeWidgetBindingInfo) {
+      const controlledByWidget = !submodelNode && !draftNode && hasInputWidgetBinding(node);
+      nodeWidgetBindingInfo.classList.toggle("hidden", !controlledByWidget);
+      nodeWidgetBindingInfo.classList.remove("ok", "error");
+      nodeWidgetBindingInfo.textContent = controlledByWidget ? t("node.widgetControlled") : "";
+    }
+    if (nodeInitialStateLabel) {
+      nodeInitialStateLabel.classList.toggle("hidden", !stateNode || submodelNode || draftNode);
+    }
+    if (nodeInitialStateInput) {
+      nodeInitialStateRow?.classList.toggle("hidden", !stateNode || submodelNode || draftNode);
+      nodeInitialStateInput.classList.toggle("hidden", !stateNode || submodelNode || draftNode);
+      if (nodeInitialStateStatus) {
+        nodeInitialStateStatus.classList.toggle("hidden", !stateNode || submodelNode || draftNode);
+      }
+      if (stateNode && !submodelNode && (!sameSidebarNode || document.activeElement !== nodeInitialStateInput)) {
+        nodeInitialStateInput.value = node.initialStateExpression || "";
+      }
+      if (stateNode && !submodelNode) {
+        updateExpressionFieldState(nodeInitialStateInput, nodeInitialStateStatus, node.initialStateExpression || "", false, "initial");
+      } else {
+        nodeInitialStateInput.classList.remove("invalid");
+        hideExpressionStatus(nodeInitialStateStatus);
+      }
+    }
+    const definitionIssue = validateNodeDefinition(node);
+    nodeValueOutput.classList.remove("ok", "error");
+    if (graph.execution.strictDefinitions && !definitionIssue.ok) {
+      nodeValueOutput.textContent = "-";
+    } else if (node.computedError) {
+      nodeValueOutput.textContent = t("text.valueError", { reason: evalReasonText(node.computedError) });
+      nodeValueOutput.classList.add("error");
+    } else {
+      nodeValueOutput.textContent = formatComputedValue(node.computedValue);
+      if (node.computedValue != null) {
+        nodeValueOutput.classList.add("ok");
+      }
+    }
+
+    normalizeNodeDescriptionProperty(node);
+    normalizeNodeFormulaNotesProperty(node);
+    const visibleProperties = node.properties
+      .map((prop, idx) => ({ prop, idx }))
+      .filter(({ prop }) => {
+        const key = String(prop?.key ?? "").trim().toLowerCase();
+        return !formulaNotesPropertyKeys().has(key) && !descriptionPropertyKeys().has(key);
+      });
+    if (renderPropertiesEditor(
+      propsList,
+      visibleProperties.map(({ prop }) => prop),
+      `node:${node.id}`,
+      (idx) => {
+        const originalIndex = visibleProperties[idx]?.idx;
+        if (originalIndex != null) {
+          node.properties.splice(originalIndex, 1);
+        }
+      },
+      {
+        isLockedKey: (prop) => {
+          const key = String(prop?.key ?? "").trim().toLowerCase();
+          return descriptionPropertyKeys().has(key);
+        },
+      },
+    )) {
+      ui.sidebarNodeId = node.id;
+      return;
+    }
+    ui.sidebarNodeId = node.id;
+    return;
+  }
+
+  ui.sidebarNodeId = null;
+  nodePanel.classList.remove("draft-node-panel");
+  nodePanel.classList.add("hidden");
+  textPanel.classList.add("hidden");
+  edgePanel.classList.add("hidden");
+  widgetPanel.classList.add("hidden");
+  if (nodeValueExprLabel) {
+    nodeValueExprLabel.textContent = t("label.behaviorFunction");
+  }
+  updateNodeExpressionTooltips(null);
+  nodeValueExprInput.classList.remove("invalid");
+  nodeInitialStateInput.classList.remove("invalid");
+  hideExpressionStatus(nodeValueExprStatus);
+  hideExpressionStatus(nodeInitialStateStatus);
+  if (nodeWidgetBindingInfo) {
+    nodeWidgetBindingInfo.classList.add("hidden");
+    nodeWidgetBindingInfo.classList.remove("ok", "error");
+    nodeWidgetBindingInfo.textContent = "";
+  }
+  nodeInputInput.checked = false;
+  if (nodeInputLabel) {
+    nodeInputLabel.classList.add("hidden");
+  }
+  nodeInputInput.disabled = true;
+  nodeGlobalInput.checked = false;
+  if (nodeGlobalLabel) {
+    nodeGlobalLabel.classList.add("hidden");
+  }
+  nodeGlobalInput.disabled = true;
+  if (nodeInitialStateLabel) {
+    nodeInitialStateLabel.classList.add("hidden");
+  }
+  if (nodeModelPathLabel) {
+    nodeModelPathLabel.classList.add("hidden");
+  }
+  if (nodeModelPathInput) {
+    nodeModelPathInput.classList.add("hidden");
+  }
+  if (submodelActionRow) {
+    submodelActionRow.classList.add("hidden");
+  }
+  if (submodelIconSection) {
+    submodelIconSection.classList.add("hidden");
+  }
+  if (submodelIconSelect) {
+    submodelIconSelect.value = "";
+    submodelIconSelect.disabled = true;
+  }
+  if (chooseSubmodelIconBtn) {
+    chooseSubmodelIconBtn.classList.add("hidden");
+    chooseSubmodelIconBtn.disabled = true;
+  }
+  if (clearSubmodelIconBtn) {
+    clearSubmodelIconBtn.classList.add("hidden");
+    clearSubmodelIconBtn.disabled = true;
+  }
+  if (loadSubmodelBtn) {
+    loadSubmodelBtn.classList.add("hidden");
+    loadSubmodelBtn.disabled = true;
+  }
+  if (showSubmodelBtn) {
+    showSubmodelBtn.classList.add("hidden");
+    showSubmodelBtn.disabled = true;
+  }
+  if (nodeSubmodelInfo) {
+    nodeSubmodelInfo.classList.add("hidden");
+    nodeSubmodelInfo.classList.remove("error", "ok");
+    nodeSubmodelInfo.textContent = "";
+  }
+  renderSubmodelBindingsEditor(null);
+  if (nodeOutputInput?.closest("label")) {
+    nodeOutputInput.closest("label").classList.remove("hidden");
+  }
+  nodeOutputInput.indeterminate = false;
+  nodeValueExprLabel.classList.remove("hidden");
+  nodeValueExprRow?.classList.remove("hidden");
+  if (nodeInitialStateInput) {
+    nodeInitialStateRow?.classList.add("hidden");
+    nodeInitialStateInput.classList.add("hidden");
+  }
+  if (widgetPanelTitle) {
+    widgetPanelTitle.textContent = t("panel.widget");
+  }
+  delete propsList.dataset.ownerKey;
+
+  if (ui.selectedNodes.size > 1) {
+    const nodes = selectedNodesList();
+    globalPanel.classList.add("hidden");
+    textPanel.classList.add("hidden");
+    widgetPanel.classList.add("hidden");
+    edgePanel.classList.add("hidden");
+    nodePanel.classList.remove("hidden");
+    noSelection.classList.add("hidden");
+
+    if (nodeIdentitySection) {
+      nodeIdentitySection.classList.add("hidden");
+    }
+    if (nodeFormulaSection) {
+      nodeFormulaSection.classList.add("hidden");
+    }
+    if (nodeValueSection) {
+      nodeValueSection.classList.add("hidden");
+    }
+    if (nodePropsSection) {
+      nodePropsSection.classList.add("hidden");
+    }
+    if (nodeColorSection) {
+      nodeColorSection.classList.remove("hidden");
+    }
+
+    if (nodeOutputInput?.closest("label")) {
+      const outputTargets = nodes.filter((node) => !isSubmodelNode(node));
+      const allOn = outputTargets.length > 0 && outputTargets.every((node) => Boolean(node.output));
+      const allOff = outputTargets.length > 0 && outputTargets.every((node) => !node.output);
+      nodeOutputInput.closest("label").classList.toggle("hidden", outputTargets.length === 0);
+      nodeOutputInput.indeterminate = !(allOn || allOff);
+      nodeOutputInput.checked = allOn;
+    }
+
+    if (nodeInputLabel) {
+      const inputTargets = nodes.filter((node) => canMarkNodeAsInput(node));
+      const allOn = inputTargets.length > 0 && inputTargets.every((node) => Boolean(node.input));
+      const allOff = inputTargets.length > 0 && inputTargets.every((node) => !node.input);
+      nodeInputLabel.classList.toggle("hidden", inputTargets.length === 0);
+      nodeInputInput.indeterminate = !(allOn || allOff);
+      nodeInputInput.checked = allOn;
+      nodeInputInput.disabled = inputTargets.length === 0;
+    }
+    if (nodeGlobalLabel) {
+      nodeGlobalLabel.classList.add("hidden");
+    }
+    nodeNameLabel?.classList.add("hidden");
+    nodeNameInput?.classList.add("hidden");
+    nodeShapeInput?.classList.add("hidden");
+    nodeGlobalInput.checked = false;
+    nodeGlobalInput.disabled = true;
+    nodeValueExprLabel.classList.add("hidden");
+    nodeValueExprRow?.classList.add("hidden");
+    hideExpressionStatus(nodeValueExprStatus);
+    if (nodeInitialStateLabel) {
+      nodeInitialStateLabel.classList.add("hidden");
+    }
+    nodeInitialStateRow?.classList.add("hidden");
+    nodeInitialStateInput.classList.add("hidden");
+    hideExpressionStatus(nodeInitialStateStatus);
+    if (nodeModelPathLabel) {
+      nodeModelPathLabel.classList.add("hidden");
+    }
+    if (nodeModelPathInput) {
+      nodeModelPathInput.classList.add("hidden");
+    }
+    if (submodelActionRow) {
+      submodelActionRow.classList.add("hidden");
+    }
+    if (submodelIconSection) {
+      submodelIconSection.classList.add("hidden");
+    }
+    if (submodelIconSelect) {
+      submodelIconSelect.value = "";
+      submodelIconSelect.disabled = true;
+    }
+    if (chooseSubmodelIconBtn) {
+      chooseSubmodelIconBtn.classList.add("hidden");
+      chooseSubmodelIconBtn.disabled = true;
+    }
+    if (clearSubmodelIconBtn) {
+      clearSubmodelIconBtn.classList.add("hidden");
+      clearSubmodelIconBtn.disabled = true;
+    }
+    if (loadSubmodelBtn) {
+      loadSubmodelBtn.classList.add("hidden");
+      loadSubmodelBtn.disabled = true;
+    }
+    if (showSubmodelBtn) {
+      showSubmodelBtn.classList.add("hidden");
+      showSubmodelBtn.disabled = true;
+    }
+    if (nodeSubmodelInfo) {
+      nodeSubmodelInfo.classList.add("hidden");
+      nodeSubmodelInfo.classList.remove("error", "ok");
+      nodeSubmodelInfo.textContent = "";
+    }
+    renderSubmodelBindingsEditor(null);
+    nodeValueOutputLabel?.classList.add("hidden");
+    if (propsList) {
+      propsList.innerHTML = "";
+      delete propsList.dataset.ownerKey;
+    }
+    propsList?.classList.add("hidden");
+    nodePropsTitle?.classList.add("hidden");
+    addPropBtn?.classList.add("hidden");
+    nodeValueOutput.textContent = t("text.nodesSelected", { count: ui.selectedNodes.size });
+    nodeValueOutput.classList.remove("ok", "error");
+    if (nodeFillColorInput) {
+      const fillValues = new Set(nodes.map((node) => String(node.fillColor || "")));
+      nodeFillColorInput.value = fillValues.size === 1 ? [...fillValues][0] : "";
+    }
+    if (nodeStrokeColorInput) {
+      const strokeValues = new Set(nodes.map((node) => String(node.strokeColor || "")));
+      nodeStrokeColorInput.value = strokeValues.size === 1 ? [...strokeValues][0] : "";
+    }
+  } else {
+    noSelection.classList.add("hidden");
+    globalPanel.classList.remove("hidden");
+    nodeIdentitySection?.classList.remove("hidden");
+    nodeFormulaSection?.classList.remove("hidden");
+    nodeValueSection?.classList.remove("hidden");
+    nodeColorSection?.classList.remove("hidden");
+    nodePropsSection?.classList.remove("hidden");
+    nodeNameLabel?.classList.remove("hidden");
+    nodeValueOutputLabel?.classList.remove("hidden");
+    nodeNameInput?.classList.remove("hidden");
+    nodeShapeInput?.classList.remove("hidden");
+    propsList?.classList.remove("hidden");
+    nodePropsTitle?.classList.remove("hidden");
+    addPropBtn?.classList.remove("hidden");
+    if (document.activeElement !== modelTitleInput) {
+      modelTitleInput.value = String(graph.modelTitle ?? "");
+    }
+    if (document.activeElement !== timeStartInput) {
+      timeStartInput.value = String(graph.execution.t0);
+    }
+    if (document.activeElement !== timeStepInput) {
+      timeStepInput.value = String(graph.execution.dt);
+    }
+    if (timeUnitInput && document.activeElement !== timeUnitInput) timeUnitInput.value = String(graph.execution.timeUnit ?? "s");
+    if (document.activeElement !== timeEndInput) {
+      timeEndInput.value = String(graph.execution.t1);
+    }
+    if (document.activeElement !== timeDelayInput) {
+      timeDelayInput.value = String(graph.execution.delayMs);
+    }
+    if (renderEveryStepsInput && document.activeElement !== renderEveryStepsInput) {
+      renderEveryStepsInput.value = String(graph.execution.renderEverySteps);
+    }
+    if (decimalDigitsInput && document.activeElement !== decimalDigitsInput) {
+      decimalDigitsInput.value = String(clampDisplayDecimals(graph.execution.decimals));
+    }
+    if (document.activeElement !== integratorInput) {
+      integratorInput.value = String(graph.execution.integrator ?? "euler");
+    }
+    if (randomSeedInput && document.activeElement !== randomSeedInput) {
+      randomSeedInput.value = graph.execution.randomSeed == null ? "" : String(graph.execution.randomSeed);
+    }
+    if (strictDefinitionsInput) {
+      strictDefinitionsInput.checked = Boolean(graph.execution.strictDefinitions);
+    }
+    if (zoomRangeInput && document.activeElement !== zoomRangeInput) {
+      zoomRangeInput.value = String(Math.round(ui.zoom * 100));
+    }
+    if (zoomRangeValue) {
+      zoomRangeValue.textContent = `${Math.round(ui.zoom * 100)}%`;
+    }
+    timeCurrentOutput.textContent =
+      graph.execution.currentTime == null
+        ? formatNumberValue(Number(graph.execution.t0))
+        : formatNumberValue(Number(graph.execution.currentTime));
+    renderPropertiesEditor(
+      modelPropsList,
+      graph.properties,
+      "model",
+      (idx) => {
+        graph.properties.splice(idx, 1);
+      },
+    );
+    updateModelRunButtons();
+  }
+}
+
+function render(options = {}) {
+  clearStrictInvalidNodeValues();
+  updateModelRunButtons();
+  updateMenuTimeLabel();
+  updateDeleteActionLabel();
+  updateEditActionButtons();
+  syncPresentationGroups();
+  syncDashboard();
+  modelNotesCanvasBtn?.classList.toggle("hidden", !String(graph.notes?.markdown ?? "").trim());
+  const visibleNodeIds = visiblePresentationNodeIds();
+  presentationGroupsLayer.innerHTML = "";
+  dashboardLayer.innerHTML = "";
+  edgesLayer.innerHTML = "";
+  nodesLayer.innerHTML = "";
+  textLayer.innerHTML = "";
+  controlsLayer.innerHTML = "";
+  previewLayer.innerHTML = "";
+  marqueeLayer.innerHTML = "";
+
+  const highlightedNodeId = ui.highlightNodeEdges && ui.selectedNodes.size === 1
+    ? [...ui.selectedNodes][0]
+    : null;
+
+  graph.presentationGroups.forEach((group) => {
+    if (!group.visible || group.showFrame === false) {
+      return;
+    }
+    const bounds = presentationGroupBounds(group);
+    if (!bounds) {
+      return;
+    }
+    const frame = document.createElementNS(SVG_NS, "rect");
+    frame.classList.add("presentation-group-frame");
+    frame.setAttribute("x", bounds.minX);
+    frame.setAttribute("y", bounds.minY);
+    frame.setAttribute("width", bounds.width);
+    frame.setAttribute("height", bounds.height);
+    frame.setAttribute("rx", "12");
+    presentationGroupsLayer.appendChild(frame);
+
+    const label = document.createElementNS(SVG_NS, "text");
+    label.classList.add("presentation-group-label");
+    label.setAttribute("x", bounds.minX + 10);
+    label.setAttribute("y", bounds.minY + 16);
+    label.textContent = group.name;
+    presentationGroupsLayer.appendChild(label);
+  });
+
+  if (graph.dashboard && graph.dashboard.visible !== false) {
+    const dashboard = graph.dashboard;
+    const frame = document.createElementNS(SVG_NS, "rect");
+    frame.classList.add("dashboard-frame");
+    if (ui.dashboardDropState === "enter") frame.classList.add("dashboard-drop-enter");
+    if (ui.dashboardDropState === "leave") frame.classList.add("dashboard-drop-leave");
+    frame.setAttribute("x", dashboard.x);
+    frame.setAttribute("y", dashboard.y);
+    frame.setAttribute("width", dashboard.width);
+    frame.setAttribute("height", dashboard.height);
+    frame.setAttribute("rx", "12");
+    dashboardLayer.appendChild(frame);
+
+    const header = document.createElementNS(SVG_NS, "rect");
+    header.classList.add("dashboard-header");
+    header.setAttribute("x", dashboard.x + 1);
+    header.setAttribute("y", dashboard.y + 1);
+    header.setAttribute("width", Math.max(0, dashboard.width - 2));
+    header.setAttribute("height", "32");
+    header.setAttribute("rx", "11");
+    header.addEventListener("pointerdown", (evt) => {
+      if (isEditingUiLocked()) return;
+      evt.preventDefault();
+      evt.stopPropagation();
+      ui.dashboardDrag = {
+        pointerId: evt.pointerId,
+        startClientX: evt.clientX,
+        startClientY: evt.clientY,
+        startX: dashboard.x,
+        startY: dashboard.y,
+      };
+      evt.currentTarget?.setPointerCapture?.(evt.pointerId);
+      beginTransaction();
+    });
+    dashboardLayer.appendChild(header);
+
+    const title = document.createElementNS(SVG_NS, "text");
+    title.classList.add("dashboard-title");
+    title.setAttribute("x", dashboard.x + 16);
+    title.setAttribute("y", dashboard.y + 24);
+    title.setAttribute("pointer-events", "none");
+    title.textContent = t("dashboard.canvasTitle");
+    dashboardLayer.appendChild(title);
+
+    const hide = document.createElementNS(SVG_NS, "rect");
+    hide.classList.add("dashboard-window-action");
+    hide.setAttribute("x", dashboard.x + dashboard.width - 29);
+    hide.setAttribute("y", dashboard.y + 6);
+    hide.setAttribute("width", "23");
+    hide.setAttribute("height", "21");
+    hide.setAttribute("rx", "5");
+    hide.setAttribute("title", t("dashboard.hide"));
+    hide.addEventListener("click", (evt) => {
+      evt.stopPropagation();
+      commitDashboardChange(() => { graph.dashboard.visible = false; });
+    });
+    dashboardLayer.appendChild(hide);
+    const hideLabel = document.createElementNS(SVG_NS, "text");
+    hideLabel.classList.add("dashboard-window-action-label");
+    hideLabel.setAttribute("x", dashboard.x + dashboard.width - 17.5);
+    hideLabel.setAttribute("y", dashboard.y + 21);
+    hideLabel.setAttribute("pointer-events", "none");
+    hideLabel.textContent = "x";
+    dashboardLayer.appendChild(hideLabel);
+
+    const tabsBar = document.createElementNS(SVG_NS, "rect");
+    tabsBar.classList.add("dashboard-tabs-bar");
+    tabsBar.setAttribute("x", dashboard.x + 1);
+    tabsBar.setAttribute("y", dashboard.y + 33);
+    tabsBar.setAttribute("width", Math.max(0, dashboard.width - 2));
+    tabsBar.setAttribute("height", "33");
+    dashboardLayer.appendChild(tabsBar);
+
+    const resize = document.createElementNS(SVG_NS, "rect");
+    resize.classList.add("dashboard-resize-handle");
+    resize.setAttribute("x", dashboard.x + dashboard.width - 15);
+    resize.setAttribute("y", dashboard.y + dashboard.height - 15);
+    resize.setAttribute("width", "12");
+    resize.setAttribute("height", "12");
+    resize.setAttribute("rx", "2");
+    resize.addEventListener("pointerdown", (evt) => {
+      if (isEditingUiLocked()) return;
+      evt.preventDefault();
+      evt.stopPropagation();
+      ui.dashboardResize = {
+        pointerId: evt.pointerId,
+        startClientX: evt.clientX,
+        startClientY: evt.clientY,
+        startWidth: dashboard.width,
+        startHeight: dashboard.height,
+      };
+      evt.currentTarget?.setPointerCapture?.(evt.pointerId);
+      beginTransaction();
+    });
+    dashboardLayer.appendChild(resize);
+
+    let tabX = dashboard.x + 14;
+    dashboard.pages.forEach((page) => {
+      const label = String(page.title || t("dashboard.defaultPage"));
+      const canDelete = dashboard.pages.length > 1;
+      const tabWidth = Math.max(100, Math.min(210, 48 + label.length * 7 + (canDelete ? 18 : 0)));
+      const tab = document.createElementNS(SVG_NS, "rect");
+      tab.classList.add("dashboard-tab");
+      if (page.id === dashboard.activePageId) tab.classList.add("active");
+      tab.setAttribute("x", tabX);
+      tab.setAttribute("y", dashboard.y + 37);
+      tab.setAttribute("width", tabWidth);
+      tab.setAttribute("height", "25");
+      tab.setAttribute("rx", "6");
+      tab.addEventListener("click", (evt) => {
+        evt.stopPropagation();
+        // Delay activation long enough to distinguish a double click used to rename.
+        if (ui.dashboardTabClickTimer != null) {
+          const samePage = ui.dashboardTabClickPageId === page.id;
+          clearTimeout(ui.dashboardTabClickTimer);
+          ui.dashboardTabClickTimer = null;
+          ui.dashboardTabClickPageId = null;
+          if (samePage) {
+            // The subsequent dblclick event performs the rename.
+            return;
+          }
+        }
+        ui.dashboardTabClickPageId = page.id;
+        ui.dashboardTabClickTimer = window.setTimeout(() => {
+          const targetPageId = ui.dashboardTabClickPageId;
+          ui.dashboardTabClickTimer = null;
+          ui.dashboardTabClickPageId = null;
+          if (graph.dashboard?.activePageId !== targetPageId) {
+            commitDashboardChange(() => { graph.dashboard.activePageId = targetPageId; });
+          }
+        }, 280);
+      });
+      tab.addEventListener("dblclick", (evt) => {
+        evt.stopPropagation();
+        if (ui.dashboardTabClickTimer != null) {
+          clearTimeout(ui.dashboardTabClickTimer);
+          ui.dashboardTabClickTimer = null;
+          ui.dashboardTabClickPageId = null;
+        }
+        renameDashboardPage(page.id);
+      });
+      dashboardLayer.appendChild(tab);
+      const tabText = document.createElementNS(SVG_NS, "text");
+      tabText.classList.add("dashboard-tab-label");
+      tabText.setAttribute("x", tabX + 10);
+      tabText.setAttribute("y", dashboard.y + 54);
+      tabText.setAttribute("pointer-events", "none");
+      tabText.textContent = label;
+      dashboardLayer.appendChild(tabText);
+      const renameTab = document.createElementNS(SVG_NS, "rect");
+      renameTab.classList.add("dashboard-tab-rename");
+      renameTab.setAttribute("x", tabX + tabWidth - (canDelete ? 39 : 20));
+      renameTab.setAttribute("y", dashboard.y + 41);
+      renameTab.setAttribute("width", "15");
+      renameTab.setAttribute("height", "16");
+      renameTab.setAttribute("rx", "3");
+      renameTab.setAttribute("title", t("dashboard.renamePage"));
+      renameTab.addEventListener("click", (evt) => {
+        evt.stopPropagation();
+        renameDashboardPage(page.id);
+      });
+      dashboardLayer.appendChild(renameTab);
+      const renameLabel = document.createElementNS(SVG_NS, "text");
+      renameLabel.classList.add("dashboard-tab-rename-label");
+      renameLabel.setAttribute("x", tabX + tabWidth - (canDelete ? 31.5 : 12.5));
+      renameLabel.setAttribute("y", dashboard.y + 53.5);
+      renameLabel.setAttribute("pointer-events", "none");
+      renameLabel.textContent = "e";
+      dashboardLayer.appendChild(renameLabel);
+      if (canDelete) {
+        const deleteTab = document.createElementNS(SVG_NS, "rect");
+        deleteTab.classList.add("dashboard-tab-delete");
+        deleteTab.setAttribute("x", tabX + tabWidth - 20);
+        deleteTab.setAttribute("y", dashboard.y + 41);
+        deleteTab.setAttribute("width", "15");
+        deleteTab.setAttribute("height", "16");
+        deleteTab.setAttribute("rx", "3");
+        deleteTab.setAttribute("title", t("dashboard.deletePage"));
+        deleteTab.addEventListener("click", (evt) => {
+          evt.stopPropagation();
+          removeDashboardPage(page.id);
+        });
+        dashboardLayer.appendChild(deleteTab);
+        const deleteLabel = document.createElementNS(SVG_NS, "text");
+        deleteLabel.classList.add("dashboard-tab-delete-label");
+        deleteLabel.setAttribute("x", tabX + tabWidth - 12.5);
+        deleteLabel.setAttribute("y", dashboard.y + 53.5);
+        deleteLabel.setAttribute("pointer-events", "none");
+        deleteLabel.textContent = "x";
+        dashboardLayer.appendChild(deleteLabel);
+      }
+      tabX += tabWidth + 6;
+    });
+    const addTab = document.createElementNS(SVG_NS, "rect");
+    addTab.classList.add("dashboard-tab-add");
+    addTab.setAttribute("x", tabX);
+    addTab.setAttribute("y", dashboard.y + 37);
+    addTab.setAttribute("width", "26");
+    addTab.setAttribute("height", "25");
+    addTab.setAttribute("rx", "6");
+    addTab.setAttribute("title", t("dashboard.addPage"));
+    addTab.addEventListener("click", (evt) => {
+      evt.stopPropagation();
+      addDashboardPage();
+    });
+    dashboardLayer.appendChild(addTab);
+    const addLabel = document.createElementNS(SVG_NS, "text");
+    addLabel.classList.add("dashboard-tab-add-label");
+    addLabel.setAttribute("x", tabX + 13);
+    addLabel.setAttribute("y", dashboard.y + 55);
+    addLabel.setAttribute("pointer-events", "none");
+    addLabel.textContent = "+";
+    dashboardLayer.appendChild(addLabel);
+  }
+
+  graph.edges.forEach((edge) => {
+    if (!visibleNodeIds.has(edge.from) || !visibleNodeIds.has(edge.to)) {
+      return;
+    }
+    const geom = buildEdgeGeometry(edge);
+    if (!geom) {
+      return;
+    }
+
+    const g = document.createElementNS(SVG_NS, "g");
+    g.classList.add("edge");
+    const isSelected = ui.selected?.type === "edge" && ui.selected.id === edge.id;
+    const isIncomingHighlight = highlightedNodeId != null && edge.to === highlightedNodeId;
+    const isOutgoingHighlight = highlightedNodeId != null && edge.from === highlightedNodeId;
+    const isBothHighlight = isIncomingHighlight && isOutgoingHighlight;
+    if (isSelected) {
+      g.classList.add("selected");
+    }
+    if (isAnalysisFocusActive("edge", edge.id)) {
+      g.classList.add("analysis-focus");
+    }
+    if (isFeedbackLoopFocusActive("edge", edge.id)) {
+      g.classList.add("feedback-loop-focus");
+    }
+    const edgeColor = normalizeEdgeColor(edge.color);
+    if (edgeColor) {
+      g.style.setProperty("--edge-stroke", edgeColor);
+    }
+    if (isBothHighlight) {
+      g.classList.add("related-both");
+    } else if (isIncomingHighlight) {
+      g.classList.add("related-incoming");
+    } else if (isOutgoingHighlight) {
+      g.classList.add("related-outgoing");
+    }
+
+    const path = document.createElementNS(SVG_NS, "path");
+    path.classList.add("edge-line");
+    path.setAttribute("d", geom.path);
+    const markerId = isSelected
+      ? "arrow-selected"
+      : isBothHighlight
+        ? "arrow-both"
+        : isIncomingHighlight
+          ? "arrow-incoming"
+          : isOutgoingHighlight
+            ? "arrow-outgoing"
+            : isFeedbackLoopFocusActive("edge", edge.id)
+              ? "arrow-feedback-loop"
+              : edgeArrowMarkerId(edgeColor);
+    path.setAttribute("marker-end", `url(#${markerId})`);
+
+    const hit = document.createElementNS(SVG_NS, "path");
+    hit.classList.add("edge-hit");
+    hit.setAttribute("d", geom.path);
+
+    const onEdgeContextMenu = (evt) => {
+      evt.preventDefault();
+      evt.stopPropagation();
+      if (isEditingUiLocked()) {
+        return;
+      }
+      selectEdge(edge.id);
+      render();
+      const p = svgPointFromClient(evt.clientX, evt.clientY);
+      openEdgeContextMenu(evt, edge.id, p);
+    };
+
+    hit.addEventListener("contextmenu", onEdgeContextMenu);
+    path.addEventListener("contextmenu", onEdgeContextMenu);
+
+    const onEdgeHitDown = (evt, pointGetter) => {
+      if (isTabletCanvasPanMode()) {
+        return;
+      }
+      evt.stopPropagation();
+      const p = pointGetter(evt);
+      const now = Date.now();
+      const previousTap = ui.lastEdgeTap;
+      const isDoubleTap = previousTap
+        && previousTap.edgeId === edge.id
+        && now - previousTap.time < 320
+        && Math.hypot(previousTap.x - p.x, previousTap.y - p.y) < 16;
+      if (isDoubleTap && !isEditingUiLocked()) {
+        ui.lastEdgeTap = null;
+        runAction(() => {
+          addControlPointAt(edge, p);
+        });
+        setStatusKey("status.cpAdded");
+        return;
+      }
+      ui.lastEdgeTap = { edgeId: edge.id, x: p.x, y: p.y, time: now };
+      if (!isSelected) {
+        selectEdge(edge.id);
+        render();
+      }
+    };
+
+    path.addEventListener("pointerdown", (evt) => onEdgeHitDown(evt, svgPoint));
+    hit.addEventListener("pointerdown", (evt) => onEdgeHitDown(evt, svgPoint));
+
+    g.appendChild(path);
+    g.appendChild(hit);
+
+    const influenceSymbol = edgeInfluenceSymbol(edge.influence);
+    if (influenceSymbol) {
+      const position = edgeInfluenceLabelPosition(geom.points);
+      if (position) {
+        const label = document.createElementNS(SVG_NS, "text");
+        label.classList.add("edge-influence-label");
+        label.setAttribute("x", position.x);
+        label.setAttribute("y", position.y);
+        if (normalizeEdgeInfluence(edge.influence) === "negative") {
+          label.setAttribute("textLength", "24");
+          label.setAttribute("lengthAdjust", "spacingAndGlyphs");
+        }
+        label.textContent = influenceSymbol;
+        g.appendChild(label);
+      }
+    }
+
+    if (isSelected) {
+      edge.controlPoints.forEach((cp, idx) => {
+        const cpCircle = document.createElementNS(SVG_NS, "circle");
+        cpCircle.classList.add("control-point");
+        if (
+          ui.selectedControlPoint &&
+          ui.selectedControlPoint.edgeId === edge.id &&
+          ui.selectedControlPoint.index === idx
+        ) {
+          cpCircle.classList.add("active");
+        }
+        cpCircle.setAttribute("cx", cp.x);
+        cpCircle.setAttribute("cy", cp.y);
+        cpCircle.setAttribute("r", isCompactTabletLayout() ? "10" : "7");
+
+        cpCircle.addEventListener("contextmenu", (evt) => {
+          evt.preventDefault();
+          evt.stopPropagation();
+          if (isEditingUiLocked()) {
+            return;
+          }
+          selectEdge(edge.id);
+          ui.selectedControlPoint = { edgeId: edge.id, index: idx };
+          render();
+          openControlPointContextMenu(evt, edge.id, idx);
+        });
+
+        cpCircle.addEventListener("pointerdown", (evt) => {
+          if (isTabletCanvasPanMode()) {
+            return;
+          }
+          evt.stopPropagation();
+          selectEdge(edge.id);
+          if (isEditingUiLocked()) {
+            render();
+            return;
+          }
+          const now = Date.now();
+          if (
+            ui.lastControlPointTap &&
+            ui.lastControlPointTap.edgeId === edge.id &&
+            ui.lastControlPointTap.index === idx &&
+            now - ui.lastControlPointTap.time < 320
+          ) {
+            ui.lastControlPointTap = null;
+            runAction(() => {
+              removeControlPoint(edge.id, idx);
+            });
+            setStatusKey("status.cpRemoved");
+            return;
+          }
+
+          ui.lastControlPointTap = { edgeId: edge.id, index: idx, time: now };
+          ui.selectedControlPoint = { edgeId: edge.id, index: idx };
+          ui.controlPointDrag = {
+            edgeId: edge.id,
+            index: idx,
+            pointerId: evt.pointerId,
+          };
+          beginTransaction();
+        });
+
+        controlsLayer.appendChild(cpCircle);
+      });
+    }
+
+    edgesLayer.appendChild(g);
+  });
+
+  if (ui.edgeCreate) {
+    const fromNode = getNodeById(ui.edgeCreate.fromId);
+    if (fromNode) {
+      const start = nodeBoundaryPoint(fromNode, ui.edgeCreate.current.x, ui.edgeCreate.current.y);
+      const preview = document.createElementNS(SVG_NS, "path");
+      preview.classList.add("edge-drag-preview");
+      preview.setAttribute("d", `M ${start.x} ${start.y} L ${ui.edgeCreate.current.x} ${ui.edgeCreate.current.y}`);
+      preview.setAttribute("marker-end", "url(#arrow)");
+      previewLayer.appendChild(preview);
+    }
+  }
+
+  if (ui.marquee) {
+    const r = marqueeRect(ui.marquee);
+    const rect = document.createElementNS(SVG_NS, "rect");
+    rect.setAttribute("x", r.x);
+    rect.setAttribute("y", r.y);
+    rect.setAttribute("width", r.width);
+    rect.setAttribute("height", r.height);
+    rect.setAttribute("fill", "rgba(14,122,196,0.12)");
+    rect.setAttribute("stroke", "#0e7ac4");
+    rect.setAttribute("stroke-dasharray", "6 4");
+    marqueeLayer.appendChild(rect);
+  }
+
+  graph.nodes.forEach((node) => {
+    if (!visibleNodeIds.has(node.id)) {
+      return;
+    }
+    const definitionIssue = graph.execution.strictDefinitions
+      ? validateNodeDefinition(node)
+      : null;
+    const definitionIssueMessage = definitionIssue && !definitionIssue.ok
+      ? nodeDefinitionIssueText(definitionIssue)
+      : "";
+    // This is rendering metadata only: keep it out of saved model data.
+    Object.defineProperty(node, "_definitionIssueMessage", {
+      configurable: true,
+      enumerable: false,
+      value: definitionIssueMessage,
+      writable: true,
+    });
+    const visualIssue = node.analysisIssue || (definitionIssueMessage
+      ? { severity: "error", message: definitionIssueMessage }
+      : null);
+    const g = document.createElementNS(SVG_NS, "g");
+    g.classList.add("node");
+    if (isDraftNode(node)) {
+      g.classList.add("draft-node");
+    }
+    g.setAttribute("data-node-id", node.id);
+    g.setAttribute("data-node-tooltip", "1");
+    setTooltipText(g, buildNodeTooltipText(node).text);
+    g.addEventListener("pointerenter", (evt) => {
+      showNodeTooltip(node, g, evt.clientX, evt.clientY);
+    });
+    g.addEventListener("pointermove", (evt) => {
+      setTooltipText(g, buildNodeTooltipText(node).text);
+      ui.tooltipPointer = { x: evt.clientX, y: evt.clientY };
+      if (ui.tooltipTarget === g) {
+        refreshActiveTooltip();
+      } else {
+        showNodeTooltip(node, g, evt.clientX, evt.clientY);
+      }
+    });
+    g.addEventListener("pointerleave", () => {
+      scheduleHideAppTooltip(60);
+    });
+    g.addEventListener("contextmenu", (evt) => {
+      evt.preventDefault();
+      evt.stopPropagation();
+      if (isEditingUiLocked()) {
+        return;
+      }
+      openNodeContextMenu(evt, node);
+    });
+    if (ui.selectedNodes.has(node.id)) {
+      g.classList.add("selected");
+    }
+    if (isGlobalParameterNode(node)) {
+      g.classList.add("global-node");
+    }
+    const submodelIcon = isSubmodelNode(node) ? normalizeSubmodelIcon(node.submodelIcon) : null;
+    if (submodelIcon) {
+      g.classList.add("submodel-icon-node");
+    }
+    if (isSubmodelNode(node) && node.strokeColor === "transparent") {
+      g.classList.add("submodel-transparent-border");
+    }
+    if (nodeHasRuntimeError(node)) {
+      g.classList.add("runtime-error");
+    }
+    if (isAnalysisFocusActive("node", node.id)) {
+      g.classList.add("analysis-focus");
+    }
+    if (isFeedbackLoopFocusActive("node", node.id)) {
+      g.classList.add("feedback-loop-focus");
+    }
+    if (definitionIssue && !definitionIssue.ok) {
+      g.classList.add("invalid-definition");
+    }
+    if (graph.execution.strictDefinitions && ui.checkUnits !== false && node.unitAnalysisError) {
+      g.classList.add("invalid-unit");
+    }
+    if (graph.execution.strictDefinitions && visualIssue) {
+      g.classList.add(`analysis-${visualIssue.severity}`);
+    }
+    if (ui.edgeCreate && ui.edgeCreateHoverId === node.id && node.id !== ui.edgeCreate.fromId) {
+      g.classList.add("edge-target");
+    }
+
+    let shapeEl;
+    let shapeOutlineEl = null;
+    let submodelInnerShape = null;
+    if (node.shape === "ellipse" || isDraftNode(node)) {
+      shapeEl = document.createElementNS(SVG_NS, "ellipse");
+      shapeEl.setAttribute("cx", node.x);
+      shapeEl.setAttribute("cy", node.y);
+      shapeEl.setAttribute("rx", node.width / 2);
+      shapeEl.setAttribute("ry", node.height / 2);
+    } else if (node.shape === "diamond") {
+      shapeEl = document.createElementNS(SVG_NS, "polygon");
+      shapeEl.setAttribute("points", diamondPoints(node));
+    } else {
+      shapeEl = document.createElementNS(SVG_NS, "rect");
+      shapeEl.setAttribute("x", node.x - node.width / 2);
+      shapeEl.setAttribute("y", node.y - node.height / 2);
+      shapeEl.setAttribute("width", node.width);
+      shapeEl.setAttribute("height", node.height);
+      shapeEl.setAttribute("rx", 8);
+      if (isSubmodelNode(node)) {
+        submodelInnerShape = document.createElementNS(SVG_NS, "rect");
+        submodelInnerShape.setAttribute("x", node.x - node.width / 2 + 6);
+        submodelInnerShape.setAttribute("y", node.y - node.height / 2 + 6);
+        submodelInnerShape.setAttribute("width", Math.max(8, node.width - 12));
+        submodelInnerShape.setAttribute("height", Math.max(8, node.height - 12));
+        submodelInnerShape.setAttribute("rx", 6);
+        submodelInnerShape.classList.add("node-shape", "node-shape-inner");
+      }
+    }
+    shapeEl.classList.add("node-shape");
+    shapeOutlineEl = shapeEl.cloneNode(false);
+    shapeOutlineEl.classList.add("node-shape-outline");
+    if (node.fillColor) {
+      g.style.setProperty("--node-fill", node.fillColor);
+    } else {
+      g.style.removeProperty("--node-fill");
+    }
+    if (node.strokeColor) {
+      g.style.setProperty("--node-stroke", node.strokeColor);
+      g.classList.add("has-custom-stroke");
+    } else {
+      g.style.removeProperty("--node-stroke");
+      g.classList.remove("has-custom-stroke");
+    }
+
+    const startEdgeCreate = (evt) => {
+      if (isTabletCanvasPanMode()) {
+        return;
+      }
+      if (evt.ctrlKey || evt.metaKey) {
+        evt.preventDefault();
+        evt.stopPropagation();
+        addNodeToSelection(node.id);
+        render();
+        return;
+      }
+      if (isEditingUiLocked()) {
+        return;
+      }
+      evt.stopPropagation();
+      startEdgeCreateFromNode(node.id, evt.pointerId, svgPoint(evt));
+      render();
+    };
+
+    const startEdgeCreateMouse = (evt) => {
+      if (isTabletCanvasPanMode()) {
+        return;
+      }
+      if (evt.ctrlKey || evt.metaKey) {
+        evt.preventDefault();
+        evt.stopPropagation();
+        addNodeToSelection(node.id);
+        render();
+        return;
+      }
+      if (isEditingUiLocked()) {
+        return;
+      }
+      evt.stopPropagation();
+      startEdgeCreateFromMouse(node.id, evt);
+    };
+
+    g.addEventListener("pointerdown", (evt) => {
+      if (isTabletCanvasPanMode()) {
+        return;
+      }
+      evt.preventDefault();
+      evt.stopPropagation();
+      ui.marquee = null;
+      const additive = evt.ctrlKey || evt.metaKey;
+
+      if (additive) {
+        addNodeToSelection(node.id);
+        render();
+        return;
+      }
+
+      if (!ui.selectedNodes.has(node.id)) {
+        selectSingleNode(node.id);
+      }
+      if (isEditingUiLocked()) {
+        render();
+        return;
+      }
+
+      const dragIds = ui.selectedNodes.size > 0 ? [...ui.selectedNodes] : [node.id];
+      const dragSet = new Set(dragIds);
+      const startMap = new Map(dragIds.map((id) => {
+        const n = getNodeById(id);
+        return [id, { x: n.x, y: n.y }];
+      }));
+      const edgeControlStartMap = new Map();
+      graph.edges.forEach((edge) => {
+        if (dragSet.has(edge.from) && dragSet.has(edge.to) && edge.controlPoints.length > 0) {
+          edgeControlStartMap.set(
+            edge.id,
+            edge.controlPoints.map((cp) => ({ x: cp.x, y: cp.y })),
+          );
+        }
+      });
+
+      ui.drag = {
+        nodeIds: dragIds,
+        dragSet,
+        startMap,
+        edgeControlStartMap,
+        anchorNodeId: dragIds[0] ?? node.id,
+        startClientX: evt.clientX,
+        startClientY: evt.clientY,
+        pointerId: evt.pointerId,
+      };
+      beginTransaction();
+      startTouchHold(evt, ({ clientX, clientY, pointerId }) => {
+        if (ui.drag && ui.drag.pointerId === pointerId) {
+          ui.drag = null;
+          cancelTransaction();
+        }
+        openNodeContextMenu({ preventDefault() {}, stopPropagation() {}, clientX, clientY }, node);
+        render();
+      });
+    });
+    g.addEventListener("pointerup", (evt) => {
+      if (evt.button !== 0) {
+        return;
+      }
+      const activeDrag = ui.drag && evt.pointerId === ui.drag.pointerId ? ui.drag : null;
+      const moved = activeDrag
+        ? Math.hypot(
+          evt.clientX - activeDrag.startClientX,
+          evt.clientY - activeDrag.startClientY,
+        ) >= 4
+        : false;
+      if (moved) {
+        ui.lastNodeActivate = null;
+        return;
+      }
+      const now = performance.now();
+      const last = ui.lastNodeActivate;
+      if (
+        last
+        && last.nodeId === node.id
+        && (now - last.time) <= 320
+      ) {
+        ui.lastNodeActivate = null;
+        evt.preventDefault();
+        evt.stopPropagation();
+        if (ui.drag && evt.pointerId === ui.drag.pointerId) {
+          ui.drag = null;
+          cancelTransaction();
+          render();
+        }
+        openNodePrimaryEditor(node);
+        return;
+      }
+      ui.lastNodeActivate = { nodeId: node.id, time: now };
+    });
+
+    const label = document.createElementNS(SVG_NS, "text");
+    label.classList.add("node-label");
+    label.setAttribute("x", node.x);
+    const showRuntimeValue = !isDraftNode(node) && ui.showNodeValues === true && graph.execution.currentTime != null;
+    label.setAttribute(
+      "y",
+      submodelIcon
+        ? node.y + node.height / 2 + 14
+        : (showRuntimeValue ? node.y - 8 : node.y),
+    );
+    label.textContent = node.name;
+
+    let submodelIconElement = null;
+    if (submodelIcon?.type === "library") {
+      submodelIconElement = document.createElementNS(SVG_NS, "text");
+      submodelIconElement.classList.add("node-submodel-icon-glyph");
+      submodelIconElement.setAttribute("x", node.x);
+      submodelIconElement.setAttribute("y", node.y);
+      submodelIconElement.textContent = SUBMODEL_LIBRARY_ICONS[submodelIcon.value];
+    } else if (submodelIcon?.type === "image") {
+      submodelIconElement = document.createElementNS(SVG_NS, "image");
+      const iconSize = Math.max(20, Math.min(node.width - 18, node.height - 18));
+      submodelIconElement.classList.add("node-submodel-icon-image");
+      submodelIconElement.setAttribute("x", node.x - iconSize / 2);
+      submodelIconElement.setAttribute("y", node.y - iconSize / 2);
+      submodelIconElement.setAttribute("width", iconSize);
+      submodelIconElement.setAttribute("height", iconSize);
+      submodelIconElement.setAttribute("preserveAspectRatio", "xMidYMid meet");
+      submodelIconElement.setAttribute("href", submodelIcon.value);
+    }
+
+    let runtimeValueLabel = null;
+    if (showRuntimeValue) {
+      const runtimeValue = summarizeNodeRuntimeValue(node);
+      runtimeValueLabel = document.createElementNS(SVG_NS, "text");
+      runtimeValueLabel.classList.add("node-runtime-value");
+      if (runtimeValue.error) {
+        runtimeValueLabel.classList.add("node-runtime-value-error");
+      }
+      runtimeValueLabel.setAttribute("x", node.x);
+      runtimeValueLabel.setAttribute("y", submodelIcon ? node.y + node.height / 2 + 29 : node.y + 11);
+      runtimeValueLabel.textContent = runtimeValue.text;
+      const title = document.createElementNS(SVG_NS, "title");
+      title.textContent = runtimeValue.error
+        ? String(node.computedErrorMessage || evalReasonText(node.computedError))
+        : summarizeTooltipValue(node.computedValue);
+      runtimeValueLabel.appendChild(title);
+    }
+
+    let inputBadge = null;
+    let inputBadgeLabel = null;
+    if (node.input) {
+      inputBadge = document.createElementNS(SVG_NS, "circle");
+      inputBadge.classList.add("node-input-badge");
+      inputBadge.setAttribute("cx", node.x - node.width / 2 + 9);
+      inputBadge.setAttribute("cy", node.y - node.height / 2 + 9);
+      inputBadge.setAttribute("r", "7");
+      inputBadgeLabel = document.createElementNS(SVG_NS, "text");
+      inputBadgeLabel.classList.add("node-input-badge-label");
+      inputBadgeLabel.setAttribute("x", node.x - node.width / 2 + 9);
+      inputBadgeLabel.setAttribute("y", node.y - node.height / 2 + 9);
+      inputBadgeLabel.textContent = "I";
+    }
+
+    let outputBadge = null;
+    let outputBadgeLabel = null;
+    if (node.output) {
+      outputBadge = document.createElementNS(SVG_NS, "circle");
+      outputBadge.classList.add("node-output-badge");
+      outputBadge.setAttribute("cx", node.x + node.width / 2 - 9);
+      outputBadge.setAttribute("cy", node.y - node.height / 2 + 9);
+      outputBadge.setAttribute("r", "7");
+      outputBadgeLabel = document.createElementNS(SVG_NS, "text");
+      outputBadgeLabel.classList.add("node-output-badge-label");
+      outputBadgeLabel.setAttribute("x", node.x + node.width / 2 - 9);
+      outputBadgeLabel.setAttribute("y", node.y - node.height / 2 + 9);
+      outputBadgeLabel.textContent = "O";
+    }
+
+    let globalBadge = null;
+    let globalBadgeLabel = null;
+    if (isGlobalParameterNode(node)) {
+      globalBadge = document.createElementNS(SVG_NS, "circle");
+      globalBadge.classList.add("node-global-badge");
+      globalBadge.setAttribute("cx", node.x - node.width / 2 + 9);
+      globalBadge.setAttribute("cy", node.y + node.height / 2 - 9);
+      globalBadge.setAttribute("r", "7");
+      globalBadgeLabel = document.createElementNS(SVG_NS, "text");
+      globalBadgeLabel.classList.add("node-global-badge-label");
+      globalBadgeLabel.setAttribute("x", node.x - node.width / 2 + 9);
+      globalBadgeLabel.setAttribute("y", node.y + node.height / 2 - 9);
+      globalBadgeLabel.textContent = "G";
+    }
+
+    let analysisIssueMarker = null;
+    if (graph.execution.strictDefinitions && visualIssue) {
+      analysisIssueMarker = document.createElementNS(SVG_NS, "text");
+      analysisIssueMarker.classList.add("node-analysis-issue-marker", visualIssue.severity);
+      analysisIssueMarker.setAttribute("x", node.x + node.width / 2 + 3);
+      analysisIssueMarker.setAttribute("y", node.y - node.height / 2 + 13);
+      analysisIssueMarker.textContent = "!";
+      const title = document.createElementNS(SVG_NS, "title");
+      title.textContent = visualIssue.message;
+      analysisIssueMarker.appendChild(title);
+    }
+
+    const submodelPorts = [];
+    if (isSubmodelNode(node)) {
+      const makePorts = (items, side) => {
+        const values = Array.isArray(items) ? items : [];
+        if (!values.length) {
+          return;
+        }
+        const availableHeight = Math.max(12, node.height - 20);
+        const step = availableHeight / (values.length + 1);
+        values.forEach((name, idx) => {
+          const port = document.createElementNS(SVG_NS, "circle");
+          port.classList.add("submodel-port", side);
+          port.setAttribute("r", "4");
+          port.setAttribute("cx", side === "input" ? node.x - node.width / 2 : node.x + node.width / 2);
+          port.setAttribute("cy", node.y - node.height / 2 + 10 + step * (idx + 1));
+          const title = document.createElementNS(SVG_NS, "title");
+          title.textContent = `${side === "input" ? t("label.input") : t("label.output")}: ${String(name)}`;
+          if (isCompactTabletLayout()) {
+            port.setAttribute("r", "6");
+          }
+          port.appendChild(title);
+          submodelPorts.push(port);
+        });
+      };
+      makePorts(node.interfaceCache?.inputs, "input");
+      makePorts(node.interfaceCache?.outputs, "output");
+    }
+
+    const edgePort = document.createElementNS(SVG_NS, "circle");
+    const edgePortPosition = nodeEdgePortPosition(node);
+    const edgePortEnabled = !(ui.selectedNodes.size > 1 && ui.selectedNodes.has(node.id));
+    edgePort.classList.add("node-edge-port");
+    edgePort.setAttribute("cx", edgePortPosition.x);
+    edgePort.setAttribute("cy", edgePortPosition.y);
+    edgePort.setAttribute("r", nodeEdgePortRadius(node));
+    if (!edgePortEnabled) {
+      edgePort.style.pointerEvents = "none";
+    } else {
+      edgePort.addEventListener("pointerdown", startEdgeCreate);
+      edgePort.addEventListener("mousedown", startEdgeCreateMouse);
+    }
+
+    const handle = document.createElementNS(SVG_NS, "circle");
+    handle.classList.add("resize-handle");
+    handle.setAttribute("cx", node.x + node.width / 2);
+    handle.setAttribute("cy", node.y + node.height / 2);
+    handle.setAttribute("r", "6");
+
+    handle.addEventListener("pointerdown", (evt) => {
+      if (isTabletCanvasPanMode()) {
+        return;
+      }
+      evt.stopPropagation();
+      if (evt.ctrlKey || evt.metaKey) {
+        addNodeToSelection(node.id);
+        render();
+        return;
+      }
+      if (!ui.selectedNodes.has(node.id)) {
+        selectSingleNode(node.id);
+      }
+      if (isEditingUiLocked()) {
+        render();
+        return;
+      }
+      ui.resize = {
+        nodeId: node.id,
+        startPointer: svgPoint(evt),
+        startWidth: node.width,
+        startHeight: node.height,
+        pointerId: evt.pointerId,
+      };
+      beginTransaction();
+      render();
+    });
+
+    g.appendChild(shapeOutlineEl);
+    g.appendChild(shapeEl);
+    if (submodelInnerShape) {
+      g.appendChild(submodelInnerShape);
+    }
+    if (submodelIconElement) {
+      g.appendChild(submodelIconElement);
+    }
+    g.appendChild(label);
+    if (runtimeValueLabel) {
+      g.appendChild(runtimeValueLabel);
+    }
+    if (inputBadge && inputBadgeLabel) {
+      g.appendChild(inputBadge);
+      g.appendChild(inputBadgeLabel);
+    }
+    if (outputBadge && outputBadgeLabel) {
+      g.appendChild(outputBadge);
+      g.appendChild(outputBadgeLabel);
+    }
+    if (globalBadge && globalBadgeLabel) {
+      g.appendChild(globalBadge);
+      g.appendChild(globalBadgeLabel);
+    }
+    if (analysisIssueMarker) {
+      g.appendChild(analysisIssueMarker);
+    }
+    submodelPorts.forEach((port) => g.appendChild(port));
+    g.appendChild(edgePort);
+    g.appendChild(handle);
+    nodesLayer.appendChild(g);
+  });
+
+  graph.textItems.forEach((item) => {
+    sanitizeTextItem(item);
+    if (!isDashboardItemVisible(item)) {
+      return;
+    }
+    const displayedPosition = dashboardItemPosition(item);
+    const g = document.createElementNS(SVG_NS, "g");
+    g.classList.add("canvas-text-item");
+    if (item.fillColor) {
+      g.style.setProperty("--text-box-fill", item.fillColor);
+    } else {
+      g.style.removeProperty("--text-box-fill");
+    }
+    if (item.strokeColor) {
+      g.style.setProperty("--text-box-stroke", item.strokeColor);
+      g.classList.add("has-custom-stroke");
+    } else {
+      g.style.removeProperty("--text-box-stroke");
+      g.classList.remove("has-custom-stroke");
+    }
+    if (ui.selected?.type === "text" && ui.selected.id === item.id) {
+      g.classList.add("selected");
+    }
+    g.setAttribute("transform", `translate(${displayedPosition.x}, ${displayedPosition.y})`);
+
+    const frame = document.createElementNS(SVG_NS, "rect");
+    frame.classList.add("canvas-text-frame");
+    frame.setAttribute("x", "0");
+    frame.setAttribute("y", "0");
+    frame.setAttribute("width", String(item.width));
+    frame.setAttribute("height", String(item.height));
+    frame.setAttribute("rx", "6");
+    frame.setAttribute("ry", "6");
+
+    const foreignObject = document.createElementNS(SVG_NS, "foreignObject");
+    foreignObject.setAttribute("x", "0");
+    foreignObject.setAttribute("y", "0");
+    foreignObject.setAttribute("width", String(item.width));
+    foreignObject.setAttribute("height", String(item.height));
+    foreignObject.classList.add("canvas-text-fo");
+    // Safari requires an explicit XHTML child in an SVG foreignObject.
+    const div = document.createElementNS(XHTML_NS, "div");
+    div.setAttribute("xmlns", XHTML_NS);
+    div.className = "canvas-text-content";
+    div.innerHTML = canvasTextDisplayHtml(item);
+    div.addEventListener("dblclick", (evt) => {
+      evt.preventDefault();
+      evt.stopPropagation();
+      if (!(ui.selected?.type === "text" && ui.selected.id === item.id)) {
+        selectTextItem(item.id);
+      }
+      openTextEditor();
+    });
+    foreignObject.appendChild(div);
+
+    const handle = document.createElementNS(SVG_NS, "circle");
+    handle.classList.add("resize-handle");
+    handle.setAttribute("cx", String(item.width));
+    handle.setAttribute("cy", String(item.height));
+    handle.setAttribute("r", "6");
+
+    g.addEventListener("pointerdown", (evt) => {
+      if (isTabletCanvasPanMode()) {
+        return;
+      }
+      evt.stopPropagation();
+      if (!(ui.selected?.type === "text" && ui.selected.id === item.id)) {
+        selectTextItem(item.id);
+      }
+      if (isEditingUiLocked()) {
+        render();
+        return;
+      }
+      ui.textDrag = {
+        id: item.id,
+        pointerId: evt.pointerId,
+        startClientX: evt.clientX,
+        startClientY: evt.clientY,
+        startX: item.x,
+        startY: item.y,
+      };
+      beginTransaction();
+    });
+    g.addEventListener("contextmenu", (evt) => {
+      evt.preventDefault();
+      evt.stopPropagation();
+      if (!(ui.selected?.type === "text" && ui.selected.id === item.id)) {
+        selectTextItem(item.id);
+      }
+      openTextContextMenu(evt, item);
+    });
+    g.addEventListener("dblclick", (evt) => {
+      evt.preventDefault();
+      evt.stopPropagation();
+      if (!(ui.selected?.type === "text" && ui.selected.id === item.id)) {
+        selectTextItem(item.id);
+      }
+      openTextEditor();
+    });
+    handle.addEventListener("pointerdown", (evt) => {
+      if (isTabletCanvasPanMode()) {
+        return;
+      }
+      evt.stopPropagation();
+      if (!(ui.selected?.type === "text" && ui.selected.id === item.id)) {
+        selectTextItem(item.id);
+      }
+      if (isEditingUiLocked()) {
+        render();
+        return;
+      }
+      ui.textResize = {
+        id: item.id,
+        pointerId: evt.pointerId,
+        startClientX: evt.clientX,
+        startClientY: evt.clientY,
+        startWidth: item.width,
+        startHeight: item.height,
+      };
+      beginTransaction();
+    });
+
+    g.appendChild(frame);
+    g.appendChild(foreignObject);
+    g.appendChild(handle);
+    textLayer.appendChild(g);
+  });
+
+  refreshActiveTooltip();
+
+  updateCanvasSize();
+  applyCanvasVisibility();
+  if (!options.preserveWidgets && ui.sliderInteraction == null) {
+    renderWidgets();
+  } else {
+    applyWidgetDrivenNodeValues();
+  }
+  refreshSidebar();
+  renderWatchDebugger();
+  updateHistoryButtons();
+  updateEditingLockUi();
+  updateExecutionProgress();
+}
+
+function isValidPoint(p) {
+  return p && Number.isFinite(p.x) && Number.isFinite(p.y);
+}
+
+function importGraphData(data) {
+  if (!data || !Array.isArray(data.nodes) || !Array.isArray(data.edges)) {
+    throw new Error(t("error.invalidJson"));
+  }
+
+  const nodes = data.nodes
+    .filter((n) => Number.isInteger(n.id))
+    .map((n) => {
+      if (!["draft", "state", "algebraic", "parameter", "submodel"].includes(n.type)) {
+        throw new Error(t("error.invalidJson"));
+      }
+      const shape = deserializeNodeType(n.type);
+      const node = {
+        id: n.id,
+        name: typeof n.name === "string" ? n.name : t("node.defaultName", { id: n.id }),
+        input: shape === "ellipse" ? Boolean(n.input) : false,
+        output: shape === "draft" ? false : Boolean(n.output),
+        global: shape === "diamond" ? Boolean(n.global) : false,
+        type: serializeNodeType(shape),
+        x: Number.isFinite(n.x) ? n.x : 200,
+        y: Number.isFinite(n.y) ? n.y : 200,
+        width: clamp(Number(n.width) || 120, 40, 500),
+        height: clamp(Number(n.height) || 70, 30, 500),
+        fillColor: normalizeColorString(n.fillColor),
+        strokeColor: normalizeColorString(n.strokeColor),
+        unit: shape === "draft" ? "" : String(n.unit ?? "").trim(),
+        valueExpression: shape === "rect" ? "" : String(n.valueExpression ?? ""),
+        stateTransition: shape === "rect"
+          ? String(n.stateTransition ?? "")
+          : "",
+        initialState: shape === "rect"
+          ? String(n.initialState ?? "")
+          : "",
+        modelPath: shape === "submodel" ? String(n.modelPath ?? "") : "",
+        submodelIcon: shape === "submodel" ? normalizeSubmodelIcon(n.submodelIcon) : null,
+        inputBindings: shape === "submodel" && n.inputBindings && typeof n.inputBindings === "object"
+          ? Object.fromEntries(
+            Object.entries(n.inputBindings)
+              .map(([key, value]) => [String(key), String(value ?? "")])
+              .filter(([key]) => key.trim()),
+          )
+          : {},
+        interfaceCache: shape === "submodel"
+          ? normalizeSubmodelInterfaceCache(n.interfaceCache)
+          : emptySubmodelInterfaceCache(),
+        submodelError: "",
+        computedValue: null,
+        computedError: "",
+        pendingStateValue: null,
+        pendingStateError: "",
+        properties: Array.isArray(n.properties)
+          ? n.properties.map((p) => ({ key: String(p?.key ?? ""), value: String(p?.value ?? "") }))
+          : [],
+      };
+      normalizeNodeDescriptionProperty(node);
+      normalizeNodeFormulaNotesProperty(node);
+      sanitizeNodeVisualOptions(node);
+      return node;
+    });
+  const nodesWithValidNames = semantics.sanitizeNodeNames(nodes, "n");
+
+  const nodeIds = new Set(nodesWithValidNames.map((n) => n.id));
+
+  const edges = data.edges
+    .filter((e) => {
+      if (!Number.isInteger(e.id) || !nodeIds.has(e.from) || !nodeIds.has(e.to) || e.from === e.to) {
+        return false;
+      }
+      const targetNode = nodesWithValidNames.find((n) => n.id === e.to);
+      return targetNode?.type !== "parameter";
+    })
+    .map((e) => ({
+      id: e.id,
+      from: e.from,
+      to: e.to,
+      color: normalizeEdgeColor(e.color),
+      influence: normalizeEdgeInfluence(e.influence),
+      controlPoints: Array.isArray(e.controlPoints)
+        ? e.controlPoints.filter(isValidPoint).map((cp) => ({ x: cp.x, y: cp.y }))
+        : [],
+    }));
+
+  const textItems = Array.isArray(data.textItems)
+    ? data.textItems
+      .filter((item) => Number.isInteger(item?.id))
+      .map((item) => {
+        const out = {
+          id: item.id,
+          x: Number(item.x),
+          y: Number(item.y),
+          width: Number(item.width),
+          height: Number(item.height),
+          fillColor: normalizeColorString(item.fillColor),
+          strokeColor: normalizeColorString(item.strokeColor),
+          dashboardPageId: item.dashboardPageId,
+          markdown: typeof item.markdown === "string" ? item.markdown : null,
+          html: String(item.html ?? ""),
+        };
+        sanitizeTextItem(out);
+        return out;
+      })
+    : [];
+
+  const maxNodeId = nodesWithValidNames.reduce((max, n) => Math.max(max, n.id), 0);
+  const maxEdgeId = edges.reduce((max, e) => Math.max(max, e.id), 0);
+  const maxTextItemId = textItems.reduce((max, item) => Math.max(max, item.id), 0);
+  const widgets = Array.isArray(data.widgets)
+    ? data.widgets
+      .filter((w) => Number.isInteger(w.id) && (w.type === "table" || w.type === "xychart" || w.type === "slider" || w.type === "numeric" || w.type === "matrix" || w.type === "button" || w.type === "led" || w.type === "select" || w.type === "text"))
+      .map((w) => ({
+        id: w.id,
+        type: w.type,
+        customTitle: String(w.customTitle ?? ""),
+        x: Number.isFinite(Number(w.x)) ? Number(w.x) : 40,
+        y: Number.isFinite(Number(w.y)) ? Number(w.y) : 40,
+        width: clamp(Number(w.width) || 320, widgetMinDimensions(w).width, 1200),
+        height: clamp(Number(w.height) || 160, widgetMinDimensions(w).height, 900),
+        dashboardPageId: normalizeDashboardPageId(w.dashboardPageId),
+        minimized: Boolean(w.minimized),
+        showTitleBar: w.showTitleBar !== false,
+        fontSize: Number.isFinite(Number(w.fontSize))
+          ? clamp(Math.round(Number(w.fontSize)), 8, 32)
+          : (Number.isFinite(Number(w.tableFontSize)) ? clamp(Math.round(Number(w.tableFontSize)), 8, 32) : 13),
+        outputOnly: Boolean(w.outputOnly),
+        showHistory: Boolean(w.showHistory),
+        expandNonScalarValues: Boolean(w.expandNonScalarValues) && !Boolean(w.showHistory),
+        tableTextAlign: ["left", "center", "right"].includes(String(w.tableTextAlign ?? "")) ? String(w.tableTextAlign) : "left",
+        tableDecimalDigits: Number.isInteger(Number(w.tableDecimalDigits)) && Number(w.tableDecimalDigits) >= 0 && Number(w.tableDecimalDigits) <= 12
+          ? Number(w.tableDecimalDigits)
+          : null,
+        tableColumnFormats: normalizeTableColumnFormats(w.tableColumnFormats),
+        xMin: parseAutoNullableNumber(w.xMin),
+        xMax: parseAutoNullableNumber(w.xMax),
+        yMin: parseAutoNullableNumber(w.yMin),
+        yMax: parseAutoNullableNumber(w.yMax),
+        xGridStep: Number.isFinite(Number(w.xGridStep)) && Number(w.xGridStep) > 0 ? Number(w.xGridStep) : null,
+        yGridStep: Number.isFinite(Number(w.yGridStep)) && Number(w.yGridStep) > 0 ? Number(w.yGridStep) : null,
+        xAxisLabel: String(w.xAxisLabel ?? "").trim(),
+        yAxisLabel: String(w.yAxisLabel ?? "").trim(),
+        showGrid: w.showGrid !== false,
+        showAxes: w.showAxes !== false,
+        legendPosition: ["none", "top-right", "top-left", "bottom-right", "bottom-left"].includes(String(w.legendPosition ?? ""))
+          ? String(w.legendPosition)
+          : "top-right",
+        source: String(w.source ?? ""),
+        showNumericValues: w.showNumericValues !== false,
+        showIndices: w.showIndices !== false,
+        autoFitCells: w.autoFitCells !== false,
+        cellSize: Number.isFinite(Number(w.cellSize)) ? clamp(Number(w.cellSize), 2, 96) : 28,
+        valueMin: parseAutoNullableNumber(w.valueMin),
+        valueMax: parseAutoNullableNumber(w.valueMax),
+        displayRows: Number.isInteger(Number(w.displayRows)) && Number(w.displayRows) > 0 ? Number(w.displayRows) : null,
+        displayCols: Number.isInteger(Number(w.displayCols)) && Number(w.displayCols) > 0 ? Number(w.displayCols) : null,
+        colorScheme: ["blue", "heat", "grayscale", "diverging", "viridis", "plasma", "terrain", "categorical", "none"].includes(String(w.colorScheme ?? ""))
+          ? String(w.colorScheme)
+          : "blue",
+        viewMode: ["grid", "surface"].includes(String(w.viewMode ?? "")) ? String(w.viewMode) : "grid",
+        surfaceStyle: ["solid", "wireframe"].includes(String(w.surfaceStyle ?? "")) ? String(w.surfaceStyle) : "solid",
+        surfaceAzimuth: Number.isFinite(Number(w.surfaceAzimuth)) ? clamp(Number(w.surfaceAzimuth), -180, 180) : 45,
+        surfaceElevation: Number.isFinite(Number(w.surfaceElevation)) ? clamp(Number(w.surfaceElevation), 5, 85) : 32,
+        surfaceHeightScale: Number.isFinite(Number(w.surfaceHeightScale)) ? clamp(Number(w.surfaceHeightScale), 0.1, 10) : 1,
+        min: Number.isFinite(Number(w.min)) ? Number(w.min) : 0,
+        max: Number.isFinite(Number(w.max)) ? Number(w.max) : 100,
+        step: Number.isFinite(Number(w.step)) ? Number(w.step) : 1,
+        inputRows: w.type === "numeric" ? w.inputRows : undefined,
+        inputCols: w.type === "numeric" ? w.inputCols : undefined,
+        value: w.type === "numeric"
+          ? deepClone(w.value)
+          : w.type === "button"
+          ? (w.initialValue === true || w.initialValue === "true" || w.initialValue === 1 || w.initialValue === "1"
+            || ((w.initialValue == null) && (w.value === true || w.value === "true" || w.value === 1 || w.value === "1")))
+          : (Number.isFinite(Number(w.value)) ? Number(w.value) : 0),
+        initialValue: w.type === "button"
+          ? (w.initialValue === true || w.initialValue === "true" || w.initialValue === 1 || w.initialValue === "1"
+            || ((w.initialValue == null) && (w.value === true || w.value === "true" || w.value === 1 || w.value === "1")))
+          : undefined,
+        falseLabel: String(w.falseLabel ?? ""),
+        trueLabel: String(w.trueLabel ?? ""),
+        options: Array.isArray(w.options)
+          ? w.options.map((option) => ({
+            label: String(option?.label ?? ""),
+            value: Number.isFinite(Number(option?.value)) ? Number(option.value) : 0,
+          }))
+          : [],
+        mappings: Array.isArray(w.mappings)
+          ? w.mappings.map((mapping) => ({
+            value: Number.isFinite(Number(mapping?.value)) ? Number(mapping.value) : 0,
+            label: String(mapping?.label ?? ""),
+          }))
+          : [],
+        rows: [],
+        columns: Array.isArray(w.columns) ? w.columns.map(normalizeTableColumnName) : [],
+        xyPairs: Array.isArray(w.xyPairs)
+          ? w.xyPairs.map((pair, idx) => ({
+            xSource: String(pair.xSource ?? "time"),
+            ySource: String(pair.ySource ?? ""),
+            showTimeSeries: normalizeChartSeriesToggle(pair?.showTimeSeries, pair?.seriesMode !== "instant"),
+            showInstantProfile: normalizeChartSeriesToggle(pair?.showInstantProfile, pair?.seriesMode === "instant" ? true : false),
+            color: /^#[0-9a-fA-F]{6}$/.test(String(pair?.color ?? "")) ? String(pair.color) : defaultChartSeriesColor(idx),
+            pointColor: /^#[0-9a-fA-F]{6}$/.test(String(pair?.pointColor ?? "")) ? String(pair.pointColor) : (/^#[0-9a-fA-F]{6}$/.test(String(pair?.color ?? "")) ? String(pair.color) : defaultChartSeriesColor(idx)),
+            showLine: pair?.showLine !== false,
+            lineWidth: Number.isFinite(Number(pair?.lineWidth)) ? clamp(Number(pair.lineWidth), 1, 8) : 2.2,
+            lineStyle: normalizeChartLineStyle(pair?.lineStyle),
+            barMode: normalizeChartBarMode(pair?.barMode, pair?.showBars),
+            showBars: normalizeChartBarMode(pair?.barMode, pair?.showBars) !== "none",
+            barColor: /^#[0-9a-fA-F]{6}$/.test(String(pair?.barColor ?? "")) ? String(pair.barColor) : (/^#[0-9a-fA-F]{6}$/.test(String(pair?.color ?? "")) ? String(pair.color) : defaultChartSeriesColor(idx)),
+            barWidth: Number.isFinite(Number(pair?.barWidth)) ? clamp(Number(pair.barWidth), 1, 40) : 2.2,
+            showArea: pair?.showArea === true,
+            areaColor: /^#[0-9a-fA-F]{6}$/.test(String(pair?.areaColor ?? "")) ? String(pair.areaColor) : (/^#[0-9a-fA-F]{6}$/.test(String(pair?.color ?? "")) ? String(pair.color) : defaultChartSeriesColor(idx)),
+            pointMode: normalizeChartPointMode(pair?.pointMode, pair?.showPoints),
+            pointSize: Number.isFinite(Number(pair?.pointSize)) ? clamp(Number(pair.pointSize), 1, 12) : 2.4,
+            points: [],
+          }))
+          : (() => {
+            const legacyX = String(w.xSource ?? w.xNode ?? "time");
+            const legacyYNodes = Array.isArray(w.yNodes)
+              ? w.yNodes.map((n) => String(n))
+              : (w.yNode ? [String(w.yNode)] : []);
+            return legacyYNodes.map((yNode, idx) => ({
+              xSource: legacyX,
+              ySource: yNode,
+              showTimeSeries: true,
+              showInstantProfile: false,
+              color: defaultChartSeriesColor(idx),
+              showLine: true,
+              lineWidth: 2.2,
+              lineStyle: "solid",
+              barMode: "none",
+              showBars: false,
+              barColor: defaultChartSeriesColor(idx),
+              barWidth: 2.2,
+              showArea: false,
+              areaColor: defaultChartSeriesColor(idx),
+              pointMode: "all",
+              pointSize: 2.4,
+              points: [],
+            }));
+          })(),
+      }))
+    : [];
+  const maxWidgetId = widgets.reduce((max, w) => Math.max(max, w.id), 0);
+  const presentationGroups = sanitizePresentationGroups(data.presentationGroups, nodesWithValidNames);
+  const maxPresentationGroupId = presentationGroups.reduce((max, group) => Math.max(max, group.id), 0);
+
+  applyGraphData({
+    version: 1,
+    modelTitle: String(data.modelTitle ?? ""),
+    notes: normalizeModelNotes(data?.notes),
+    localFunctions: Array.isArray(data?.localFunctions)
+      ? data.localFunctions.map((definition) => sanitizeLocalFunctionDefinition(definition))
+      : [],
+    view: data?.view && typeof data.view === "object"
+      ? {
+        zoom: clampZoom(Number(data.view.zoom) || 1),
+        showGrid: data.view.showGrid !== false,
+        highlightNodeEdges: data.view.highlightNodeEdges !== false,
+        showNodeValues: data.view.showNodeValues !== false,
+        checkUnits: data.view.checkUnits !== false,
+        gridSize: clamp(Number(data.view.gridSize) || 20, 5, 100),
+        tooltipDelayMs: normalizeTooltipDelayMs(data.view.tooltipDelayMs),
+        scrollLeft: Math.max(0, Number(data.view.scrollLeft) || 0),
+        scrollTop: Math.max(0, Number(data.view.scrollTop) || 0),
+      }
+      : null,
+    modelProperties: Array.isArray(data.modelProperties)
+      ? data.modelProperties.map((p) => ({ key: String(p?.key ?? ""), value: String(p?.value ?? "") }))
+      : [],
+    unitDefinitions: Array.isArray(data.unitDefinitions)
+      ? data.unitDefinitions.map((definition) => ({ symbol: String(definition?.symbol ?? definition?.name ?? "").trim(), expression: String(definition?.expression ?? definition?.value ?? "").trim() }))
+      : [],
+    scenarios: normalizeScenarios(data?.scenarios),
+    debug: {
+      watches: Array.isArray(data?.debug?.watches) ? data.debug.watches.map((name) => String(name ?? "")) : [],
+      breakpointEnabled: Boolean(data?.debug?.breakpointEnabled),
+      breakpointExpression: String(data?.debug?.breakpointExpression ?? ""),
+      breakpointMessage: String(data?.debug?.breakpointMessage ?? ""),
+    },
+    nodeCounter: Math.max(Number(data.nodeCounter) || 0, maxNodeId) + 1,
+    edgeCounter: Math.max(Number(data.edgeCounter) || 0, maxEdgeId) + 1,
+    widgetCounter: Math.max(Number(data.widgetCounter) || 0, maxWidgetId) + 1,
+    textItemCounter: Math.max(Number(data.textItemCounter) || 0, maxTextItemId) + 1,
+    presentationGroupCounter: Math.max(Number(data.presentationGroupCounter) || 0, maxPresentationGroupId) + 1,
+    presentationGroups,
+    dashboard: sanitizeDashboard(data.dashboard),
+    execution: normalizeExecutionConfig(data.execution),
+    nodes: nodesWithValidNames,
+    edges,
+    textItems,
+    widgets,
+  });
+}
+
+function defaultGraphFilename() {
+  const stamp = new Date().toISOString().replace(/[:.]/g, "-");
+  return `grafo-${stamp}.json`;
+}
+
+const modelFileHelpers = globalThis.STGraphXModelFiles?.createModelFileHelpers({
+  defaultJsonFilename: defaultGraphFilename,
+  hasPlatformApi,
+  getPlatform: () => window.STGraphXPlatform,
+});
+
+if (!modelFileHelpers) {
+  throw new Error("STGraphX model files helpers are unavailable");
+}
+
+function normalizeJsonFilename(name) {
+  return modelFileHelpers.normalizeJsonFilename(name);
+}
+
+function supportsRecentModelPaths() {
+  return modelFileHelpers.supportsRecentModelPaths();
+}
+
+async function extractFileHandlePath(fileHandle) {
+  return modelFileHelpers.extractFileHandlePath(fileHandle);
+}
+
+function clearRecentModels() {
+  recentModelsStore.clear();
+  renderRecentModelsMenu();
+}
+
+async function maybeSaveUnsavedChangesBeforeModelReplace(confirmKey) {
+  if (!hasUnsavedChanges()) {
+    return true;
+  }
+  const shouldSave = window.confirm(t(confirmKey));
+  if (!shouldSave) {
+    return true;
+  }
+  return saveGraphJson(false);
+}
+
+function notifyMissingRecentModelEntry(entry) {
+  recentModelsStore.remove(entry);
+  renderRecentModelsMenu();
+  setStatusKey("status.recentMissing");
+  window.alert(t("error.recentMissing"));
+}
+
+function renderRecentModelsMenu() {
+  if (!recentModelsMenuRoot || !recentModelsSection || !recentModelsSep || !clearRecentModelsBtn) {
+    return;
+  }
+  recentModelsSection.innerHTML = "";
+  const entries = recentModelsStore.entries();
+  const hasRecent = entries.length > 0;
+  recentModelsMenuRoot.classList.toggle("hidden", !hasRecent);
+  recentModelsSep.classList.toggle("hidden", !hasRecent);
+  clearRecentModelsBtn.classList.toggle("hidden", !hasRecent);
+  if (!hasRecent) {
+    return;
+  }
+  entries.forEach((entry, idx) => {
+    const btn = document.createElement("button");
+    btn.type = "button";
+    btn.className = "menu-command";
+    btn.title = entry.path || entry.name || "";
+    const label = document.createElement("span");
+    label.className = "recent-model-label";
+    const name = document.createElement("span");
+    name.className = "recent-model-name";
+    name.textContent = entry.name || entry.path || `${idx + 1}`;
+    label.appendChild(name);
+    if (entry.path) {
+      const path = document.createElement("span");
+      path.className = "recent-model-path";
+      path.textContent = entry.path;
+      label.appendChild(path);
+    }
+    btn.appendChild(label);
+    btn.addEventListener("click", () => {
+      closeTopMenus();
+      void openRecentModelEntry(entry);
+    });
+    recentModelsSection.appendChild(btn);
+  });
+}
+
+async function rememberRecentModel(name, fileHandle = null, directoryHandle = currentModelDirectoryHandle, modelText = "") {
+  await recentModelsStore.remember(name, fileHandle, directoryHandle, undefined, modelText);
+  renderRecentModelsMenu();
+}
+
+async function resolveRecentModelHandle(entry) {
+  // Old Electron entries may contain a Chromium file handle without a path.
+  // Relink them once through the native dialog so future openings also recover
+  // the parent folder required by relative submodels.
+  if (electronFileBridge() && !String(entry?.path || "").trim()) {
+    return null;
+  }
+  return recentModelsStore.resolveHandle(entry);
+}
+
+async function resolveRecentModelDirectoryHandle(entry) {
+  const handle = await recentModelsStore.resolveDirectoryHandle(entry);
+  if (handle?.kind === "pseudo-directory" && Array.isArray(handle.files)) {
+    return createPseudoDirectoryHandle(handle.files);
+  }
+  return handle;
+}
+
+async function resolveRecentModelSnapshot(entry) {
+  return recentModelsStore.resolveSnapshot(entry);
+}
+
+async function openPreparedJsonEntry(rootEntry) {
+  return modelLoadingHelpers.openPreparedJsonEntry(rootEntry);
+}
+
+async function openPreparedJsonEntryInNewTab(rootEntry) {
+  return modelLoadingHelpers.openPreparedJsonEntryInNewTab(rootEntry);
+}
+
+async function openRecentModelEntry(entry) {
+  return modelLoadingHelpers.openRecentModelEntry(entry);
+}
+
+function tryDeriveDirectoryHandleFromFileHandle(fileHandle) {
+  return modelFileHelpers.tryDeriveDirectoryHandleFromFileHandle(fileHandle);
+}
+
+async function deriveDirectoryHandleFromFileHandle(fileHandle) {
+  return modelFileHelpers.deriveDirectoryHandleFromFileHandle(fileHandle);
+}
+
+function derivedDirectoryHandleDisplayName(handle) {
+  return modelFileHelpers.derivedDirectoryHandleDisplayName(handle);
+}
+
+function loadGraphFromJsonText(jsonText, sourceName = "", fileHandle = null, directoryHandle = null, preserveSubmodelCache = false) {
+  stopTimedExecution(false);
+  try {
+    if (!preserveSubmodelCache) {
+      submodelTemplateCache.clear();
+      submodelFileHandleCache.clear();
+      submodelSourceCache.clear();
+    }
+    const data = runtimeLoader.parseJsonText(jsonText);
+    runAction(() => {
+      importGraphData(data);
+    });
+    currentFileHandle = fileHandle || null;
+    const effectiveDirectoryHandle = directoryHandle || tryDeriveDirectoryHandleFromFileHandle(fileHandle) || null;
+    currentModelDirectoryHandle = effectiveDirectoryHandle;
+    graph.__directoryPath = String(effectiveDirectoryHandle?.path ?? "");
+    graph.__readDataCache = Object.create(null);
+    currentFileName = sourceName || currentFileName || defaultGraphFilename();
+    history.undo = [];
+    history.redo = [];
+    updateHistoryButtons();
+    ui.submodelsPrepared = false;
+    if (effectiveDirectoryHandle) {
+      const label = derivedDirectoryHandleDisplayName(effectiveDirectoryHandle);
+      if (label) {
+        setStatusKey("status.modelFolderDerived", { name: label });
+      } else {
+        setStatusKey("status.loaded");
+      }
+    } else {
+      setStatusKey("status.loaded");
+    }
+    window.requestAnimationFrame(() => {
+      if (!data?.view || typeof data.view !== "object") {
+        fitToContent();
+      }
+      window.requestAnimationFrame(() => {
+        markSavedSnapshot();
+      });
+    });
+  } catch (err) {
+    cancelTransaction();
+    setStatus(t("error.load", { message: err.message }));
+  }
+}
+
+function downloadJsonFile(filename, json) {
+  modelFileHelpers.downloadJsonFile(filename, json);
+}
+
+function downloadTextFile(filename, text, mimeType = "text/plain;charset=utf-8") {
+  modelFileHelpers.downloadTextFile(filename, text, mimeType);
+}
+
+async function ensureCurrentModelDirectoryHandle() {
+  if (currentModelDirectoryHandle) {
+    graph.__directoryPath = String(currentModelDirectoryHandle?.path ?? graph.__directoryPath ?? "");
+    return currentModelDirectoryHandle;
+  }
+  const derivedFromCurrentFile = await deriveDirectoryHandleFromFileHandle(currentFileHandle);
+  if (derivedFromCurrentFile) {
+    currentModelDirectoryHandle = derivedFromCurrentFile;
+    graph.__directoryPath = String(currentModelDirectoryHandle?.path ?? graph.__directoryPath ?? "");
+    return currentModelDirectoryHandle;
+  }
+  if (supportsDirectoryPicker()) {
+    currentModelDirectoryHandle = await showDirectoryPickerCompat({ mode: "read" });
+    graph.__directoryPath = String(currentModelDirectoryHandle?.path ?? graph.__directoryPath ?? "");
+    return currentModelDirectoryHandle;
+  }
+  // Prefer the native File System Access handle: unlike the legacy
+  // webkitdirectory input fallback, it can be stored in IndexedDB and reused
+  // by the Recent models menu.
+  if (supportsDirectoryInputSelection()) {
+    currentModelDirectoryHandle = await pickModelDirectoryWithInput();
+    graph.__directoryPath = String(currentModelDirectoryHandle?.path ?? graph.__directoryPath ?? "");
+    return currentModelDirectoryHandle;
+  }
+  throw new Error(t("error.submodelDirectoryUnsupported"));
+}
+
+async function getModelDirectoryHandleForReadData(model) {
+  if (model === graph) {
+    return ensureCurrentModelDirectoryHandle();
+  }
+  const directoryPath = String(model?.__directoryPath ?? "").trim();
+  if (directoryPath && hasPlatformApi("createDirectoryHandleFromDirectoryPath")) {
+    return window.STGraphXPlatform.createDirectoryHandleFromDirectoryPath(directoryPath);
+  }
+  throw new Error("readData requires access to the model folder");
+}
+
+async function prepareReadDataCacheForModel(model) {
+  return runtimeLoader.prepareReadDataCacheForModel(model);
+}
+
+async function prepareReadDataCachesForModelTree(model, visited = new Set()) {
+  return runtimeLoader.prepareReadDataCachesForModelTree(model, visited);
+}
+
+function basenameOfSubmodelPath(modelPath) {
+  return String(modelPath ?? "").split("/").filter(Boolean).pop() || String(modelPath ?? "");
+}
+
+function isDeferredSubmodelResolutionError(err) {
+  return String(err?.message || "") === SUBMODEL_DEFERRED_RESOLUTION;
+}
+
+function pickSubmodelFileWithInput(accept = ".json,application/json") {
+  return new Promise((resolve, reject) => {
+    const input = document.createElement("input");
+    input.type = "file";
+    input.accept = accept;
+    input.style.position = "fixed";
+    input.style.left = "-9999px";
+    input.addEventListener("change", () => {
+      const file = input.files && input.files[0] ? input.files[0] : null;
+      input.remove();
+      if (file) {
+        resolve(file);
+      } else {
+        reject(new Error(t("error.loadCancelled")));
+      }
+    }, { once: true });
+    document.body.appendChild(input);
+    input.click();
+  });
+}
+
+function pickSubmodelFilesWithInput(accept = ".json,application/json") {
+  return new Promise((resolve, reject) => {
+    const input = document.createElement("input");
+    input.type = "file";
+    input.multiple = true;
+    input.accept = accept;
+    input.style.position = "fixed";
+    input.style.left = "-9999px";
+    input.addEventListener("change", () => {
+      const files = Array.from(input.files || []);
+      input.remove();
+      if (files.length) {
+        resolve(files);
+      } else {
+        reject(new Error(t("error.loadCancelled")));
+      }
+    }, { once: true });
+    document.body.appendChild(input);
+    input.click();
+  });
+}
+
+function supportsDirectoryInputSelection() {
+  const input = document.createElement("input");
+  return "webkitdirectory" in input || "directory" in input;
+}
+
+function createPseudoFileHandle(file) {
+  return {
+    name: String(file?.name || ""),
+    async getFile() {
+      return file;
+    },
+  };
+}
+
+function createPseudoDirectoryHandle(files) {
+  const fileMap = new Map();
+  Array.from(files || []).forEach((file) => {
+    const rawRelativePath = String(file?.webkitRelativePath || file?.name || "").replace(/\\/g, "/");
+    const relativeParts = rawRelativePath.split("/").filter(Boolean);
+    const relativePath = relativeParts.length > 1 ? relativeParts.slice(1).join("/") : relativeParts[0] || "";
+    const normalizedRelativePath = normalizeReadDataPath(relativePath);
+    const baseName = normalizeSubmodelPath(file?.name) || basenameOfSubmodelPath(file?.name);
+    if (normalizedRelativePath && !fileMap.has(normalizedRelativePath)) {
+      fileMap.set(normalizedRelativePath, file);
+    }
+    if (baseName && !fileMap.has(baseName)) {
+      fileMap.set(baseName, file);
+    }
+  });
+  return {
+    kind: "directory",
+    name: "",
+    // Keep the selected files so recent models can serialize this fallback.
+    files: Array.from(files || []),
+    async getFileHandle(name) {
+      const normalizedPath = normalizeReadDataPath(name);
+      const baseName = normalizeSubmodelPath(name) || basenameOfSubmodelPath(name);
+      const file = (normalizedPath && fileMap.get(normalizedPath)) || fileMap.get(baseName);
+      if (!file) {
+        const err = new Error(`Missing file: ${normalizedPath || baseName}`);
+        err.name = "NotFoundError";
+        throw err;
+      }
+      return createPseudoFileHandle(file);
+    },
+  };
+}
+
+function pickModelDirectoryWithInput() {
+  return new Promise((resolve, reject) => {
+    const input = document.createElement("input");
+    input.type = "file";
+    input.multiple = true;
+    input.style.position = "fixed";
+    input.style.left = "-9999px";
+    input.webkitdirectory = true;
+    input.directory = true;
+    input.setAttribute("webkitdirectory", "");
+    input.setAttribute("directory", "");
+    input.addEventListener("change", async () => {
+      const files = Array.from(input.files || []);
+      input.remove();
+      if (!files.length) {
+        reject(new Error(t("error.loadCancelled")));
+        return;
+      }
+      try {
+        const jsonFiles = files.filter((file) => String(file?.name || "").toLowerCase().endsWith(".json"));
+        await cacheSelectedSubmodelEntries(jsonFiles);
+        resolve(createPseudoDirectoryHandle(files));
+      } catch (err) {
+        reject(err);
+      }
+    }, { once: true });
+    document.body.appendChild(input);
+    input.click();
+  });
+}
+
+async function parseSelectedJsonEntry(entry) {
+  return modelSessionHelpers.parseSelectedJsonEntry(entry);
+}
+
+function collectReferencedSubmodelNames(data) {
+  return submodelSupportHelpers.collectReferencedSubmodelNames(data);
+}
+
+function rootModelHasSubmodels(data) {
+  return submodelSupportHelpers.rootModelHasSubmodels(data);
+}
+
+function rootModelHasUnresolvedSubmodels(data) {
+  return submodelSupportHelpers.rootModelHasUnresolvedSubmodels(data);
+}
+
+async function maybeSelectModelDirectoryForSubmodels(data) {
+  return submodelSupportHelpers.maybeSelectModelDirectoryForSubmodels(data);
+}
+
+async function prepareSelectedJsonEntries(entries) {
+  return modelSessionHelpers.prepareSelectedJsonEntries(entries, {
+    onCacheSubmodelSource(baseName, payload) {
+      submodelSourceCache.set(baseName, payload.text);
+      if (payload.fileHandle) {
+        submodelFileHandleCache.set(baseName, payload.fileHandle);
+      }
+      if (payload.template) {
+        submodelTemplateCache.set(baseName, payload.template);
+      }
+    },
+  });
+}
+
+async function cacheSelectedSubmodelEntries(entries, allowedNames = null) {
+  return submodelSupportHelpers.cacheSelectedSubmodelEntries(entries, allowedNames);
+}
+
+async function promptForMissingSubmodelFiles(missingPaths) {
+  return submodelSupportHelpers.promptForMissingSubmodelFiles(missingPaths);
+}
+
+async function resolveSubmodelFileByPath(modelPath, options = {}) {
+  return submodelResolutionHelpers.resolveSubmodelFileByPath(modelPath, options);
+}
+
+function extractSubmodelInterfaceFromData(data) {
+  return submodelSupportHelpers.extractSubmodelInterfaceFromData(data);
+}
+
+async function loadSubmodelInterfaceByPath(modelPath) {
+  return submodelResolutionHelpers.loadSubmodelInterfaceByPath(modelPath);
+}
+
+async function loadSubmodelTemplateByPath(modelPath, visited = new Set(), options = {}) {
+  return submodelResolutionHelpers.loadSubmodelTemplateByPath(modelPath, visited, options);
+}
+
+async function ensureSubmodelTemplatesReady(options = {}) {
+  return submodelOrchestrationHelpers.ensureSubmodelTemplatesReady(options);
+}
+
+async function refreshSubmodelInterface(node, updateStatus = true, options = {}) {
+  return submodelOrchestrationHelpers.refreshSubmodelInterface(node, updateStatus, options);
+}
+
+async function refreshAllSubmodelInterfaces() {
+  return submodelOrchestrationHelpers.refreshAllSubmodelInterfaces();
+}
+
+async function preloadSubmodelsAfterLoad() {
+  await submodelOrchestrationHelpers.preloadSubmodelsAfterLoad();
+  refreshInitialValuesAfterSubmodelPreload();
+}
+
+// The first import happens before submodel templates are available. Rebuild the
+// preview once they are loaded, while keeping the model ready to start at t0.
+function refreshInitialValuesAfterSubmodelPreload() {
+  if (!ui.submodelsPrepared || graph.execution.currentTime != null) {
+    return;
+  }
+  const timeValue = Number(graph.execution.t0);
+  if (!Number.isFinite(timeValue)) {
+    return;
+  }
+  clearRuntimeSubmodelState();
+  initializeStateNodes(timeValue);
+  evaluateAtTime(timeValue);
+  graph.execution.currentTime = null;
+  refreshRuntimeView();
+}
+
+async function openSubmodelNodeInNewTab(node) {
+  return submodelOrchestrationHelpers.openSubmodelNodeInNewTab(node);
+}
+
+async function writeJsonToFileHandle(fileHandle, json) {
+  return modelPersistenceHelpers.writeJsonToFileHandle(fileHandle, json);
+}
+
+async function writeTextToFileHandle(fileHandle, text) {
+  return modelPersistenceHelpers.writeTextToFileHandle(fileHandle, text);
+}
+
+async function pickSaveAsHandle(suggestedName, directoryHandle = currentModelDirectoryHandle) {
+  if (!supportsSaveFilePicker()) {
+    return null;
+  }
+  return modelSessionHelpers.pickSaveAsHandle(suggestedName, directoryHandle);
+}
+
+async function pickSaveCsvHandle(suggestedName) {
+  if (!supportsSaveFilePicker()) {
+    return null;
+  }
+  return modelSessionHelpers.pickSaveCsvHandle(suggestedName);
+}
+
+async function exportSimulationCsv() {
+  let csv;
+  try {
+    csv = buildSimulationCsvText();
+  } catch (err) {
+    const message = String(err?.message || t("error.csvExportFailed"));
+    setStatus(message, true);
+    window.alert(message);
+    return false;
+  }
+
+  let filename = suggestedCsvFilename();
+  const hasNativeSavePicker = supportsSaveFilePicker();
+  try {
+    const fileHandle = await pickSaveCsvHandle(filename);
+    if (fileHandle) {
+      const ok = await writeTextToFileHandle(fileHandle, csv);
+      if (!ok) {
+        setStatusKey("error.csvExportFailed");
+        window.alert(t("error.csvExportFailed"));
+        return false;
+      }
+      setStatusKey("status.csvExported");
+      return true;
+    }
+  } catch (err) {
+    if (err && err.name === "AbortError") {
+      setStatusKey("status.csvExportCanceled");
+      return false;
+    }
+    if (hasNativeSavePicker) {
+      setStatusKey("error.csvExportFailed");
+      window.alert(t("error.csvExportFailed"));
+      return false;
+    }
+  }
+
+  if (isFirefoxBrowser()) {
+    const proposed = window.prompt(t("prompt.saveCsv"), filename);
+    if (proposed == null) {
+      setStatusKey("status.csvExportCanceled");
+      return false;
+    }
+    filename = normalizeCsvFilename(proposed);
+  }
+
+  downloadTextFile(filename, csv, "text/csv;charset=utf-8");
+  setStatusKey("status.csvExported");
+  return true;
+}
+
+async function saveGraphJson(forceSaveAs = false) {
+  // Ctrl/Cmd+S does not blur an active Watch field, so persist its text first.
+  commitFocusedBreakpointFields();
+  // The UI flag is refreshed asynchronously; use the snapshot as the source
+  // of truth so a just-edited browser document can always be saved.
+  const hasPendingChanges = dirtySinceLastSave || hasUnsavedChanges();
+  const result = await modelPersistenceHelpers.saveJsonModel({
+    forceSaveAs,
+    dirtySinceLastSave: hasPendingChanges,
+    exportGraphData,
+    currentFileHandle,
+    currentFileName,
+    currentModelDirectoryHandle,
+    defaultGraphFilename,
+    normalizeJsonFilename,
+    pickSaveAsHandle,
+    deriveDirectoryHandleFromFileHandle,
+    rememberRecentModel,
+    markSavedSnapshot,
+    isFirefoxBrowser,
+    promptSaveAs: (suggestedName) => window.prompt(t("prompt.saveAs"), suggestedName),
+    downloadJsonFile,
+    hasNativeSavePicker: supportsSaveFilePicker(),
+    setStatusKey,
+    async onAfterSave({ fileName, fileHandle, directoryHandle, data }) {
+      currentFileHandle = fileHandle || null;
+      currentFileName = fileName;
+      currentModelDirectoryHandle = directoryHandle || null;
+      graph.__directoryPath = String(currentModelDirectoryHandle?.path ?? graph.__directoryPath ?? "");
+      submodelTemplateCache.set(String(currentFileName || fileName), buildRuntimeModelFromData(data, {
+        directoryPath: String(currentModelDirectoryHandle?.path ?? ""),
+      }));
+    },
+  });
+  return result.ok;
+}
+
+async function loadGraphJsonFile(file) {
+  try {
+    const extraFiles = Array.from(loadJsonInput.files || []).filter((entry) => entry !== file);
+    await modelLoadingHelpers.loadGraphJsonFile(file, extraFiles);
+  } catch (_err) {
+    cancelTransaction();
+    setStatusKey("status.readError");
+  }
+}
+
+function isJsonModelFile(file) {
+  return Boolean(
+    file
+    && (
+      String(file.type ?? "").toLowerCase() === "application/json"
+      || /\.json$/i.test(String(file.name ?? ""))
+    )
+  );
+}
+
+function droppedFileWithNativePath(file) {
+  const bridge = electronFileBridge();
+  let nativePath = "";
+  if (typeof bridge?.getPathForFile === "function") {
+    try {
+      nativePath = String(bridge.getPathForFile(file) ?? "").trim();
+    } catch (_err) {
+      nativePath = "";
+    }
+  }
+  nativePath = nativePath || String(file?.path ?? "").trim();
+  if (!nativePath) {
+    return file;
+  }
+  return {
+    name: String(file?.name ?? nativePathName(nativePath)),
+    path: nativePath,
+    type: String(file?.type ?? ""),
+    text: () => file.text(),
+  };
+}
+
+async function loadDroppedGraphJsonFiles(files) {
+  const jsonFiles = Array.from(files || []).filter(isJsonModelFile).map(droppedFileWithNativePath);
+  if (!jsonFiles.length) {
+    setStatusKey("error.dropModelJson");
+    return false;
+  }
+  try {
+    return await modelLoadingHelpers.loadGraphJsonFile(jsonFiles[0], jsonFiles.slice(1));
+  } catch (_err) {
+    cancelTransaction();
+    setStatusKey("status.readError");
+    return false;
+  }
+}
+
+function isExternalFileDrag(evt) {
+  return Array.from(evt?.dataTransfer?.types || []).includes("Files");
+}
+
+let modelFileDragDepth = 0;
+
+function clearModelFileDropState() {
+  modelFileDragDepth = 0;
+  graphViewport?.classList.remove("model-file-drop-active");
+  graphViewport?.removeAttribute("data-drop-label");
+}
+
+if (graphViewport) {
+  graphViewport.addEventListener("dragenter", (evt) => {
+    if (!isExternalFileDrag(evt)) {
+      return;
+    }
+    evt.preventDefault();
+    modelFileDragDepth += 1;
+    graphViewport.dataset.dropLabel = t("text.dropModelFile");
+    graphViewport.classList.add("model-file-drop-active");
+  });
+
+  graphViewport.addEventListener("dragover", (evt) => {
+    if (!isExternalFileDrag(evt)) {
+      return;
+    }
+    evt.preventDefault();
+    evt.dataTransfer.dropEffect = "copy";
+    graphViewport.dataset.dropLabel = t("text.dropModelFile");
+    graphViewport.classList.add("model-file-drop-active");
+  });
+
+  graphViewport.addEventListener("dragleave", (evt) => {
+    if (!isExternalFileDrag(evt)) {
+      return;
+    }
+    modelFileDragDepth = Math.max(0, modelFileDragDepth - 1);
+    if (modelFileDragDepth === 0) {
+      clearModelFileDropState();
+    }
+  });
+
+  graphViewport.addEventListener("drop", (evt) => {
+    if (!isExternalFileDrag(evt)) {
+      return;
+    }
+    evt.preventDefault();
+    const files = Array.from(evt.dataTransfer?.files || []);
+    clearModelFileDropState();
+    void loadDroppedGraphJsonFiles(files);
+  });
+}
+
+async function openGraphJson() {
+  if (supportsOpenFilePicker()) {
+    try {
+      await modelLoadingHelpers.openGraphJson();
+      return;
+    } catch (err) {
+      if (err && err.name === "AbortError") {
+        return;
+      }
+      return;
+    }
+  }
+  loadJsonInput.multiple = true;
+  loadJsonInput.click();
+}
+
+function resetGraphToEmptyModel() {
+  graph.modelTitle = "";
+  graph.notes = { markdown: "" };
+  graph.properties = [];
+  graph.unitDefinitions = [];
+  graph.scenarios = [];
+  graph.localFunctions = [];
+  graph.nodes = [];
+  graph.edges = [];
+  graph.textItems = [];
+  graph.widgets = [];
+  graph.presentationGroups = [];
+  graph.dashboard = null;
+  graph.debug = {
+    watches: [],
+    breakpointEnabled: false,
+    breakpointExpression: "",
+    breakpointMessage: "",
+  };
+  graph.__directoryPath = "";
+  graph.__readDataCache = Object.create(null);
+  clearSimulationOutputHistory();
+  invalidateExecutionPlan();
+  stopTimedExecution(false);
+  graph.execution = {
+    t0: 0,
+    dt: 1,
+    t1: 10,
+    delayMs: 100,
+    renderEverySteps: 1,
+    decimals: 3,
+    integrator: "euler",
+    strictDefinitions: false,
+    stopOnRuntimeError: false,
+    randomSeed: null,
+    randomState: null,
+    currentTime: null,
+  };
+  ui.highlightNodeEdges = true;
+  ui.showNodeValues = true;
+  ui.checkUnits = true;
+  nodeCounter = 1;
+  edgeCounter = 1;
+  widgetCounter = 1;
+  textItemCounter = 1;
+  presentationGroupCounter = 1;
+  clearAllSelection();
+  history.undo = [];
+  history.redo = [];
+  updateHistoryButtons();
+  currentFileHandle = null;
+  currentFileName = "";
+  currentModelDirectoryHandle = null;
+  submodelTemplateCache.clear();
+  submodelFileHandleCache.clear();
+  submodelSourceCache.clear();
+  ui.submodelsPrepared = false;
+  ui.watchPreviousSnapshot = new Map();
+  ui.breakpointLastResult = null;
+  ui.localFunctionsEditor = null;
+  ui.modelAnalysisIssues = null;
+}
+
+async function createNewGraph() {
+  saveActiveWorkspaceTabState();
+  closeDocumentTransientUi();
+  resetGraphToEmptyModel();
+  createWorkspaceTabFromCurrentState({ activate: true });
+  setStatusKey("status.newGraph");
+  render();
+  window.requestAnimationFrame(() => {
+    window.requestAnimationFrame(() => {
+      markSavedSnapshot();
+    });
+  });
+}
+
+function stopTimedExecution(updateStatus = true) {
+  runtimeController.stopTimedExecution(updateStatus);
+}
+
+function isTimeWithinBounds(value, t0, dt, t1) {
+  const epsilon = Math.max(1e-12, Math.abs(dt) * 1e-9);
+  if (dt > 0) {
+    return value <= t1 + epsilon && value >= t0 - epsilon;
+  }
+  return value >= t1 - epsilon && value <= t0 + epsilon;
+}
+
+function isExecutionEnded(cfg) {
+  if (graph.execution.currentTime == null) {
+    return false;
+  }
+  const nextTime = graph.execution.currentTime + cfg.dt;
+  return !isTimeWithinBounds(nextTime, cfg.t0, cfg.dt, cfg.t1);
+}
+
+function parseModelPropertyStoredValue(raw) {
+  return runtimeShared.parseModelPropertyStoredValue(raw);
+}
+
+function serializeModelPropertyStoredValue(value) {
+  return runtimeShared.serializeModelPropertyStoredValue(value);
+}
+
+function parseNodePropertyStoredValue(raw) {
+  return runtimeShared.parseNodePropertyStoredValue(raw);
+}
+
+function serializeNodePropertyStoredValue(value) {
+  return runtimeShared.serializeNodePropertyStoredValue(value);
+}
+
+const runtimeCore = globalThis.STGraphXRuntimeCore?.createRuntimeCore({
+  t,
+  semantics,
+  normalizeExecutionConfig,
+  deserializeNodeType,
+  normalizeNodeDescriptionProperty: runtimeShared.normalizeNodeDescriptionProperty,
+  normalizeNodeFormulaNotesProperty: runtimeShared.normalizeNodeFormulaNotesProperty,
+  sanitizeLocalFunctionDefinition,
+  clamp,
+  deepClone,
+  localFunctionsForSemantics,
+  globalParameterNodesForModel,
+  referencedGlobalParameterNodesForTarget,
+  isStateNode,
+  getModelNodeById,
+  isSubmodelNode,
+  normalizeSubmodelPath,
+  normalizeReadDataPath,
+  normalizeEdgeColor,
+  normalizeEdgeInfluence,
+  parseModelPropertyStoredValue,
+  serializeModelPropertyStoredValue,
+  parseNodePropertyStoredValue,
+  serializeNodePropertyStoredValue,
+  submodelBindingReferences,
+  applyRuntimeModelInputOverrides,
+  getSubmodelTemplate: (modelPath) => {
+    const normalized = normalizeSubmodelPath(modelPath);
+    return normalized ? submodelTemplateCache.get(normalized) || null : null;
+  },
+});
+
+if (!runtimeCore) {
+  throw new Error("STGraphX runtime core is unavailable");
+}
+
+const sensitivityAnalysisCore = globalThis.STGraphXSensitivityAnalysisCore?.createSensitivityAnalysisCore({
+  cloneRuntimeModel: (model) => runtimeCore.cloneRuntimeModel(model),
+  initializeStateNodesForModel: (model, timeValue, execution) => runtimeCore.initializeStateNodesForModel(model, timeValue, execution),
+  promotePendingStateNodesForModel: (model) => runtimeCore.promotePendingStateNodesForModel(model),
+  evaluateModelAtTimeRecursive: (model, timeValue, env) => runtimeCore.evaluateModelAtTimeRecursive(model, timeValue, env),
+});
+
+if (!sensitivityAnalysisCore) {
+  throw new Error("STGraphX sensitivity analysis core is unavailable");
+}
+
+const runtimeLoader = globalThis.STGraphXRuntimeLoader?.createRuntimeLoader({
+  t,
+  normalizeReadDataPath,
+  expressionUsesReadData,
+  validateReadDataExpressionUsage,
+  extractReadDataPaths,
+  parseCsvMatrix,
+  normalizeSubmodelPath,
+  isSubmodelNode,
+  getSubmodelTemplate: (modelPath) => {
+    const normalized = normalizeSubmodelPath(modelPath);
+    return normalized ? submodelTemplateCache.get(normalized) || null : null;
+  },
+  getDirectoryHandleForModel: async (model) => getModelDirectoryHandleForReadData(model),
+});
+
+if (!runtimeLoader) {
+  throw new Error("STGraphX runtime loader is unavailable");
+}
+
+const runtimeSession = globalThis.STGraphXRuntimeSession?.createRuntimeSession({
+  core: runtimeCore,
+  model: graph,
+  rootExecution: graph.execution,
+  isStateNode,
+  beforeInitialize: () => {
+    applyWidgetDrivenNodeValues();
+  },
+  beforeEvaluate: () => {
+    captureWatchSnapshot();
+    applyWidgetDrivenNodeValues();
+  },
+  afterEvaluate: ({ timeValue }) => {
+    const nodeMap = buildNodeNameMap();
+    updateTableWidgetsFromComputedValues(timeValue, nodeMap);
+    updateXYWidgetsFromComputedValues(timeValue, nodeMap);
+    recordSimulationOutputSnapshot(timeValue);
+    syncSubmodelWorkspaceTabsFromActiveParent();
+  },
+});
+
+if (!runtimeSession) {
+  throw new Error("STGraphX runtime session is unavailable");
+}
+
+function setFullExecutionRunning(running) {
+  ui.fullRunRunning = Boolean(running);
+  document.body.classList.toggle("full-execution-running", ui.fullRunRunning);
+  updateExecutionProgress();
+  updateEditingLockUi();
+  render();
+}
+
+const runtimeController = globalThis.STGraphXRuntimeController?.createRuntimeController({
+  session: runtimeSession,
+  getExecution: () => graph.execution,
+  timedState: ui,
+  t,
+  enforceStrictDefinitions: () => enforceStrictDefinitionsIfNeeded(),
+  ensureBreakpointReady: () => ensureBreakpointReadyForExecution(),
+  prepareForExecution: () => prepareSubmodelsForExecution(),
+  isExecutionEnded,
+  refreshRuntimeView: () => refreshRuntimeView(),
+  render: () => render(),
+  updateEditingLockUi: () => updateEditingLockUi(),
+  setStatusKey: (key, vars) => setStatusKey(key, vars),
+  setStatus: (message, isError) => setStatus(message, isError),
+  formatNumberValue: (value) => formatNumberValue(value),
+  formatExecutionDuration: (ms) => formatExecutionDuration(ms),
+  evalReasonText: (reason) => evalReasonText(reason),
+  evaluateBreakpointConditionAtTime: (timeValue) => {
+    const result = evaluateBreakpointConditionAtTime(timeValue);
+    ui.breakpointLastResult = result.hit ? { ...result, time: timeValue } : result;
+    return result;
+  },
+  openWatchDebugger: () => openWatchDebugger(),
+  openSemanticBreakpointMessage: (message) => openSemanticBreakpointMessage(message),
+  clearVisualHistory: () => {
+    clearAllXYChartPoints();
+    clearAllTableWidgetRows();
+  },
+  clearSimulationHistory: () => clearSimulationOutputHistory(),
+  hasStrictExecutionBlock: () => hasStrictExecutionBlock(),
+  buildEvaluationEnv: () => ({
+    rootExecution: graph.execution,
+    stack: [],
+  }),
+  onFullExecutionStarted: () => setFullExecutionRunning(true),
+  onFullExecutionStopped: () => setFullExecutionRunning(false),
+  yieldToUi: () => new Promise((resolve) => {
+    window.requestAnimationFrame(() => window.requestAnimationFrame(resolve));
+  }),
+  onExecutionProgress: ({ time }) => updateExecutionProgress(time),
+  yieldForProgress: () => new Promise((resolve) => window.requestAnimationFrame(resolve)),
+});
+
+if (!runtimeController) {
+  throw new Error("STGraphX runtime controller is unavailable");
+}
+
+const rustEngineAdapter = globalThis.STGraphXRustEngine?.createRustEngineAdapter() || null;
+
+function buildRuntimeModelFromData(data, options = {}) {
+  return runtimeCore.buildRuntimeModelFromData(data, options);
+}
+
+function cloneRuntimeModel(template) {
+  return runtimeCore.cloneRuntimeModel(template);
+}
+
+function getModelPropertyValue(key, fallback = null) {
+  const name = String(key ?? "");
+  const found = graph.properties.find((prop) => String(prop?.key ?? "") === name);
+  if (!found) {
+    return fallback;
+  }
+  return parseModelPropertyStoredValue(found.value);
+}
+
+function setModelPropertyValue(key, value) {
+  const name = String(key ?? "");
+  const stored = serializeModelPropertyStoredValue(value);
+  const found = graph.properties.find((prop) => String(prop?.key ?? "") === name);
+  if (found) {
+    found.value = stored;
+  } else {
+    graph.properties.push({ key: name, value: stored });
+  }
+  return value;
+}
+
+function readDataFromModelCache(model, relativePath) {
+  return runtimeCore.readDataFromModelCache(model, relativePath);
+}
+
+function clearSimulationOutputHistory() {
+  graph.__simulationHistory = [];
+}
+
+function cloneSimulationOutputValue(value) {
+  if (value === null || value === undefined) {
+    return value;
+  }
+  try {
+    if (typeof structuredClone === "function") {
+      return structuredClone(value);
+    }
+  } catch (_err) {
+    // Fall through.
+  }
+  try {
+    return deepClone(value);
+  } catch (_err) {
+    return value;
+  }
+}
+
+function recordSimulationOutputSnapshot(timeValue) {
+  const outputNodes = graph.nodes.filter((node) => node.output);
+  if (!outputNodes.length) {
+    return;
+  }
+  if (!Array.isArray(graph.__simulationHistory)) {
+    graph.__simulationHistory = [];
+  }
+  graph.__simulationHistory.push({
+    time: Number(timeValue),
+    values: Object.fromEntries(outputNodes.map((node) => [
+      node.name,
+      {
+        value: cloneSimulationOutputValue(node.computedValue),
+        error: String(node.computedError || ""),
+      },
+    ])),
+  });
+}
+
+function normalizeCsvFilename(name) {
+  return modelFileHelpers.normalizeCsvFilename(name);
+}
+
+function suggestedCsvFilename() {
+  const base = String(currentFileName || graph.modelTitle || "simulation-output")
+    .replace(/\.json$/i, "")
+    .trim();
+  return normalizeCsvFilename(base ? `${base}-output` : "simulation-output");
+}
+
+function csvEscapeCell(value) {
+  const text = value == null ? "" : String(value);
+  if (!/[",\n\r]/.test(text)) {
+    return text;
+  }
+  return `"${text.replace(/"/g, "\"\"")}"`;
+}
+
+function inferCsvValueSchema(value) {
+  if (value === null || value === undefined) {
+    return null;
+  }
+  if (typeof value === "number" || typeof value === "string" || typeof value === "boolean") {
+    return { kind: "scalar" };
+  }
+  if (!Array.isArray(value)) {
+    return { kind: "serialized" };
+  }
+  if (value.every((item) => !Array.isArray(item))) {
+    return { kind: "vector", size: value.length };
+  }
+  const isRectangularMatrix =
+    value.length > 0
+    && value.every((row) => Array.isArray(row))
+    && value.every((row) => row.length === value[0].length)
+    && value.every((row) => row.every((cell) => !Array.isArray(cell)));
+  if (isRectangularMatrix) {
+    return { kind: "matrix", rows: value.length, cols: value[0].length };
+  }
+  return { kind: "serialized" };
+}
+
+function csvSchemaMatches(schema, candidate) {
+  if (!schema || !candidate) {
+    return true;
+  }
+  if (schema.kind !== candidate.kind) {
+    return false;
+  }
+  if (schema.kind === "vector") {
+    return schema.size === candidate.size;
+  }
+  if (schema.kind === "matrix") {
+    return schema.rows === candidate.rows && schema.cols === candidate.cols;
+  }
+  return true;
+}
+
+function csvNodeColumnNames(nodeName, schema) {
+  if (!schema || schema.kind === "scalar" || schema.kind === "serialized") {
+    return [nodeName];
+  }
+  if (schema.kind === "vector") {
+    return Array.from({ length: schema.size }, (_unused, idx) => `${nodeName}[${idx}]`);
+  }
+  if (schema.kind === "matrix") {
+    const columns = [];
+    for (let row = 0; row < schema.rows; row += 1) {
+      for (let col = 0; col < schema.cols; col += 1) {
+        columns.push(`${nodeName}[${row},${col}]`);
+      }
+    }
+    return columns;
+  }
+  return [nodeName];
+}
+
+function csvValueCellsForSchema(value, schema) {
+  if (value === null || value === undefined) {
+    return new Array(csvNodeColumnNames("", schema).length).fill("");
+  }
+  if (!schema || schema.kind === "scalar") {
+    return [String(value)];
+  }
+  if (schema.kind === "serialized") {
+    try {
+      return [JSON.stringify(value)];
+    } catch (_err) {
+      return [String(value)];
+    }
+  }
+  if (schema.kind === "vector") {
+    return Array.from({ length: schema.size }, (_unused, idx) => value[idx] == null ? "" : String(value[idx]));
+  }
+  if (schema.kind === "matrix") {
+    const cells = [];
+    for (let row = 0; row < schema.rows; row += 1) {
+      for (let col = 0; col < schema.cols; col += 1) {
+        cells.push(value[row]?.[col] == null ? "" : String(value[row][col]));
+      }
+    }
+    return cells;
+  }
+  return [String(value)];
+}
+
+function buildSimulationCsvText() {
+  const history = Array.isArray(graph.__simulationHistory) ? graph.__simulationHistory : [];
+  if (!history.length) {
+    throw new Error(t("error.csvNoData"));
+  }
+  const outputNames = graph.nodes.filter((node) => node.output).map((node) => node.name);
+  if (!outputNames.length) {
+    throw new Error(t("error.csvNoOutputs"));
+  }
+
+  const schemas = new Map();
+  outputNames.forEach((name) => {
+    let schema = null;
+    for (const entry of history) {
+      const sample = entry?.values?.[name];
+      if (!sample || sample.error || sample.value == null) {
+        continue;
+      }
+      const candidate = inferCsvValueSchema(sample.value);
+      if (!schema) {
+        schema = candidate;
+      } else if (!csvSchemaMatches(schema, candidate)) {
+        throw new Error(t("error.csvShapeChanged", { name }));
+      }
+    }
+    schemas.set(name, schema || { kind: "scalar" });
+  });
+
+  const header = ["time"];
+  outputNames.forEach((name) => {
+    csvNodeColumnNames(name, schemas.get(name)).forEach((columnName) => header.push(columnName));
+  });
+
+  const lines = [header.map(csvEscapeCell).join(",")];
+  history.forEach((entry) => {
+    const row = [csvEscapeCell(entry.time)];
+    outputNames.forEach((name) => {
+      const schema = schemas.get(name);
+      const sample = entry?.values?.[name];
+      if (!sample || sample.error || sample.value == null) {
+        csvNodeColumnNames(name, schema).forEach(() => row.push(""));
+        return;
+      }
+      const candidate = inferCsvValueSchema(sample.value);
+      if (!csvSchemaMatches(schema, candidate)) {
+        throw new Error(t("error.csvShapeChanged", { name }));
+      }
+      csvValueCellsForSchema(sample.value, schema).forEach((cell) => row.push(csvEscapeCell(cell)));
+    });
+    lines.push(row.join(","));
+  });
+  return lines.join("\n");
+}
+
+function buildExecutionGlobals(timeValue) {
+  return {
+    ...runtimeCore.buildExecutionGlobalsForModel(graph, graph.execution, timeValue),
+    getModelProperty: getModelPropertyValue,
+    setModelProperty: setModelPropertyValue,
+  };
+}
+
+function buildExecutionGlobalsForModel(model, rootExecution, timeValue) {
+  return runtimeCore.buildExecutionGlobalsForModel(model, rootExecution, timeValue);
+}
+
+function nodePropertyAccessForContext(node) {
+  return {
+    getProperty: (key, fallback = null) => {
+      const found = node.properties.find((prop) => String(prop?.key ?? "") === String(key ?? ""));
+      return found ? parseNodePropertyStoredValue(found.value) : fallback;
+    },
+    setProperty: (key, value) => {
+      const name = String(key ?? "");
+      const stored = serializeNodePropertyStoredValue(value);
+      const found = node.properties.find((prop) => String(prop?.key ?? "") === name);
+      if (found) {
+        found.value = stored;
+      } else {
+        node.properties.push({ key: name, value: stored });
+      }
+      return value;
+    },
+  };
+}
+
+function evaluateParameterNodesForModel(model, timeValue, rootExecution) {
+  return runtimeCore.evaluateParameterNodesForModel(model, timeValue, rootExecution);
+}
+
+function buildInitialStateContextForModel(model, node, timeValue, rootExecution) {
+  return runtimeCore.buildInitialStateContextForModel(model, node, timeValue, rootExecution);
+}
+
+function initializeStateNodesForModel(model, timeValue, rootExecution) {
+  return runtimeCore.initializeStateNodesForModel(model, timeValue, rootExecution);
+}
+
+function promotePendingStateNodesForModel(model) {
+  return runtimeCore.promotePendingStateNodesForModel(model);
+}
+
+function getCachedSubmodelTemplate(modelPath) {
+  const normalized = normalizeSubmodelPath(modelPath);
+  return normalized ? submodelTemplateCache.get(normalized) || null : null;
+}
+
+function evaluateModelAtTimeRecursive(model, timeValue, env, options = {}) {
+  return runtimeCore.evaluateModelAtTimeRecursive(model, timeValue, env, options);
+}
+
+function currentDisplayTimeValue() {
+  return graph.execution.currentTime == null
+    ? Number(graph.execution.t0)
+    : Number(graph.execution.currentTime);
+}
+
+function hasInitializedStateSnapshot(model = graph) {
+  return runtimeSession.hasInitializedStateSnapshot(model);
+}
+
+function updateMenuTimeLabel() {
+  if (!menuTimeText) {
+    return;
+  }
+  const baseTime = graph.execution.currentTime == null
+    ? Number(graph.execution.t0)
+    : Number(graph.execution.currentTime);
+  if (!Number.isFinite(baseTime)) {
+    menuTimeText.textContent = "";
+    return;
+  }
+  menuTimeText.textContent = t("menu.time", { time: formatNumberValue(baseTime) });
+}
+
+function ensureExecutionPlan() {
+  if (!ui.executionPlan) {
+    ui.executionPlan = semantics.prepareStatefulExecutionPlan(graph.nodes, graph.edges);
+  }
+  return ui.executionPlan;
+}
+
+function isRk4IntegratorSelected() {
+  return String(graph.execution.integrator ?? "euler") === "rk4";
+}
+
+function graphHasSubmodels(model = graph) {
+  return Boolean(model?.nodes?.some((node) => isSubmodelNode(node)));
+}
+
+function clearRuntimeSubmodelState(model = graph) {
+  return runtimeSession.clearSubmodelState(model);
+}
+
+function scaleTensorValue(value, factor) {
+  return runtimeCore.scaleTensorValue(value, factor);
+}
+
+function combineTensorValues(left, right, scalarFn) {
+  return runtimeCore.combineTensorValues(left, right, scalarFn);
+}
+
+function addTensorValues(left, right) {
+  return runtimeCore.addTensorValues(left, right);
+}
+
+function rk4IntegratedValue(currentValue, k1, k2, k3, k4, dt) {
+  return runtimeCore.rk4IntegratedValue(currentValue, k1, k2, k3, k4, dt);
+}
+
+function collectRk4IntegralStateAnalyses() {
+  const analyses = new Map();
+  graph.nodes.forEach((node) => {
+    if (!isStateNode(node)) {
+      return;
+    }
+    const analysis = semantics.analyzeStateTransitionExpression(node.valueExpression);
+    if (analysis.ok && analysis.usesIntegral && analysis.integralCount > 0) {
+      analyses.set(node.id, analysis);
+    }
+  });
+  return analyses;
+}
+
+function buildStateOverrideMap(baseMap, derivativeMap, factor) {
+  const overrides = new Map();
+  for (const [nodeId, baseValue] of baseMap.entries()) {
+    const derivativeValue = derivativeMap.get(nodeId);
+    if (derivativeValue === undefined) {
+      continue;
+    }
+    overrides.set(nodeId, addTensorValues(baseValue, scaleTensorValue(derivativeValue, factor)));
+  }
+  return overrides;
+}
+
+function extractSuccessfulResultMap(entries) {
+  return runtimeCore.extractSuccessfulResultMap(entries);
+}
+
+function extractSuccessfulAlgebraicValueMap(entries) {
+  return runtimeCore.extractSuccessfulAlgebraicValueMap(entries);
+}
+
+function firstFailedEntry(entries, nodeIds = null) {
+  return runtimeCore.firstFailedEntry(entries, nodeIds);
+}
+
+function collectRk4IntegralStateAnalysesForModel(model) {
+  return runtimeCore.collectRk4IntegralStateAnalysesForModel(model);
+}
+
+function buildCurrentStateMapForModel(model, stateValueOverrides = null) {
+  return runtimeCore.buildCurrentStateMapForModel(model, stateValueOverrides);
+}
+
+function createSubmodelNodeEvaluator(model, timeValue, env, options = {}) {
+  return runtimeCore.createSubmodelNodeEvaluator(model, timeValue, env, options);
+}
+
+function evaluateTransitionResultsWithIntegralValuesForModel(
+  model,
+  timeValue,
+  env,
+  executionPlan,
+  integralStateIds,
+  integralValuesMap,
+  algebraicValueMap,
+  stateValueOverrides = null,
+) {
+  return runtimeCore.evaluateTransitionResultsWithIntegralValuesForModel(
+    model,
+    timeValue,
+    env,
+    executionPlan,
+    integralStateIds,
+    integralValuesMap,
+    algebraicValueMap,
+    stateValueOverrides,
+  );
+}
+
+function buildStageIntegralValuesMap(currentStateMap, derivativeListMap, factor) {
+  return runtimeCore.buildStageIntegralValuesMap(currentStateMap, derivativeListMap, factor);
+}
+
+function evaluateTransitionResultsWithIntegralValues(timeValue, integralStateIds, integralValuesMap) {
+  const globals = buildExecutionGlobals(timeValue);
+  const executionPlan = ensureExecutionPlan();
+  const results = new Map();
+  graph.nodes.forEach((node) => {
+    if (!integralStateIds.has(node.id)) {
+      return;
+    }
+    const context = {
+      ...globals,
+      __self: node.computedValue,
+    };
+    globalParameterNodesForModel(graph, node.id).forEach((depNode) => {
+      if (!depNode.computedError) {
+        context[depNode.name] = depNode.computedValue;
+      }
+    });
+    (executionPlan.incoming.get(node.id) || []).forEach((fromId) => {
+      const fromNode = getNodeById(fromId);
+      if (!fromNode) {
+        return;
+      }
+      context[fromNode.name] = fromNode.computedValue;
+    });
+    const access = {
+      getProperty: (key, fallback = null) => {
+        const found = node.properties.find((prop) => String(prop?.key ?? "") === String(key ?? ""));
+        return found ? parseNodePropertyStoredValue(found.value) : fallback;
+      },
+      setProperty: (key, value) => {
+        const name = String(key ?? "");
+        const stored = serializeNodePropertyStoredValue(value);
+        const found = node.properties.find((prop) => String(prop?.key ?? "") === name);
+        if (found) {
+          found.value = stored;
+        } else {
+          node.properties.push({ key: name, value: stored });
+        }
+        return value;
+      },
+    };
+    results.set(
+      node.id,
+      semantics.evaluateStateTransitionExpressionWithIntegralValues(
+        node.valueExpression,
+        { ...context, ...access },
+        integralValuesMap.get(node.id) || [],
+        { allowThisAlias: true, localFunctions: localFunctionsForSemantics(graph) },
+      ),
+    );
+  });
+  return results;
+}
+
+function initializeStateNodes(timeValue) {
+  runtimeSession.initializeAt(timeValue, graph, graph.execution);
+}
+
+function promotePendingStateNodes() {
+  runtimeSession.promotePending(graph);
+}
+
+function evaluateAtTime(timeValue) {
+  return runtimeSession.evaluateAtTime(timeValue, {
+    rootExecution: graph.execution,
+    stack: [],
+  });
+}
+
+function validateTimeConfig() {
+  return runtimeController.validateTimeConfig();
+}
+
+async function prepareSubmodelsForExecution() {
+  await preloadSubmodelsAfterLoad();
   let ready = await ensureSubmodelTemplatesReady({ allowPrompt: false });
   if (!ready) {
     const hasSubmodels = graph.nodes.some((node) => isSubmodelNode(node) && String(node.modelPath ?? "").trim());
