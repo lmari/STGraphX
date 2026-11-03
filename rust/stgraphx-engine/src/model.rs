@@ -9,11 +9,17 @@ use crate::document::{ExecutionDocument, LocalFunctionDocument, ModelDocument};
 use crate::error::EngineError;
 use crate::expression::{self, EvaluationContext, Expression, LocalFunction};
 use crate::functions;
+use crate::random::{normalize_seed, RandomGenerator};
 use crate::value::Value;
 
 const MAX_SIMULATION_STEPS: usize = 100_000;
 
 type EvaluatedValues = (HashMap<String, Value>, Vec<Option<Value>>);
+
+struct InitializedValues {
+    states: Vec<Option<Value>>,
+    parameters: Vec<Option<Value>>,
+}
 
 /// Node kinds supported by the current executable slice of the Rust engine.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -37,6 +43,7 @@ pub struct ExecutionConfig {
     pub dt: f64,
     pub t1: f64,
     pub integrator: Integrator,
+    pub random_seed: Option<u32>,
 }
 
 impl From<&ExecutionDocument> for ExecutionConfig {
@@ -50,6 +57,7 @@ impl From<&ExecutionDocument> for ExecutionConfig {
             } else {
                 Integrator::Euler
             },
+            random_seed: normalize_seed(document.random_seed),
         }
     }
 }
@@ -379,8 +387,14 @@ impl CompiledModel {
 
     /// Evaluates the model at its initial time.
     pub fn evaluate(&self) -> Result<Evaluation, EngineError> {
-        let state_values = self.initialize_state_values()?;
-        self.evaluate_snapshot(&state_values, self.execution.t0)
+        let random = RandomGenerator::new(self.execution.random_seed);
+        let initialized = self.initialize_values(&random)?;
+        self.evaluate_snapshot(
+            &initialized.states,
+            &initialized.parameters,
+            self.execution.t0,
+            &random,
+        )
             .map(|(evaluation, _)| evaluation)
     }
 
@@ -389,19 +403,27 @@ impl CompiledModel {
         validate_time_config(self.execution)?;
 
         let times = simulation_times(self.execution)?;
-        let mut state_values = self.initialize_state_values()?;
+        let random = RandomGenerator::new(self.execution.random_seed);
+        let initialized = self.initialize_values(&random)?;
+        let mut state_values = initialized.states;
         let mut snapshots = Vec::with_capacity(times.len());
         for time in times {
-            let (evaluation, next_state_values) = self.evaluate_snapshot(&state_values, time)?;
+            let (evaluation, next_state_values) = self.evaluate_snapshot(
+                &state_values,
+                &initialized.parameters,
+                time,
+                &random,
+            )?;
             snapshots.push(SimulationSnapshot { time, evaluation });
             state_values = next_state_values;
         }
         Ok(Simulation { snapshots })
     }
 
-    fn initialize_state_values(&self) -> Result<Vec<Option<Value>>, EngineError> {
+    fn initialize_values(&self, random: &RandomGenerator) -> Result<InitializedValues, EngineError> {
         let mut computed = HashMap::with_capacity(self.nodes.len());
         let mut state_values = vec![None; self.nodes.len()];
+        let mut parameter_values = vec![None; self.nodes.len()];
 
         for index in &self.initialization_order {
             let node = &self.nodes[*index];
@@ -413,24 +435,41 @@ impl CompiledModel {
                 self.execution.t0,
                 None,
                 false,
+                random,
             )?;
             computed.insert(node.name.clone(), value.clone());
-            if node.kind == NodeKind::State {
-                state_values[*index] = Some(value);
+            match node.kind {
+                NodeKind::Parameter => parameter_values[*index] = Some(value),
+                NodeKind::State => state_values[*index] = Some(value),
+                NodeKind::Algebraic => {}
             }
         }
-        Ok(state_values)
+        Ok(InitializedValues {
+            states: state_values,
+            parameters: parameter_values,
+        })
     }
 
     fn evaluate_snapshot(
         &self,
         state_values: &[Option<Value>],
+        parameter_values: &[Option<Value>],
         time: f64,
+        random: &RandomGenerator,
     ) -> Result<(Evaluation, Vec<Option<Value>>), EngineError> {
-        let (computed, values_by_index) = self.evaluate_current_values(state_values, time)?;
+        let (computed, values_by_index) =
+            self.evaluate_current_values(state_values, parameter_values, time, random)?;
         let next_state_values = match self.execution.integrator {
-            Integrator::Euler => self.evaluate_euler_transitions(state_values, &computed, time)?,
-            Integrator::Rk4 => self.evaluate_rk4_transitions(state_values, &computed, time)?,
+            Integrator::Euler => {
+                self.evaluate_euler_transitions(state_values, &computed, time, random)?
+            }
+            Integrator::Rk4 => self.evaluate_rk4_transitions(
+                state_values,
+                parameter_values,
+                &computed,
+                time,
+                random,
+            )?,
         };
 
         let values = self
@@ -452,7 +491,9 @@ impl CompiledModel {
     fn evaluate_current_values(
         &self,
         state_values: &[Option<Value>],
+        parameter_values: &[Option<Value>],
         time: f64,
+        random: &RandomGenerator,
     ) -> Result<EvaluatedValues, EngineError> {
         let mut computed = HashMap::with_capacity(self.nodes.len());
         let mut values_by_index = vec![None; self.nodes.len()];
@@ -469,8 +510,22 @@ impl CompiledModel {
 
         for index in &self.evaluation_order {
             let node = &self.nodes[*index];
-            let value =
-                self.evaluate_expression(node, &node.expression, &computed, time, None, false)?;
+            let value = if node.kind == NodeKind::Parameter {
+                parameter_values[*index]
+                    .as_ref()
+                    .cloned()
+                    .expect("initialized models must contain every parameter value")
+            } else {
+                self.evaluate_expression(
+                    node,
+                    &node.expression,
+                    &computed,
+                    time,
+                    None,
+                    false,
+                    random,
+                )?
+            };
             computed.insert(node.name.clone(), value.clone());
             values_by_index[*index] = Some(value);
         }
@@ -483,6 +538,7 @@ impl CompiledModel {
         state_values: &[Option<Value>],
         computed: &HashMap<String, Value>,
         time: f64,
+        random: &RandomGenerator,
     ) -> Result<Vec<Option<Value>>, EngineError> {
         let mut next_state_values = state_values.to_vec();
         for index in &self.state_indices {
@@ -497,6 +553,7 @@ impl CompiledModel {
                 time,
                 Some(current),
                 true,
+                random,
             )?;
             next_state_values[*index] = Some(next);
         }
@@ -506,8 +563,10 @@ impl CompiledModel {
     fn evaluate_rk4_transitions(
         &self,
         state_values: &[Option<Value>],
+        parameter_values: &[Option<Value>],
         computed: &HashMap<String, Value>,
         time: f64,
+        random: &RandomGenerator,
     ) -> Result<Vec<Option<Value>>, EngineError> {
         let mut next_state_values = state_values.to_vec();
         for index in &self.state_indices {
@@ -525,19 +584,35 @@ impl CompiledModel {
                 time,
                 Some(current),
                 false,
+                random,
             )?);
         }
         if self.rk4_state_indices.is_empty() {
             return Ok(next_state_values);
         }
 
-        let k1 = self.evaluate_rk4_derivatives(state_values, computed, time)?;
+        let k1 = self.evaluate_rk4_derivatives(state_values, computed, time, random)?;
         let stage2 = self.rk4_stage_values(state_values, &k1, self.execution.dt / 2.0)?;
-        let k2 = self.evaluate_rk4_derivatives_at_state(&stage2, time + self.execution.dt / 2.0)?;
+        let k2 = self.evaluate_rk4_derivatives_at_state(
+            &stage2,
+            parameter_values,
+            time + self.execution.dt / 2.0,
+            random,
+        )?;
         let stage3 = self.rk4_stage_values(state_values, &k2, self.execution.dt / 2.0)?;
-        let k3 = self.evaluate_rk4_derivatives_at_state(&stage3, time + self.execution.dt / 2.0)?;
+        let k3 = self.evaluate_rk4_derivatives_at_state(
+            &stage3,
+            parameter_values,
+            time + self.execution.dt / 2.0,
+            random,
+        )?;
         let stage4 = self.rk4_stage_values(state_values, &k3, self.execution.dt)?;
-        let k4 = self.evaluate_rk4_derivatives_at_state(&stage4, time + self.execution.dt)?;
+        let k4 = self.evaluate_rk4_derivatives_at_state(
+            &stage4,
+            parameter_values,
+            time + self.execution.dt,
+            random,
+        )?;
 
         for index in &self.rk4_state_indices {
             let node = &self.nodes[*index];
@@ -567,10 +642,13 @@ impl CompiledModel {
     fn evaluate_rk4_derivatives_at_state(
         &self,
         state_values: &[Option<Value>],
+        parameter_values: &[Option<Value>],
         time: f64,
+        random: &RandomGenerator,
     ) -> Result<Vec<Option<Value>>, EngineError> {
-        let (computed, _) = self.evaluate_current_values(state_values, time)?;
-        self.evaluate_rk4_derivatives(state_values, &computed, time)
+        let (computed, _) =
+            self.evaluate_current_values(state_values, parameter_values, time, random)?;
+        self.evaluate_rk4_derivatives(state_values, &computed, time, random)
     }
 
     fn evaluate_rk4_derivatives(
@@ -578,6 +656,7 @@ impl CompiledModel {
         state_values: &[Option<Value>],
         computed: &HashMap<String, Value>,
         time: f64,
+        random: &RandomGenerator,
     ) -> Result<Vec<Option<Value>>, EngineError> {
         let mut derivatives = vec![None; self.nodes.len()];
         for index in &self.rk4_state_indices {
@@ -594,6 +673,7 @@ impl CompiledModel {
                 time,
                 Some(current),
                 false,
+                random,
             )?;
             derivatives[*index] = Some(derivative);
         }
@@ -637,6 +717,7 @@ impl CompiledModel {
         time: f64,
         self_value: Option<&Value>,
         allow_integral: bool,
+        random: &RandomGenerator,
     ) -> Result<Value, EngineError> {
         let value = expression
             .evaluate(&EvaluationContext {
@@ -650,6 +731,7 @@ impl CompiledModel {
                 local_values: None,
                 local_functions: &self.local_functions,
                 local_function_stack: &[],
+                random: Some(random),
             })
             .map_err(|message| EngineError::Evaluation {
                 node: node.name.clone(),
@@ -987,8 +1069,18 @@ fn build_evaluation_order(nodes: &[CompiledNode]) -> Result<Vec<usize>, EngineEr
 
 fn build_initialization_order(nodes: &[CompiledNode]) -> Result<Vec<usize>, EngineError> {
     let mut order = Vec::with_capacity(nodes.len());
-    let mut resolved = HashSet::new();
-    let mut pending = (0..nodes.len()).collect::<HashSet<_>>();
+    let mut resolved = nodes
+        .iter()
+        .enumerate()
+        .filter_map(|(index, node)| (node.kind == NodeKind::Parameter).then_some(index))
+        .collect::<HashSet<_>>();
+    order.extend(resolved.iter().copied());
+    order.sort_unstable();
+    let mut pending = nodes
+        .iter()
+        .enumerate()
+        .filter_map(|(index, node)| (node.kind != NodeKind::Parameter).then_some(index))
+        .collect::<HashSet<_>>();
 
     while !pending.is_empty() {
         let mut progressed = false;

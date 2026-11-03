@@ -65,6 +65,9 @@ Sono supportati:
 - generazione di tensori con `array(...)`, inclusi assi vettoriali e variabili
   locali `$0`, `$1`, ... e `$i0`, `$i1`, ...;
 - generazione di sequenze numeriche crescenti o decrescenti con `range(...)`;
+- generatore pseudo-casuale deterministico compatibile con il motore JavaScript,
+  configurato da `execution.randomSeed`, e funzioni `rand(...)` e
+  `randInt(...)`;
 - concatenazione di vettori e matrici con `append(...)`;
 - parametri globali utilizzabili senza una freccia di dipendenza esplicita;
 - funzioni locali definite dal modello, componibili e non ricorsive, con
@@ -85,6 +88,11 @@ Sono supportati:
 Non sono ancora supportate in RK4 le transizioni che combinano `integral(...)`
 con altre operazioni esterne; non sono inoltre supportati sottomodelli o input
 esterni.
+
+Il core portabile richiede un seme esplicito quando un modello usa funzioni
+casuali. L'adattatore WebAssembly crea un seme temporaneo per la singola
+esecuzione quando `randomSeed` non è impostato, senza modificare il documento
+aperto; un seme salvato nel modello rende invece la sequenza ripetibile.
 
 La CLI può eseguire un modello compatibile:
 

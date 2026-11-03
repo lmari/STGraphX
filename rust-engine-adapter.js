@@ -19,6 +19,23 @@
     }
   }
 
+  function normalizeRandomSeed(value) {
+    if (value == null || String(value).trim() === "") {
+      return null;
+    }
+    const numeric = Number(value);
+    return Number.isFinite(numeric) && Number.isInteger(numeric) ? (numeric >>> 0) : null;
+  }
+
+  function defaultRandomSeed() {
+    if (global.crypto && typeof global.crypto.getRandomValues === "function") {
+      const values = new Uint32Array(1);
+      global.crypto.getRandomValues(values);
+      return values[0];
+    }
+    return Math.floor(Math.random() * 4294967296) >>> 0;
+  }
+
   function validateNumericValue(value, path) {
     if (typeof value === "number" && Number.isFinite(value)) {
       return;
@@ -73,7 +90,22 @@
     const wasmBinaryLoader = typeof options.wasmBinaryLoader === "function"
       ? options.wasmBinaryLoader
       : global.STGraphXElectronFiles?.readRustEngineWasm;
+    const randomSeedSource = typeof options.randomSeedSource === "function"
+      ? options.randomSeedSource
+      : defaultRandomSeed;
     let loadedModulePromise = null;
+
+    function modelSourceForExecution(modelDocument) {
+      const prepared = JSON.parse(JSON.stringify(modelDocument));
+      const execution = prepared.execution && typeof prepared.execution === "object"
+        ? prepared.execution
+        : {};
+      execution.randomSeed = normalizeRandomSeed(execution.randomSeed)
+        ?? normalizeRandomSeed(randomSeedSource())
+        ?? 0;
+      prepared.execution = execution;
+      return JSON.stringify(prepared);
+    }
 
     async function load() {
       if (!loadedModulePromise) {
@@ -111,7 +143,7 @@
         throw new Error("A complete STGraphX model document is required");
       }
       const module = await load();
-      const source = JSON.stringify(modelDocument);
+      const source = modelSourceForExecution(modelDocument);
       return normalizeExecutionResult(module.executeModelJson(source));
     }
 

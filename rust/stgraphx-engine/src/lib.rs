@@ -11,6 +11,7 @@ mod error;
 mod expression;
 mod functions;
 mod model;
+mod random;
 mod value;
 
 pub use document::{
@@ -55,6 +56,7 @@ pub const fn engine_info() -> EngineInfo {
             "tensor-indexing-and-slicing",
             "generated-arrays",
             "numeric-range",
+            "seeded-random",
             "tensor-append",
             "global-parameters",
             "model-local-functions",
@@ -77,6 +79,7 @@ mod tests {
         assert!(info.capabilities.contains(&"scalar-state-nodes"));
         assert!(info.capabilities.contains(&"generated-arrays"));
         assert!(info.capabilities.contains(&"numeric-range"));
+        assert!(info.capabilities.contains(&"seeded-random"));
         assert!(info.capabilities.contains(&"global-parameters"));
     }
 }

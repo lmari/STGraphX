@@ -33,6 +33,8 @@ pub struct ExecutionDocument {
     pub t1: f64,
     #[serde(default = "default_integrator")]
     pub integrator: String,
+    #[serde(default)]
+    pub random_seed: Option<f64>,
 }
 
 impl Default for ExecutionDocument {
@@ -42,6 +44,7 @@ impl Default for ExecutionDocument {
             dt: default_time_step(),
             t1: default_end_time(),
             integrator: default_integrator(),
+            random_seed: None,
         }
     }
 }

@@ -6,6 +6,7 @@
 use std::collections::{BTreeSet, HashMap};
 
 use crate::functions;
+use crate::random::RandomGenerator;
 use crate::value::{TensorAccessor, Value};
 
 #[derive(Debug, Clone, PartialEq)]
@@ -285,9 +286,10 @@ impl Expression {
                         local_values: None,
                         local_functions: context.local_functions,
                         local_function_stack: &stack,
+                        random: context.random,
                     });
                 }
-                functions::evaluate(name, &values)
+                functions::evaluate(name, &values, context.random)
             }
             Self::Access { target, accessors } => {
                 let target = target.evaluate(context)?;
@@ -508,6 +510,7 @@ fn evaluate_generated_array(
                 local_values: Some(local_values),
                 local_functions: context.local_functions,
                 local_function_stack: context.local_function_stack,
+                random: context.random,
             });
         }
 
@@ -542,6 +545,7 @@ pub(crate) struct EvaluationContext<'a> {
     pub(crate) local_values: Option<&'a HashMap<String, Value>>,
     pub(crate) local_functions: &'a HashMap<String, LocalFunction>,
     pub(crate) local_function_stack: &'a [String],
+    pub(crate) random: Option<&'a RandomGenerator>,
 }
 
 #[derive(Debug, Clone, PartialEq)]
@@ -1110,6 +1114,7 @@ mod tests {
                 local_values: None,
                 local_functions: &local_functions,
                 local_function_stack: &[],
+                random: None,
             })
             .expect("expression should evaluate")
             .as_scalar()
@@ -1176,6 +1181,7 @@ mod tests {
                     local_values: None,
                     local_functions: &local_functions,
                     local_function_stack: &[],
+                random: None,
                 })
                 .expect("array should evaluate")
         };
@@ -1213,6 +1219,7 @@ mod tests {
                 local_values: None,
                 local_functions: &local_functions,
                 local_function_stack: &[],
+                random: None,
             })
             .expect("state expression should evaluate");
 
@@ -1238,6 +1245,7 @@ mod tests {
                 local_values: None,
                 local_functions: &local_functions,
                 local_function_stack: &[],
+                random: None,
             })
             .expect_err("mismatched shapes should fail");
 
@@ -1256,6 +1264,7 @@ mod tests {
                 local_values: None,
                 local_functions: &local_functions,
                 local_function_stack: &[],
+                random: None,
             })
             .expect("vector expression should evaluate");
         assert_eq!(

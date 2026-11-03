@@ -4,6 +4,7 @@
 // Copyright (c) 2026 Luca Mari
 
 use crate::value::Value;
+use crate::random::RandomGenerator;
 
 pub(crate) fn is_supported(name: &str) -> bool {
     matches!(
@@ -26,6 +27,8 @@ pub(crate) fn is_supported(name: &str) -> bool {
             | "int"
             | "pow"
             | "range"
+            | "rand"
+            | "randInt"
             | "min"
             | "max"
             | "sum"
@@ -35,7 +38,11 @@ pub(crate) fn is_supported(name: &str) -> bool {
     )
 }
 
-pub(crate) fn evaluate(name: &str, arguments: &[Value]) -> Result<Value, String> {
+pub(crate) fn evaluate(
+    name: &str,
+    arguments: &[Value],
+    random: Option<&RandomGenerator>,
+) -> Result<Value, String> {
     match name {
         "array" => Err("array requires an expression body".to_string()),
         "append" => append(arguments),
@@ -54,6 +61,8 @@ pub(crate) fn evaluate(name: &str, arguments: &[Value]) -> Result<Value, String>
         "trunc" | "int" => unary(name, arguments, f64::trunc),
         "pow" => binary(name, arguments, f64::powf),
         "range" => numeric_range(arguments),
+        "rand" => random_float(arguments, random),
+        "randInt" => random_integer(arguments, random),
         "min" => variadic(name, arguments, f64::min),
         "max" => variadic(name, arguments, f64::max),
         "sum" => reduce_sum(arguments),
@@ -62,6 +71,56 @@ pub(crate) fn evaluate(name: &str, arguments: &[Value]) -> Result<Value, String>
         "size" => size(arguments),
         _ => Err(format!("unsupported function '{name}'")),
     }
+}
+
+fn random_generator(random: Option<&RandomGenerator>) -> Result<&RandomGenerator, String> {
+    random.ok_or_else(|| "random functions require execution.randomSeed".to_string())
+}
+
+fn random_bounds(arguments: &[Value], name: &str) -> Result<(f64, f64), String> {
+    if arguments.len() > 2 {
+        return Err(format!("{name} expects 0, 1, or 2 arguments"));
+    }
+    let scalar = |value: &Value| {
+        value
+            .as_scalar()
+            .filter(|number| number.is_finite())
+            .ok_or_else(|| format!("{name} expects finite numeric bounds"))
+    };
+    match arguments {
+        [] => Ok((0.0, 1.0)),
+        [maximum] => Ok((0.0, scalar(maximum)?)),
+        [minimum, maximum] => Ok((scalar(minimum)?, scalar(maximum)?)),
+        _ => unreachable!("random arity was validated"),
+    }
+}
+
+fn random_float(
+    arguments: &[Value],
+    random: Option<&RandomGenerator>,
+) -> Result<Value, String> {
+    let (minimum, maximum) = random_bounds(arguments, "rand")?;
+    let sample = random_generator(random)?.next()?;
+    Ok(Value::scalar(minimum + sample * (maximum - minimum)))
+}
+
+fn random_integer(
+    arguments: &[Value],
+    random: Option<&RandomGenerator>,
+) -> Result<Value, String> {
+    if !(1..=2).contains(&arguments.len()) {
+        return Err("randInt expects 1 or 2 arguments".to_string());
+    }
+    let (minimum, maximum) = random_bounds(arguments, "randInt")?;
+    let minimum = minimum.ceil();
+    let maximum = maximum.floor();
+    if maximum < minimum {
+        return Err("randInt expects min <= max".to_string());
+    }
+    let sample = random_generator(random)?.next()?;
+    Ok(Value::scalar(
+        (sample * (maximum - minimum + 1.0)).floor() + minimum,
+    ))
 }
 
 const MAX_RANGE_ITEMS: usize = 100_000;
@@ -434,11 +493,11 @@ mod tests {
             Value::tensor(vec![2, 2], vec![1.0, 2.0, 3.0, 4.0]).expect("matrix should be valid");
 
         assert_eq!(
-            evaluate("sum", std::slice::from_ref(&matrix)).expect("sum should work"),
+            evaluate("sum", std::slice::from_ref(&matrix), None).expect("sum should work"),
             Value::scalar(10.0)
         );
         assert_eq!(
-            evaluate("sum", &[matrix.clone(), Value::scalar(1.0)])
+            evaluate("sum", &[matrix.clone(), Value::scalar(1.0)], None)
                 .expect("row sums should work")
                 .as_tensor()
                 .expect("row sums should be a tensor")
@@ -446,7 +505,7 @@ mod tests {
             &[3.0, 7.0]
         );
         assert_eq!(
-            evaluate("average", &[matrix]).expect("average should work"),
+            evaluate("average", &[matrix], None).expect("average should work"),
             Value::scalar(2.5)
         );
     }
@@ -457,7 +516,8 @@ mod tests {
         assert_eq!(
             evaluate(
                 "append",
-                &[Value::scalar(0.0), vector.clone(), Value::scalar(3.0)]
+                &[Value::scalar(0.0), vector.clone(), Value::scalar(3.0)],
+                None,
             )
             .expect("vectors should append"),
             Value::tensor(vec![4], vec![0.0, 1.0, 2.0, 3.0]).expect("tensor should be valid")
@@ -466,12 +526,13 @@ mod tests {
         let matrix =
             Value::tensor(vec![2, 2], vec![1.0, 2.0, 3.0, 4.0]).expect("matrix should be valid");
         assert_eq!(
-            evaluate("append", &[matrix.clone(), vector.clone()]).expect("row should append"),
+            evaluate("append", &[matrix.clone(), vector.clone()], None)
+                .expect("row should append"),
             Value::tensor(vec![3, 2], vec![1.0, 2.0, 3.0, 4.0, 1.0, 2.0])
                 .expect("tensor should be valid")
         );
         assert_eq!(
-            evaluate("append", &[matrix, vector, Value::scalar(1.0)])
+            evaluate("append", &[matrix, vector, Value::scalar(1.0)], None)
                 .expect("column should append"),
             Value::tensor(vec![2, 3], vec![1.0, 2.0, 1.0, 3.0, 4.0, 2.0])
                 .expect("tensor should be valid")
@@ -481,11 +542,16 @@ mod tests {
     #[test]
     fn range_matches_stgraphx_sequence_rules() {
         assert_eq!(
-            evaluate("range", &[Value::scalar(4.0)]).expect("single argument should work"),
+            evaluate("range", &[Value::scalar(4.0)], None)
+                .expect("single argument should work"),
             Value::tensor(vec![4], vec![0.0, 1.0, 2.0, 3.0]).expect("tensor should be valid")
         );
         assert_eq!(
-            evaluate("range", &[Value::scalar(3.0), Value::scalar(0.0)])
+            evaluate(
+                "range",
+                &[Value::scalar(3.0), Value::scalar(0.0)],
+                None,
+            )
                 .expect("descending range should work"),
             Value::tensor(vec![3], vec![3.0, 2.0, 1.0]).expect("tensor should be valid")
         );
@@ -493,6 +559,7 @@ mod tests {
             evaluate(
                 "range",
                 &[Value::scalar(0.0), Value::scalar(0.31), Value::scalar(0.1),],
+                None,
             )
             .expect("fractional range should work"),
             Value::tensor(vec![4], vec![0.0, 0.1, 0.2, 0.3]).expect("tensor should be valid")
@@ -501,9 +568,32 @@ mod tests {
             evaluate(
                 "range",
                 &[Value::scalar(0.0), Value::scalar(1.0), Value::scalar(-0.1),],
+                None,
             )
             .expect_err("wrong direction should fail"),
             "range step does not reach the end value"
+        );
+    }
+
+    #[test]
+    fn random_functions_use_inclusive_integer_bounds_and_shared_state() {
+        let random = RandomGenerator::new(Some(123_456_789));
+
+        assert_eq!(
+            evaluate("rand", &[], Some(&random)),
+            Ok(Value::scalar(0.257_790_743_838_995_7))
+        );
+        assert_eq!(
+            evaluate("rand", &[Value::scalar(10.0)], Some(&random)),
+            Ok(Value::scalar(9.707_721_115_555_614))
+        );
+        assert_eq!(
+            evaluate(
+                "randInt",
+                &[Value::scalar(-2.0), Value::scalar(2.0)],
+                Some(&random),
+            ),
+            Ok(Value::scalar(1.0))
         );
     }
 }

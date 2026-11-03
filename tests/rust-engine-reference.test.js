@@ -197,6 +197,47 @@ async function checkRangeSequences(rootDir) {
   );
 }
 
+async function checkSeededRandom(rootDir) {
+  const runtime = await loadFixture(rootDir, "seeded-random.json");
+
+  await runtime.run();
+  assert.deepStrictEqual(runtime.getOutputHistory(), [
+    {
+      time: 0,
+      values: {
+        fixedRandom: 0.2577907438389957,
+        randomVector: [0.08268467499874532, 0.807323461631313, 1.8295045790728182],
+        randomInteger: 0,
+        localSample: 15.67488876869902,
+        lazySample: 0.17708068271167576,
+        walk: 1,
+      },
+    },
+    {
+      time: 1,
+      values: {
+        fixedRandom: 0.2577907438389957,
+        randomVector: [4.0895298949908465, 2.977187327342108, 2.101490336935967],
+        randomInteger: 1,
+        localSample: 18.380719097331166,
+        lazySample: 0.05283161113038659,
+        walk: 0,
+      },
+    },
+    {
+      time: 2,
+      values: {
+        fixedRandom: 0.2577907438389957,
+        randomVector: [3.7401598773431033, 2.1242691157385707, 2.36565665458329],
+        randomInteger: 1,
+        localSample: 12.888905527070165,
+        lazySample: 0.5681636608205736,
+        walk: -1,
+      },
+    },
+  ]);
+}
+
 async function checkLocalFunctions(rootDir) {
   const runtime = await loadFixture(rootDir, "local-functions.json");
 
@@ -256,6 +297,7 @@ async function main() {
   await checkTensorIndexing(rootDir);
   await checkGeneratedArrays(rootDir);
   await checkRangeSequences(rootDir);
+  await checkSeededRandom(rootDir);
   await checkLocalFunctions(rootDir);
   await checkRk4State(rootDir);
   console.log("rust-engine-reference.test.js: ok");

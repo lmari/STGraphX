@@ -101,6 +101,8 @@ mod tests {
     use super::*;
 
     const RK4_FIXTURE: &str = include_str!("../../stgraphx-engine/tests/fixtures/rk4-state.json");
+    const RANDOM_FIXTURE: &str =
+        include_str!("../../stgraphx-engine/tests/fixtures/seeded-random.json");
 
     #[test]
     fn serializes_scalar_and_tensor_snapshots_for_javascript() {
@@ -132,5 +134,18 @@ mod tests {
         assert_eq!(payload["snapshots"].as_array().map(Vec::len), Some(1));
         assert_eq!(payload["snapshots"][0]["time"], 3.0);
         assert_eq!(payload["snapshots"][0]["values"]["answer"], 42.0);
+    }
+
+    #[test]
+    fn serializes_seeded_random_results_for_javascript() {
+        let result = execute_model(RANDOM_FIXTURE).expect("random fixture should execute");
+        let payload: JsonValue = serde_json::from_str(&result).expect("result should be JSON");
+
+        assert_eq!(payload["snapshots"].as_array().map(Vec::len), Some(3));
+        assert_eq!(
+            payload["snapshots"][0]["values"]["fixedRandom"],
+            0.257_790_743_838_995_7
+        );
+        assert_eq!(payload["snapshots"][2]["values"]["walk"], -1.0);
     }
 }

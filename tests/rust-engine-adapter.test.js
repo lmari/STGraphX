@@ -44,6 +44,7 @@ async function main() {
       loadCount += 1;
       return fakeModule;
     },
+    randomSeedSource: () => 987654321,
   });
 
   assert.strictEqual(loadCount, 0, "the WebAssembly module should be loaded lazily");
@@ -53,7 +54,13 @@ async function main() {
   assert.strictEqual(loadCount, 1, "the WebAssembly module should be loaded once");
   assert.strictEqual(initCount, 1, "the WebAssembly module should be initialized once");
   assert.strictEqual(receivedModel.version, 1);
+  assert.strictEqual(receivedModel.execution.randomSeed, 987654321);
   assert.strictEqual(result.snapshots[1].values.vector[1], 4);
+
+  const explicitlySeeded = { version: 1, execution: { randomSeed: -1 }, nodes: [] };
+  await adapter.executeModel(explicitlySeeded);
+  assert.strictEqual(receivedModel.execution.randomSeed, 4294967295);
+  assert.strictEqual(explicitlySeeded.execution.randomSeed, -1, "the open model must not be mutated");
 
   let desktopInit = null;
   const desktopAdapter = context.STGraphXRustEngine.createRustEngineAdapter({
