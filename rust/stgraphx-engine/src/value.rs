@@ -126,6 +126,13 @@ impl Value {
         }
     }
 
+    pub(crate) fn truthy(&self) -> Result<bool, String> {
+        match self {
+            Self::Scalar(value) => Ok(*value != 0.0),
+            Self::Tensor(_) => Err("a tensor cannot be used as one scalar condition".to_string()),
+        }
+    }
+
     pub(crate) fn from_array_elements(elements: Vec<Self>) -> Result<Self, String> {
         if elements.is_empty() {
             return Self::tensor(vec![0], Vec::new());
@@ -204,6 +211,46 @@ impl Value {
                 .map(Self::Tensor),
             _ => Err("integral requires matching numeric state and derivative".to_string()),
         }
+    }
+
+    pub(crate) fn select(
+        condition: &Self,
+        when_true: &Self,
+        when_false: &Self,
+    ) -> Result<Self, String> {
+        let Self::Tensor(condition) = condition else {
+            return if condition.truthy()? {
+                Ok(when_true.clone())
+            } else {
+                Ok(when_false.clone())
+            };
+        };
+
+        let branch_elements = |value: &Self| -> Result<Vec<f64>, String> {
+            match value {
+                Self::Scalar(scalar) => Ok(vec![*scalar; condition.elements.len()]),
+                Self::Tensor(tensor) if tensor.shape == condition.shape => {
+                    Ok(tensor.elements.clone())
+                }
+                Self::Tensor(_) => Err("if arguments must have matching shapes".to_string()),
+            }
+        };
+        let true_elements = branch_elements(when_true)?;
+        let false_elements = branch_elements(when_false)?;
+        let elements = condition
+            .elements
+            .iter()
+            .zip(true_elements)
+            .zip(false_elements)
+            .map(|((condition, when_true), when_false)| {
+                if *condition != 0.0 {
+                    when_true
+                } else {
+                    when_false
+                }
+            })
+            .collect();
+        Self::tensor(condition.shape.clone(), elements)
     }
 }
 

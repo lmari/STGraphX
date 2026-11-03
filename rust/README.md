@@ -43,6 +43,13 @@ Sono supportati:
 - valori numerici scalari, vettoriali, matriciali e tensoriali rettangolari;
 - letterali come `[1,2]` e `[[1,2],[3,4]]`;
 - aritmetica elemento per elemento, con diffusione di uno scalare su un tensore;
+- confronti e operatori logici, anche elemento per elemento;
+- espressioni condizionali `if(...)` scalari o tensoriali;
+- prime funzioni matematiche vettorializzate, tra cui `abs`, `sqrt`,
+  `min`, `max` e le principali funzioni trigonometriche;
+- riduttori `sum`, `average` e `count(array[, axis])`, con supporto degli assi per
+  vettori e matrici;
+- funzione strutturale `size`;
 - operatori `+`, `-`, `*`, `/`, `%`, `^` e `**`;
 - variabili di esecuzione `time`, `t0`, `t1` e `dt`;
 - alias `this` nelle transizioni di stato;
@@ -54,8 +61,8 @@ Sono supportati:
 - diagnostica per nomi e identificativi duplicati, riferimenti mancanti,
   archi incoerenti e cicli algebrici.
 
-Non sono ancora supportati RK4, funzioni diverse da `integral`, indicizzazione
-dei tensori, sottomodelli o input esterni.
+Non sono ancora supportati RK4, indicizzazione dei tensori, funzioni locali
+definite dal modello, sottomodelli o input esterni.
 
 La CLI può eseguire un modello compatibile:
 

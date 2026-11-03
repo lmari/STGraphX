@@ -9,6 +9,7 @@
 mod document;
 mod error;
 mod expression;
+mod functions;
 mod model;
 mod value;
 
@@ -45,6 +46,10 @@ pub const fn engine_info() -> EngineInfo {
             "time-series-simulation",
             "numeric-tensors",
             "vector-matrix-arithmetic",
+            "comparisons-and-logic",
+            "vectorized-conditionals",
+            "built-in-numeric-functions",
+            "tensor-reducers",
         ],
     }
 }

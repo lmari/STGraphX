@@ -81,11 +81,42 @@ async function checkTensorStateEuler(rootDir) {
   ]);
 }
 
+async function checkConditionalFunctions(rootDir) {
+  const runtime = await loadFixture(rootDir, "conditional-functions.json");
+
+  await runtime.evaluate();
+  assert.deepStrictEqual(
+    runtime.getValues([
+      "absolute",
+      "mask",
+      "total",
+      "rowMeans",
+      "dimensions",
+      "clipped",
+      "roots",
+      "columnTotals",
+      "nonZeroByColumn",
+    ]),
+    {
+      absolute: [2, 4, 8],
+      mask: [0, 0, 1],
+      total: 14,
+      rowMeans: [1.5, 3.5],
+      dimensions: [2, 2],
+      clipped: [0, 4, 0],
+      roots: [1, 2, 3],
+      columnTotals: [4, 6],
+      nonZeroByColumn: [1, 1],
+    },
+  );
+}
+
 async function main() {
   const rootDir = path.resolve(__dirname, "..");
   await checkScalarAlgebraic(rootDir);
   await checkScalarStateEuler(rootDir);
   await checkTensorStateEuler(rootDir);
+  await checkConditionalFunctions(rootDir);
   console.log("rust-engine-reference.test.js: ok");
 }
 

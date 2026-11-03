@@ -5,6 +5,7 @@
 
 use std::collections::{BTreeSet, HashMap};
 
+use crate::functions;
 use crate::value::Value;
 
 #[derive(Debug, Clone, PartialEq)]
@@ -13,6 +14,10 @@ pub(crate) enum Expression {
     Identifier(String),
     Array(Vec<Expression>),
     Integral(Box<Expression>),
+    Call {
+        name: String,
+        arguments: Vec<Expression>,
+    },
     Unary {
         operator: UnaryOperator,
         argument: Box<Expression>,
@@ -28,6 +33,7 @@ pub(crate) enum Expression {
 pub(crate) enum UnaryOperator {
     Plus,
     Minus,
+    Not,
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -38,6 +44,14 @@ pub(crate) enum BinaryOperator {
     Divide,
     Remainder,
     Power,
+    Less,
+    Greater,
+    LessOrEqual,
+    GreaterOrEqual,
+    Equal,
+    NotEqual,
+    LogicalAnd,
+    LogicalOr,
 }
 
 impl Expression {
@@ -59,6 +73,11 @@ impl Expression {
                 }
             }
             Self::Integral(argument) => argument.collect_references(references),
+            Self::Call { arguments, .. } => {
+                for argument in arguments {
+                    argument.collect_references(references);
+                }
+            }
             Self::Unary { argument, .. } => argument.collect_references(references),
             Self::Binary { left, right, .. } => {
                 left.collect_references(references);
@@ -71,6 +90,7 @@ impl Expression {
         match self {
             Self::Integral(_) => true,
             Self::Array(elements) => elements.iter().any(Self::uses_integral),
+            Self::Call { arguments, .. } => arguments.iter().any(Self::uses_integral),
             Self::Unary { argument, .. } => argument.uses_integral(),
             Self::Binary { left, right, .. } => left.uses_integral() || right.uses_integral(),
             Self::Number(_) | Self::Identifier(_) => false,
@@ -83,6 +103,9 @@ impl Expression {
             Self::Array(elements) => elements
                 .iter()
                 .any(|element| element.uses_identifier(expected)),
+            Self::Call { arguments, .. } => arguments
+                .iter()
+                .any(|argument| argument.uses_identifier(expected)),
             Self::Integral(argument) | Self::Unary { argument, .. } => {
                 argument.uses_identifier(expected)
             }
@@ -127,11 +150,24 @@ impl Expression {
                 })?;
                 current.euler_integrate(&argument.evaluate(context)?, context.dt)
             }
+            Self::Call { name, arguments } => {
+                if name == "if" {
+                    return evaluate_conditional(arguments, context);
+                }
+                let values = arguments
+                    .iter()
+                    .map(|argument| argument.evaluate(context))
+                    .collect::<Result<Vec<_>, _>>()?;
+                functions::evaluate(name, &values)
+            }
             Self::Unary { operator, argument } => {
                 let value = argument.evaluate(context)?;
                 Ok(match operator {
                     UnaryOperator::Plus => value,
                     UnaryOperator::Minus => value.unary(|item| -item),
+                    UnaryOperator::Not => {
+                        value.unary(|item| if item == 0.0 { 1.0 } else { 0.0 })
+                    }
                 })
             }
             Self::Binary {
@@ -146,12 +182,90 @@ impl Expression {
                     BinaryOperator::Subtract => left.binary(&right, |left, right| left - right),
                     BinaryOperator::Multiply => left.binary(&right, |left, right| left * right),
                     BinaryOperator::Divide => left.binary(&right, |left, right| left / right),
-                    BinaryOperator::Remainder => left.binary(&right, |left, right| left % right),
+                    BinaryOperator::Remainder => left.binary(&right, euclidean_remainder),
                     BinaryOperator::Power => left.binary(&right, |left, right| left.powf(right)),
+                    BinaryOperator::Less => {
+                        left.binary(&right, |left, right| bool_number(left < right))
+                    }
+                    BinaryOperator::Greater => {
+                        left.binary(&right, |left, right| bool_number(left > right))
+                    }
+                    BinaryOperator::LessOrEqual => {
+                        left.binary(&right, |left, right| bool_number(left <= right))
+                    }
+                    BinaryOperator::GreaterOrEqual => {
+                        left.binary(&right, |left, right| bool_number(left >= right))
+                    }
+                    BinaryOperator::Equal => {
+                        left.binary(&right, |left, right| bool_number(left == right))
+                    }
+                    BinaryOperator::NotEqual => {
+                        left.binary(&right, |left, right| bool_number(left != right))
+                    }
+                    BinaryOperator::LogicalAnd => left.binary(&right, |left, right| {
+                        if left != 0.0 {
+                            right
+                        } else {
+                            left
+                        }
+                    }),
+                    BinaryOperator::LogicalOr => left.binary(&right, |left, right| {
+                        if left != 0.0 {
+                            left
+                        } else {
+                            right
+                        }
+                    }),
                 }
             }
         }
     }
+}
+
+fn bool_number(value: bool) -> f64 {
+    f64::from(u8::from(value))
+}
+
+fn euclidean_remainder(left: f64, right: f64) -> f64 {
+    if !right.is_finite() || right == 0.0 {
+        return left % right;
+    }
+    let remainder = left % right;
+    (remainder + right) % right
+}
+
+fn evaluate_conditional(
+    arguments: &[Expression],
+    context: &EvaluationContext<'_>,
+) -> Result<Value, String> {
+    if arguments.len() < 3 || arguments.len() % 2 == 0 {
+        return Err(
+            "if expects an odd number of arguments: condition, value pairs, and a default value"
+                .to_string(),
+        );
+    }
+
+    fn evaluate_from(
+        arguments: &[Expression],
+        index: usize,
+        context: &EvaluationContext<'_>,
+    ) -> Result<Value, String> {
+        if index == arguments.len() - 1 {
+            return arguments[index].evaluate(context);
+        }
+        let condition = arguments[index].evaluate(context)?;
+        if condition.as_tensor().is_none() {
+            if condition.truthy()? {
+                return arguments[index + 1].evaluate(context);
+            }
+            return evaluate_from(arguments, index + 2, context);
+        }
+        let when_true = arguments[index + 1].evaluate(context)?;
+        let when_false = evaluate_from(arguments, index + 2, context)?;
+        Value::select(&condition, &when_true, &when_false)
+    }
+
+    evaluate_from(arguments, 0, context)
 }
 
 pub(crate) struct EvaluationContext<'a> {
@@ -179,6 +293,15 @@ enum TokenKind {
     LeftBracket,
     RightBracket,
     Comma,
+    Less,
+    Greater,
+    LessOrEqual,
+    GreaterOrEqual,
+    Equal,
+    NotEqual,
+    LogicalAnd,
+    LogicalOr,
+    Bang,
     End,
 }
 
@@ -205,6 +328,37 @@ fn tokenize(source: &str) -> Result<Vec<Token>, String> {
         }
 
         let position = index;
+        let remaining = &source[index..];
+        if remaining.starts_with("===") || remaining.starts_with("!==") {
+            let kind = if remaining.starts_with("===") {
+                TokenKind::Equal
+            } else {
+                TokenKind::NotEqual
+            };
+            tokens.push(Token { kind, position });
+            index += 3;
+            continue;
+        }
+        let two_character = if remaining.starts_with("<=") {
+            Some(TokenKind::LessOrEqual)
+        } else if remaining.starts_with(">=") {
+            Some(TokenKind::GreaterOrEqual)
+        } else if remaining.starts_with("==") {
+            Some(TokenKind::Equal)
+        } else if remaining.starts_with("!=") {
+            Some(TokenKind::NotEqual)
+        } else if remaining.starts_with("&&") {
+            Some(TokenKind::LogicalAnd)
+        } else if remaining.starts_with("||") {
+            Some(TokenKind::LogicalOr)
+        } else {
+            None
+        };
+        if let Some(kind) = two_character {
+            tokens.push(Token { kind, position });
+            index += 2;
+            continue;
+        }
         let kind = match current {
             '+' => {
                 index += 1;
@@ -254,6 +408,18 @@ fn tokenize(source: &str) -> Result<Vec<Token>, String> {
             ',' => {
                 index += 1;
                 TokenKind::Comma
+            }
+            '<' => {
+                index += 1;
+                TokenKind::Less
+            }
+            '>' => {
+                index += 1;
+                TokenKind::Greater
+            }
+            '!' => {
+                index += 1;
+                TokenKind::Bang
             }
             '0'..='9' | '.' => {
                 let start = index;
@@ -305,7 +471,12 @@ fn tokenize(source: &str) -> Result<Vec<Token>, String> {
                         break;
                     }
                 }
-                TokenKind::Identifier(source[start..index].to_string())
+                match &source[start..index] {
+                    "and" => TokenKind::LogicalAnd,
+                    "or" => TokenKind::LogicalOr,
+                    "not" => TokenKind::Bang,
+                    _ => TokenKind::Identifier(source[start..index].to_string()),
+                }
             }
             _ => {
                 return Err(format!(
@@ -334,7 +505,7 @@ impl Parser {
     }
 
     fn parse(mut self) -> Result<Expression, String> {
-        let expression = self.parse_additive()?;
+        let expression = self.parse_logical_or()?;
         if !matches!(&self.peek().kind, TokenKind::End) {
             return Err(format!(
                 "unexpected token at position {}",
@@ -385,6 +556,78 @@ impl Parser {
         }
     }
 
+    fn parse_comparison(&mut self) -> Result<Expression, String> {
+        let mut left = self.parse_additive()?;
+        loop {
+            let operator = if self.consume(&TokenKind::Less) {
+                Some(BinaryOperator::Less)
+            } else if self.consume(&TokenKind::Greater) {
+                Some(BinaryOperator::Greater)
+            } else if self.consume(&TokenKind::LessOrEqual) {
+                Some(BinaryOperator::LessOrEqual)
+            } else if self.consume(&TokenKind::GreaterOrEqual) {
+                Some(BinaryOperator::GreaterOrEqual)
+            } else {
+                None
+            };
+            let Some(operator) = operator else {
+                return Ok(left);
+            };
+            let right = self.parse_additive()?;
+            left = Expression::Binary {
+                operator,
+                left: Box::new(left),
+                right: Box::new(right),
+            };
+        }
+    }
+
+    fn parse_equality(&mut self) -> Result<Expression, String> {
+        let mut left = self.parse_comparison()?;
+        loop {
+            let operator = if self.consume(&TokenKind::Equal) {
+                Some(BinaryOperator::Equal)
+            } else if self.consume(&TokenKind::NotEqual) {
+                Some(BinaryOperator::NotEqual)
+            } else {
+                None
+            };
+            let Some(operator) = operator else {
+                return Ok(left);
+            };
+            let right = self.parse_comparison()?;
+            left = Expression::Binary {
+                operator,
+                left: Box::new(left),
+                right: Box::new(right),
+            };
+        }
+    }
+
+    fn parse_logical_and(&mut self) -> Result<Expression, String> {
+        let mut left = self.parse_equality()?;
+        while self.consume(&TokenKind::LogicalAnd) {
+            left = Expression::Binary {
+                operator: BinaryOperator::LogicalAnd,
+                left: Box::new(left),
+                right: Box::new(self.parse_equality()?),
+            };
+        }
+        Ok(left)
+    }
+
+    fn parse_logical_or(&mut self) -> Result<Expression, String> {
+        let mut left = self.parse_logical_and()?;
+        while self.consume(&TokenKind::LogicalOr) {
+            left = Expression::Binary {
+                operator: BinaryOperator::LogicalOr,
+                left: Box::new(left),
+                right: Box::new(self.parse_logical_and()?),
+            };
+        }
+        Ok(left)
+    }
+
     fn parse_multiplicative(&mut self) -> Result<Expression, String> {
         let mut left = self.parse_unary()?;
         loop {
@@ -422,6 +665,12 @@ impl Parser {
                 argument: Box::new(self.parse_unary()?),
             });
         }
+        if self.consume(&TokenKind::Bang) {
+            return Ok(Expression::Unary {
+                operator: UnaryOperator::Not,
+                argument: Box::new(self.parse_unary()?),
+            });
+        }
         self.parse_power()
     }
 
@@ -444,27 +693,41 @@ impl Parser {
             TokenKind::Number(value) => Ok(Expression::Number(value)),
             TokenKind::Identifier(name) => {
                 if !self.consume(&TokenKind::LeftParen) {
+                    if name == "true" {
+                        return Ok(Expression::Number(1.0));
+                    }
+                    if name == "false" {
+                        return Ok(Expression::Number(0.0));
+                    }
                     return Ok(Expression::Identifier(name));
                 }
-                if name != "integral" {
-                    return Err(format!(
-                        "unsupported function '{name}' at position {}",
-                        token.position
-                    ));
-                }
-                let argument = self.parse_additive()?;
+                let mut arguments = Vec::new();
                 if !self.consume(&TokenKind::RightParen) {
-                    return Err(format!("expected ')' at position {}", self.peek().position));
+                    arguments.push(self.parse_logical_or()?);
+                    while self.consume(&TokenKind::Comma) {
+                        arguments.push(self.parse_logical_or()?);
+                    }
+                    if !self.consume(&TokenKind::RightParen) {
+                        return Err(format!("expected ')' at position {}", self.peek().position));
+                    }
                 }
-                Ok(Expression::Integral(Box::new(argument)))
+                if name == "integral" {
+                    if arguments.len() != 1 {
+                        return Err("integral expects exactly 1 argument".to_string());
+                    }
+                    return Ok(Expression::Integral(Box::new(
+                        arguments.pop().expect("one integral argument was checked"),
+                    )));
+                }
+                Ok(Expression::Call { name, arguments })
             }
             TokenKind::LeftBracket => {
                 if self.consume(&TokenKind::RightBracket) {
                     return Ok(Expression::Array(Vec::new()));
                 }
-                let mut elements = vec![self.parse_additive()?];
+                let mut elements = vec![self.parse_logical_or()?];
                 while self.consume(&TokenKind::Comma) {
-                    elements.push(self.parse_additive()?);
+                    elements.push(self.parse_logical_or()?);
                 }
                 if !self.consume(&TokenKind::RightBracket) {
                     return Err(format!("expected ']' at position {}", self.peek().position));
@@ -472,7 +735,7 @@ impl Parser {
                 Ok(Expression::Array(elements))
             }
             TokenKind::LeftParen => {
-                let expression = self.parse_additive()?;
+                let expression = self.parse_logical_or()?;
                 if !self.consume(&TokenKind::RightParen) {
                     return Err(format!("expected ')' at position {}", self.peek().position));
                 }
@@ -515,6 +778,14 @@ mod tests {
     #[test]
     fn scientific_notation_is_supported() {
         assert_eq!(evaluate("1.5e2 + .5"), 150.5);
+    }
+
+    #[test]
+    fn comparisons_logic_and_scalar_conditionals_are_supported() {
+        assert_eq!(evaluate("1 < 2 and not false"), 1.0);
+        assert_eq!(evaluate("3 == 4 or 5 >= 5"), 1.0);
+        assert_eq!(evaluate("if(1,42,unsupported())"), 42.0);
+        assert_eq!(evaluate("-3 % 2"), 1.0);
     }
 
     #[test]
