@@ -149,6 +149,32 @@ async function checkTensorIndexing(rootDir) {
   );
 }
 
+async function checkGeneratedArrays(rootDir) {
+  const runtime = await loadFixture(rootDir, "generated-arrays.json");
+
+  await runtime.evaluate();
+  assert.deepStrictEqual(
+    runtime.getValues([
+      "indices",
+      "selected",
+      "generatedGrid",
+      "joined",
+      "rows",
+      "columns",
+      "position",
+    ]),
+    {
+      indices: [0, 1, 2],
+      selected: [2, 5],
+      generatedGrid: [[2, 5], [4, 7]],
+      joined: [-1, 0, 1, 2, 3],
+      rows: [[1, 2], [3, 4], [5, 6]],
+      columns: [[1, 2, 5], [3, 4, 6]],
+      position: [0, 0, 0],
+    },
+  );
+}
+
 async function checkLocalFunctions(rootDir) {
   const runtime = await loadFixture(rootDir, "local-functions.json");
 
@@ -206,6 +232,7 @@ async function main() {
   await checkTensorStateEuler(rootDir);
   await checkConditionalFunctions(rootDir);
   await checkTensorIndexing(rootDir);
+  await checkGeneratedArrays(rootDir);
   await checkLocalFunctions(rootDir);
   await checkRk4State(rootDir);
   console.log("rust-engine-reference.test.js: ok");

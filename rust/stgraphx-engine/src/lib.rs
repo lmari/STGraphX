@@ -53,6 +53,9 @@ pub const fn engine_info() -> EngineInfo {
             "built-in-numeric-functions",
             "tensor-reducers",
             "tensor-indexing-and-slicing",
+            "generated-arrays",
+            "tensor-append",
+            "global-parameters",
             "model-local-functions",
             "rk4-pure-integral",
         ],
@@ -71,5 +74,7 @@ mod tests {
         assert_eq!(info.api_version, 1);
         assert!(info.capabilities.contains(&"scalar-algebraic-nodes"));
         assert!(info.capabilities.contains(&"scalar-state-nodes"));
+        assert!(info.capabilities.contains(&"generated-arrays"));
+        assert!(info.capabilities.contains(&"global-parameters"));
     }
 }

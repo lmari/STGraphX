@@ -82,6 +82,8 @@ pub struct NodeDocument {
     #[serde(rename = "type")]
     pub node_type: String,
     #[serde(default)]
+    pub global: bool,
+    #[serde(default)]
     pub value_expression: String,
     #[serde(default)]
     pub initial_state: String,

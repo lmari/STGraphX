@@ -18,8 +18,9 @@ e aggiorna valori, tabelle, grafici e storico CSV con gli snapshot restituiti.
 Il motore JavaScript rimane il percorso predefinito per l'esecuzione completa,
 manuale e temporizzata.
 
-Il motore JavaScript attuale rimane quindi l'unico motore usato da STGraphX e
-il comportamento dell'applicazione non viene modificato.
+Il motore JavaScript attuale rimane il percorso predefinito e l'implementazione
+di riferimento; l'uso del motore Rust richiede sempre il comando sperimentale
+dedicato.
 
 ## Obiettivi architetturali
 
@@ -61,6 +62,10 @@ Sono supportati:
 - funzione strutturale `size`;
 - indicizzazione e slicing di tensori, inclusi indici negativi, passi e
   selezioni multiple di righe o colonne;
+- generazione di tensori con `array(...)`, inclusi assi vettoriali e variabili
+  locali `$0`, `$1`, ... e `$i0`, `$i1`, ...;
+- concatenazione di vettori e matrici con `append(...)`;
+- parametri globali utilizzabili senza una freccia di dipendenza esplicita;
 - funzioni locali definite dal modello, componibili e non ricorsive, con
   parametri e risultati scalari o tensoriali;
 - integrazione RK4 di stati scalari o tensoriali con transizione

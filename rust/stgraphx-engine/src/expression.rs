@@ -93,6 +93,18 @@ impl Expression {
                 }
             }
             Self::Integral(argument) => argument.collect_references(references),
+            Self::Call { name, arguments } if name == "array" && arguments.len() >= 2 => {
+                for argument in &arguments[..arguments.len() - 1] {
+                    argument.collect_references(references);
+                }
+                let mut body_references = BTreeSet::new();
+                arguments[arguments.len() - 1].collect_references(&mut body_references);
+                for index in 0..arguments.len() - 1 {
+                    body_references.remove(&format!("${index}"));
+                    body_references.remove(&format!("$i{index}"));
+                }
+                references.extend(body_references);
+            }
             Self::Call { arguments, .. } => {
                 for argument in arguments {
                     argument.collect_references(references);
@@ -207,8 +219,9 @@ impl Expression {
                     .cloned()
                     .ok_or_else(|| "'this' is only available in state transitions".to_string()),
                 _ => context
-                    .values
-                    .get(name)
+                    .local_values
+                    .and_then(|values| values.get(name))
+                    .or_else(|| context.values.get(name))
                     .cloned()
                     .ok_or_else(|| format!("'{name}' has no computed value")),
             },
@@ -231,6 +244,9 @@ impl Expression {
             Self::Call { name, arguments } => {
                 if name == "if" {
                     return evaluate_conditional(arguments, context);
+                }
+                if name == "array" {
+                    return evaluate_generated_array(arguments, context);
                 }
                 let values = arguments
                     .iter()
@@ -266,6 +282,7 @@ impl Expression {
                         dt: context.dt,
                         self_value: None,
                         allow_integral: false,
+                        local_values: None,
                         local_functions: context.local_functions,
                         local_function_stack: &stack,
                     });
@@ -432,6 +449,94 @@ fn evaluate_conditional(
     evaluate_from(arguments, 0, context)
 }
 
+const MAX_GENERATED_ARRAY_ELEMENTS: usize = 100_000;
+
+fn evaluate_generated_array(
+    arguments: &[Expression],
+    context: &EvaluationContext<'_>,
+) -> Result<Value, String> {
+    if arguments.len() < 2 {
+        return Err("array expects at least one axis and an expression".to_string());
+    }
+
+    let mut axes = Vec::with_capacity(arguments.len() - 1);
+    let mut total_size = 1usize;
+    for (index, argument) in arguments[..arguments.len() - 1].iter().enumerate() {
+        let axis = match argument.evaluate(context)? {
+            Value::Scalar(size)
+                if size.is_finite()
+                    && size >= 0.0
+                    && size.fract() == 0.0
+                    && size <= MAX_GENERATED_ARRAY_ELEMENTS as f64 =>
+            {
+                (0..size as usize)
+                    .map(|value| value as f64)
+                    .collect::<Vec<_>>()
+            }
+            Value::Tensor(values) if values.rank() == 1 => values.elements().to_vec(),
+            _ => {
+                return Err(format!(
+                    "array axis {index} must be a non-negative integer or a vector"
+                ))
+            }
+        };
+        total_size = total_size
+            .checked_mul(axis.len().max(1))
+            .ok_or_else(|| "array is too large".to_string())?;
+        if total_size > MAX_GENERATED_ARRAY_ELEMENTS {
+            return Err("array is too large".to_string());
+        }
+        axes.push(axis);
+    }
+
+    fn build(
+        axes: &[Vec<f64>],
+        level: usize,
+        body: &Expression,
+        context: &EvaluationContext<'_>,
+        local_values: &HashMap<String, Value>,
+    ) -> Result<Value, String> {
+        if level == axes.len() {
+            return body.evaluate(&EvaluationContext {
+                values: context.values,
+                time: context.time,
+                t0: context.t0,
+                t1: context.t1,
+                dt: context.dt,
+                self_value: context.self_value,
+                allow_integral: context.allow_integral,
+                local_values: Some(local_values),
+                local_functions: context.local_functions,
+                local_function_stack: context.local_function_stack,
+            });
+        }
+
+        let mut elements = Vec::with_capacity(axes[level].len());
+        for (index, value) in axes[level].iter().copied().enumerate() {
+            let mut nested_values = local_values.clone();
+            nested_values.insert(format!("${level}"), Value::scalar(value));
+            nested_values.insert(format!("$i{level}"), Value::scalar(index as f64));
+            elements.push(build(
+                axes,
+                level + 1,
+                body,
+                context,
+                &nested_values,
+            )?);
+        }
+        Value::from_array_elements(elements)
+    }
+
+    let inherited_values = context.local_values.cloned().unwrap_or_default();
+    build(
+        &axes,
+        0,
+        &arguments[arguments.len() - 1],
+        context,
+        &inherited_values,
+    )
+}
+
 pub(crate) struct EvaluationContext<'a> {
     pub(crate) values: &'a HashMap<String, Value>,
     pub(crate) time: f64,
@@ -440,6 +545,7 @@ pub(crate) struct EvaluationContext<'a> {
     pub(crate) dt: f64,
     pub(crate) self_value: Option<&'a Value>,
     pub(crate) allow_integral: bool,
+    pub(crate) local_values: Option<&'a HashMap<String, Value>>,
     pub(crate) local_functions: &'a HashMap<String, LocalFunction>,
     pub(crate) local_function_stack: &'a [String],
 }
@@ -1007,6 +1113,7 @@ mod tests {
                 dt: 1.0,
                 self_value: None,
                 allow_integral: false,
+                local_values: None,
                 local_functions: &local_functions,
                 local_function_stack: &[],
             })
@@ -1044,6 +1151,57 @@ mod tests {
     }
 
     #[test]
+    fn generated_array_indices_are_local_references() {
+        let expression =
+            parse("array(n,values[$0]+external+$i0)").expect("expression should parse");
+        assert_eq!(
+            expression.references().into_iter().collect::<Vec<_>>(),
+            vec![
+                "external".to_string(),
+                "n".to_string(),
+                "values".to_string(),
+            ]
+        );
+    }
+
+    #[test]
+    fn generated_arrays_support_numeric_and_vector_axes() {
+        let values = HashMap::new();
+        let local_functions = HashMap::new();
+        let evaluate_array = |source: &str| {
+            parse(source)
+                .expect("expression should parse")
+                .evaluate(&EvaluationContext {
+                    values: &values,
+                    time: 0.0,
+                    t0: 0.0,
+                    t1: 1.0,
+                    dt: 1.0,
+                    self_value: None,
+                    allow_integral: false,
+                    local_values: None,
+                    local_functions: &local_functions,
+                    local_function_stack: &[],
+                })
+                .expect("array should evaluate")
+        };
+
+        assert_eq!(
+            evaluate_array("array(3,$0+$i0)"),
+            Value::tensor(vec![3], vec![0.0, 2.0, 4.0]).expect("tensor should be valid")
+        );
+        assert_eq!(
+            evaluate_array("array([2,4],$0+$i0)"),
+            Value::tensor(vec![2], vec![2.0, 5.0]).expect("tensor should be valid")
+        );
+        assert_eq!(
+            evaluate_array("array(2,[10,20],$0+$1+$i0+$i1)"),
+            Value::tensor(vec![2, 2], vec![10.0, 21.0, 12.0, 23.0])
+                .expect("tensor should be valid")
+        );
+    }
+
+    #[test]
     fn state_context_and_euler_integral_are_supported() {
         let values = HashMap::from([("rate".to_string(), Value::scalar(2.0))]);
         let self_value = Value::scalar(3.0);
@@ -1058,6 +1216,7 @@ mod tests {
                 dt: 0.25,
                 self_value: Some(&self_value),
                 allow_integral: true,
+                local_values: None,
                 local_functions: &local_functions,
                 local_function_stack: &[],
             })
@@ -1082,6 +1241,7 @@ mod tests {
                 dt: 1.0,
                 self_value: None,
                 allow_integral: false,
+                local_values: None,
                 local_functions: &local_functions,
                 local_function_stack: &[],
             })
@@ -1099,6 +1259,7 @@ mod tests {
                 dt: 1.0,
                 self_value: None,
                 allow_integral: false,
+                local_values: None,
                 local_functions: &local_functions,
                 local_function_stack: &[],
             })

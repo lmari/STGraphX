@@ -181,6 +181,12 @@ impl CompiledModel {
         }
 
         let local_functions = compile_local_functions(&document.local_functions, &name_to_index)?;
+        let global_parameter_names = document
+            .nodes
+            .iter()
+            .filter(|node| node.node_type == "parameter" && node.global)
+            .map(|node| node.name.as_str())
+            .collect::<HashSet<_>>();
 
         let mut incoming = vec![Vec::new(); document.nodes.len()];
         for edge in &document.edges {
@@ -246,6 +252,7 @@ impl CompiledModel {
                         &expression,
                         &name_to_index,
                         &predecessor_names,
+                        &global_parameter_names,
                         false,
                     )?;
                     CompiledNode {
@@ -271,6 +278,7 @@ impl CompiledModel {
                         &initial_expression,
                         &name_to_index,
                         &predecessor_names,
+                        &global_parameter_names,
                         false,
                     )?;
 
@@ -284,6 +292,7 @@ impl CompiledModel {
                         &transition_expression,
                         &name_to_index,
                         &predecessor_names,
+                        &global_parameter_names,
                         true,
                     )?;
                     let integral_derivative =
@@ -638,6 +647,7 @@ impl CompiledModel {
                 dt: self.execution.dt,
                 self_value,
                 allow_integral,
+                local_values: None,
                 local_functions: &self.local_functions,
                 local_function_stack: &[],
             })
@@ -887,6 +897,7 @@ fn validate_references(
     expression: &Expression,
     name_to_index: &HashMap<String, usize>,
     predecessor_names: &HashSet<&str>,
+    global_parameter_names: &HashSet<&str>,
     allow_this: bool,
 ) -> Result<Vec<usize>, EngineError> {
     let mut dependencies = Vec::new();
@@ -900,7 +911,9 @@ fn validate_references(
                 reference,
             });
         };
-        if !predecessor_names.contains(reference.as_str()) {
+        if !predecessor_names.contains(reference.as_str())
+            && !global_parameter_names.contains(reference.as_str())
+        {
             return Err(EngineError::MissingDependencyEdge {
                 node: node.to_string(),
                 reference,
