@@ -50,6 +50,7 @@ pub const fn engine_info() -> EngineInfo {
             "vectorized-conditionals",
             "built-in-numeric-functions",
             "tensor-reducers",
+            "tensor-indexing-and-slicing",
         ],
     }
 }

@@ -96,6 +96,21 @@ pub enum Value {
     Tensor(Tensor),
 }
 
+#[derive(Debug, Clone, PartialEq)]
+pub(crate) enum TensorAccessor {
+    Index(Value),
+    Slice {
+        start: Option<f64>,
+        end: Option<f64>,
+        step: Option<f64>,
+    },
+}
+
+enum AxisSelection {
+    One(usize),
+    Many(Vec<usize>),
+}
+
 impl Value {
     pub fn scalar(value: f64) -> Self {
         Self::Scalar(value)
@@ -252,6 +267,217 @@ impl Value {
             .collect();
         Self::tensor(condition.shape.clone(), elements)
     }
+
+    pub(crate) fn access(&self, accessors: &[TensorAccessor]) -> Result<Self, String> {
+        let Self::Tensor(tensor) = self else {
+            return Err("indexing requires an array or matrix".to_string());
+        };
+        tensor.access(accessors)
+    }
+}
+
+impl Tensor {
+    fn access(&self, accessors: &[TensorAccessor]) -> Result<Value, String> {
+        if accessors.is_empty() {
+            return Ok(Value::Tensor(self.clone()));
+        }
+        if accessors.len() > self.rank() {
+            return Err("too many tensor indices".to_string());
+        }
+
+        if self.rank() == 2 && accessors.len() == 1 {
+            if let TensorAccessor::Index(Value::Tensor(indices)) = &accessors[0] {
+                if indices.shape() == [2] {
+                    let row = normalize_index(indices.elements()[0], self.shape[0], 0, 2)?;
+                    let column = normalize_index(indices.elements()[1], self.shape[1], 1, 2)?;
+                    return Ok(Value::scalar(
+                        self.elements[row * self.shape[1] + column],
+                    ));
+                }
+                if indices.rank() == 2 && indices.shape()[1] == 2 {
+                    let mut selected = Vec::with_capacity(indices.shape()[0]);
+                    for pair in indices.elements().chunks_exact(2) {
+                        let row = normalize_index(pair[0], self.shape[0], 0, 2)?;
+                        let column = normalize_index(pair[1], self.shape[1], 1, 2)?;
+                        selected.push(self.elements[row * self.shape[1] + column]);
+                    }
+                    return Value::tensor(vec![indices.shape()[0]], selected);
+                }
+            }
+        }
+
+        let mut selections = Vec::with_capacity(self.rank());
+        let mut output_shape = Vec::with_capacity(self.rank());
+        for axis in 0..self.rank() {
+            let selection = match accessors.get(axis) {
+                Some(TensorAccessor::Index(value)) => match value {
+                    Value::Scalar(index) => AxisSelection::One(normalize_index(
+                        *index,
+                        self.shape[axis],
+                        axis,
+                        self.rank(),
+                    )?),
+                    Value::Tensor(indices) if indices.rank() == 1 => {
+                        let selected = indices
+                            .elements()
+                            .iter()
+                            .map(|index| {
+                                normalize_index(
+                                    *index,
+                                    self.shape[axis],
+                                    axis,
+                                    self.rank(),
+                                )
+                            })
+                            .collect::<Result<Vec<_>, _>>()?;
+                        output_shape.push(selected.len());
+                        AxisSelection::Many(selected)
+                    }
+                    Value::Tensor(_) => {
+                        return Err(
+                            "array index must be an integer or a vector of integers".to_string()
+                        )
+                    }
+                },
+                Some(TensorAccessor::Slice { start, end, step }) => {
+                    let selected = slice_indices(self.shape[axis], *start, *end, *step)?;
+                    output_shape.push(selected.len());
+                    AxisSelection::Many(selected)
+                }
+                None => {
+                    output_shape.push(self.shape[axis]);
+                    AxisSelection::Many((0..self.shape[axis]).collect())
+                }
+            };
+            selections.push(selection);
+        }
+
+        let mut strides = vec![1; self.rank()];
+        for axis in (0..self.rank().saturating_sub(1)).rev() {
+            strides[axis] = strides[axis + 1] * self.shape[axis + 1];
+        }
+        let mut elements = Vec::new();
+        self.collect_selection(&selections, &strides, 0, 0, &mut elements);
+
+        if output_shape.is_empty() {
+            return elements
+                .into_iter()
+                .next()
+                .map(Value::scalar)
+                .ok_or_else(|| "tensor index selected no value".to_string());
+        }
+        Value::tensor(output_shape, elements)
+    }
+
+    fn collect_selection(
+        &self,
+        selections: &[AxisSelection],
+        strides: &[usize],
+        axis: usize,
+        offset: usize,
+        output: &mut Vec<f64>,
+    ) {
+        if axis == selections.len() {
+            output.push(self.elements[offset]);
+            return;
+        }
+        match &selections[axis] {
+            AxisSelection::One(index) => self.collect_selection(
+                selections,
+                strides,
+                axis + 1,
+                offset + index * strides[axis],
+                output,
+            ),
+            AxisSelection::Many(indices) => {
+                for index in indices {
+                    self.collect_selection(
+                        selections,
+                        strides,
+                        axis + 1,
+                        offset + index * strides[axis],
+                        output,
+                    );
+                }
+            }
+        }
+    }
+}
+
+fn integer(value: f64, message: &str) -> Result<isize, String> {
+    let converted = value as isize;
+    if !value.is_finite() || converted as f64 != value {
+        return Err(message.to_string());
+    }
+    Ok(converted)
+}
+
+fn normalize_index(value: f64, length: usize, axis: usize, rank: usize) -> Result<usize, String> {
+    let integer_message = if rank == 2 {
+        "matrix index must be a pair of integers"
+    } else {
+        "array index must be an integer"
+    };
+    let mut index = integer(value, integer_message)?;
+    if index < 0 {
+        index += length as isize;
+    }
+    if index < 0 || index >= length as isize {
+        let message = match (rank, axis) {
+            (2, 0) => "matrix row index out of range",
+            (2, 1) => "matrix column index out of range",
+            _ => "array index out of range",
+        };
+        return Err(message.to_string());
+    }
+    Ok(index as usize)
+}
+
+fn normalize_slice_bound(value: Option<f64>, length: usize, fallback: isize) -> Result<isize, String> {
+    let Some(value) = value else {
+        return Ok(fallback);
+    };
+    let mut index = integer(value, "slice bounds must be integers")?;
+    if index < 0 {
+        index += length as isize;
+    }
+    Ok(index)
+}
+
+fn slice_indices(
+    length: usize,
+    start: Option<f64>,
+    end: Option<f64>,
+    step: Option<f64>,
+) -> Result<Vec<usize>, String> {
+    let step = integer(step.unwrap_or(1.0), "slice step must be a non-zero integer")?;
+    if step == 0 {
+        return Err("slice step must be a non-zero integer".to_string());
+    }
+    let length = length as isize;
+    let mut indices = Vec::new();
+    if step > 0 {
+        let mut index = normalize_slice_bound(start, length as usize, 0)?.max(0);
+        let end = normalize_slice_bound(end, length as usize, length)?.min(length);
+        while index < end {
+            indices.push(index as usize);
+            let Some(next) = index.checked_add(step) else {
+                break;
+            };
+            index = next;
+        }
+    } else {
+        let mut index = normalize_slice_bound(start, length as usize, length - 1)?.min(length - 1);
+        let end = normalize_slice_bound(end, length as usize, -1)?.max(-1);
+        while index > end {
+            indices.push(index as usize);
+            let Some(next) = index.checked_add(step) else {
+                break;
+            };
+            index = next;
+        }
+    }
+    Ok(indices)
 }
 
 impl fmt::Display for Tensor {

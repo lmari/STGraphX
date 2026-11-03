@@ -6,7 +6,7 @@
 use std::collections::{BTreeSet, HashMap};
 
 use crate::functions;
-use crate::value::Value;
+use crate::value::{TensorAccessor, Value};
 
 #[derive(Debug, Clone, PartialEq)]
 pub(crate) enum Expression {
@@ -18,6 +18,10 @@ pub(crate) enum Expression {
         name: String,
         arguments: Vec<Expression>,
     },
+    Access {
+        target: Box<Expression>,
+        accessors: Vec<Accessor>,
+    },
     Unary {
         operator: UnaryOperator,
         argument: Box<Expression>,
@@ -26,6 +30,16 @@ pub(crate) enum Expression {
         operator: BinaryOperator,
         left: Box<Expression>,
         right: Box<Expression>,
+    },
+}
+
+#[derive(Debug, Clone, PartialEq)]
+pub(crate) enum Accessor {
+    Index(Box<Expression>),
+    Slice {
+        start: Option<Box<Expression>>,
+        end: Option<Box<Expression>>,
+        step: Option<Box<Expression>>,
     },
 }
 
@@ -78,6 +92,12 @@ impl Expression {
                     argument.collect_references(references);
                 }
             }
+            Self::Access { target, accessors } => {
+                target.collect_references(references);
+                for accessor in accessors {
+                    accessor.collect_references(references);
+                }
+            }
             Self::Unary { argument, .. } => argument.collect_references(references),
             Self::Binary { left, right, .. } => {
                 left.collect_references(references);
@@ -91,6 +111,9 @@ impl Expression {
             Self::Integral(_) => true,
             Self::Array(elements) => elements.iter().any(Self::uses_integral),
             Self::Call { arguments, .. } => arguments.iter().any(Self::uses_integral),
+            Self::Access { target, accessors } => {
+                target.uses_integral() || accessors.iter().any(Accessor::uses_integral)
+            }
             Self::Unary { argument, .. } => argument.uses_integral(),
             Self::Binary { left, right, .. } => left.uses_integral() || right.uses_integral(),
             Self::Number(_) | Self::Identifier(_) => false,
@@ -106,6 +129,12 @@ impl Expression {
             Self::Call { arguments, .. } => arguments
                 .iter()
                 .any(|argument| argument.uses_identifier(expected)),
+            Self::Access { target, accessors } => {
+                target.uses_identifier(expected)
+                    || accessors
+                        .iter()
+                        .any(|accessor| accessor.uses_identifier(expected))
+            }
             Self::Integral(argument) | Self::Unary { argument, .. } => {
                 argument.uses_identifier(expected)
             }
@@ -160,6 +189,14 @@ impl Expression {
                     .collect::<Result<Vec<_>, _>>()?;
                 functions::evaluate(name, &values)
             }
+            Self::Access { target, accessors } => {
+                let target = target.evaluate(context)?;
+                let accessors = accessors
+                    .iter()
+                    .map(|accessor| accessor.evaluate(context))
+                    .collect::<Result<Vec<_>, _>>()?;
+                target.access(&accessors)
+            }
             Self::Unary { operator, argument } => {
                 let value = argument.evaluate(context)?;
                 Ok(match operator {
@@ -208,6 +245,59 @@ impl Expression {
                     }
                 }
             }
+        }
+    }
+}
+
+impl Accessor {
+    fn expressions(&self) -> impl Iterator<Item = &Expression> {
+        let expressions: [Option<&Expression>; 3] = match self {
+            Self::Index(index) => [Some(index), None, None],
+            Self::Slice { start, end, step } => [
+                start.as_deref(),
+                end.as_deref(),
+                step.as_deref(),
+            ],
+        };
+        expressions.into_iter().flatten()
+    }
+
+    fn collect_references(&self, references: &mut BTreeSet<String>) {
+        for expression in self.expressions() {
+            expression.collect_references(references);
+        }
+    }
+
+    fn uses_integral(&self) -> bool {
+        self.expressions().any(Expression::uses_integral)
+    }
+
+    fn uses_identifier(&self, expected: &str) -> bool {
+        self.expressions()
+            .any(|expression| expression.uses_identifier(expected))
+    }
+
+    fn evaluate(&self, context: &EvaluationContext<'_>) -> Result<TensorAccessor, String> {
+        let scalar = |expression: &Option<Box<Expression>>,
+                      error: &str|
+         -> Result<Option<f64>, String> {
+            expression
+                .as_deref()
+                .map(|expression| {
+                    expression
+                        .evaluate(context)?
+                        .as_scalar()
+                        .ok_or_else(|| error.to_string())
+                })
+                .transpose()
+        };
+        match self {
+            Self::Index(index) => Ok(TensorAccessor::Index(index.evaluate(context)?)),
+            Self::Slice { start, end, step } => Ok(TensorAccessor::Slice {
+                start: scalar(start, "slice bounds must be integers")?,
+                end: scalar(end, "slice bounds must be integers")?,
+                step: scalar(step, "slice step must be a non-zero integer")?,
+            }),
         }
     }
 }
@@ -283,6 +373,7 @@ enum TokenKind {
     LeftBracket,
     RightBracket,
     Comma,
+    Colon,
     Less,
     Greater,
     LessOrEqual,
@@ -398,6 +489,10 @@ fn tokenize(source: &str) -> Result<Vec<Token>, String> {
             ',' => {
                 index += 1;
                 TokenKind::Comma
+            }
+            ':' => {
+                index += 1;
+                TokenKind::Colon
             }
             '<' => {
                 index += 1;
@@ -665,7 +760,7 @@ impl Parser {
     }
 
     fn parse_power(&mut self) -> Result<Expression, String> {
-        let left = self.parse_primary()?;
+        let left = self.parse_postfix()?;
         if !self.consume(&TokenKind::Power) {
             return Ok(left);
         }
@@ -675,6 +770,81 @@ impl Parser {
             left: Box::new(left),
             right: Box::new(right),
         })
+    }
+
+    fn parse_postfix(&mut self) -> Result<Expression, String> {
+        let mut expression = self.parse_primary()?;
+        while self.consume(&TokenKind::LeftBracket) {
+            let accessors = self.parse_accessors()?;
+            expression = Expression::Access {
+                target: Box::new(expression),
+                accessors,
+            };
+        }
+        Ok(expression)
+    }
+
+    fn parse_accessors(&mut self) -> Result<Vec<Accessor>, String> {
+        if self.consume(&TokenKind::RightBracket) {
+            return Err("empty tensor index".to_string());
+        }
+        let mut accessors = vec![self.parse_accessor()?];
+        while self.consume(&TokenKind::Comma) {
+            if matches!(&self.peek().kind, TokenKind::RightBracket) {
+                return Err("empty tensor index after ','".to_string());
+            }
+            accessors.push(self.parse_accessor()?);
+        }
+        if !self.consume(&TokenKind::RightBracket) {
+            return Err(format!("expected ']' at position {}", self.peek().position));
+        }
+        Ok(accessors)
+    }
+
+    fn parse_accessor(&mut self) -> Result<Accessor, String> {
+        if self.consume(&TokenKind::Colon) {
+            return self.parse_slice_tail(None);
+        }
+        let first = self.parse_logical_or()?;
+        if !self.consume(&TokenKind::Colon) {
+            return Ok(Accessor::Index(Box::new(first)));
+        }
+        self.parse_slice_tail(Some(Box::new(first)))
+    }
+
+    fn parse_slice_tail(
+        &mut self,
+        start: Option<Box<Expression>>,
+    ) -> Result<Accessor, String> {
+        let (end, step) = if self.consume(&TokenKind::Colon) {
+            (None, self.parse_optional_slice_component()?)
+        } else if self.at_accessor_end() {
+            (None, None)
+        } else {
+            let end = Some(Box::new(self.parse_logical_or()?));
+            let step = if self.consume(&TokenKind::Colon) {
+                self.parse_optional_slice_component()?
+            } else {
+                None
+            };
+            (end, step)
+        };
+        Ok(Accessor::Slice { start, end, step })
+    }
+
+    fn parse_optional_slice_component(&mut self) -> Result<Option<Box<Expression>>, String> {
+        if self.at_accessor_end() {
+            Ok(None)
+        } else {
+            self.parse_logical_or().map(Box::new).map(Some)
+        }
+    }
+
+    fn at_accessor_end(&self) -> bool {
+        matches!(
+            &self.peek().kind,
+            TokenKind::Comma | TokenKind::RightBracket
+        )
     }
 
     fn parse_primary(&mut self) -> Result<Expression, String> {

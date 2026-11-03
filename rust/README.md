@@ -50,6 +50,8 @@ Sono supportati:
 - riduttori `sum`, `average` e `count(array[, axis])`, con supporto degli assi per
   vettori e matrici;
 - funzione strutturale `size`;
+- indicizzazione e slicing di tensori, inclusi indici negativi, passi e
+  selezioni multiple di righe o colonne;
 - operatori `+`, `-`, `*`, `/`, `%`, `^` e `**`;
 - variabili di esecuzione `time`, `t0`, `t1` e `dt`;
 - alias `this` nelle transizioni di stato;
@@ -61,8 +63,8 @@ Sono supportati:
 - diagnostica per nomi e identificativi duplicati, riferimenti mancanti,
   archi incoerenti e cicli algebrici.
 
-Non sono ancora supportati RK4, indicizzazione dei tensori, funzioni locali
-definite dal modello, sottomodelli o input esterni.
+Non sono ancora supportati RK4, funzioni locali definite dal modello,
+sottomodelli o input esterni.
 
 La CLI può eseguire un modello compatibile:
 

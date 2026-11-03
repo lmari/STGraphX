@@ -111,12 +111,51 @@ async function checkConditionalFunctions(rootDir) {
   );
 }
 
+async function checkTensorIndexing(rootDir) {
+  const runtime = await loadFixture(rootDir, "tensor-indexing.json");
+
+  await runtime.evaluate();
+  assert.deepStrictEqual(
+    runtime.getValues([
+      "second",
+      "last",
+      "strideSlice",
+      "reversed",
+      "middleRow",
+      "cell",
+      "middleColumn",
+      "block",
+      "selectedRows",
+      "selectedColumns",
+      "coordinateCells",
+      "dynamicCell",
+      "chainedCell",
+    ]),
+    {
+      second: 20,
+      last: 40,
+      strideSlice: [20, 40],
+      reversed: [40, 30, 20, 10],
+      middleRow: [4, 5, 6],
+      cell: 6,
+      middleColumn: [2, 5, 8],
+      block: [[2, 3], [5, 6]],
+      selectedRows: [[1, 2, 3], [7, 8, 9]],
+      selectedColumns: [[1, 3], [4, 6], [7, 9]],
+      coordinateCells: [2, 7],
+      dynamicCell: 5,
+      chainedCell: 7,
+    },
+  );
+}
+
 async function main() {
   const rootDir = path.resolve(__dirname, "..");
   await checkScalarAlgebraic(rootDir);
   await checkScalarStateEuler(rootDir);
   await checkTensorStateEuler(rootDir);
   await checkConditionalFunctions(rootDir);
+  await checkTensorIndexing(rootDir);
   console.log("rust-engine-reference.test.js: ok");
 }
 
