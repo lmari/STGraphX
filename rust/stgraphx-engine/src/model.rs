@@ -284,9 +284,8 @@ impl CompiledModel {
                         &predecessor_names,
                         true,
                     )?;
-                    let integral_derivative = transition_expression
-                        .pure_integral_argument()
-                        .cloned();
+                    let integral_derivative =
+                        transition_expression.pure_integral_argument().cloned();
                     CompiledNode {
                         id: node.id,
                         name: node.name.clone(),
@@ -419,9 +418,7 @@ impl CompiledModel {
     ) -> Result<(Evaluation, Vec<Option<Value>>), EngineError> {
         let (computed, values_by_index) = self.evaluate_current_values(state_values, time)?;
         let next_state_values = match self.execution.integrator {
-            Integrator::Euler => {
-                self.evaluate_euler_transitions(state_values, &computed, time)?
-            }
+            Integrator::Euler => self.evaluate_euler_transitions(state_values, &computed, time)?,
             Integrator::Rk4 => self.evaluate_rk4_transitions(state_values, &computed, time)?,
         };
 
@@ -607,12 +604,12 @@ impl CompiledModel {
             let derivative = derivatives[*index]
                 .as_ref()
                 .expect("every RK4 stage must contain every derivative");
-            let stage = current.euler_integrate(derivative, factor).map_err(|message| {
-                EngineError::Evaluation {
+            let stage = current
+                .euler_integrate(derivative, factor)
+                .map_err(|message| EngineError::Evaluation {
                     node: node.name.clone(),
                     message,
-                }
-            })?;
+                })?;
             if !stage.is_finite() {
                 return Err(EngineError::NonFiniteValue(node.name.clone()));
             }

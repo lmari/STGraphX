@@ -25,7 +25,9 @@ fn rk4_integrates_coupled_scalar_and_tensor_states() {
         .expect("simulation should contain snapshots");
     assert_close(final_snapshot.time(), 1.0, 1e-12);
     assert_close(
-        final_snapshot.scalar("decay").expect("decay should be scalar"),
+        final_snapshot
+            .scalar("decay")
+            .expect("decay should be scalar"),
         (-1.0_f64).exp(),
         1e-6,
     );
