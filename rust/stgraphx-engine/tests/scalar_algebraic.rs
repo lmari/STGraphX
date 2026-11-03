@@ -69,7 +69,7 @@ fn reports_an_algebraic_dependency_cycle() {
 }
 
 #[test]
-fn rejects_an_integrator_not_yet_supported_for_state_nodes() {
+fn accepts_discrete_state_transitions_with_rk4() {
     let source = r#"
     {
       "version": 1,
@@ -87,8 +87,14 @@ fn rejects_an_integrator_not_yet_supported_for_state_nodes() {
     }
     "#;
 
+    let model = compile_json(source).expect("RK4 model should compile");
+    let simulation = model.simulate().expect("RK4 model should simulate");
+
+    assert_eq!(simulation.snapshots().len(), 2);
     assert_eq!(
-        compile_json(source).expect_err("RK4 is not supported yet"),
-        EngineError::UnsupportedIntegrator("rk4".to_string())
+        simulation
+            .final_snapshot()
+            .and_then(|snapshot| snapshot.scalar("state")),
+        Some(2.0)
     );
 }
