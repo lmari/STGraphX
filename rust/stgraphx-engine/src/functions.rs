@@ -208,7 +208,7 @@ mod tests {
             Value::tensor(vec![2, 2], vec![1.0, 2.0, 3.0, 4.0]).expect("matrix should be valid");
 
         assert_eq!(
-            evaluate("sum", &[matrix.clone()]).expect("sum should work"),
+            evaluate("sum", std::slice::from_ref(&matrix)).expect("sum should work"),
             Value::scalar(10.0)
         );
         assert_eq!(
