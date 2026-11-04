@@ -153,7 +153,7 @@ fn set_at(arguments: &[Value]) -> Result<Value, String> {
     let replacement = &arguments[2];
 
     match target.shape() {
-        [_] => {
+        [length] => {
             let index = index
                 .as_scalar()
                 .ok_or_else(|| "setAt expects integer indices".to_string())?;
@@ -218,7 +218,7 @@ fn indices_where(arguments: &[Value]) -> Result<Value, String> {
         .as_tensor()
         .ok_or_else(|| "indicesWhere expects a vector or matrix".to_string())?;
     match tensor.shape() {
-        [length] => {
+        [_] => {
             let elements = tensor
                 .elements()
                 .iter()
