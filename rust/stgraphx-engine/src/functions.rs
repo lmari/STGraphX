@@ -153,7 +153,7 @@ fn set_at(arguments: &[Value]) -> Result<Value, String> {
     let replacement = &arguments[2];
 
     match target.shape() {
-        [length] => {
+        [_] => {
             let index = index
                 .as_scalar()
                 .ok_or_else(|| "setAt expects integer indices".to_string())?;
