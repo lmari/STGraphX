@@ -434,17 +434,14 @@ impl Accessor {
     }
 }
 
-fn collect_iteration_body_references(
-    body: &Expression,
-    references: &mut BTreeSet<String>,
-) {
+fn collect_iteration_body_references(body: &Expression, references: &mut BTreeSet<String>) {
     let mut body_references = BTreeSet::new();
     body.collect_references(&mut body_references);
     body_references.retain(|name| {
         name != "$value"
-            && !name
-                .strip_prefix('$')
-                .is_some_and(|suffix| !suffix.is_empty() && suffix.chars().all(|item| item.is_ascii_digit()))
+            && !name.strip_prefix('$').is_some_and(|suffix| {
+                !suffix.is_empty() && suffix.chars().all(|item| item.is_ascii_digit())
+            })
     });
     references.extend(body_references);
 }
@@ -1421,10 +1418,9 @@ mod tests {
 
     #[test]
     fn array_iteration_values_and_indices_are_local_references() {
-        let expression = parse(
-            "map($value+$0+external,filter($value>$1,source))+count($value>limit,values)",
-        )
-        .expect("expression should parse");
+        let expression =
+            parse("map($value+$0+external,filter($value>$1,source))+count($value>limit,values)")
+                .expect("expression should parse");
         assert_eq!(
             expression.references().into_iter().collect::<Vec<_>>(),
             vec![
