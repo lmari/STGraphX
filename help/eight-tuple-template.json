@@ -110,6 +110,10 @@
       "it": "range non esplicitamente dichiarato nel modello attivo",
       "en": "range not explicitly declared in the active model"
     },
+    "rangeLabel": {
+      "it": "intervallo",
+      "en": "range"
+    },
     "timeUndeclared": {
       "it": "struttura temporale non ricostruibile completamente dai parametri correnti",
       "en": "time structure cannot be fully reconstructed from the current parameters"

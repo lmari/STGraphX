@@ -1,6 +1,6 @@
 /*!
  * STGraphX Embedded Player Bundle
- * Generated: 2026-11-04T12:10:51.598Z
+ * Generated: 2026-11-04T19:17:49.799Z
  */
 
 /* --- i18n-inline.js --- */
@@ -13,7 +13,7 @@
 
 window.STGraphXAppMeta = {
   author: "Luca Mari",
-  releaseDate: "2026.10.30",
+  releaseDate: "2026.11.04",
   license: "MPL-2.0",
   copyright: "Copyright (c) 2026 Luca Mari",
 };
@@ -181,12 +181,15 @@ window.STGraphXI18nBundles = {
     "menu.run": "Esegui",
     "menu.run.analyze": "Analizza modello...",
     "menu.run.execute": "Completo",
+    "menu.run.rust": "Completo con motore Rust",
+    "menu.experimental": "sperimentale",
     "menu.tools": "Strumenti",
     "menu.tools.sensitivity": "Analisi di sensibilità...",
     "menu.run.reset": "Reset",
     "menu.run.step": "Un passo",
     "menu.run.strictDefinitions": "Definizioni rigorose",
     "menu.run.stopOnRuntimeError": "Arresta al primo errore",
+    "menu.run.checkRanges": "Controlla limiti dichiarati",
     "menu.run.timedToggle": "Temporizzato",
     "menu.run.watch": "Watch / breakpoint",
     "menu.tools.modelNotes": "Appunti del modello...",
@@ -245,6 +248,9 @@ window.STGraphXI18nBundles = {
     "label.modelTitle": "Titolo",
     "label.name": "Nome",
     "label.unit": "Unità",
+    "label.range": "Intervallo",
+    "label.minimum": "Min",
+    "label.maximum": "Max",
     "label.nodeFillColor": "Sfondo",
     "label.nodeStrokeColor": "Bordo",
     "label.output": "output",
@@ -852,6 +858,8 @@ window.STGraphXI18nBundles = {
     "status.edgeReversed": "Verso della freccia invertito.",
     "status.evalDone": "Esecuzione completata su {count} variabili.",
     "status.evalDoneTime": "Esecuzione completata: {count} variabili, {steps} passi, durata {duration}.",
+    "status.rustEngineLoading": "Caricamento del motore Rust/WebAssembly...",
+    "status.rustEvalDoneTime": "Esecuzione Rust completata: {count} variabili, {steps} passi, durata {duration}.",
     "status.evalStepDone": "Passo eseguito su {count} variabili.",
     "status.executionReset": "Esecuzione resettata.",
     "status.executionRestarted": "Esecuzione ripartita, variabili aggiornate: {count}.",
@@ -894,6 +902,7 @@ window.STGraphXI18nBundles = {
     "status.snapOn": "Snap-to-grid attivo.",
     "status.strictDefinitionsOff": "Controllo rigoroso delle definizioni disattivato.",
     "status.strictDefinitionsOn": "Controllo rigoroso delle definizioni attivato.",
+    "warning.rangeViolation": "Valore fuori dall'intervallo dichiarato: {node} = {value} (min {min}, max {max}).",
     "status.submodelInterfaceLoaded": "Interfaccia del sottomodello aggiornata: {name}",
     "status.submodelInterfaceNodesCreated": "Creati {count} nodi di interfaccia del sottomodello.",
     "status.submodelOpened": "Sottomodello aperto: {name}",
@@ -996,6 +1005,7 @@ window.STGraphXI18nBundles = {
     "tooltip.menu.tools.sensitivity": "Varia sistematicamente un input o parametro e misura l'effetto su un output.",
     "tooltip.menu.run.analyze": "Esegue controlli statici sul modello e mostra un report dei problemi trovati.",
     "tooltip.menu.run.execute": "Esegue il modello fino a t1 o completa l'esecuzione già avviata.",
+    "tooltip.menu.run.rust": "Esegue da t0 a t1 con il motore Rust/WebAssembly sperimentale; il motore JavaScript rimane invariato.",
     "tooltip.menu.run.reset": "Reimposta l'esecuzione a t0 e pulisce i risultati dinamici.",
     "tooltip.menu.run.step": "Esegue il modello per un solo passo temporale.",
     "tooltip.menu.run.timed": "Avvia o ferma l'esecuzione temporizzata.",
@@ -1068,6 +1078,7 @@ window.STGraphXI18nBundles = {
     "tooltip.model.strictDefinitions": "Se attivo, le variabili non definite correttamente bloccano l'esecuzione; se tutte le sorgenti hanno un'unità, blocca anche le incoerenze dimensionali.",
     "tooltip.model.randomSeed": "Intero opzionale che rende ripetibili le successioni generate da rand, randInt e dalle distribuzioni probabilistiche. Lascia vuoto per usare casualità non riproducibile.",
     "tooltip.menu.run.stopOnRuntimeError": "Interrompe l'esecuzione al primo errore prodotto dalla valutazione di una variabile, mostrando la variabile, il tempo e il dettaglio tecnico.",
+    "tooltip.menu.run.checkRanges": "Durante l'esecuzione segnala i valori esterni ai limiti minimo o massimo dichiarati per le variabili.",
     "tooltip.model.t0": "Istante iniziale dell'esecuzione.",
     "tooltip.model.t1": "Istante finale dell'esecuzione.",
     "configHelp.model.title": "Configurazione del modello",
@@ -1111,6 +1122,9 @@ window.STGraphXI18nBundles = {
     "tooltip.node.loadSubmodel": "Carica o aggiorna il sottomodello referenziato nella variabile selezionata.",
     "tooltip.node.name": "Nome univoco della variabile, usabile nelle espressioni delle variabili collegate.",
     "tooltip.node.unit": "Unità di misura opzionale. Vettori e matrici sono assunti omogenei: ogni elemento ha questa unità.",
+    "tooltip.node.range": "Intervallo opzionale dei valori ammessi. Per vettori e matrici il limite è applicato a ogni elemento.",
+    "tooltip.node.rangeMin": "Valore minimo ammesso; lascia vuoto per non dichiarare un limite inferiore.",
+    "tooltip.node.rangeMax": "Valore massimo ammesso; lascia vuoto per non dichiarare un limite superiore.",
     "tooltip.node.properties": "Coppie chiave-valore descrittive, salvate nel modello e disponibili come documentazione della variabile.",
     "tooltip.node.addProperty": "Aggiunge una nuova proprietà descrittiva alla variabile selezionata.",
     "tooltip.node.openSubmodel": "Apre il sottomodello referenziato nella variabile selezionata.",
@@ -1337,6 +1351,7 @@ window.STGraphXI18nBundles = {
     "feedbackLoops.showFocus": "Mostra evidenziazione",
     "feedbackLoops.clearFocus": "Rimuovi evidenziazione",
     "eightTuple.copyMarkdown": "Copia Markdown",
+    "eightTuple.rangeLabel": "intervallo",
     "eightTuple.exportMarkdown": "Esporta Markdown...",
     "eightTuple.intro": "Questa finestra ricostruisce automaticamente, per quanto possibile, la specificazione del modello attivo nella forma 〈T, K, U, Ω, Y, X, φ, η〉. Dove il modello non dichiara esplicitamente un'informazione, il testo lo segnala.",
     "eightTuple.title": "8-upla del modello attivo",
@@ -1417,6 +1432,9 @@ window.STGraphXI18nBundles = {
     "error.evalReason.syntax": "sintassi non valida",
     "error.evalReason.type": "valore non supportato",
     "error.evalStepFailed": "Errore nel passo temporale (variabile: {node}, motivo: {reason}, tempo: {time}).",
+    "error.rustEngineBreakpoint": "Il comando Rust sperimentale non gestisce ancora i breakpoint.",
+    "error.rustEngineFailed": "Esecuzione con il motore Rust non riuscita: {message}",
+    "error.rustEngineUnsupportedNode": "Il motore Rust non supporta ancora la variabile {name} di tipo {type}.",
     "error.functionNodeName": "Nome variabile non valido: coincide con il nome di una funzione disponibile.",
     "error.invalidJson": "Formato JSON non valido.",
     "error.invalidNodeName": "Nome variabile non valido: usa solo lettere, numeri e underscore, senza iniziare con un numero.",
@@ -1619,12 +1637,15 @@ window.STGraphXI18nBundles = {
     "menu.run": "Run",
     "menu.run.analyze": "Analyze model...",
     "menu.run.execute": "Full",
+    "menu.run.rust": "Full with Rust engine",
+    "menu.experimental": "experimental",
     "menu.tools": "Tools",
     "menu.tools.sensitivity": "Sensitivity analysis...",
     "menu.run.reset": "Reset",
     "menu.run.step": "One step",
     "menu.run.strictDefinitions": "Strict definitions",
     "menu.run.stopOnRuntimeError": "Stop on first error",
+    "menu.run.checkRanges": "Check declared ranges",
     "menu.run.timedToggle": "Timed",
     "menu.run.watch": "Watch / breakpoint",
     "menu.tools.modelNotes": "Model notes...",
@@ -1683,6 +1704,9 @@ window.STGraphXI18nBundles = {
     "label.modelTitle": "Title",
     "label.name": "Name",
     "label.unit": "Unit",
+    "label.range": "Range",
+    "label.minimum": "Min",
+    "label.maximum": "Max",
     "label.nodeFillColor": "Background",
     "label.nodeStrokeColor": "Border",
     "label.output": "output",
@@ -2290,6 +2314,8 @@ window.STGraphXI18nBundles = {
     "status.edgeReversed": "Edge direction reversed.",
     "status.evalDone": "Execution completed on {count} variables.",
     "status.evalDoneTime": "Execution completed: {count} variables, {steps} steps, duration {duration}.",
+    "status.rustEngineLoading": "Loading the Rust/WebAssembly engine...",
+    "status.rustEvalDoneTime": "Rust execution completed: {count} variables, {steps} steps, duration {duration}.",
     "status.evalStepDone": "Step executed on {count} variables.",
     "status.executionReset": "Execution reset.",
     "status.executionRestarted": "Execution restarted, updated variables: {count}.",
@@ -2332,6 +2358,7 @@ window.STGraphXI18nBundles = {
     "status.snapOn": "Snap-to-grid enabled.",
     "status.strictDefinitionsOff": "Strict definition checking disabled.",
     "status.strictDefinitionsOn": "Strict definition checking enabled.",
+    "warning.rangeViolation": "Value outside the declared range: {node} = {value} (min {min}, max {max}).",
     "status.submodelInterfaceLoaded": "Submodel interface refreshed: {name}",
     "status.submodelInterfaceNodesCreated": "Created {count} submodel interface nodes.",
     "status.submodelOpened": "Submodel opened: {name}",
@@ -2434,6 +2461,7 @@ window.STGraphXI18nBundles = {
     "tooltip.menu.tools.sensitivity": "Systematically varies one input or parameter and measures its effect on an output.",
     "tooltip.menu.run.analyze": "Runs static checks on the model and shows a report of the detected issues.",
     "tooltip.menu.run.execute": "Runs the model up to t1 or completes an execution already in progress.",
+    "tooltip.menu.run.rust": "Runs from t0 to t1 with the experimental Rust/WebAssembly engine; the JavaScript engine remains unchanged.",
     "tooltip.menu.run.reset": "Resets execution to t0 and clears dynamic results.",
     "tooltip.menu.run.step": "Runs the model for a single time step.",
     "tooltip.menu.run.timed": "Starts or stops timed execution.",
@@ -2506,6 +2534,7 @@ window.STGraphXI18nBundles = {
     "tooltip.model.strictDefinitions": "When enabled, incorrectly defined variables block execution; if every source has a unit, dimensional inconsistencies block it too.",
     "tooltip.model.randomSeed": "Optional integer that makes sequences from rand, randInt, and probability distributions reproducible. Leave empty for non-reproducible randomness.",
     "tooltip.menu.run.stopOnRuntimeError": "Stops execution at the first error while evaluating a variable and shows the variable, time, and technical detail.",
+    "tooltip.menu.run.checkRanges": "During execution, reports values outside the declared minimum or maximum for variables.",
     "tooltip.model.t0": "Initial execution time.",
     "tooltip.model.t1": "Final execution time.",
     "configHelp.model.title": "Model configuration",
@@ -2549,6 +2578,9 @@ window.STGraphXI18nBundles = {
     "tooltip.node.loadSubmodel": "Loads or refreshes the submodel referenced by the selected variable.",
     "tooltip.node.name": "Unique variable name, usable in connected variable expressions.",
     "tooltip.node.unit": "Optional measurement unit. Vectors and matrices are assumed homogeneous: every element has this unit.",
+    "tooltip.node.range": "Optional range of admitted values. For vectors and matrices the limit applies to every element.",
+    "tooltip.node.rangeMin": "Minimum admitted value; leave empty to declare no lower bound.",
+    "tooltip.node.rangeMax": "Maximum admitted value; leave empty to declare no upper bound.",
     "tooltip.node.properties": "Descriptive key-value pairs saved in the model and available as variable documentation.",
     "tooltip.node.addProperty": "Adds a descriptive property to the selected variable.",
     "tooltip.node.openSubmodel": "Opens the submodel referenced by the selected variable.",
@@ -2775,6 +2807,7 @@ window.STGraphXI18nBundles = {
     "feedbackLoops.showFocus": "Show highlight",
     "feedbackLoops.clearFocus": "Clear highlight",
     "eightTuple.copyMarkdown": "Copy Markdown",
+    "eightTuple.rangeLabel": "range",
     "eightTuple.exportMarkdown": "Export Markdown...",
     "eightTuple.intro": "This window automatically reconstructs, as far as possible, the specification of the active model in the form 〈T, K, U, Ω, Y, X, φ, η〉. Whenever the model does not explicitly declare a piece of information, the text states that limitation.",
     "eightTuple.title": "8-tuple of the active model",
@@ -2855,6 +2888,9 @@ window.STGraphXI18nBundles = {
     "error.evalReason.syntax": "invalid syntax",
     "error.evalReason.type": "unsupported value",
     "error.evalStepFailed": "Step evaluation failed (variable: {node}, reason: {reason}, time: {time}).",
+    "error.rustEngineBreakpoint": "The experimental Rust command does not support breakpoints yet.",
+    "error.rustEngineFailed": "Rust engine execution failed: {message}",
+    "error.rustEngineUnsupportedNode": "The Rust engine does not support variable {name} of type {type} yet.",
     "error.functionNodeName": "Invalid variable name: it matches an available function name.",
     "error.invalidJson": "Invalid JSON format.",
     "error.invalidNodeName": "Invalid variable name: use letters, digits and underscore, and do not start with a digit.",
@@ -8277,6 +8313,7 @@ window.STGraphXI18nBundles = {
       const integrator = String(raw?.integrator ?? "euler").toLowerCase();
       const strictDefinitions = Boolean(raw?.strictDefinitions);
       const stopOnRuntimeError = Boolean(raw?.stopOnRuntimeError);
+      const checkRanges = Boolean(raw?.checkRanges);
       const randomSeed = normalizeRandomSeed(raw?.randomSeed);
       const currentTime = raw?.currentTime;
       return {
@@ -8292,6 +8329,7 @@ window.STGraphXI18nBundles = {
         integrator: integrator === "rk4" ? "rk4" : "euler",
         strictDefinitions,
         stopOnRuntimeError,
+        checkRanges,
         randomSeed,
         currentTime: Number.isFinite(Number(currentTime)) ? Number(currentTime) : null,
       };
@@ -8729,6 +8767,10 @@ window.STGraphXI18nBundles = {
             y: Number.isFinite(Number(n.y)) ? Number(n.y) : 200,
             width: clamp(Number(n.width) || 120, 40, 500),
             height: clamp(Number(n.height) || 70, 30, 500),
+            range: {
+              min: Number.isFinite(Number(n?.range?.min)) ? Number(n.range.min) : null,
+              max: Number.isFinite(Number(n?.range?.max)) ? Number(n.range.max) : null,
+            },
             valueExpression: shape === "rect"
               ? String(n.stateTransition ?? "")
               : String(n.valueExpression ?? ""),
@@ -8818,6 +8860,7 @@ window.STGraphXI18nBundles = {
           integrator: execCfg.integrator,
           strictDefinitions: execCfg.strictDefinitions,
           stopOnRuntimeError: execCfg.stopOnRuntimeError,
+          checkRanges: execCfg.checkRanges,
           randomSeed: execCfg.randomSeed,
           randomState: execCfg.randomSeed,
           currentTime: null,

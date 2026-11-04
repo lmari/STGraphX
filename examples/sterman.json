@@ -7,33 +7,41 @@
     "showGrid": true,
     "highlightNodeEdges": false,
     "showNodeValues": false,
+    "checkUnits": true,
     "gridSize": 20,
     "tooltipDelayMs": 300,
-    "scrollLeft": 180,
-    "scrollTop": 120
+    "scrollLeft": 131,
+    "scrollTop": 67
   },
   "debug": {
     "watches": [],
     "breakpointEnabled": false,
-    "breakpointExpression": ""
+    "breakpointExpression": "",
+    "breakpointMessage": ""
   },
   "modelProperties": [],
-  "nodeCounter": 5,
-  "edgeCounter": 4,
-  "widgetCounter": 4,
-  "textItemCounter": 2,
-  "presentationGroupCounter": 2,
+  "unitDefinitions": [],
+  "scenarios": [],
+  "nodeCounter": 6,
+  "edgeCounter": 5,
+  "widgetCounter": 5,
+  "textItemCounter": 3,
+  "presentationGroupCounter": 3,
   "presentationGroups": [],
   "dashboard": null,
   "execution": {
     "t0": 0,
     "dt": 0.1,
+    "timeUnit": "s",
     "t1": 16,
     "delayMs": 10,
     "renderEverySteps": 1,
     "decimals": 3,
     "integrator": "rk4",
-    "strictDefinitions": false
+    "strictDefinitions": false,
+    "stopOnRuntimeError": false,
+    "checkRanges": false,
+    "randomSeed": null
   },
   "nodes": [
     {
@@ -48,6 +56,7 @@
       "height": 70,
       "fillColor": "",
       "strokeColor": "",
+      "unit": "l/s",
       "properties": [
         {
           "key": "note formula",
@@ -58,6 +67,10 @@
           "value": ""
         }
       ],
+      "range": {
+        "min": 0,
+        "max": 200
+      },
       "input": false,
       "valueExpression": "piecewise([0,4,8,12,16],[100,0,100,0,100],time)"
     },
@@ -73,6 +86,7 @@
       "height": 70,
       "fillColor": "",
       "strokeColor": "",
+      "unit": "",
       "properties": [
         {
           "key": "note formula",
@@ -83,6 +97,10 @@
           "value": ""
         }
       ],
+      "range": {
+        "min": 0,
+        "max": 200
+      },
       "input": false,
       "valueExpression": "50"
     },
@@ -98,6 +116,7 @@
       "height": 70,
       "fillColor": "",
       "strokeColor": "",
+      "unit": "l",
       "properties": [
         {
           "key": "note formula",
@@ -108,6 +127,10 @@
           "value": ""
         }
       ],
+      "range": {
+        "min": 0,
+        "max": 200
+      },
       "stateTransition": "integral(inflow-outflow)",
       "initialState": "100"
     }
@@ -117,15 +140,22 @@
       "id": 1,
       "from": 1,
       "to": 3,
+      "color": "",
+      "influence": "none",
       "controlPoints": []
     },
     {
       "id": 2,
       "from": 2,
       "to": 3,
+      "color": "",
+      "influence": "none",
       "controlPoints": []
     }
   ],
+  "notes": {
+    "markdown": ""
+  },
   "textItems": [],
   "widgets": [
     {
@@ -145,11 +175,17 @@
       "expandNonScalarValues": false,
       "tableTextAlign": "left",
       "tableDecimalDigits": 0,
+      "tableColumnFormats": {},
       "xMin": 0,
       "xMax": 16,
       "yMin": 0,
       "yMax": 150,
+      "xGridStep": null,
+      "yGridStep": null,
+      "xAxisLabel": "",
+      "yAxisLabel": "",
       "showGrid": true,
+      "showAxes": true,
       "legendPosition": "top-right",
       "source": "",
       "showNumericValues": true,
@@ -186,6 +222,12 @@
           "showLine": true,
           "lineWidth": 2.2,
           "lineStyle": "solid",
+          "barMode": "none",
+          "showBars": false,
+          "barColor": "#0e7ac4",
+          "barWidth": 2.2,
+          "showArea": false,
+          "areaColor": "#0e7ac4",
           "pointMode": "none",
           "pointSize": 2.4
         },
@@ -199,6 +241,12 @@
           "showLine": true,
           "lineWidth": 2.2,
           "lineStyle": "solid",
+          "barMode": "none",
+          "showBars": false,
+          "barColor": "#e67e22",
+          "barWidth": 2.2,
+          "showArea": false,
+          "areaColor": "#e67e22",
           "pointMode": "none",
           "pointSize": 2.4
         }
@@ -221,11 +269,17 @@
       "expandNonScalarValues": false,
       "tableTextAlign": "left",
       "tableDecimalDigits": 0,
+      "tableColumnFormats": {},
       "xMin": 0,
       "xMax": 16,
       "yMin": 0,
       "yMax": 150,
+      "xGridStep": null,
+      "yGridStep": null,
+      "xAxisLabel": "",
+      "yAxisLabel": "",
       "showGrid": true,
+      "showAxes": true,
       "legendPosition": "top-right",
       "source": "",
       "showNumericValues": true,
@@ -262,6 +316,12 @@
           "showLine": true,
           "lineWidth": 2.2,
           "lineStyle": "solid",
+          "barMode": "none",
+          "showBars": false,
+          "barColor": "#20acac",
+          "barWidth": 2.2,
+          "showArea": false,
+          "areaColor": "#20acac",
           "pointMode": "none",
           "pointSize": 2.4
         }

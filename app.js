@@ -75,6 +75,7 @@ const topRunTimedBtn = document.getElementById("topRunTimedBtn");
 const topRunResetBtn = document.getElementById("topRunResetBtn");
 const runStrictDefinitionsInput = document.getElementById("runStrictDefinitionsInput");
 const runStopOnRuntimeErrorInput = document.getElementById("runStopOnRuntimeErrorInput");
+const runCheckRangesInput = document.getElementById("runCheckRangesInput");
 const selectAllBtn = document.getElementById("selectAllBtn");
 const renameNodeBtn = document.getElementById("renameNodeBtn");
 const renameSelectionLabel = document.getElementById("renameSelectionLabel");
@@ -143,6 +144,9 @@ const resetExecBtn = document.getElementById("resetExecBtn");
 const nodeNameInput = document.getElementById("nodeNameInput");
 const nodeUnitInput = document.getElementById("nodeUnitInput");
 const nodeUnitLabel = document.getElementById("nodeUnitLabel");
+const nodeRangeRow = document.getElementById("nodeRangeRow");
+const nodeRangeMinInput = document.getElementById("nodeRangeMinInput");
+const nodeRangeMaxInput = document.getElementById("nodeRangeMaxInput");
 const nodeShapeInput = document.getElementById("nodeShapeInput");
 const nodeInputInput = document.getElementById("nodeInputInput");
 const nodeInputLabel = nodeInputInput?.closest("label");
@@ -267,6 +271,9 @@ const expressionNodeGlobalLabel = document.getElementById("expressionNodeGlobalL
 const expressionNodeGlobalInput = document.getElementById("expressionNodeGlobalInput");
 const expressionNodeUnitLabel = document.getElementById("expressionNodeUnitLabel");
 const expressionNodeUnitInput = document.getElementById("expressionNodeUnitInput");
+const expressionNodeRangeRow = document.getElementById("expressionNodeRangeRow");
+const expressionNodeRangeMinInput = document.getElementById("expressionNodeRangeMinInput");
+const expressionNodeRangeMaxInput = document.getElementById("expressionNodeRangeMaxInput");
 const documentationHelpBtn = document.getElementById("documentationHelpBtn");
 const functionsHelpBtn = document.getElementById("functionsHelpBtn");
 const eightTupleBtn = document.getElementById("eightTupleBtn");
@@ -1046,6 +1053,7 @@ const graph = {
     integrator: "euler",
     strictDefinitions: false,
     stopOnRuntimeError: false,
+    checkRanges: false,
     randomSeed: null,
     randomState: null,
     currentTime: null,
@@ -3616,6 +3624,60 @@ function canDeclareNodeUnit(node) {
   return ![...expressionReferencesForAnalysis(node, "initial")].some((name) => nodeNames.has(name));
 }
 
+function normalizeNodeRange(raw) {
+  const parseBound = (value) => {
+    if (value == null || String(value).trim() === "") return null;
+    const numeric = Number(String(value).trim().replace(",", "."));
+    return Number.isFinite(numeric) ? numeric : null;
+  };
+  return {
+    min: parseBound(raw?.min ?? raw?.rangeMin),
+    max: parseBound(raw?.max ?? raw?.rangeMax),
+  };
+}
+
+function serializedNodeRange(node) {
+  const range = normalizeNodeRange(node?.range);
+  return range.min == null && range.max == null ? null : range;
+}
+
+function syncNodeRangeInputs(node, { expressionEditor = false } = {}) {
+  const range = normalizeNodeRange(node?.range);
+  const minInput = expressionEditor ? expressionNodeRangeMinInput : nodeRangeMinInput;
+  const maxInput = expressionEditor ? expressionNodeRangeMaxInput : nodeRangeMaxInput;
+  const row = expressionEditor ? expressionNodeRangeRow : nodeRangeRow;
+  const visible = Boolean(
+    node
+    && !isDraftNode(node)
+    && !isSubmodelNode(node)
+    && (node.shape === "diamond" || node.input || node.output || isStateNode(node)),
+  );
+  row?.classList.toggle("hidden", !visible);
+  if (!visible) return;
+  if (minInput && document.activeElement !== minInput) minInput.value = range.min == null ? "" : String(range.min);
+  if (maxInput && document.activeElement !== maxInput) maxInput.value = range.max == null ? "" : String(range.max);
+  [minInput, maxInput].forEach((input) => {
+    if (input) input.disabled = isEditingUiLocked();
+  });
+}
+
+function commitNodeRangeInput(node, input, bound) {
+  if (!node || !input || isDraftNode(node) || isSubmodelNode(node) || isEditingUiLocked()) return;
+  const raw = String(input.value ?? "").trim();
+  if (raw && !Number.isFinite(Number(raw.replace(",", ".")))) {
+    input.classList.add("invalid");
+    return;
+  }
+  const next = normalizeNodeRange(node.range);
+  next[bound] = raw ? Number(raw.replace(",", ".")) : null;
+  node.range = next;
+  input.classList.remove("invalid");
+  syncNodeRangeInputs(node);
+  syncNodeRangeInputs(node, { expressionEditor: true });
+  scheduleFileStatusRefresh();
+  render();
+}
+
 function strictUnitExecutionIssue() {
   if (!graph.execution.strictDefinitions || ui.checkUnits === false) return null;
   const independentNodes = independentNodesForUnitAnalysis();
@@ -3922,6 +3984,7 @@ function syncExpressionEditorNodeIdentity(node) {
     expressionNodeUnitInput.disabled = !editable;
     expressionNodeUnitInput.classList.toggle("inferred-unit", expressionNodeUnitInput.readOnly);
   }
+  syncNodeRangeInputs(node, { expressionEditor: true });
 }
 
 function syncExpressionEditorFormulaNotes() {
@@ -9127,6 +9190,9 @@ function updateModelRunButtons() {
   if (runStopOnRuntimeErrorInput) {
     runStopOnRuntimeErrorInput.checked = Boolean(graph.execution.stopOnRuntimeError);
   }
+  if (runCheckRangesInput) {
+    runCheckRangesInput.checked = Boolean(graph.execution.checkRanges);
+  }
   if (strictDefinitionsInput) {
     strictDefinitionsInput.checked = Boolean(graph.execution.strictDefinitions);
   }
@@ -9602,6 +9668,7 @@ function exportGraphData() {
       integrator: String(graph.execution.integrator ?? "euler"),
       strictDefinitions: Boolean(graph.execution.strictDefinitions),
       stopOnRuntimeError: Boolean(graph.execution.stopOnRuntimeError),
+      checkRanges: Boolean(graph.execution.checkRanges),
       randomSeed: runtimeShared.normalizeRandomSeed(graph.execution.randomSeed),
     },
     nodes: graph.nodes.map((n) => {
@@ -9623,6 +9690,8 @@ function exportGraphData() {
         unit: type === "draft" ? "" : String(n.unit ?? "").trim(),
         properties: n.properties.map((p) => ({ key: String(p.key), value: String(p.value) })),
       };
+      const range = type === "draft" ? null : serializedNodeRange(n);
+      if (range) out.range = range;
       if (type === "algebraic") {
         out.input = Boolean(n.input);
       }
@@ -9879,6 +9948,7 @@ function applyGraphData(data) {
     integrator: execCfg.integrator,
     strictDefinitions: execCfg.strictDefinitions,
     stopOnRuntimeError: execCfg.stopOnRuntimeError,
+    checkRanges: execCfg.checkRanges,
     randomSeed: execCfg.randomSeed,
     randomState: execCfg.randomSeed,
     currentTime: null,
@@ -9900,6 +9970,7 @@ function applyGraphData(data) {
       fillColor: normalizeColorString(n.fillColor),
       strokeColor: normalizeColorString(n.strokeColor),
       unit: shape === "draft" ? "" : String(n.unit ?? "").trim(),
+      range: shape === "draft" ? { min: null, max: null } : normalizeNodeRange(n.range),
       valueExpression: shape === "rect"
         ? String(n.stateTransition ?? "")
         : String(n.valueExpression ?? ""),
@@ -10498,6 +10569,9 @@ function updateEditingLockUi() {
   if (runStrictDefinitionsInput) {
     runStrictDefinitionsInput.disabled = frozen;
   }
+  if (runCheckRangesInput) {
+    runCheckRangesInput.disabled = frozen;
+  }
   if (!frozen) {
     releaseExecutionDisabledControls(document);
   }
@@ -11011,6 +11085,7 @@ function addNode(shape, atPoint = null) {
     fillColor: shape === "draft" ? "transparent" : "",
     strokeColor: shape === "draft" ? "transparent" : "",
     unit: "",
+    range: { min: null, max: null },
     valueExpression: "",
     initialStateExpression: "",
     modelPath: "",
@@ -11291,6 +11366,7 @@ function refreshSidebar() {
     nodeUnitLabel?.classList.toggle("hidden", submodelNode || draftNode);
     nodeUnitInput?.classList.toggle("hidden", submodelNode || draftNode);
     if (nodeUnitInput) nodeUnitInput.disabled = submodelNode || draftNode || isEditingUiLocked();
+    syncNodeRangeInputs(node);
     nodeInputInput.checked = Boolean(node.input);
     nodeOutputInput.checked = Boolean(node.output);
     nodeOutputInput.indeterminate = false;
@@ -12877,6 +12953,7 @@ function importGraphData(data) {
         fillColor: normalizeColorString(n.fillColor),
         strokeColor: normalizeColorString(n.strokeColor),
         unit: shape === "draft" ? "" : String(n.unit ?? "").trim(),
+        range: shape === "draft" ? null : serializedNodeRange(n),
         valueExpression: shape === "rect" ? "" : String(n.valueExpression ?? ""),
         stateTransition: shape === "rect"
           ? String(n.stateTransition ?? "")
@@ -13880,6 +13957,7 @@ function resetGraphToEmptyModel() {
     integrator: "euler",
     strictDefinitions: false,
     stopOnRuntimeError: false,
+    checkRanges: false,
     randomSeed: null,
     randomState: null,
     currentTime: null,
@@ -14039,11 +14117,15 @@ const runtimeSession = globalThis.STGraphXRuntimeSession?.createRuntimeSession({
     applyWidgetDrivenNodeValues();
   },
   afterEvaluate: ({ timeValue }) => {
+    const rangeViolation = validateDeclaredNodeRanges();
     const nodeMap = buildNodeNameMap();
     updateTableWidgetsFromComputedValues(timeValue, nodeMap);
     updateXYWidgetsFromComputedValues(timeValue, nodeMap);
     recordSimulationOutputSnapshot(timeValue);
     syncSubmodelWorkspaceTabsFromActiveParent();
+    if (rangeViolation) {
+      setStatusKey("warning.rangeViolation", rangeViolation);
+    }
   },
 });
 
@@ -14161,6 +14243,41 @@ function cloneSimulationOutputValue(value) {
   } catch (_err) {
     return value;
   }
+}
+
+function firstDeclaredRangeViolation(value, range, path = "") {
+  if (Array.isArray(value)) {
+    for (let index = 0; index < value.length; index += 1) {
+      const violation = firstDeclaredRangeViolation(value[index], range, `${path}[${index}]`);
+      if (violation) return violation;
+    }
+    return null;
+  }
+  const numeric = Number(value);
+  if (!Number.isFinite(numeric)) return null;
+  if (range.min != null && numeric < range.min) return { value: numeric, path };
+  if (range.max != null && numeric > range.max) return { value: numeric, path };
+  return null;
+}
+
+function validateDeclaredNodeRanges() {
+  graph.nodes.forEach((node) => { delete node.rangeViolation; });
+  if (!graph.execution.checkRanges) return null;
+  for (const node of graph.nodes) {
+    if (isDraftNode(node) || isSubmodelNode(node) || node.computedError) continue;
+    const range = serializedNodeRange(node);
+    if (!range) continue;
+    const violation = firstDeclaredRangeViolation(node.computedValue, range);
+    if (!violation) continue;
+    node.rangeViolation = violation;
+    return {
+      node: node.name,
+      value: formatNumberValue(violation.value),
+      min: range.min == null ? "-∞" : formatNumberValue(range.min),
+      max: range.max == null ? "+∞" : formatNumberValue(range.max),
+    };
+  }
+  return null;
 }
 
 function recordSimulationOutputSnapshot(timeValue) {
@@ -15807,6 +15924,15 @@ if (runStopOnRuntimeErrorInput) {
   });
 }
 
+if (runCheckRangesInput) {
+  runCheckRangesInput.addEventListener("change", () => {
+    graph.execution.checkRanges = Boolean(runCheckRangesInput.checked);
+    graph.nodes.forEach((node) => { delete node.rangeViolation; });
+    scheduleFileStatusRefresh();
+    render();
+  });
+}
+
 [timeStartInput, timeStepInput, timeEndInput, timeDelayInput, decimalDigitsInput, integratorInput].filter(Boolean).forEach((inputEl) => {
   inputEl.addEventListener("keydown", (evt) => {
     if (evt.key === "Enter") {
@@ -15883,6 +16009,13 @@ nodeUnitInput?.addEventListener("input", () => {
   analyzeModelStaticIssues();
   render();
   scheduleFileStatusRefresh();
+});
+
+nodeRangeMinInput?.addEventListener("change", () => {
+  commitNodeRangeInput(selectedNodeForSidebar(), nodeRangeMinInput, "min");
+});
+nodeRangeMaxInput?.addEventListener("change", () => {
+  commitNodeRangeInput(selectedNodeForSidebar(), nodeRangeMaxInput, "max");
 });
 
 nodeNameInput.addEventListener("focus", () => {
@@ -16313,6 +16446,13 @@ expressionNodeUnitInput?.addEventListener("input", () => {
   scheduleNodeDefinitionRecalculation();
   scheduleFileStatusRefresh();
   render();
+});
+
+expressionNodeRangeMinInput?.addEventListener("change", () => {
+  commitNodeRangeInput(expressionEditorCurrentNode(), expressionNodeRangeMinInput, "min");
+});
+expressionNodeRangeMaxInput?.addEventListener("change", () => {
+  commitNodeRangeInput(expressionEditorCurrentNode(), expressionNodeRangeMaxInput, "max");
 });
 
 if (nodeFillColorInput) {

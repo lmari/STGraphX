@@ -42,6 +42,7 @@
       const integrator = String(raw?.integrator ?? "euler").toLowerCase();
       const strictDefinitions = Boolean(raw?.strictDefinitions);
       const stopOnRuntimeError = Boolean(raw?.stopOnRuntimeError);
+      const checkRanges = Boolean(raw?.checkRanges);
       const randomSeed = normalizeRandomSeed(raw?.randomSeed);
       const currentTime = raw?.currentTime;
       return {
@@ -57,6 +58,7 @@
         integrator: integrator === "rk4" ? "rk4" : "euler",
         strictDefinitions,
         stopOnRuntimeError,
+        checkRanges,
         randomSeed,
         currentTime: Number.isFinite(Number(currentTime)) ? Number(currentTime) : null,
       };

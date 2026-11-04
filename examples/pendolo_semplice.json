@@ -22,11 +22,11 @@
   "modelProperties": [],
   "unitDefinitions": [],
   "scenarios": [],
-  "nodeCounter": 8,
-  "edgeCounter": 8,
-  "widgetCounter": 3,
-  "textItemCounter": 1,
-  "presentationGroupCounter": 1,
+  "nodeCounter": 9,
+  "edgeCounter": 9,
+  "widgetCounter": 4,
+  "textItemCounter": 2,
+  "presentationGroupCounter": 2,
   "presentationGroups": [],
   "dashboard": null,
   "execution": {
@@ -40,6 +40,7 @@
     "integrator": "rk4",
     "strictDefinitions": false,
     "stopOnRuntimeError": false,
+    "checkRanges": false,
     "randomSeed": null
   },
   "nodes": [
@@ -66,6 +67,10 @@
           "value": "accelerazione di gravità"
         }
       ],
+      "range": {
+        "min": 1,
+        "max": 20
+      },
       "valueExpression": "10"
     },
     {
@@ -91,6 +96,10 @@
           "value": "lunghezza del braccio del pendolo"
         }
       ],
+      "range": {
+        "min": 0.5,
+        "max": 2
+      },
       "valueExpression": "1"
     },
     {
@@ -301,7 +310,7 @@
       "showHistory": false,
       "expandNonScalarValues": false,
       "tableTextAlign": "left",
-      "tableDecimalDigits": null,
+      "tableDecimalDigits": 0,
       "tableColumnFormats": {},
       "xMin": "auto",
       "xMax": "auto",
@@ -376,7 +385,7 @@
       "showHistory": false,
       "expandNonScalarValues": false,
       "tableTextAlign": "left",
-      "tableDecimalDigits": null,
+      "tableDecimalDigits": 0,
       "tableColumnFormats": {},
       "xMin": "auto",
       "xMax": "auto",

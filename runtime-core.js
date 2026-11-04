@@ -156,6 +156,10 @@
             y: Number.isFinite(Number(n.y)) ? Number(n.y) : 200,
             width: clamp(Number(n.width) || 120, 40, 500),
             height: clamp(Number(n.height) || 70, 30, 500),
+            range: {
+              min: Number.isFinite(Number(n?.range?.min)) ? Number(n.range.min) : null,
+              max: Number.isFinite(Number(n?.range?.max)) ? Number(n.range.max) : null,
+            },
             valueExpression: shape === "rect"
               ? String(n.stateTransition ?? "")
               : String(n.valueExpression ?? ""),
@@ -245,6 +249,7 @@
           integrator: execCfg.integrator,
           strictDefinitions: execCfg.strictDefinitions,
           stopOnRuntimeError: execCfg.stopOnRuntimeError,
+          checkRanges: execCfg.checkRanges,
           randomSeed: execCfg.randomSeed,
           randomState: execCfg.randomSeed,
           currentTime: null,

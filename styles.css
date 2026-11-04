@@ -1571,6 +1571,22 @@ button:disabled {
 
 input.inferred-unit[readonly] { color: #6d7782; background: #f4f6f8; }
 
+.node-unit-range-row,
+.node-range-row,
+.expression-node-range-row {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  min-width: 0;
+  color: #4e6072;
+  font-size: 0.76rem;
+}
+.node-range-row label,
+.expression-node-range-row label { display: inline-flex; align-items: center; gap: 3px; min-width: 0; }
+.node-range-row input,
+.expression-node-range-row input { width: 52px; min-width: 44px; height: 27px; margin: 0; padding: 3px 5px; }
+.node-unit-range-row > #nodeUnitInput { width: 76px; min-width: 58px; margin: 0; }
+
 .unit-definitions-card { width: min(620px, calc(100vw - 32px)); max-height: min(720px, calc(100vh - 32px)); overflow: auto; }
 .unit-definitions-card h4 { margin: 0 0 5px; font-size: 0.84rem; color: #4e6072; }
 .unit-definitions-intro { margin: 0 0 12px; color: #536779; line-height: 1.4; }
@@ -3763,6 +3779,9 @@ input.inferred-unit[readonly] { color: #6d7782; background: #f4f6f8; }
   min-width: 0;
 }
 
+.expression-node-range-row { flex: 0 1 auto; margin-left: auto; }
+.expression-node-range-row:not(.hidden) + .expression-node-unit-field { margin-left: 0; }
+
 .expression-node-field {
   display: grid;
   grid-template-columns: auto minmax(0, 1fr);
@@ -3808,9 +3827,9 @@ input.inferred-unit[readonly] { color: #6d7782; background: #f4f6f8; }
 
 .expression-node-unit-field {
   min-width: 0;
-  width: 170px;
+  width: 112px;
   margin-left: auto;
-  flex: 0 1 170px;
+  flex: 0 1 112px;
 }
 
 .expression-node-unit-field > span {
@@ -3822,8 +3841,8 @@ input.inferred-unit[readonly] { color: #6d7782; background: #f4f6f8; }
 }
 
 .expression-node-identity:not(.state-node-identity) .expression-node-unit-field {
-  width: 230px;
-  flex-basis: 230px;
+  width: 140px;
+  flex-basis: 140px;
 }
 
 @media (max-width: 430px) {
@@ -3832,12 +3851,12 @@ input.inferred-unit[readonly] { color: #6d7782; background: #f4f6f8; }
   }
 
   .expression-node-unit-field {
-    width: min(100%, 170px);
+    width: min(100%, 112px);
   }
 
   .expression-node-identity:not(.state-node-identity) .expression-node-unit-field {
-    width: min(100%, 230px);
-    flex-basis: min(100%, 230px);
+    width: min(100%, 140px);
+    flex-basis: min(100%, 140px);
   }
 
   .expression-node-options-row {

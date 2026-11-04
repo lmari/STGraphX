@@ -125,6 +125,10 @@
               <input id="runStopOnRuntimeErrorInput" type="checkbox" />
               <span data-i18n="menu.run.stopOnRuntimeError"></span>
             </label>
+            <label class="menu-check" for="runCheckRangesInput" data-title-i18n="tooltip.menu.run.checkRanges">
+              <input id="runCheckRangesInput" type="checkbox" />
+              <span data-i18n="menu.run.checkRanges"></span>
+            </label>
           </div>
         </div>
 
@@ -344,8 +348,14 @@
               <div id="nodeValueExprStatus" class="expr-status hidden"></div>
               <div id="nodeWidgetBindingInfo" class="expr-status hidden"></div>
 
-              <label id="nodeUnitLabel" for="nodeUnitInput" data-i18n="label.unit" data-title-i18n="tooltip.node.unit"></label>
-              <input id="nodeUnitInput" type="text" placeholder="m/s" data-title-i18n="tooltip.node.unit" />
+              <div class="node-unit-range-row">
+                <div id="nodeRangeRow" class="node-range-row" data-title-i18n="tooltip.node.range">
+                <label for="nodeRangeMinInput"><span data-i18n="label.minimum"></span><input id="nodeRangeMinInput" type="text" inputmode="decimal" placeholder="-∞" data-title-i18n="tooltip.node.rangeMin" /></label>
+                <label for="nodeRangeMaxInput"><span data-i18n="label.maximum"></span><input id="nodeRangeMaxInput" type="text" inputmode="decimal" placeholder="+∞" data-title-i18n="tooltip.node.rangeMax" /></label>
+                </div>
+                <label id="nodeUnitLabel" for="nodeUnitInput" data-i18n="label.unit" data-title-i18n="tooltip.node.unit"></label>
+                <input id="nodeUnitInput" type="text" placeholder="m/s" data-title-i18n="tooltip.node.unit" />
+              </div>
 
             </div>
 
@@ -485,6 +495,10 @@
                   <input id="expressionNodeGlobalInput" type="checkbox" />
                   <span data-i18n="label.global"></span>
                 </label>
+                <div id="expressionNodeRangeRow" class="expression-node-range-row" data-title-i18n="tooltip.node.range">
+                <label for="expressionNodeRangeMinInput"><span data-i18n="label.minimum"></span><input id="expressionNodeRangeMinInput" type="text" inputmode="decimal" placeholder="-∞" data-title-i18n="tooltip.node.rangeMin" /></label>
+                <label for="expressionNodeRangeMaxInput"><span data-i18n="label.maximum"></span><input id="expressionNodeRangeMaxInput" type="text" inputmode="decimal" placeholder="+∞" data-title-i18n="tooltip.node.rangeMax" /></label>
+              </div>
                 <label id="expressionNodeUnitLabel" class="expression-node-field expression-node-unit-field" for="expressionNodeUnitInput" data-title-i18n="tooltip.node.unit">
                   <span data-i18n="label.unit"></span>
                   <input id="expressionNodeUnitInput" type="text" placeholder="m/s" data-title-i18n="tooltip.node.unit" />

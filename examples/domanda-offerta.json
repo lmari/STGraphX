@@ -7,6 +7,7 @@
     "showGrid": true,
     "highlightNodeEdges": false,
     "showNodeValues": false,
+    "checkUnits": true,
     "gridSize": 20,
     "tooltipDelayMs": 300,
     "scrollLeft": 160,
@@ -19,23 +20,28 @@
     "breakpointMessage": ""
   },
   "modelProperties": [],
-  "nodeCounter": 17,
-  "edgeCounter": 20,
-  "widgetCounter": 10,
-  "textItemCounter": 12,
-  "presentationGroupCounter": 7,
+  "unitDefinitions": [],
+  "scenarios": [],
+  "nodeCounter": 18,
+  "edgeCounter": 21,
+  "widgetCounter": 11,
+  "textItemCounter": 13,
+  "presentationGroupCounter": 8,
   "presentationGroups": [],
   "dashboard": null,
   "execution": {
     "t0": 0,
     "dt": 1,
+    "timeUnit": "s",
     "t1": 20,
     "delayMs": 100,
     "renderEverySteps": 1,
     "decimals": 3,
     "integrator": "euler",
     "strictDefinitions": true,
-    "stopOnRuntimeError": false
+    "stopOnRuntimeError": false,
+    "checkRanges": false,
+    "randomSeed": null
   },
   "nodes": [
     {
@@ -50,6 +56,7 @@
       "height": 70,
       "fillColor": "",
       "strokeColor": "",
+      "unit": "",
       "properties": [
         {
           "key": "note formula",
@@ -75,6 +82,7 @@
       "height": 70,
       "fillColor": "",
       "strokeColor": "",
+      "unit": "",
       "properties": [
         {
           "key": "note formula",
@@ -100,6 +108,7 @@
       "height": 70,
       "fillColor": "",
       "strokeColor": "",
+      "unit": "",
       "properties": [
         {
           "key": "note formula",
@@ -125,6 +134,7 @@
       "height": 70,
       "fillColor": "",
       "strokeColor": "",
+      "unit": "",
       "properties": [
         {
           "key": "note formula",
@@ -150,6 +160,7 @@
       "height": 70,
       "fillColor": "",
       "strokeColor": "",
+      "unit": "",
       "properties": [
         {
           "key": "note formula",
@@ -161,7 +172,7 @@
         }
       ],
       "stateTransition": "prezzo",
-      "initialState": "0"
+      "initialState": "array(20,0)"
     },
     {
       "id": 11,
@@ -175,6 +186,7 @@
       "height": 70,
       "fillColor": "",
       "strokeColor": "",
+      "unit": "",
       "properties": [
         {
           "key": "note formula",
@@ -200,6 +212,7 @@
       "height": 70,
       "fillColor": "",
       "strokeColor": "",
+      "unit": "",
       "properties": [
         {
           "key": "note formula",
@@ -225,6 +238,7 @@
       "height": 70,
       "fillColor": "",
       "strokeColor": "",
+      "unit": "",
       "properties": [
         {
           "key": "note formula",
@@ -250,6 +264,7 @@
       "height": 70,
       "fillColor": "",
       "strokeColor": "",
+      "unit": "",
       "properties": [
         {
           "key": "note formula",
@@ -409,6 +424,10 @@
       "xMax": "auto",
       "yMin": "auto",
       "yMax": "auto",
+      "xGridStep": null,
+      "yGridStep": null,
+      "xAxisLabel": "",
+      "yAxisLabel": "",
       "showGrid": true,
       "showAxes": true,
       "legendPosition": "top-right",
@@ -451,6 +470,8 @@
           "showBars": false,
           "barColor": "#0e7ac4",
           "barWidth": 2.2,
+          "showArea": false,
+          "areaColor": "#0e7ac4",
           "pointMode": "none",
           "pointSize": 2.4
         }
@@ -478,6 +499,10 @@
       "xMax": "auto",
       "yMin": "auto",
       "yMax": "auto",
+      "xGridStep": null,
+      "yGridStep": null,
+      "xAxisLabel": "",
+      "yAxisLabel": "",
       "showGrid": true,
       "showAxes": true,
       "legendPosition": "top-right",
@@ -520,6 +545,8 @@
           "showBars": false,
           "barColor": "#0e7ac4",
           "barWidth": 2.2,
+          "showArea": false,
+          "areaColor": "#0e7ac4",
           "pointMode": "none",
           "pointSize": 2.4
         }

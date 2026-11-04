@@ -79,6 +79,7 @@ Ha un'interfaccia utente responsive, che lo rende utilizzabile anche su tablet.
 * Possibilità di assegnare un random seed per i generatori di numeri pseudo-casuali (**)
 * Strumento per analisi di sensibilità (**, su idea di Francesco Bertolotti)
 * Strumento per gestione di scenari (**, su idea di Francesco Bertolotti)
+* Engine sperimentale in Rust, alternativo a quello in JavaScript, per aumentare l'efficienza dell'esecuzione completa (**)
 
 #### Funzionalità del linguaggio
 
