@@ -168,9 +168,9 @@ fn set_at(arguments: &[Value]) -> Result<Value, String> {
                     }
                     let row = function_index(pair.elements()[0], *rows, "setAt")?;
                     let column = function_index(pair.elements()[1], *columns, "setAt")?;
-                    let replacement = replacement
-                        .as_scalar()
-                        .ok_or_else(|| "setAt matrix cell replacement must be numeric".to_string())?;
+                    let replacement = replacement.as_scalar().ok_or_else(|| {
+                        "setAt matrix cell replacement must be numeric".to_string()
+                    })?;
                     elements[row * *columns + column] = replacement;
                 }
                 Value::Scalar(row) => {
@@ -686,11 +686,7 @@ mod tests {
 
         let row = Value::tensor(vec![2], vec![7.0, 6.0]).expect("row should be valid");
         assert_eq!(
-            evaluate(
-                "setAt",
-                &[matrix, Value::scalar(0.0), row],
-                None,
-            ),
+            evaluate("setAt", &[matrix, Value::scalar(0.0), row], None,),
             Value::tensor(vec![2, 2], vec![7.0, 6.0, 3.0, 4.0])
         );
     }
