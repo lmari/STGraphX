@@ -59,6 +59,7 @@ pub const fn engine_info() -> EngineInfo {
             "seeded-random",
             "array-set-at",
             "tensor-append",
+            "array-iterations",
             "global-parameters",
             "model-local-functions",
             "rk4-pure-integral",
@@ -82,6 +83,7 @@ mod tests {
         assert!(info.capabilities.contains(&"numeric-range"));
         assert!(info.capabilities.contains(&"seeded-random"));
         assert!(info.capabilities.contains(&"array-set-at"));
+        assert!(info.capabilities.contains(&"array-iterations"));
         assert!(info.capabilities.contains(&"global-parameters"));
     }
 }

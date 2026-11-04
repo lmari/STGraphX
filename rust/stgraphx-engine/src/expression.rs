@@ -7,7 +7,7 @@ use std::collections::{BTreeSet, HashMap};
 
 use crate::functions;
 use crate::random::RandomGenerator;
-use crate::value::{TensorAccessor, Value};
+use crate::value::{Tensor, TensorAccessor, Value};
 
 #[derive(Debug, Clone, PartialEq)]
 pub(crate) enum Expression {
@@ -105,6 +105,23 @@ impl Expression {
                     body_references.remove(&format!("$i{index}"));
                 }
                 references.extend(body_references);
+            }
+            Self::Call { name, arguments }
+                if matches!(name.as_str(), "map" | "filter") && arguments.len() >= 2 =>
+            {
+                for argument in &arguments[1..] {
+                    argument.collect_references(references);
+                }
+                collect_iteration_body_references(&arguments[0], references);
+            }
+            Self::Call { name, arguments }
+                if (name == "count" && arguments.len() >= 2)
+                    || (name == "indicesWhere" && arguments.len() == 2) =>
+            {
+                for argument in &arguments[1..] {
+                    argument.collect_references(references);
+                }
+                collect_iteration_body_references(&arguments[0], references);
             }
             Self::Call { arguments, .. } => {
                 for argument in arguments {
@@ -248,6 +265,18 @@ impl Expression {
                 }
                 if name == "array" {
                     return evaluate_generated_array(arguments, context);
+                }
+                if name == "map" {
+                    return evaluate_map(arguments, context);
+                }
+                if name == "filter" {
+                    return evaluate_filter(arguments, context);
+                }
+                if name == "count" {
+                    return evaluate_count(arguments, context);
+                }
+                if name == "indicesWhere" {
+                    return evaluate_indices_where(arguments, context);
                 }
                 let values = arguments
                     .iter()
@@ -405,6 +434,21 @@ impl Accessor {
     }
 }
 
+fn collect_iteration_body_references(
+    body: &Expression,
+    references: &mut BTreeSet<String>,
+) {
+    let mut body_references = BTreeSet::new();
+    body.collect_references(&mut body_references);
+    body_references.retain(|name| {
+        name != "$value"
+            && !name
+                .strip_prefix('$')
+                .is_some_and(|suffix| !suffix.is_empty() && suffix.chars().all(|item| item.is_ascii_digit()))
+    });
+    references.extend(body_references);
+}
+
 fn bool_number(value: bool) -> f64 {
     f64::from(u8::from(value))
 }
@@ -532,6 +576,218 @@ fn evaluate_generated_array(
         context,
         &inherited_values,
     )
+}
+
+fn evaluate_with_locals(
+    expression: &Expression,
+    context: &EvaluationContext<'_>,
+    local_values: &HashMap<String, Value>,
+) -> Result<Value, String> {
+    expression.evaluate(&EvaluationContext {
+        values: context.values,
+        time: context.time,
+        t0: context.t0,
+        t1: context.t1,
+        dt: context.dt,
+        self_value: context.self_value,
+        allow_integral: context.allow_integral,
+        local_values: Some(local_values),
+        local_functions: context.local_functions,
+        local_function_stack: context.local_function_stack,
+        random: context.random,
+    })
+}
+
+fn evaluate_tensor_map(
+    body: &Expression,
+    target: &Tensor,
+    context: &EvaluationContext<'_>,
+) -> Result<Value, String> {
+    fn build(
+        target: &Tensor,
+        dimension: usize,
+        offset: usize,
+        body: &Expression,
+        context: &EvaluationContext<'_>,
+        local_values: &HashMap<String, Value>,
+    ) -> Result<Value, String> {
+        if dimension == target.rank() {
+            let mut leaf_values = local_values.clone();
+            leaf_values.insert(
+                "$value".to_string(),
+                Value::scalar(target.elements()[offset]),
+            );
+            return evaluate_with_locals(body, context, &leaf_values);
+        }
+
+        let stride = target.shape()[dimension + 1..].iter().product::<usize>();
+        let mut elements = Vec::with_capacity(target.shape()[dimension]);
+        for index in 0..target.shape()[dimension] {
+            let mut nested_values = local_values.clone();
+            nested_values.insert(format!("${dimension}"), Value::scalar(index as f64));
+            elements.push(build(
+                target,
+                dimension + 1,
+                offset + index * stride,
+                body,
+                context,
+                &nested_values,
+            )?);
+        }
+        Value::from_array_elements(elements)
+    }
+
+    if target.elements().is_empty() {
+        return Value::tensor(target.shape().to_vec(), Vec::new());
+    }
+    let inherited_values = context.local_values.cloned().unwrap_or_default();
+    build(target, 0, 0, body, context, &inherited_values)
+}
+
+fn evaluate_map(
+    arguments: &[Expression],
+    context: &EvaluationContext<'_>,
+) -> Result<Value, String> {
+    if arguments.len() != 2 {
+        return Err("map expects exactly 2 arguments".to_string());
+    }
+    let target = arguments[1].evaluate(context)?;
+    let target = target
+        .as_tensor()
+        .ok_or_else(|| "map expects a vector or matrix".to_string())?;
+    evaluate_tensor_map(&arguments[0], target, context)
+}
+
+fn evaluate_filter(
+    arguments: &[Expression],
+    context: &EvaluationContext<'_>,
+) -> Result<Value, String> {
+    if !(2..=3).contains(&arguments.len()) {
+        return Err("filter expects 2 or 3 arguments".to_string());
+    }
+    let target = arguments[1].evaluate(context)?;
+    let target = target
+        .as_tensor()
+        .ok_or_else(|| "filter expects a vector or matrix".to_string())?;
+    if arguments.len() == 3 {
+        arguments[2].evaluate(context)?;
+        return Err("filter mode must be 'elements', 'rows', or 'cols'".to_string());
+    }
+
+    fn build(
+        target: &Tensor,
+        dimension: usize,
+        offset: usize,
+        predicate: &Expression,
+        context: &EvaluationContext<'_>,
+        local_values: &HashMap<String, Value>,
+    ) -> Result<Option<Value>, String> {
+        if dimension == target.rank() {
+            let mut leaf_values = local_values.clone();
+            let value = target.elements()[offset];
+            leaf_values.insert("$value".to_string(), Value::scalar(value));
+            return if evaluate_with_locals(predicate, context, &leaf_values)?.truthy()? {
+                Ok(Some(Value::scalar(value)))
+            } else {
+                Ok(None)
+            };
+        }
+
+        let stride = target.shape()[dimension + 1..].iter().product::<usize>();
+        let mut elements = Vec::new();
+        for index in 0..target.shape()[dimension] {
+            let mut nested_values = local_values.clone();
+            nested_values.insert(format!("${dimension}"), Value::scalar(index as f64));
+            if let Some(value) = build(
+                target,
+                dimension + 1,
+                offset + index * stride,
+                predicate,
+                context,
+                &nested_values,
+            )? {
+                elements.push(value);
+            }
+        }
+        Value::from_array_elements(elements).map(Some)
+    }
+
+    let inherited_values = context.local_values.cloned().unwrap_or_default();
+    build(target, 0, 0, &arguments[0], context, &inherited_values)?
+        .ok_or_else(|| "filter produced no array".to_string())
+}
+
+fn evaluate_predicate_mask(
+    predicate: &Expression,
+    target: &Tensor,
+    context: &EvaluationContext<'_>,
+) -> Result<Value, String> {
+    let mask = evaluate_tensor_map(predicate, target, context)?;
+    let mask_tensor = mask
+        .as_tensor()
+        .filter(|value| value.shape() == target.shape())
+        .ok_or_else(|| "array predicate must produce one scalar per element".to_string())?;
+    Value::tensor(
+        target.shape().to_vec(),
+        mask_tensor
+            .elements()
+            .iter()
+            .map(|value| if *value != 0.0 { 1.0 } else { 0.0 })
+            .collect(),
+    )
+}
+
+fn evaluate_count(
+    arguments: &[Expression],
+    context: &EvaluationContext<'_>,
+) -> Result<Value, String> {
+    if !(1..=3).contains(&arguments.len()) {
+        return Err("count expects 1 to 3 arguments".to_string());
+    }
+    if arguments.len() == 1 {
+        let target = arguments[0].evaluate(context)?;
+        return functions::evaluate("count", &[target], context.random);
+    }
+
+    let second = arguments[1].evaluate(context)?;
+    let Some(target) = second.as_tensor() else {
+        if arguments.len() == 3 {
+            return Err("count conditional form expects a vector or matrix".to_string());
+        }
+        let first = arguments[0].evaluate(context)?;
+        return functions::evaluate("count", &[first, second], context.random);
+    };
+    let axis = if arguments.len() == 3 {
+        Some(arguments[2].evaluate(context)?)
+    } else {
+        None
+    };
+    let mask = evaluate_predicate_mask(&arguments[0], target, context)?;
+    let mut values = vec![mask];
+    if let Some(axis) = axis {
+        values.push(axis);
+    }
+    functions::evaluate("count", &values, context.random)
+}
+
+fn evaluate_indices_where(
+    arguments: &[Expression],
+    context: &EvaluationContext<'_>,
+) -> Result<Value, String> {
+    if !(1..=2).contains(&arguments.len()) {
+        return Err("indicesWhere expects 1 or 2 arguments".to_string());
+    }
+    if arguments.len() == 1 {
+        let target = arguments[0].evaluate(context)?;
+        return functions::evaluate("indicesWhere", &[target], context.random);
+    }
+
+    let target = arguments[1].evaluate(context)?;
+    let tensor = target
+        .as_tensor()
+        .ok_or_else(|| "indicesWhere conditional form expects a vector or matrix".to_string())?;
+    let mask = evaluate_predicate_mask(&arguments[0], tensor, context)?;
+    functions::evaluate("indicesWhere", &[mask], context.random)
 }
 
 pub(crate) struct EvaluationContext<'a> {
@@ -1158,6 +1414,23 @@ mod tests {
             vec![
                 "external".to_string(),
                 "n".to_string(),
+                "values".to_string(),
+            ]
+        );
+    }
+
+    #[test]
+    fn array_iteration_values_and_indices_are_local_references() {
+        let expression = parse(
+            "map($value+$0+external,filter($value>$1,source))+count($value>limit,values)",
+        )
+        .expect("expression should parse");
+        assert_eq!(
+            expression.references().into_iter().collect::<Vec<_>>(),
+            vec![
+                "external".to_string(),
+                "limit".to_string(),
+                "source".to_string(),
                 "values".to_string(),
             ]
         );

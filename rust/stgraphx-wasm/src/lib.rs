@@ -104,6 +104,8 @@ mod tests {
     const RANDOM_FIXTURE: &str =
         include_str!("../../stgraphx-engine/tests/fixtures/seeded-random.json");
     const SET_AT_FIXTURE: &str = include_str!("../../stgraphx-engine/tests/fixtures/set-at.json");
+    const ARRAY_ITERATIONS_FIXTURE: &str =
+        include_str!("../../stgraphx-engine/tests/fixtures/array-iterations.json");
 
     #[test]
     fn serializes_scalar_and_tensor_snapshots_for_javascript() {
@@ -166,6 +168,25 @@ mod tests {
         assert_eq!(
             payload["snapshots"][2]["values"]["counter"],
             json!([1.0, 1.0, 0.0])
+        );
+    }
+
+    #[test]
+    fn serializes_array_iteration_results_for_javascript() {
+        let result = execute_model(ARRAY_ITERATIONS_FIXTURE).expect("fixture should execute");
+        let payload: JsonValue = serde_json::from_str(&result).expect("result should be JSON");
+
+        assert_eq!(
+            payload["snapshots"][0]["values"]["mappedMatrix"],
+            json!([[1.0, 3.0], [13.0, 15.0]])
+        );
+        assert_eq!(
+            payload["snapshots"][0]["values"]["matrixIndices"],
+            json!([[1.0, 0.0], [1.0, 1.0]])
+        );
+        assert_eq!(
+            payload["snapshots"][2]["values"]["mappedState"],
+            json!([3.0, 6.0, 9.0])
         );
     }
 }

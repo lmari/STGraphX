@@ -1,0 +1,90 @@
+{
+  "version": 1,
+  "execution": {
+    "t0": 0,
+    "dt": 1,
+    "t1": 2,
+    "integrator": "euler"
+  },
+  "nodes": [
+    {
+      "id": 1,
+      "name": "mappedVector",
+      "type": "algebraic",
+      "output": true,
+      "valueExpression": "map($value*2+$0,[-2,0,3,4])"
+    },
+    {
+      "id": 2,
+      "name": "mappedMatrix",
+      "type": "algebraic",
+      "output": true,
+      "valueExpression": "map($value+$0*10+$1,[[1,2],[3,4]])"
+    },
+    {
+      "id": 3,
+      "name": "filteredVector",
+      "type": "algebraic",
+      "output": true,
+      "valueExpression": "filter($value>0,[-2,0,3,4])"
+    },
+    {
+      "id": 4,
+      "name": "filteredMatrix",
+      "type": "algebraic",
+      "output": true,
+      "valueExpression": "filter($value%2==0,[[1,2],[3,4]])"
+    },
+    {
+      "id": 5,
+      "name": "flattened",
+      "type": "algebraic",
+      "output": true,
+      "valueExpression": "flatten([[1,2],[3,4]])"
+    },
+    {
+      "id": 6,
+      "name": "positiveCount",
+      "type": "algebraic",
+      "output": true,
+      "valueExpression": "count($value>0,[-2,0,3,4])"
+    },
+    {
+      "id": 7,
+      "name": "columnCounts",
+      "type": "algebraic",
+      "output": true,
+      "valueExpression": "count($value>2,[[1,2],[3,4]],0)"
+    },
+    {
+      "id": 8,
+      "name": "positiveIndices",
+      "type": "algebraic",
+      "output": true,
+      "valueExpression": "indicesWhere($value>0,[-2,0,3,4])"
+    },
+    {
+      "id": 9,
+      "name": "matrixIndices",
+      "type": "algebraic",
+      "output": true,
+      "valueExpression": "indicesWhere($value>=3,[[1,2],[3,4]])"
+    },
+    {
+      "id": 10,
+      "name": "pureIndices",
+      "type": "algebraic",
+      "output": true,
+      "valueExpression": "indicesWhere([0,2,0,4])"
+    },
+    {
+      "id": 11,
+      "name": "mappedState",
+      "type": "state",
+      "output": true,
+      "initialState": "map($value+1,[0,1,2])",
+      "stateTransition": "map($value+$0+1,this)"
+    }
+  ],
+  "edges": []
+}

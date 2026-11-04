@@ -279,6 +279,62 @@ async function checkSetAt(rootDir) {
   ]);
 }
 
+async function checkArrayIterations(rootDir) {
+  const runtime = await loadFixture(rootDir, "array-iterations.json");
+
+  await runtime.run();
+  assert.deepStrictEqual(runtime.getOutputHistory(), [
+    {
+      time: 0,
+      values: {
+        mappedVector: [-4, 1, 8, 11],
+        mappedMatrix: [[1, 3], [13, 15]],
+        filteredVector: [3, 4],
+        filteredMatrix: [[2], [4]],
+        flattened: [1, 2, 3, 4],
+        positiveCount: 2,
+        columnCounts: [1, 1],
+        positiveIndices: [2, 3],
+        matrixIndices: [[1, 0], [1, 1]],
+        pureIndices: [1, 3],
+        mappedState: [1, 2, 3],
+      },
+    },
+    {
+      time: 1,
+      values: {
+        mappedVector: [-4, 1, 8, 11],
+        mappedMatrix: [[1, 3], [13, 15]],
+        filteredVector: [3, 4],
+        filteredMatrix: [[2], [4]],
+        flattened: [1, 2, 3, 4],
+        positiveCount: 2,
+        columnCounts: [1, 1],
+        positiveIndices: [2, 3],
+        matrixIndices: [[1, 0], [1, 1]],
+        pureIndices: [1, 3],
+        mappedState: [2, 4, 6],
+      },
+    },
+    {
+      time: 2,
+      values: {
+        mappedVector: [-4, 1, 8, 11],
+        mappedMatrix: [[1, 3], [13, 15]],
+        filteredVector: [3, 4],
+        filteredMatrix: [[2], [4]],
+        flattened: [1, 2, 3, 4],
+        positiveCount: 2,
+        columnCounts: [1, 1],
+        positiveIndices: [2, 3],
+        matrixIndices: [[1, 0], [1, 1]],
+        pureIndices: [1, 3],
+        mappedState: [3, 6, 9],
+      },
+    },
+  ]);
+}
+
 async function checkLocalFunctions(rootDir) {
   const runtime = await loadFixture(rootDir, "local-functions.json");
 
@@ -340,6 +396,7 @@ async function main() {
   await checkRangeSequences(rootDir);
   await checkSeededRandom(rootDir);
   await checkSetAt(rootDir);
+  await checkArrayIterations(rootDir);
   await checkLocalFunctions(rootDir);
   await checkRk4State(rootDir);
   console.log("rust-engine-reference.test.js: ok");

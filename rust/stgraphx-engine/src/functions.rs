@@ -11,6 +11,10 @@ pub(crate) fn is_supported(name: &str) -> bool {
         name,
         "array"
             | "append"
+            | "filter"
+            | "flatten"
+            | "indicesWhere"
+            | "map"
             | "abs"
             | "ceil"
             | "cos"
@@ -46,7 +50,11 @@ pub(crate) fn evaluate(
 ) -> Result<Value, String> {
     match name {
         "array" => Err("array requires an expression body".to_string()),
+        "filter" => Err("filter requires an expression body".to_string()),
+        "map" => Err("map requires an expression body".to_string()),
         "append" => append(arguments),
+        "flatten" => flatten(arguments),
+        "indicesWhere" => indices_where(arguments),
         "abs" => unary(name, arguments, f64::abs),
         "ceil" => unary(name, arguments, f64::ceil),
         "cos" => unary(name, arguments, f64::cos),
@@ -188,6 +196,50 @@ fn set_at(arguments: &[Value]) -> Result<Value, String> {
             Value::tensor(vec![*rows, *columns], elements)
         }
         _ => Err("setAt expects a rectangular matrix".to_string()),
+    }
+}
+
+fn flatten(arguments: &[Value]) -> Result<Value, String> {
+    if arguments.len() != 1 {
+        return Err("flatten expects exactly 1 argument".to_string());
+    }
+    let matrix = arguments[0]
+        .as_tensor()
+        .filter(|value| value.rank() == 2)
+        .ok_or_else(|| "flatten expects a matrix".to_string())?;
+    Value::tensor(vec![matrix.elements().len()], matrix.elements().to_vec())
+}
+
+fn indices_where(arguments: &[Value]) -> Result<Value, String> {
+    if arguments.len() != 1 {
+        return Err("indicesWhere expects 1 or 2 arguments".to_string());
+    }
+    let tensor = arguments[0]
+        .as_tensor()
+        .ok_or_else(|| "indicesWhere expects a vector or matrix".to_string())?;
+    match tensor.shape() {
+        [length] => {
+            let elements = tensor
+                .elements()
+                .iter()
+                .enumerate()
+                .filter_map(|(index, value)| (*value != 0.0).then_some(index as f64))
+                .collect::<Vec<_>>();
+            Value::tensor(vec![elements.len()], elements)
+        }
+        [rows, columns] => {
+            let mut elements = Vec::new();
+            for row in 0..*rows {
+                for column in 0..*columns {
+                    if tensor.elements()[row * *columns + column] != 0.0 {
+                        elements.push(row as f64);
+                        elements.push(column as f64);
+                    }
+                }
+            }
+            Value::tensor(vec![elements.len() / 2, 2], elements)
+        }
+        _ => Err("indicesWhere expects a vector or matrix".to_string()),
     }
 }
 

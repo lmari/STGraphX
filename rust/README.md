@@ -71,6 +71,10 @@ Sono supportati:
 - concatenazione di vettori e matrici con `append(...)`;
 - sostituzione immutabile di elementi, celle e righe con `setAt(...)`, inclusi
   indici negativi;
+- trasformazioni elemento per elemento con `map(...)` e `filter(...)`, usando
+  `$value` per il valore corrente e `$0`, `$1`, ... per gli indici degli assi;
+- appiattimento di matrici con `flatten(...)`, conteggio condizionale con
+  `count(predicato, array[, asse])` e ricerca con `indicesWhere(...)`;
 - parametri globali utilizzabili senza una freccia di dipendenza esplicita;
 - funzioni locali definite dal modello, componibili e non ricorsive, con
   parametri e risultati scalari o tensoriali;
@@ -87,9 +91,10 @@ Sono supportati:
 - diagnostica per nomi e identificativi duplicati, riferimenti mancanti,
   archi incoerenti e cicli algebrici.
 
-Non sono ancora supportate in RK4 le transizioni che combinano `integral(...)`
-con altre operazioni esterne; non sono inoltre supportati sottomodelli o input
-esterni.
+Il filtro conserva solo risultati tensoriali rettangolari e non supporta ancora
+le modalità testuali `rows` e `cols`. Non sono inoltre supportate in RK4 le
+transizioni che combinano `integral(...)` con altre operazioni esterne, né i
+sottomodelli o gli input esterni.
 
 Il core portabile richiede un seme esplicito quando un modello usa funzioni
 casuali. L'adattatore WebAssembly crea un seme temporaneo per la singola
