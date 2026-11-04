@@ -1,0 +1,63 @@
+{
+  "version": 1,
+  "localFunctions": [
+    {
+      "name": "between",
+      "params": ["minimum", "maximum"],
+      "expression": "rand(minimum,maximum)"
+    }
+  ],
+  "execution": {
+    "t0": 0,
+    "dt": 1,
+    "t1": 2,
+    "integrator": "euler",
+    "randomSeed": 123456789
+  },
+  "nodes": [
+    {
+      "id": 1,
+      "name": "fixedRandom",
+      "type": "parameter",
+      "output": true,
+      "valueExpression": "rand()"
+    },
+    {
+      "id": 2,
+      "name": "randomVector",
+      "type": "algebraic",
+      "output": true,
+      "valueExpression": "array(3,rand(5))"
+    },
+    {
+      "id": 3,
+      "name": "randomInteger",
+      "type": "algebraic",
+      "output": true,
+      "valueExpression": "randInt(-2,2)"
+    },
+    {
+      "id": 4,
+      "name": "localSample",
+      "type": "algebraic",
+      "output": true,
+      "valueExpression": "between(10,20)"
+    },
+    {
+      "id": 5,
+      "name": "lazySample",
+      "type": "algebraic",
+      "output": true,
+      "valueExpression": "if(1,rand(),rand())"
+    },
+    {
+      "id": 6,
+      "name": "walk",
+      "type": "state",
+      "output": true,
+      "initialState": "randInt(5)",
+      "stateTransition": "this+if(rand()<0.5,-1,1)"
+    }
+  ],
+  "edges": []
+}

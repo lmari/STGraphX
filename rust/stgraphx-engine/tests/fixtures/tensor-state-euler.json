@@ -1,0 +1,51 @@
+{
+  "version": 1,
+  "execution": {
+    "t0": 0,
+    "dt": 0.5,
+    "t1": 1,
+    "integrator": "euler"
+  },
+  "nodes": [
+    {
+      "id": 1,
+      "name": "velocity",
+      "type": "parameter",
+      "valueExpression": "[2,-1]"
+    },
+    {
+      "id": 2,
+      "name": "offset",
+      "type": "parameter",
+      "valueExpression": "[10,20]"
+    },
+    {
+      "id": 3,
+      "name": "position",
+      "type": "state",
+      "output": true,
+      "initialState": "[0,1]",
+      "stateTransition": "integral(velocity)"
+    },
+    {
+      "id": 4,
+      "name": "shifted",
+      "type": "algebraic",
+      "output": true,
+      "valueExpression": "position*2+offset"
+    },
+    {
+      "id": 5,
+      "name": "lattice",
+      "type": "state",
+      "output": true,
+      "initialState": "[[1,2],[3,4]]",
+      "stateTransition": "this+1"
+    }
+  ],
+  "edges": [
+    { "id": 1, "from": 1, "to": 3 },
+    { "id": 2, "from": 3, "to": 4 },
+    { "id": 3, "from": 2, "to": 4 }
+  ]
+}

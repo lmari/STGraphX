@@ -1,0 +1,86 @@
+{
+  "version": 1,
+  "localFunctions": [
+    {
+      "name": "scaled",
+      "params": ["x", "factor"],
+      "expression": "x*factor",
+      "description": "Scale a scalar or tensor"
+    }
+  ],
+  "execution": {
+    "t0": 0,
+    "dt": 0.1,
+    "t1": 1,
+    "integrator": "rk4"
+  },
+  "nodes": [
+    {
+      "id": 1,
+      "name": "rate",
+      "type": "parameter",
+      "valueExpression": "-1"
+    },
+    {
+      "id": 2,
+      "name": "decay",
+      "type": "state",
+      "output": true,
+      "initialState": "1",
+      "stateTransition": "integral(scaled(this,rate))"
+    },
+    {
+      "id": 3,
+      "name": "vectorDecay",
+      "type": "state",
+      "output": true,
+      "initialState": "[1,2]",
+      "stateTransition": "integral(scaled(this,rate))"
+    },
+    {
+      "id": 4,
+      "name": "position",
+      "type": "state",
+      "output": true,
+      "initialState": "1",
+      "stateTransition": "integral(velocity)"
+    },
+    {
+      "id": 5,
+      "name": "velocity",
+      "type": "state",
+      "output": true,
+      "initialState": "0",
+      "stateTransition": "integral(acceleration)"
+    },
+    {
+      "id": 6,
+      "name": "acceleration",
+      "type": "algebraic",
+      "valueExpression": "-position"
+    },
+    {
+      "id": 7,
+      "name": "counter",
+      "type": "state",
+      "output": true,
+      "initialState": "0",
+      "stateTransition": "this+1"
+    },
+    {
+      "id": 8,
+      "name": "timeIntegral",
+      "type": "state",
+      "output": true,
+      "initialState": "0",
+      "stateTransition": "integral(time)"
+    }
+  ],
+  "edges": [
+    { "id": 1, "from": 1, "to": 2 },
+    { "id": 2, "from": 1, "to": 3 },
+    { "id": 3, "from": 5, "to": 4 },
+    { "id": 4, "from": 6, "to": 5 },
+    { "id": 5, "from": 4, "to": 6 }
+  ]
+}

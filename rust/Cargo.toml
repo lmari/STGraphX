@@ -1,0 +1,15 @@
+[workspace]
+members = [
+  "stgraphx-engine",
+  "stgraphx-cli",
+  "stgraphx-wasm",
+]
+resolver = "2"
+
+[workspace.package]
+version = "0.1.0"
+edition = "2021"
+rust-version = "1.77.2"
+license = "MPL-2.0"
+authors = ["Luca Mari"]
+repository = "https://github.com/lmari/STGraphX"

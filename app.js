@@ -61,6 +61,7 @@ const viewOptionsItem = document.getElementById("viewOptionsItem");
 const toggleGraphBtn = document.getElementById("toggleGraphBtn");
 const toggleWidgetsBtn = document.getElementById("toggleWidgetsBtn");
 const runEvalBtn = document.getElementById("runEvalBtn");
+const runRustEngineBtn = document.getElementById("runRustEngineBtn");
 const runStepBtn = document.getElementById("runStepBtn");
 const runTimedToggleBtn = document.getElementById("runTimedToggleBtn");
 const runResetBtn = document.getElementById("runResetBtn");
@@ -9111,6 +9112,9 @@ function updateModelRunButtons() {
   if (runEvalBtn) {
     runEvalBtn.disabled = blocked;
   }
+  if (runRustEngineBtn) {
+    runRustEngineBtn.disabled = blocked || !globalThis.STGraphXRustEngine;
+  }
   if (runStepBtn) {
     runStepBtn.disabled = blocked;
   }
@@ -14047,6 +14051,14 @@ if (!runtimeSession) {
   throw new Error("STGraphX runtime session is unavailable");
 }
 
+function setFullExecutionRunning(running) {
+  ui.fullRunRunning = Boolean(running);
+  document.body.classList.toggle("full-execution-running", ui.fullRunRunning);
+  updateExecutionProgress();
+  updateEditingLockUi();
+  render();
+}
+
 const runtimeController = globalThis.STGraphXRuntimeController?.createRuntimeController({
   session: runtimeSession,
   getExecution: () => graph.execution,
@@ -14081,20 +14093,8 @@ const runtimeController = globalThis.STGraphXRuntimeController?.createRuntimeCon
     rootExecution: graph.execution,
     stack: [],
   }),
-  onFullExecutionStarted: () => {
-    ui.fullRunRunning = true;
-    document.body.classList.add("full-execution-running");
-    updateExecutionProgress();
-    updateEditingLockUi();
-    render();
-  },
-  onFullExecutionStopped: () => {
-    ui.fullRunRunning = false;
-    document.body.classList.remove("full-execution-running");
-    updateExecutionProgress();
-    updateEditingLockUi();
-    render();
-  },
+  onFullExecutionStarted: () => setFullExecutionRunning(true),
+  onFullExecutionStopped: () => setFullExecutionRunning(false),
   yieldToUi: () => new Promise((resolve) => {
     window.requestAnimationFrame(() => window.requestAnimationFrame(resolve));
   }),
@@ -14105,6 +14105,8 @@ const runtimeController = globalThis.STGraphXRuntimeController?.createRuntimeCon
 if (!runtimeController) {
   throw new Error("STGraphX runtime controller is unavailable");
 }
+
+const rustEngineAdapter = globalThis.STGraphXRustEngine?.createRustEngineAdapter() || null;
 
 function buildRuntimeModelFromData(data, options = {}) {
   return runtimeCore.buildRuntimeModelFromData(data, options);
@@ -14640,6 +14642,108 @@ async function executeOneStep(restartIfEnded = true) {
 
 async function executeNodeExpressions() {
   await runtimeController.executeAll();
+}
+
+function rustEngineNumericExpression(value, path = "input") {
+  if (typeof value === "number" && Number.isFinite(value)) {
+    return String(value);
+  }
+  if (Array.isArray(value)) {
+    value.forEach((entry, index) => rustEngineNumericExpression(entry, `${path}[${index}]`));
+    return JSON.stringify(value);
+  }
+  throw new Error(`Rust engine requires a finite numeric value at ${path}`);
+}
+
+function buildRustEngineModelDocument() {
+  applyWidgetDrivenNodeValues();
+  const modelDocument = exportGraphData();
+  const supportedTypes = new Set(["parameter", "algebraic", "state"]);
+  const unsupportedNode = modelDocument.nodes.find((node) => !supportedTypes.has(String(node?.type ?? "")));
+  if (unsupportedNode) {
+    throw new Error(t("error.rustEngineUnsupportedNode", {
+      name: unsupportedNode.name || unsupportedNode.id,
+      type: unsupportedNode.type || "unknown",
+    }));
+  }
+
+  const runtimeNodes = new Map(graph.nodes.map((node) => [node.id, node]));
+  modelDocument.nodes.forEach((node) => {
+    const runtimeNode = runtimeNodes.get(node.id);
+    if (!runtimeNode?.externalValueEnabled || !["parameter", "algebraic"].includes(node.type)) {
+      return;
+    }
+    node.valueExpression = rustEngineNumericExpression(
+      runtimeNode.externalValue,
+      `node ${runtimeNode.name}`,
+    );
+  });
+  return modelDocument;
+}
+
+function applyRustEngineSnapshot(snapshot, nodeMap) {
+  const values = snapshot?.values || {};
+  graph.nodes.forEach((node) => {
+    if (!Object.prototype.hasOwnProperty.call(values, node.name)) {
+      node.computedValue = null;
+      node.computedError = "";
+      return;
+    }
+    node.computedValue = cloneSimulationOutputValue(values[node.name]);
+    node.computedError = "";
+    node.pendingStateValue = null;
+    node.pendingStateError = "";
+  });
+  graph.execution.currentTime = Number(snapshot.time);
+  updateTableWidgetsFromComputedValues(snapshot.time, nodeMap);
+  updateXYWidgetsFromComputedValues(snapshot.time, nodeMap);
+  recordSimulationOutputSnapshot(snapshot.time);
+}
+
+async function executeModelWithRustEngine() {
+  if (!rustEngineAdapter || isEditingUiLocked()) {
+    return;
+  }
+  if (!enforceStrictDefinitionsIfNeeded()) {
+    return;
+  }
+  if (ensureDebugConfig(graph).breakpointEnabled) {
+    setStatusKey("error.rustEngineBreakpoint");
+    return;
+  }
+
+  stopTimedExecution(false);
+  setFullExecutionRunning(true);
+  setStatusKey("status.rustEngineLoading");
+  try {
+    await new Promise((resolve) => window.requestAnimationFrame(() => window.requestAnimationFrame(resolve)));
+    const modelDocument = buildRustEngineModelDocument();
+    await rustEngineAdapter.load();
+    const startedAt = performance.now();
+    const result = await rustEngineAdapter.executeModel(modelDocument);
+
+    clearAllXYChartPoints();
+    clearAllTableWidgetRows();
+    clearSimulationOutputHistory();
+    const nodeMap = buildNodeNameMap();
+    result.snapshots.forEach((snapshot) => applyRustEngineSnapshot(snapshot, nodeMap));
+    const finalSnapshot = result.snapshots[result.snapshots.length - 1];
+    graph.execution.currentTime = Number(finalSnapshot.time);
+    refreshRuntimeView();
+    updateExecutionProgress(finalSnapshot.time);
+    setStatusKey("status.rustEvalDoneTime", {
+      count: result.nodeCount,
+      steps: result.snapshots.length,
+      duration: formatExecutionDuration(performance.now() - startedAt),
+    });
+  } catch (error) {
+    const message = typeof error === "string"
+      ? error
+      : String(error?.message || error || t("error.evalReason.runtime"));
+    setStatus(t("error.rustEngineFailed", { message }), true);
+  } finally {
+    setFullExecutionRunning(false);
+  }
 }
 
 async function runManualStep() {
@@ -15390,6 +15494,11 @@ if (toggleWidgetsBtn) {
 if (runFullModelBtn) {
   runFullModelBtn.addEventListener("click", () => {
     void executeNodeExpressions();
+  });
+}
+if (runRustEngineBtn) {
+  runRustEngineBtn.addEventListener("click", () => {
+    void executeModelWithRustEngine();
   });
 }
 if (topRunEvalBtn) {

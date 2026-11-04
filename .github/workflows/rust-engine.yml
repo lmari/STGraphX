@@ -1,0 +1,94 @@
+name: Rust engine checks
+
+on:
+  push:
+    paths:
+      - "rust/**"
+      - "rust-engine-wasm/**"
+      - "rust-engine-adapter.js"
+      - "tests/rust-engine-adapter.test.js"
+      - "tests/rust-engine-reference.test.js"
+      - "tests/rust-engine-wasm.test.mjs"
+      - "app.js"
+      - "index.html"
+      - "i18n-inline.js"
+      - "package.json"
+      - ".github/workflows/rust-engine.yml"
+  pull_request:
+    paths:
+      - "rust/**"
+      - "rust-engine-wasm/**"
+      - "rust-engine-adapter.js"
+      - "tests/rust-engine-adapter.test.js"
+      - "tests/rust-engine-reference.test.js"
+      - "tests/rust-engine-wasm.test.mjs"
+      - "app.js"
+      - "index.html"
+      - "i18n-inline.js"
+      - "package.json"
+      - ".github/workflows/rust-engine.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: rust
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Install Rust components
+        run: rustup component add rustfmt clippy
+
+      - name: Check locked dependency graph
+        run: cargo metadata --locked --format-version 1 > /dev/null
+
+      - name: Check JavaScript reference fixture
+        working-directory: .
+        run: node tests/rust-engine-reference.test.js
+
+      - name: Install JavaScript dependencies
+        working-directory: .
+        run: npm ci
+
+      - name: Check JavaScript integration
+        working-directory: .
+        run: npm run check
+
+      - name: Check formatting
+        run: cargo fmt --all -- --check
+
+      - name: Lint
+        run: cargo clippy --workspace --all-targets --locked -- -D warnings
+
+      - name: Test
+        run: cargo test --workspace --all-targets --locked
+
+      - name: Install WebAssembly target
+        run: rustup target add wasm32-unknown-unknown
+
+      - name: Install wasm-pack
+        uses: taiki-e/install-action@v2
+        with:
+          tool: wasm-pack
+
+      - name: Build WebAssembly bridge
+        working-directory: .
+        run: npm run build:rust-engine:wasm
+
+      - name: Test generated WebAssembly bridge
+        working-directory: .
+        run: node tests/rust-engine-wasm.test.mjs
+
+      - name: Upload WebAssembly bridge
+        uses: actions/upload-artifact@v4
+        with:
+          name: stgraphx-rust-engine-wasm
+          path: |
+            rust-engine-wasm/stgraphx_wasm.js
+            rust-engine-wasm/stgraphx_wasm_bg.wasm

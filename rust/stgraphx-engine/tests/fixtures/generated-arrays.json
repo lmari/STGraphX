@@ -1,0 +1,79 @@
+{
+  "version": 1,
+  "execution": {
+    "t0": 0,
+    "dt": 0.5,
+    "t1": 0.5,
+    "integrator": "euler"
+  },
+  "nodes": [
+    {
+      "id": 1,
+      "name": "n",
+      "type": "parameter",
+      "global": true,
+      "valueExpression": "3"
+    },
+    {
+      "id": 2,
+      "name": "axisValues",
+      "type": "parameter",
+      "valueExpression": "[2,4]"
+    },
+    {
+      "id": 3,
+      "name": "indices",
+      "type": "algebraic",
+      "output": true,
+      "valueExpression": "array(n,$0)"
+    },
+    {
+      "id": 4,
+      "name": "selected",
+      "type": "algebraic",
+      "output": true,
+      "valueExpression": "array(axisValues,$0+$i0)"
+    },
+    {
+      "id": 5,
+      "name": "generatedGrid",
+      "type": "algebraic",
+      "output": true,
+      "valueExpression": "array(2,axisValues,$0+$1+$i0+$i1)"
+    },
+    {
+      "id": 6,
+      "name": "joined",
+      "type": "algebraic",
+      "output": true,
+      "valueExpression": "append(append(-1,indices),3)"
+    },
+    {
+      "id": 7,
+      "name": "rows",
+      "type": "algebraic",
+      "output": true,
+      "valueExpression": "append([[1,2],[3,4]],[5,6])"
+    },
+    {
+      "id": 8,
+      "name": "columns",
+      "type": "algebraic",
+      "output": true,
+      "valueExpression": "append([[1,2],[3,4]],[5,6],1)"
+    },
+    {
+      "id": 9,
+      "name": "position",
+      "type": "state",
+      "output": true,
+      "initialState": "array(n,0)",
+      "stateTransition": "integral(array(n,1))"
+    }
+  ],
+  "edges": [
+    { "id": 1, "from": 2, "to": 4 },
+    { "id": 2, "from": 2, "to": 5 },
+    { "id": 3, "from": 3, "to": 6 }
+  ]
+}
