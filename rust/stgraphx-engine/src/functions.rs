@@ -29,6 +29,7 @@ pub(crate) fn is_supported(name: &str) -> bool {
             | "range"
             | "rand"
             | "randInt"
+            | "setAt"
             | "min"
             | "max"
             | "sum"
@@ -63,6 +64,7 @@ pub(crate) fn evaluate(
         "range" => numeric_range(arguments),
         "rand" => random_float(arguments, random),
         "randInt" => random_integer(arguments, random),
+        "setAt" => set_at(arguments),
         "min" => variadic(name, arguments, f64::min),
         "max" => variadic(name, arguments, f64::max),
         "sum" => reduce_sum(arguments),
@@ -115,6 +117,78 @@ fn random_integer(arguments: &[Value], random: Option<&RandomGenerator>) -> Resu
     Ok(Value::scalar(
         (sample * (maximum - minimum + 1.0)).floor() + minimum,
     ))
+}
+
+fn function_index(value: f64, length: usize, name: &str) -> Result<usize, String> {
+    if !value.is_finite() || value.fract() != 0.0 {
+        return Err(format!("{name} expects integer indices"));
+    }
+    let normalized = if value < 0.0 {
+        length as f64 + value
+    } else {
+        value
+    };
+    if normalized < 0.0 || normalized >= length as f64 {
+        return Err(format!("{name} index out of range"));
+    }
+    Ok(normalized as usize)
+}
+
+fn set_at(arguments: &[Value]) -> Result<Value, String> {
+    if arguments.len() != 3 {
+        return Err("setAt expects exactly 3 arguments".to_string());
+    }
+    let target = arguments[0]
+        .as_tensor()
+        .ok_or_else(|| "setAt expects a vector or matrix".to_string())?;
+    let index = &arguments[1];
+    let replacement = &arguments[2];
+
+    match target.shape() {
+        [length] => {
+            let index = index
+                .as_scalar()
+                .ok_or_else(|| "setAt expects integer indices".to_string())?;
+            let replacement = replacement
+                .as_scalar()
+                .ok_or_else(|| "setAt vector replacement must be numeric".to_string())?;
+            let index = function_index(index, *length, "setAt")?;
+            let mut elements = target.elements().to_vec();
+            elements[index] = replacement;
+            Value::tensor(vec![*length], elements)
+        }
+        [rows, columns] => {
+            let mut elements = target.elements().to_vec();
+            match index {
+                Value::Tensor(pair) => {
+                    if pair.shape() != [2] {
+                        return Err(
+                            "setAt expects [row, col] for matrix cell replacement".to_string()
+                        );
+                    }
+                    let row = function_index(pair.elements()[0], *rows, "setAt")?;
+                    let column = function_index(pair.elements()[1], *columns, "setAt")?;
+                    let replacement = replacement
+                        .as_scalar()
+                        .ok_or_else(|| "setAt matrix cell replacement must be numeric".to_string())?;
+                    elements[row * *columns + column] = replacement;
+                }
+                Value::Scalar(row) => {
+                    let row = function_index(*row, *rows, "setAt")?;
+                    let replacement = replacement
+                        .as_tensor()
+                        .filter(|value| value.shape() == [*columns])
+                        .ok_or_else(|| {
+                            "setAt expects a row vector with matching length".to_string()
+                        })?;
+                    let start = row * *columns;
+                    elements[start..start + *columns].copy_from_slice(replacement.elements());
+                }
+            }
+            Value::tensor(vec![*rows, *columns], elements)
+        }
+        _ => Err("setAt expects a rectangular matrix".to_string()),
+    }
 }
 
 const MAX_RANGE_ITEMS: usize = 100_000;
@@ -582,6 +656,42 @@ mod tests {
                 Some(&random),
             ),
             Ok(Value::scalar(1.0))
+        );
+    }
+
+    #[test]
+    fn set_at_replaces_vector_items_matrix_cells_and_rows() {
+        let vector = Value::tensor(vec![3], vec![1.0, 2.0, 3.0]).expect("vector should be valid");
+        assert_eq!(
+            evaluate(
+                "setAt",
+                &[vector, Value::scalar(-2.0), Value::scalar(9.0)],
+                None,
+            ),
+            Value::tensor(vec![3], vec![1.0, 9.0, 3.0])
+        );
+
+        let matrix =
+            Value::tensor(vec![2, 2], vec![1.0, 2.0, 3.0, 4.0]).expect("matrix should be valid");
+        let coordinates =
+            Value::tensor(vec![2], vec![-1.0, 0.0]).expect("coordinates should be valid");
+        assert_eq!(
+            evaluate(
+                "setAt",
+                &[matrix.clone(), coordinates, Value::scalar(8.0)],
+                None,
+            ),
+            Value::tensor(vec![2, 2], vec![1.0, 2.0, 8.0, 4.0])
+        );
+
+        let row = Value::tensor(vec![2], vec![7.0, 6.0]).expect("row should be valid");
+        assert_eq!(
+            evaluate(
+                "setAt",
+                &[matrix, Value::scalar(0.0), row],
+                None,
+            ),
+            Value::tensor(vec![2, 2], vec![7.0, 6.0, 3.0, 4.0])
         );
     }
 }

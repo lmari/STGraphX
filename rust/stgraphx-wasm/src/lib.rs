@@ -103,6 +103,7 @@ mod tests {
     const RK4_FIXTURE: &str = include_str!("../../stgraphx-engine/tests/fixtures/rk4-state.json");
     const RANDOM_FIXTURE: &str =
         include_str!("../../stgraphx-engine/tests/fixtures/seeded-random.json");
+    const SET_AT_FIXTURE: &str = include_str!("../../stgraphx-engine/tests/fixtures/set-at.json");
 
     #[test]
     fn serializes_scalar_and_tensor_snapshots_for_javascript() {
@@ -147,5 +148,24 @@ mod tests {
             0.257_790_743_838_995_7
         );
         assert_eq!(payload["snapshots"][2]["values"]["walk"], -1.0);
+    }
+
+    #[test]
+    fn serializes_set_at_results_for_javascript() {
+        let result = execute_model(SET_AT_FIXTURE).expect("setAt fixture should execute");
+        let payload: JsonValue = serde_json::from_str(&result).expect("result should be JSON");
+
+        assert_eq!(
+            payload["snapshots"][0]["values"]["updatedVector"],
+            json!([1.0, 9.0, 3.0])
+        );
+        assert_eq!(
+            payload["snapshots"][0]["values"]["infected"],
+            json!([[0.0, 0.0, 1.0], [0.0, 0.0, 0.0], [0.0, 0.0, 0.0]])
+        );
+        assert_eq!(
+            payload["snapshots"][2]["values"]["counter"],
+            json!([1.0, 1.0, 0.0])
+        );
     }
 }

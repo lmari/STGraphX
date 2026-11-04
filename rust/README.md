@@ -69,6 +69,8 @@ Sono supportati:
   configurato da `execution.randomSeed`, e funzioni `rand(...)` e
   `randInt(...)`;
 - concatenazione di vettori e matrici con `append(...)`;
+- sostituzione immutabile di elementi, celle e righe con `setAt(...)`, inclusi
+  indici negativi;
 - parametri globali utilizzabili senza una freccia di dipendenza esplicita;
 - funzioni locali definite dal modello, componibili e non ricorsive, con
   parametri e risultati scalari o tensoriali;

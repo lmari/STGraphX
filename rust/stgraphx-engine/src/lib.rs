@@ -57,6 +57,7 @@ pub const fn engine_info() -> EngineInfo {
             "generated-arrays",
             "numeric-range",
             "seeded-random",
+            "array-set-at",
             "tensor-append",
             "global-parameters",
             "model-local-functions",
@@ -80,6 +81,7 @@ mod tests {
         assert!(info.capabilities.contains(&"generated-arrays"));
         assert!(info.capabilities.contains(&"numeric-range"));
         assert!(info.capabilities.contains(&"seeded-random"));
+        assert!(info.capabilities.contains(&"array-set-at"));
         assert!(info.capabilities.contains(&"global-parameters"));
     }
 }
