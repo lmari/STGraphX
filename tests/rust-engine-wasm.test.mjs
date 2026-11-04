@@ -20,6 +20,7 @@ assert.ok(info.capabilities.includes("numeric-range"));
 assert.ok(info.capabilities.includes("seeded-random"));
 assert.ok(info.capabilities.includes("array-set-at"));
 assert.ok(info.capabilities.includes("tensor-append"));
+assert.ok(info.capabilities.includes("array-iterations"));
 assert.ok(info.capabilities.includes("global-parameters"));
 
 const fixture = fs.readFileSync(
@@ -80,5 +81,17 @@ assert.deepEqual(setAtResult.snapshots[0].values.infected, [
   [0, 0, 0],
 ]);
 assert.deepEqual(setAtResult.snapshots[2].values.counter, [1, 1, 0]);
+
+const arrayIterationsFixture = fs.readFileSync(
+  new URL("../rust/stgraphx-engine/tests/fixtures/array-iterations.json", import.meta.url),
+  "utf8",
+);
+const arrayIterationsResult = JSON.parse(executeModelJson(arrayIterationsFixture));
+assert.deepEqual(arrayIterationsResult.snapshots[0].values.mappedVector, [-4, 1, 8, 11]);
+assert.deepEqual(arrayIterationsResult.snapshots[0].values.filteredMatrix, [[2], [4]]);
+assert.deepEqual(arrayIterationsResult.snapshots[0].values.flattened, [1, 2, 3, 4]);
+assert.equal(arrayIterationsResult.snapshots[0].values.positiveCount, 2);
+assert.deepEqual(arrayIterationsResult.snapshots[0].values.matrixIndices, [[1, 0], [1, 1]]);
+assert.deepEqual(arrayIterationsResult.snapshots[2].values.mappedState, [3, 6, 9]);
 
 process.stdout.write("rust-engine-wasm.test.mjs: ok\n");
