@@ -51,7 +51,27 @@ const mechanicalUnits = unitAnalysis.prepareDefinitions([]);
 assert.equal(mechanicalUnits.errors.length, 0);
 assert.equal(unitAnalysis.display(unitAnalysis.parseUnit("N/kg", { definitions: mechanicalUnits.definitions }).value), "m/s^2");
 assert.equal(unitAnalysis.display(unitAnalysis.parseUnit("V*A").value), "W");
+assert.equal(unitAnalysis.display(unitAnalysis.parseUnit("rad/s").value), "rad/s");
+assert.equal(unitAnalysis.display(unitAnalysis.inferAst(context.window.GraphSemantics.parseExpressionAst("sin(angle)"), {
+  resolve: (name) => name === "angle" ? unitAnalysis.parseUnit("rad").value : unitAnalysis.unknown(),
+})), "rad");
+assert(unitAnalysis.same(unitAnalysis.parseUnit("rad/s").value, unitAnalysis.parseUnit("1/s").value));
+const legacyRadianDefinitions = unitAnalysis.prepareDefinitions([{ symbol: "rad", expression: "m/m" }]);
+assert.equal(unitAnalysis.display(unitAnalysis.parseUnit("rad", { definitions: legacyRadianDefinitions.definitions }).value), "rad");
+assert.equal(unitAnalysis.display(unitAnalysis.inferAst(context.window.GraphSemantics.parseExpressionAst("-g/l * sin(p)"), {
+  resolve: (name) => ({
+    g: unitAnalysis.parseUnit("m/s^2").value,
+    l: unitAnalysis.parseUnit("m").value,
+    p: unitAnalysis.parseUnit("rad").value,
+  })[name] || unitAnalysis.unknown(),
+})), "rad/s^2");
 const speed = unitAnalysis.parseUnit("m/s").value;
+assert.equal(unitAnalysis.display(unitAnalysis.inferAst(context.window.GraphSemantics.parseExpressionAst("sqrt(area)"), {
+  resolve: (name) => name === "area" ? unitAnalysis.parseUnit("m^2").value : unitAnalysis.unknown(),
+})), "m");
+assert.equal(unitAnalysis.display(unitAnalysis.inferAst(context.window.GraphSemantics.parseExpressionAst("sqrt(length)"), {
+  resolve: (name) => name === "length" ? unitAnalysis.parseUnit("m").value : unitAnalysis.unknown(),
+})), "m^0.5");
 assert.equal(unitAnalysis.display(unitAnalysis.inferAst(context.window.GraphSemantics.parseExpressionAst("integral(a)"), {
   resolve: (name) => name === "a" ? speed : unitAnalysis.unknown(),
   timeUnit: unitAnalysis.parseUnit("s").value,

@@ -57,8 +57,15 @@
   const isKnown = (value) => value?.kind === "unit" || value?.kind === "zero";
   const same = (a, b) => {
     if (!isKnown(a) || !isKnown(b) || a.kind === "zero" || b.kind === "zero") return true;
-    if (a.factors.size !== b.factors.size) return false;
-    return [...a.factors].every(([name, power]) => Math.abs(power - (b.factors.get(name) || 0)) < EPSILON);
+    // Radians retain an angular marker for display and state propagation, but
+    // remain dimensionally compatible with scalar ratios (the SI convention).
+    const comparableFactors = (value) => new Map(
+      [...value.factors].filter(([name]) => name !== "rad"),
+    );
+    const left = comparableFactors(a);
+    const right = comparableFactors(b);
+    if (left.size !== right.size) return false;
+    return [...left].every(([name, power]) => Math.abs(power - (right.get(name) || 0)) < EPSILON);
   };
   const combine = (a, b, sign) => {
     if (!isKnown(a) || !isKnown(b)) return unknown();
@@ -114,6 +121,14 @@
       if (!UNIT_SYMBOL_RE.test(name)) return { ok: false, reason: "syntax" };
       let power = 1;
       if (tokens[i] === "^") { power = Number(tokens[i + 1]); i += 2; if (!Number.isInteger(power)) return { ok: false, reason: "syntax" }; }
+      // Keep radians as an explicit angular marker even if a legacy model
+      // contains the formerly suggested definition `rad = m/m`.
+      if (name === "rad") {
+        if (!labels.has(name)) labels.set(name, name);
+        factors.set(name, (factors.get(name) || 0) + sign * power);
+        sign = 1;
+        continue;
+      }
       if (definitions.has(name)) {
         if (resolving.has(name)) return { ok: false, reason: "cycle", symbol: name };
         const nextResolving = new Set(resolving);
@@ -201,7 +216,20 @@
       }
       if (node.type === "call") {
         const args = node.args.map(visit); const first = args[0] || unknown();
-        if (["sin", "cos", "tan", "exp", "log", "log10", "log2"].includes(node.name)) return same(first, dimensionless()) ? dimensionless() : fail("dimensionless");
+        if (["sin", "cos", "tan"].includes(node.name)) {
+          const radians = parseUnit("rad").value;
+          // Preserve rad as a semantic marker, while `same()` keeps it
+          // compatible with dimensionless quantities for SI consistency.
+          return same(first, dimensionless()) || same(first, radians)
+            ? (same(first, radians) && first.kind === "unit" && first.factors.has("rad") ? first : dimensionless())
+            : fail("dimensionless");
+        }
+        if (["exp", "log", "log10", "log2"].includes(node.name)) return same(first, dimensionless()) ? dimensionless() : fail("dimensionless");
+        if (node.name === "sqrt") {
+          if (!isKnown(first)) return unknown();
+          if (first.kind === "zero") return zero();
+          return unit(new Map([...first.factors].map(([name, power]) => [name, power / 2])), first.labels);
+        }
         if (["size", "rows", "cols", "count", "argmin", "argmax", "indicesWhere", "rand", "randInt"].includes(node.name)) return dimensionless();
         if (["sum", "mean", "min", "max", "abs", "pos", "neg", "floor", "ceil", "round", "int", "flatten", "resize", "col", "row", "append", "appendRow", "appendCol"].includes(node.name)) return first;
         if (node.name === "integral") {
