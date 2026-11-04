@@ -17,6 +17,7 @@ assert.equal(info.name, "STGraphX Rust engine");
 assert.equal(info.apiVersion, 1);
 assert.ok(info.capabilities.includes("generated-arrays"));
 assert.ok(info.capabilities.includes("numeric-range"));
+assert.ok(info.capabilities.includes("seeded-random"));
 assert.ok(info.capabilities.includes("tensor-append"));
 assert.ok(info.capabilities.includes("global-parameters"));
 
@@ -51,5 +52,18 @@ assert.deepEqual(
   rangeResult.snapshots[0].values.valueAndIndex,
   [[-2, 0], [-1, 1], [0, 2], [1, 3], [2, 4]],
 );
+
+const randomFixture = fs.readFileSync(
+  new URL("../rust/stgraphx-engine/tests/fixtures/seeded-random.json", import.meta.url),
+  "utf8",
+);
+const randomResult = JSON.parse(executeModelJson(randomFixture));
+assert.equal(randomResult.snapshots.length, 3);
+assert.equal(randomResult.snapshots[0].values.fixedRandom, 0.2577907438389957);
+assert.deepEqual(
+  randomResult.snapshots[0].values.randomVector,
+  [0.08268467499874532, 0.807323461631313, 1.8295045790728182],
+);
+assert.equal(randomResult.snapshots[2].values.walk, -1);
 
 process.stdout.write("rust-engine-wasm.test.mjs: ok\n");
