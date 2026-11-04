@@ -18,6 +18,7 @@ assert.equal(info.apiVersion, 1);
 assert.ok(info.capabilities.includes("generated-arrays"));
 assert.ok(info.capabilities.includes("numeric-range"));
 assert.ok(info.capabilities.includes("seeded-random"));
+assert.ok(info.capabilities.includes("array-set-at"));
 assert.ok(info.capabilities.includes("tensor-append"));
 assert.ok(info.capabilities.includes("global-parameters"));
 
@@ -65,5 +66,19 @@ assert.deepEqual(
   [0.08268467499874532, 0.807323461631313, 1.8295045790728182],
 );
 assert.equal(randomResult.snapshots[2].values.walk, -1);
+
+const setAtFixture = fs.readFileSync(
+  new URL("../rust/stgraphx-engine/tests/fixtures/set-at.json", import.meta.url),
+  "utf8",
+);
+const setAtResult = JSON.parse(executeModelJson(setAtFixture));
+assert.deepEqual(setAtResult.snapshots[0].values.updatedVector, [1, 9, 3]);
+assert.deepEqual(setAtResult.snapshots[0].values.updatedCell, [[1, 2], [8, 4]]);
+assert.deepEqual(setAtResult.snapshots[0].values.infected, [
+  [0, 0, 1],
+  [0, 0, 0],
+  [0, 0, 0],
+]);
+assert.deepEqual(setAtResult.snapshots[2].values.counter, [1, 1, 0]);
 
 process.stdout.write("rust-engine-wasm.test.mjs: ok\n");
