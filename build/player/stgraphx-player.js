@@ -1,6 +1,6 @@
 /*!
  * STGraphX Embedded Player Bundle
- * Generated: 2026-10-30T12:21:56.460Z
+ * Generated: 2026-11-04T12:10:51.598Z
  */
 
 /* --- i18n-inline.js --- */
@@ -1024,6 +1024,7 @@ window.STGraphXI18nBundles = {
     "scenarios.title": "Scenari",
     "scenarios.timeBase": "Base dei tempi",
     "units.base": "unità fondamentale SI",
+    "units.radian": "radiante",
     "units.custom": "Unità definite dal modello",
     "units.intro": "Le unità SI derivate sono disponibili automaticamente. Aggiungi simboli del modello con una definizione dimensionale, per esempio N = kg*m/s^2 oppure personaAnno = persona*anno.",
     "units.si": "Unità del Sistema Internazionale",
@@ -2461,6 +2462,7 @@ window.STGraphXI18nBundles = {
     "scenarios.title": "Scenarios",
     "scenarios.timeBase": "Time base",
     "units.base": "SI base unit",
+    "units.radian": "radian",
     "units.custom": "Model-defined units",
     "units.intro": "Derived SI units are available automatically. Add model symbols with a dimensional definition, for example N = kg*m/s^2 or personYear = person*year.",
     "units.si": "International System of Units",

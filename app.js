@@ -7788,7 +7788,7 @@ function renderUnitDefinitionsEditor() {
       graph.unitDefinitions.splice(index, 1);
       analyzeModelStaticIssues();
       scheduleFileStatusRefresh();
-      refreshSidebar();
+      renderUnitDefinitionsEditor();
     });
     row.append(symbol, expression, remove);
     unitDefinitionsList.appendChild(row);
@@ -7806,6 +7806,10 @@ function renderSiUnitDefinitions() {
     row.textContent = `${symbol} — ${t("units.base")}`;
     siUnitDefinitionsList.appendChild(row);
   });
+  const radian = document.createElement("div");
+  radian.className = "si-unit-definition-row";
+  radian.textContent = `rad — ${t("units.radian")}`;
+  siUnitDefinitionsList.appendChild(radian);
   derived.forEach((definition) => {
     const row = document.createElement("div");
     row.className = "si-unit-definition-row";
@@ -15699,7 +15703,7 @@ timeUnitInput?.addEventListener("change", () => { graph.execution.timeUnit = Str
 addUnitDefinitionBtn?.addEventListener("click", () => {
   graph.unitDefinitions.push({ symbol: "", expression: "" });
   scheduleFileStatusRefresh();
-  refreshSidebar();
+  renderUnitDefinitionsEditor();
   unitDefinitionsList?.querySelector(".unit-definition-row:last-child input")?.focus();
 });
 timeEndInput.addEventListener("change", () => commitExecutionInput(timeEndInput, "t1"));
@@ -16958,6 +16962,7 @@ bindModalDragHandle(modelAnalysisModal, ".model-analysis-card");
 bindModalDragHandle(feedbackLoopsModal, ".feedback-loops-card");
 bindModalDragHandle(sensitivityAnalysisModal, ".sensitivity-analysis-card");
 bindModalDragHandle(eightTupleModal, ".eight-tuple-card");
+bindModalDragHandle(unitDefinitionsModal, ".unit-definitions-card", { allowCompactTouch: true });
 bindModalDragHandle(watchDebuggerModal, ".watch-debugger-card");
 bindModalDragHandle(localFunctionsModal, ".local-functions-card");
 bindModalDragHandle(presentationGroupsModal, ".presentation-groups-card");

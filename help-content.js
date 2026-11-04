@@ -680,7 +680,14 @@
 
     function eightTupleNodeAnnotation(node, extraText = "") {
       const parts = [];
-      const description = getNodeDescription(node);
+      // Documentation must remain available even when an incomplete imported
+      // node has malformed descriptive metadata.
+      let description = "";
+      try {
+        description = getNodeDescription(node);
+      } catch (_err) {
+        description = "";
+      }
       if (description) {
         parts.push(description);
       }
@@ -693,7 +700,12 @@
     function eightTupleUnitSuffix(node, expression = "") {
       const unit = String(node?.unit || node?.inferredUnit || "").trim();
       if (!unit) return "";
-      return /^\s*[+-]?(?:\d|\.\d)/.test(String(expression)) ? ` ${unit}` : ` [${unit}]`;
+      const source = String(expression ?? "").trim();
+      // Parameters can use signed, parenthesised, scientific, or locale-style
+      // decimal literals. In all these cases the unit directly follows the
+      // displayed number; brackets remain reserved for symbolic expressions.
+      const numericLiteral = /^\(?\s*[+-]?\s*(?:\d+(?:[.,]\d*)?|[.,]\d+)(?:[eE][+-]?\d+)?\s*\)?$/;
+      return numericLiteral.test(source) ? ` ${unit}` : ` [${unit}]`;
     }
 
     function eightTupleBehaviorExpression(node, template = eightTupleTemplateCache) {
@@ -774,11 +786,13 @@
         .filter(Boolean);
 
       const tLines = [];
+      const timeUnit = String(execution.timeUnit || "s").trim();
+      const timeValue = (value) => `${value}${timeUnit ? ` ${timeUnit}` : ""}`;
       if (Number.isFinite(t0) && Number.isFinite(dt) && Number.isFinite(t1)) {
-        tLines.push(`T = {${t0}, ${t0} + Δt, ..., ${t1}}`);
-        tLines.push(`t0 = ${t0}`);
-        tLines.push(`Δt = ${dt}`);
-        tLines.push(`t1 = ${t1}`);
+        tLines.push(`T = {${timeValue(t0)}, ${timeValue(t0)} + Δt, ..., ${timeValue(t1)}}`);
+        tLines.push(`t0 = ${timeValue(t0)}`);
+        tLines.push(`Δt = ${timeValue(dt)}`);
+        tLines.push(`t1 = ${timeValue(t1)}`);
       } else {
         tLines.push(`T = ${getEightTupleTemplateText(template, "timeUndeclared", "eightTuple.timeUndeclared")}`);
       }
@@ -879,7 +893,6 @@
         return;
       }
       const template = await loadEightTupleTemplate(true);
-      eightTupleContent.innerHTML = "";
       const introNode = document.getElementById("eightTupleIntro");
       const titleNode = document.getElementById("eightTupleTitle");
       if (titleNode) {
@@ -894,23 +907,36 @@
       if (eightTupleExportBtn) {
         eightTupleExportBtn.textContent = template.exportMarkdownLabel || t("eightTuple.exportMarkdown");
       }
-      buildEightTupleSections(getGraph(), template).forEach((section) => {
+      // Build off-DOM first: an exception must not leave an apparently empty
+      // 8-tuple window after the introductory paragraph has already rendered.
+      const fragment = document.createDocumentFragment();
+      try {
+        buildEightTupleSections(getGraph(), template).forEach((section) => {
+          const block = document.createElement("section");
+          block.className = "eight-tuple-section";
+          const heading = document.createElement("h4");
+          heading.textContent = section.title;
+          block.appendChild(heading);
+          if (section.intro) {
+            const intro = document.createElement("p");
+            intro.textContent = section.intro;
+            block.appendChild(intro);
+          }
+          const pre = document.createElement("pre");
+          pre.className = "eight-tuple-pre";
+          pre.textContent = Array.isArray(section.lines) ? section.lines.join("\n") : "";
+          block.appendChild(pre);
+          fragment.appendChild(block);
+        });
+      } catch (err) {
         const block = document.createElement("section");
         block.className = "eight-tuple-section";
-        const heading = document.createElement("h4");
-        heading.textContent = section.title;
-        block.appendChild(heading);
-        if (section.intro) {
-          const intro = document.createElement("p");
-          intro.textContent = section.intro;
-          block.appendChild(intro);
-        }
-        const pre = document.createElement("pre");
-        pre.className = "eight-tuple-pre";
-        pre.textContent = Array.isArray(section.lines) ? section.lines.join("\n") : "";
-        block.appendChild(pre);
-        eightTupleContent.appendChild(block);
-      });
+        const message = document.createElement("p");
+        message.textContent = String(err?.message || err || "Unable to generate the 8-tuple.");
+        block.appendChild(message);
+        fragment.appendChild(block);
+      }
+      eightTupleContent.replaceChildren(fragment);
     }
 
     function openEightTuple() {
