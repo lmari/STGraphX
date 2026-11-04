@@ -45,6 +45,9 @@ jobs:
       - name: Install Rust components
         run: rustup component add rustfmt clippy
 
+      - name: Check locked dependency graph
+        run: cargo metadata --locked --format-version 1 > /dev/null
+
       - name: Check JavaScript reference fixture
         working-directory: .
         run: node tests/rust-engine-reference.test.js
@@ -61,10 +64,10 @@ jobs:
         run: cargo fmt --all -- --check
 
       - name: Lint
-        run: cargo clippy --workspace --all-targets -- -D warnings
+        run: cargo clippy --workspace --all-targets --locked -- -D warnings
 
       - name: Test
-        run: cargo test --workspace --all-targets
+        run: cargo test --workspace --all-targets --locked
 
       - name: Install WebAssembly target
         run: rustup target add wasm32-unknown-unknown
@@ -89,9 +92,3 @@ jobs:
           path: |
             rust-engine-wasm/stgraphx_wasm.js
             rust-engine-wasm/stgraphx_wasm_bg.wasm
-
-      - name: Upload generated Cargo lockfile
-        uses: actions/upload-artifact@v4
-        with:
-          name: stgraphx-rust-engine-cargo-lock
-          path: rust/Cargo.lock

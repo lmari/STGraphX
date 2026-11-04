@@ -113,8 +113,8 @@ Da questa cartella:
 
 ```bash
 cargo fmt --all -- --check
-cargo clippy --workspace --all-targets -- -D warnings
-cargo test --workspace --all-targets
+cargo clippy --workspace --all-targets --locked -- -D warnings
+cargo test --workspace --all-targets --locked
 ```
 
 La CI esegue gli stessi controlli quando cambia il workspace Rust.
