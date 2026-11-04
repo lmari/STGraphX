@@ -78,6 +78,10 @@ jobs:
         working-directory: .
         run: npm run build:rust-engine:wasm
 
+      - name: Test generated WebAssembly bridge
+        working-directory: .
+        run: node tests/rust-engine-wasm.test.mjs
+
       - name: Upload WebAssembly bridge
         uses: actions/upload-artifact@v4
         with:
@@ -85,3 +89,9 @@ jobs:
           path: |
             rust-engine-wasm/stgraphx_wasm.js
             rust-engine-wasm/stgraphx_wasm_bg.wasm
+
+      - name: Upload generated Cargo lockfile
+        uses: actions/upload-artifact@v4
+        with:
+          name: stgraphx-rust-engine-cargo-lock
+          path: rust/Cargo.lock
