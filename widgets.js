@@ -4555,35 +4555,42 @@ function refreshWidgetConfigPanel(widget) {
 
     const rangeRow = document.createElement("div");
     rangeRow.className = "row3-exec";
-    const minInput = document.createElement("input");
-    minInput.type = "number";
-    minInput.step = "any";
-    minInput.value = String(widget.min);
-    minInput.addEventListener("change", () => {
-      runAction(() => {
-        widget.min = Number(minInput.value);
-        sanitizeSliderWidgetOptions(widget);
+    // Number inputs are localized by some browsers (for example, `0.5` is
+    // rendered as `0,5` in an Italian locale). Slider bounds use the same
+    // invariant decimal notation as model expressions and JSON instead.
+    const createSliderDecimalInput = (value) => {
+      const input = document.createElement("input");
+      input.type = "text";
+      input.inputMode = "decimal";
+      input.autocomplete = "off";
+      input.spellcheck = false;
+      input.value = String(value);
+      return input;
+    };
+    const minInput = createSliderDecimalInput(widget.min);
+    const stepInput = createSliderDecimalInput(widget.step);
+    const maxInput = createSliderDecimalInput(widget.max);
+    const sliderRangeInputs = { min: minInput, step: stepInput, max: maxInput };
+    const syncSliderRangeInputs = () => {
+      Object.entries(sliderRangeInputs).forEach(([property, input]) => {
+        input.value = String(widget[property]);
       });
-    });
-    const stepInput = document.createElement("input");
-    stepInput.type = "number";
-    stepInput.step = "any";
-    stepInput.min = "0.0000001";
-    stepInput.value = String(widget.step);
-    stepInput.addEventListener("change", () => {
-      runAction(() => {
-        widget.step = Number(stepInput.value);
-        sanitizeSliderWidgetOptions(widget);
-      });
-    });
-    const maxInput = document.createElement("input");
-    maxInput.type = "number";
-    maxInput.step = "any";
-    maxInput.value = String(widget.max);
-    maxInput.addEventListener("change", () => {
-      runAction(() => {
-        widget.max = Number(maxInput.value);
-        sanitizeSliderWidgetOptions(widget);
+    };
+    const commitSliderRangeInput = (property, input) => {
+      const rawValue = String(input.value ?? "").trim();
+      const value = rawValue ? Number(rawValue.replace(",", ".")) : NaN;
+      if (Number.isFinite(value)) {
+        runAction(() => {
+          widget[property] = value;
+          sanitizeSliderWidgetOptions(widget);
+        });
+      }
+      syncSliderRangeInputs();
+    };
+    Object.entries(sliderRangeInputs).forEach(([property, input]) => {
+      input.addEventListener("change", () => commitSliderRangeInput(property, input));
+      input.addEventListener("keydown", (event) => {
+        if (event.key === "Enter") input.blur();
       });
     });
     rangeRow.appendChild(createCompactField("widget.sliderMin", minInput));

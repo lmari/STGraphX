@@ -3284,6 +3284,7 @@ input.inferred-unit[readonly] { color: #6d7782; background: #f4f6f8; }
   color: #4d6478;
   font-size: 0.94rem;
   line-height: 1.35;
+  white-space: pre-line;
 }
 
 .about-app-meta {
@@ -3309,6 +3310,7 @@ input.inferred-unit[readonly] { color: #6d7782; background: #f4f6f8; }
 .about-app-value {
   color: #173047;
   font-weight: 600;
+  white-space: pre-line;
 }
 
 .about-app-note {
@@ -3319,6 +3321,7 @@ input.inferred-unit[readonly] { color: #6d7782; background: #f4f6f8; }
   color: #55697b;
   font-size: 0.9rem;
   line-height: 1.45;
+  white-space: pre-line;
 }
 
 .eight-tuple-content {

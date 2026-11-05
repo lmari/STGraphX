@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "modelTitle": "",
+  "modelTitle": "pendolo semplice smorzato",
   "localFunctions": [],
   "view": {
     "zoom": 1,
@@ -10,8 +10,8 @@
     "checkUnits": true,
     "gridSize": 20,
     "tooltipDelayMs": 300,
-    "scrollLeft": 161,
-    "scrollTop": 102
+    "scrollLeft": 470,
+    "scrollTop": 87
   },
   "debug": {
     "watches": [],
@@ -22,18 +22,18 @@
   "modelProperties": [],
   "unitDefinitions": [],
   "scenarios": [],
-  "nodeCounter": 9,
-  "edgeCounter": 9,
-  "widgetCounter": 4,
-  "textItemCounter": 2,
-  "presentationGroupCounter": 2,
+  "nodeCounter": 13,
+  "edgeCounter": 16,
+  "widgetCounter": 7,
+  "textItemCounter": 3,
+  "presentationGroupCounter": 3,
   "presentationGroups": [],
   "dashboard": null,
   "execution": {
     "t0": 0,
     "dt": 0.1,
     "timeUnit": "s",
-    "t1": 10,
+    "t1": 50,
     "delayMs": 100,
     "renderEverySteps": 1,
     "decimals": 3,
@@ -50,8 +50,8 @@
       "output": false,
       "global": false,
       "type": "parameter",
-      "x": 400,
-      "y": 160,
+      "x": 500,
+      "y": 140,
       "width": 120,
       "height": 70,
       "fillColor": "",
@@ -79,7 +79,7 @@
       "output": false,
       "global": false,
       "type": "parameter",
-      "x": 400,
+      "x": 500,
       "y": 260,
       "width": 120,
       "height": 70,
@@ -126,7 +126,7 @@
         }
       ],
       "input": false,
-      "valueExpression": "-g/l * sin(p)"
+      "valueExpression": "-g/l*sin(p) - c*v"
     },
     {
       "id": 4,
@@ -134,7 +134,7 @@
       "output": true,
       "global": false,
       "type": "state",
-      "x": 800,
+      "x": 760,
       "y": 140,
       "width": 120,
       "height": 70,
@@ -160,7 +160,7 @@
       "output": true,
       "global": false,
       "type": "state",
-      "x": 1000,
+      "x": 920,
       "y": 200,
       "width": 120,
       "height": 70,
@@ -186,8 +186,8 @@
       "output": false,
       "global": false,
       "type": "parameter",
-      "x": 800,
-      "y": 20,
+      "x": 760,
+      "y": 40,
       "width": 120,
       "height": 70,
       "fillColor": "",
@@ -211,8 +211,8 @@
       "output": false,
       "global": false,
       "type": "parameter",
-      "x": 1000,
-      "y": 80,
+      "x": 920,
+      "y": 100,
       "width": 120,
       "height": 70,
       "fillColor": "",
@@ -229,6 +229,84 @@
         }
       ],
       "valueExpression": "3"
+    },
+    {
+      "id": 10,
+      "name": "x",
+      "output": true,
+      "global": false,
+      "type": "algebraic",
+      "x": 840,
+      "y": 320,
+      "width": 80,
+      "height": 60,
+      "fillColor": "transparent",
+      "strokeColor": "transparent",
+      "unit": "m",
+      "properties": [
+        {
+          "key": "note formula",
+          "value": ""
+        },
+        {
+          "key": "descrizione",
+          "value": ""
+        }
+      ],
+      "input": false,
+      "valueExpression": "[0, l * sin(p)]"
+    },
+    {
+      "id": 11,
+      "name": "y",
+      "output": true,
+      "global": false,
+      "type": "algebraic",
+      "x": 980,
+      "y": 320,
+      "width": 80,
+      "height": 60,
+      "fillColor": "transparent",
+      "strokeColor": "transparent",
+      "unit": "m",
+      "properties": [
+        {
+          "key": "note formula",
+          "value": ""
+        },
+        {
+          "key": "descrizione",
+          "value": ""
+        }
+      ],
+      "input": false,
+      "valueExpression": "[0, -l * cos(p)]"
+    },
+    {
+      "id": 12,
+      "name": "c",
+      "output": false,
+      "global": false,
+      "type": "algebraic",
+      "x": 600,
+      "y": 100,
+      "width": 80,
+      "height": 40,
+      "fillColor": "",
+      "strokeColor": "",
+      "unit": "",
+      "properties": [
+        {
+          "key": "note formula",
+          "value": ""
+        },
+        {
+          "key": "descrizione",
+          "value": "fattore di smorzamento"
+        }
+      ],
+      "input": true,
+      "valueExpression": ""
     }
   ],
   "edges": [
@@ -254,7 +332,12 @@
       "to": 4,
       "color": "",
       "influence": "none",
-      "controlPoints": []
+      "controlPoints": [
+        {
+          "x": 680,
+          "y": 160
+        }
+      ]
     },
     {
       "id": 4,
@@ -287,6 +370,59 @@
       "color": "",
       "influence": "none",
       "controlPoints": []
+    },
+    {
+      "id": 10,
+      "from": 5,
+      "to": 10,
+      "color": "",
+      "influence": "none",
+      "controlPoints": []
+    },
+    {
+      "id": 11,
+      "from": 2,
+      "to": 10,
+      "color": "",
+      "influence": "none",
+      "controlPoints": []
+    },
+    {
+      "id": 12,
+      "from": 5,
+      "to": 11,
+      "color": "",
+      "influence": "none",
+      "controlPoints": []
+    },
+    {
+      "id": 13,
+      "from": 2,
+      "to": 11,
+      "color": "",
+      "influence": "none",
+      "controlPoints": []
+    },
+    {
+      "id": 14,
+      "from": 4,
+      "to": 3,
+      "color": "",
+      "influence": "none",
+      "controlPoints": [
+        {
+          "x": 680,
+          "y": 180
+        }
+      ]
+    },
+    {
+      "id": 15,
+      "from": 12,
+      "to": 3,
+      "color": "",
+      "influence": "none",
+      "controlPoints": []
     }
   ],
   "notes": {
@@ -298,9 +434,9 @@
       "id": 1,
       "type": "xychart",
       "customTitle": "",
-      "x": 100,
-      "y": 320,
-      "width": 440,
+      "x": 300,
+      "y": 360,
+      "width": 400,
       "height": 260,
       "dashboardPageId": null,
       "minimized": false,
@@ -374,7 +510,7 @@
       "type": "xychart",
       "customTitle": "",
       "x": 700,
-      "y": 320,
+      "y": 360,
       "width": 380,
       "height": 300,
       "dashboardPageId": null,
@@ -443,6 +579,136 @@
           "pointSize": 5
         }
       ]
+    },
+    {
+      "id": 5,
+      "type": "xychart",
+      "customTitle": "",
+      "x": 1080,
+      "y": 360,
+      "width": 320,
+      "height": 300,
+      "dashboardPageId": null,
+      "minimized": false,
+      "showTitleBar": true,
+      "fontSize": 13,
+      "outputOnly": false,
+      "showHistory": false,
+      "expandNonScalarValues": false,
+      "tableTextAlign": "left",
+      "tableDecimalDigits": null,
+      "tableColumnFormats": {},
+      "xMin": -1,
+      "xMax": 1,
+      "yMin": -1,
+      "yMax": 1,
+      "xGridStep": null,
+      "yGridStep": null,
+      "xAxisLabel": "",
+      "yAxisLabel": "",
+      "showGrid": true,
+      "showAxes": true,
+      "legendPosition": "none",
+      "source": "",
+      "showNumericValues": true,
+      "showIndices": true,
+      "autoFitCells": true,
+      "cellSize": 28,
+      "valueMin": "auto",
+      "valueMax": "auto",
+      "displayRows": null,
+      "displayCols": null,
+      "colorScheme": "blue",
+      "viewMode": "grid",
+      "surfaceStyle": "solid",
+      "surfaceAzimuth": 45,
+      "surfaceElevation": 32,
+      "surfaceHeightScale": 1,
+      "min": 0,
+      "max": 100,
+      "step": 1,
+      "value": 0,
+      "falseLabel": "",
+      "trueLabel": "",
+      "options": [],
+      "mappings": [],
+      "columns": [],
+      "xyPairs": [
+        {
+          "xSource": "x",
+          "ySource": "y",
+          "showTimeSeries": false,
+          "showInstantProfile": true,
+          "color": "#0e7ac4",
+          "pointColor": "#0e7ac4",
+          "showLine": true,
+          "lineWidth": 2.2,
+          "lineStyle": "solid",
+          "barMode": "none",
+          "showBars": false,
+          "barColor": "#0e7ac4",
+          "barWidth": 2.2,
+          "showArea": false,
+          "areaColor": "#0e7ac4",
+          "pointMode": "all",
+          "pointSize": 2.4
+        }
+      ]
+    },
+    {
+      "id": 6,
+      "type": "slider",
+      "customTitle": "",
+      "x": 340,
+      "y": 0,
+      "width": 220,
+      "height": 82,
+      "dashboardPageId": null,
+      "minimized": false,
+      "showTitleBar": true,
+      "fontSize": 13,
+      "outputOnly": false,
+      "showHistory": false,
+      "expandNonScalarValues": false,
+      "tableTextAlign": "left",
+      "tableDecimalDigits": null,
+      "tableColumnFormats": {},
+      "xMin": "auto",
+      "xMax": "auto",
+      "yMin": "auto",
+      "yMax": "auto",
+      "xGridStep": null,
+      "yGridStep": null,
+      "xAxisLabel": "",
+      "yAxisLabel": "",
+      "showGrid": true,
+      "showAxes": true,
+      "legendPosition": "top-right",
+      "source": "c",
+      "showNumericValues": true,
+      "showIndices": true,
+      "autoFitCells": true,
+      "cellSize": 28,
+      "valueMin": "auto",
+      "valueMax": "auto",
+      "displayRows": null,
+      "displayCols": null,
+      "colorScheme": "blue",
+      "viewMode": "grid",
+      "surfaceStyle": "solid",
+      "surfaceAzimuth": 45,
+      "surfaceElevation": 32,
+      "surfaceHeightScale": 1,
+      "min": 0,
+      "max": 1,
+      "step": 0.1,
+      "value": 0,
+      "falseLabel": "",
+      "trueLabel": "",
+      "options": [],
+      "mappings": [],
+      "columns": [],
+      "xyPairs": []
     }
   ]
 }

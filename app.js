@@ -14831,6 +14831,10 @@ async function executeModelWithRustEngine() {
 
   stopTimedExecution(false);
   setFullExecutionRunning(true);
+  // The Rust bridge executes the model in one coarse-grained WebAssembly
+  // call. Do not inherit a completed time from a preceding execution while
+  // that call is pending: the progress indicator must visibly start at t0.
+  updateExecutionProgress(Number(graph.execution.t0));
   setStatusKey("status.rustEngineLoading");
   try {
     await new Promise((resolve) => window.requestAnimationFrame(() => window.requestAnimationFrame(resolve)));

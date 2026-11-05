@@ -7,7 +7,7 @@
 
 window.STGraphXAppMeta = {
   author: "Luca Mari",
-  releaseDate: "2026.11.04",
+  releaseDate: "2026.11.05",
   license: "MPL-2.0",
   copyright: "Copyright (c) 2026 Luca Mari",
 };
@@ -16,13 +16,13 @@ window.STGraphXI18nBundles = {
   "it": {
     // Application
     "about.authorLabel": "Autore",
-    "about.body": "Versione sperimentale con shell web ed Electron.",
+    "about.body": "Versione sperimentale con shell web ed Electron\nEngine di simulazione JavaScript o Rust.",
     "about.copyrightLabel": "Copyright",
     "about.iconAlt": "Icona di STGraphX",
     "about.licenseLabel": "Licenza",
     "about.subtitle": "Ambiente per lo sviluppo e l'esecuzione di modelli di sistemi dinamici",
     "about.title": "About STGraphX",
-    "about.versionLabel": "Ultimo aggiornamento",
+    "about.versionLabel": "Versione",
     "action.addMapping": "Aggiungi mappatura",
     "action.addOption": "Aggiungi opzione",
     "action.addProperty": "Aggiungi proprietà",
@@ -1472,13 +1472,13 @@ window.STGraphXI18nBundles = {
   "en": {
     // Application
     "about.authorLabel": "Author",
-    "about.body": "Experimental release with web and Electron shells.",
+    "about.body": "Experimental release with web and Electron shells\nJavaScript or Rust simulation engine",
     "about.copyrightLabel": "Copyright",
     "about.iconAlt": "STGraphX icon",
     "about.licenseLabel": "License",
     "about.subtitle": "Workbench for the development and the execution of dynamic system models",
     "about.title": "About STGraphX",
-    "about.versionLabel": "Last update",
+    "about.versionLabel": "Version",
     "action.addMapping": "Add mapping",
     "action.addOption": "Add option",
     "action.addProperty": "Add property",
