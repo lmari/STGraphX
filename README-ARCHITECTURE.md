@@ -33,6 +33,8 @@ Frontend condiviso:
 - `workspace-tabs-core.js`
 - `workspace-runtime-state.js`
 - `value-formatting.js`
+- `scene2d-core.js`
+- `read-data-core.js`
 - `widgets.js`
 - `semantic.js`
 - `graph-functions.js`
@@ -180,6 +182,8 @@ In questo modo configurazione e valutazione dei breakpoint non restano mescolate
 - aggiornamento runtime dei widget
 - pannello di configurazione dei widget
 
+`scene2d-core.js` contiene il renderer Canvas 2D condiviso dalla shell completa e dal player per il widget Scena 2D. Riceve primitive gia valutate e non dipende dal DOM dell'editor.
+
 Espone nel renderer un namespace condiviso:
 
 - `window.Widgets`
@@ -188,9 +192,11 @@ In particolare:
 
 - `window.Widgets.renderWidgets(...)`
 - `window.Widgets.refreshWidgetConfigPanel(...)`
-- helper di creazione come `addTableWidget(...)`, `addMatrixWidget(...)`, `addSliderWidget(...)`, `addXYChartWidget(...)`
+- helper di creazione come `addTableWidget(...)`, `addMatrixWidget(...)`, `addSliderWidget(...)`, `addXYChartWidget(...)`, `addScene2DWidget(...)`
 
 ### Modulo funzioni
+
+`read-data-core.js` definisce la validazione della sintassi `readData(...)`, la conversione dei file XLSX in cache serializzabili e l'estrazione di celle o intervalli. Il caricamento binario del file resta nel layer di piattaforma e il runtime riceve soltanto valori semplici.
 
 `graph-functions.js` contiene il catalogo centralizzato del linguaggio:
 

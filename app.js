@@ -49,6 +49,7 @@ const addTextWidgetItem = document.getElementById("addTextWidgetItem");
 const addMatrixWidgetItem = document.getElementById("addMatrixWidgetItem");
 const addTableWidgetItem = document.getElementById("addTableWidgetItem");
 const addXYChartWidgetItem = document.getElementById("addXYChartWidgetItem");
+const addScene2DWidgetItem = document.getElementById("addScene2DWidgetItem");
 const fitContentItem = document.getElementById("fitContentItem");
 const zoomInItem = document.getElementById("zoomInItem");
 const zoomOutItem = document.getElementById("zoomOutItem");
@@ -419,6 +420,7 @@ const {
   addMatrixWidget,
   addTableWidget,
   addXYChartWidget,
+  addScene2DWidget,
   getNodeByName,
   getModelNodeById,
   buildNodeNameMap,
@@ -985,8 +987,6 @@ const workspace = {
 const submodelTemplateCache = new Map();
 const submodelFileHandleCache = new Map();
 const submodelSourceCache = new Map();
-const READ_DATA_CALL_PATTERN = /\breadData\s*\(/;
-const READ_DATA_LITERAL_CALL_PATTERN = /\breadData\s*\(\s*(['"])((?:\\.|(?!\1).)*)\1\s*\)/g;
 function descriptionPropertyKey() {
   return currentLang === "it" ? "descrizione" : "description";
 }
@@ -1113,6 +1113,7 @@ const ui = {
   tooltipShowTimer: null,
   tooltipHideTimer: null,
   executionPlan: null,
+  pendingConfigurationTabFocus: null,
   activeChartPairByWidgetId: new Map(),
   sidebarNodeId: null,
   lastNodeActivate: null,
@@ -1681,6 +1682,7 @@ function createElectronPathFileHandle(filePath) {
         name: nativePathName(filePath),
         path: filePath,
         text: () => bridge.readTextFile(filePath),
+        arrayBuffer: () => bridge.readBinaryFile(filePath),
       };
     },
     async createWritable() {
@@ -1720,6 +1722,8 @@ function widgetMinDimensions(widget) {
       return { width: 120, height: 96 };
     case "xychart":
       return { width: 244, height: 152 };
+    case "scene2d":
+      return { width: 220, height: 160 };
     default:
       return { width: 160, height: 84 };
   }
@@ -2140,14 +2144,29 @@ function localizeExpressionErrorMessage(message) {
   if (["type", "typeerror"].includes(lower)) {
     return t("error.evalReason.type");
   }
-  if (lower === "readdata is only available in parameters") {
-    return t("expr.error.readDataOnlyParameters");
-  }
   if (lower === "readdata expects a string literal path") {
     return t("expr.error.readDataLiteralPath");
   }
   if (lower === "readdata path is invalid") {
     return t("expr.error.readDataPathInvalid");
+  }
+  if (lower === "readdata expects 4 or 6 arguments") {
+    return t("expr.error.readDataSignature");
+  }
+  if (lower === "readdata supports xlsx files only") {
+    return t("expr.error.readDataXlsxOnly");
+  }
+  if (lower === "readdata expects a string literal sheet name") {
+    return t("expr.error.readDataSheetLiteral");
+  }
+  if (lower === "readdata coordinates must be positive integers") {
+    return t("expr.error.readDataCoordinates");
+  }
+  if (lower === "readdata range end must not precede its start") {
+    return t("expr.error.readDataRangeOrder");
+  }
+  if (lower === "readdata xlsx support is unavailable") {
+    return t("expr.error.readDataXlsxOnly");
   }
   if (lower === "readdata requires access to the model folder") {
     return t("expr.error.readDataModelFolderUnavailable");
@@ -2156,20 +2175,16 @@ function localizeExpressionErrorMessage(message) {
   if (readDataUnavailableMatch) {
     return t("expr.error.readDataFileUnavailable", { path: readDataUnavailableMatch[1] });
   }
-  if (lower === "readdata csv is empty") {
-    return t("expr.error.readDataCsvEmpty");
-  }
-  if (lower === "readdata csv must be rectangular") {
-    return t("expr.error.readDataCsvRectangular");
-  }
-  if (lower === "readdata csv contains an unterminated quoted field") {
-    return t("expr.error.readDataCsvQuotedField");
-  }
-  const readDataNumericCellMatch = raw.match(/^readData CSV cell is not numeric at \[(\d+), (\d+)\]$/i);
-  if (readDataNumericCellMatch) {
-    return t("expr.error.readDataCsvNumericCell", {
-      row: readDataNumericCellMatch[1],
-      col: readDataNumericCellMatch[2],
+  const readDataInvalidXlsxMatch = raw.match(/^readData XLSX file is invalid: (.+)$/i);
+  if (readDataInvalidXlsxMatch) return t("expr.error.readDataXlsxInvalid", { path: readDataInvalidXlsxMatch[1] });
+  const readDataNoWorksheetsMatch = raw.match(/^readData XLSX file has no worksheets: (.+)$/i);
+  if (readDataNoWorksheetsMatch) return t("expr.error.readDataXlsxNoWorksheets", { path: readDataNoWorksheetsMatch[1] });
+  const readDataWorksheetMatch = raw.match(/^readData worksheet is unavailable: (.+)$/i);
+  if (readDataWorksheetMatch) return t("expr.error.readDataWorksheetUnavailable", { sheet: readDataWorksheetMatch[1] });
+  const readDataCellErrorMatch = raw.match(/^readData XLSX cell error at \[(\d+), (\d+)\]: (.+)$/i);
+  if (readDataCellErrorMatch) {
+    return t("expr.error.readDataXlsxCellError", {
+      row: readDataCellErrorMatch[1], col: readDataCellErrorMatch[2], error: readDataCellErrorMatch[3],
     });
   }
   if (lower === "'this' is only available in state transitions") {
@@ -2755,9 +2770,7 @@ function validateExpressionDraft(value, fieldKey = null) {
     return { ok: true, empty: true };
   }
   const allowStateTransitionOnly = Boolean(meta && meta.key === "value" && node && isStateNode(node));
-  const readDataUsage = validateReadDataExpressionUsage(text, {
-    allowReadData: Boolean(node && node.shape === "diamond"),
-  });
+  const readDataUsage = validateReadDataExpressionUsage(text);
   if (!readDataUsage.ok) {
     return { ok: false, empty: false, message: localizeExpressionErrorMessage(readDataUsage.message || "") };
   }
@@ -2809,9 +2822,7 @@ function validateNodeDefinition(node) {
       : { ok: true };
   }
   const validateExpr = (value, fieldKey, options = {}) => {
-    const readDataUsage = validateReadDataExpressionUsage(value, {
-      allowReadData: node?.shape === "diamond",
-    });
+    const readDataUsage = validateReadDataExpressionUsage(value);
     if (!readDataUsage.ok) {
       return { ok: false, reason: "runtime", message: readDataUsage.message || "" };
     }
@@ -3024,6 +3035,8 @@ function widgetDisplayName(widget) {
   }
   const typeLabel = widget.type === "xychart"
     ? t("panel.widgetChart")
+    : widget.type === "scene2d"
+      ? t("panel.widgetScene2D")
     : widget.type === "table"
       ? t("panel.widgetTable")
       : widget.type === "matrix"
@@ -7939,6 +7952,20 @@ function propagateNodeRenameInExpressions(oldName, newName) {
         }));
       }
     }
+    if (widget.type === "scene2d" && Array.isArray(widget.objects)) {
+      widget.objects.forEach((object) => {
+        ["x1", "y1", "x2", "y2", "x", "y", "radius", "rotation", "pivotX", "pivotY"].forEach((property) => {
+          if (typeof object?.[property] === "string") {
+            object[property] = semantics.replaceIdentifierInExpression(object[property], oldName, newName);
+          }
+        });
+        if (typeof object?.text === "string") {
+          object.text = object.text.replace(/\{\{([^{}\n]+)\}\}/gu, (_match, expression) => {
+            return `{{${semantics.replaceIdentifierInExpression(expression, oldName, newName)}}}`;
+          });
+        }
+      });
+    }
     if ((widget.type === "slider" || widget.type === "numeric" || widget.type === "button" || widget.type === "select") && widget.source === oldName) {
       widget.source = newName;
     }
@@ -8096,35 +8123,11 @@ function normalizeSubmodelPath(value) {
 }
 
 function expressionUsesReadData(expression) {
-  return READ_DATA_CALL_PATTERN.test(String(expression ?? ""));
-}
-
-function decodeExpressionStringLiteral(quote, body) {
-  const raw = String(body ?? "");
-  return raw.replace(/\\([\\'"nrt])/g, (_match, escaped) => {
-    if (escaped === "n") {
-      return "\n";
-    }
-    if (escaped === "r") {
-      return "\r";
-    }
-    if (escaped === "t") {
-      return "\t";
-    }
-    return escaped;
-  });
+  return Boolean(globalThis.STGraphXReadDataCore?.expressionUsesReadData?.(expression));
 }
 
 function extractReadDataPaths(expression) {
-  const text = String(expression ?? "");
-  const paths = [];
-  READ_DATA_LITERAL_CALL_PATTERN.lastIndex = 0;
-  let match = READ_DATA_LITERAL_CALL_PATTERN.exec(text);
-  while (match) {
-    paths.push(decodeExpressionStringLiteral(match[1], match[2]));
-    match = READ_DATA_LITERAL_CALL_PATTERN.exec(text);
-  }
-  return paths;
+  return globalThis.STGraphXReadDataCore?.extractReadDataPaths(expression, normalizeReadDataPath) || [];
 }
 
 function normalizeReadDataPath(value) {
@@ -8132,82 +8135,14 @@ function normalizeReadDataPath(value) {
 }
 
 function validateReadDataExpressionUsage(expression, options = {}) {
-  const text = String(expression ?? "");
-  if (!expressionUsesReadData(text)) {
-    return { ok: true };
+  const core = globalThis.STGraphXReadDataCore;
+  if (!core?.validateReadDataExpressionUsage) {
+    return { ok: false, message: "readData XLSX support is unavailable" };
   }
-  if (!options.allowReadData) {
-    return { ok: false, message: "readData is only available in parameters" };
-  }
-  const callCount = (text.match(/\breadData\s*\(/g) || []).length;
-  const paths = extractReadDataPaths(text);
-  if (paths.length !== callCount) {
-    return { ok: false, message: "readData expects a string literal path" };
-  }
-  const invalidPath = paths.find((path) => !normalizeReadDataPath(path));
-  if (invalidPath !== undefined) {
-    return { ok: false, message: "readData path is invalid" };
-  }
-  return { ok: true };
-}
-
-function splitCsvLine(line) {
-  const fields = [];
-  let current = "";
-  let inQuotes = false;
-  for (let idx = 0; idx < line.length; idx += 1) {
-    const ch = line[idx];
-    if (ch === '"') {
-      if (inQuotes && line[idx + 1] === '"') {
-        current += '"';
-        idx += 1;
-      } else {
-        inQuotes = !inQuotes;
-      }
-      continue;
-    }
-    if (ch === "," && !inQuotes) {
-      fields.push(current);
-      current = "";
-      continue;
-    }
-    current += ch;
-  }
-  if (inQuotes) {
-    throw new Error("readData CSV contains an unterminated quoted field");
-  }
-  fields.push(current);
-  return fields;
-}
-
-function parseCsvMatrix(text, sourcePath = "") {
-  const normalizedText = String(text ?? "").replace(/^\uFEFF/, "");
-  const lines = normalizedText
-    .split(/\r?\n/)
-    .map((line) => line.replace(/\r$/, ""))
-    .filter((line) => line.trim().length > 0);
-  if (!lines.length) {
-    throw new Error("readData CSV is empty");
-  }
-  const matrix = lines.map((line, rowIndex) => splitCsvLine(line).map((cell, colIndex) => {
-    const trimmed = String(cell ?? "").trim();
-    if (!trimmed) {
-      return "";
-    }
-    const value = Number(trimmed);
-    if (Number.isFinite(value)) {
-      return value;
-    }
-    return trimmed;
-  }));
-  const width = matrix[0].length;
-  if (!width) {
-    throw new Error("readData CSV is empty");
-  }
-  if (matrix.some((row) => row.length !== width)) {
-    throw new Error("readData CSV must be rectangular");
-  }
-  return matrix;
+  return core.validateReadDataExpressionUsage(expression, {
+    ...options,
+    normalizeReadDataPath,
+  });
 }
 
 function submodelInterfaceSummary(node) {
@@ -9763,9 +9698,11 @@ function exportGraphData() {
       yAxisLabel: String(w.yAxisLabel ?? ""),
       showGrid: w.showGrid !== false,
       showAxes: w.showAxes !== false,
+      equalScale: w.equalScale !== false,
       legendPosition: ["none", "top-right", "top-left", "bottom-right", "bottom-left"].includes(String(w.legendPosition ?? ""))
         ? String(w.legendPosition)
         : "top-right",
+      objects: Array.isArray(w.objects) ? w.objects.map((object) => ({ ...object })) : [],
       source: String(w.source ?? ""),
       showNumericValues: w.showNumericValues !== false,
       showIndices: w.showIndices !== false,
@@ -10029,7 +9966,7 @@ function applyGraphData(data) {
     : [];
   graph.widgets = Array.isArray(data.widgets)
     ? data.widgets
-      .filter((w) => Number.isInteger(w.id) && (w.type === "table" || w.type === "xychart" || w.type === "slider" || w.type === "numeric" || w.type === "matrix" || w.type === "button" || w.type === "led" || w.type === "select" || w.type === "text"))
+      .filter((w) => Number.isInteger(w.id) && (w.type === "table" || w.type === "xychart" || w.type === "scene2d" || w.type === "slider" || w.type === "numeric" || w.type === "matrix" || w.type === "button" || w.type === "led" || w.type === "select" || w.type === "text"))
       .map((w) => ({
         id: w.id,
         type: w.type,
@@ -10062,9 +9999,11 @@ function applyGraphData(data) {
         yAxisLabel: String(w.yAxisLabel ?? "").trim(),
         showGrid: w.showGrid !== false,
         showAxes: w.showAxes !== false,
+        equalScale: w.equalScale !== false,
         legendPosition: ["none", "top-right", "top-left", "bottom-right", "bottom-left"].includes(String(w.legendPosition ?? ""))
           ? String(w.legendPosition)
           : "top-right",
+        objects: Array.isArray(w.objects) ? w.objects.map((object) => ({ ...object })) : [],
         source: String(w.source ?? ""),
         showNumericValues: w.showNumericValues !== false,
         showIndices: w.showIndices !== false,
@@ -10248,6 +10187,40 @@ function cancelTransaction() {
   history.transactionStart = null;
 }
 
+const CONFIGURATION_PANEL_SELECTOR = "#globalPanel, #nodePanel, #edgePanel, #widgetPanel, #textPanel";
+const CONFIGURATION_FOCUSABLE_SELECTOR = "input:not([type='hidden']):not([disabled]), select:not([disabled]), textarea:not([disabled]), button:not([disabled]), [tabindex]:not([tabindex='-1'])";
+
+function configurationFocusableElements(panel) {
+  if (!panel) return [];
+  return [...panel.querySelectorAll(CONFIGURATION_FOCUSABLE_SELECTOR)]
+    .filter((element) => !element.closest(".hidden") && element.getAttribute("aria-hidden") !== "true");
+}
+
+function queueConfigurationTabFocus(event) {
+  if (event.key !== "Tab" || event.defaultPrevented) return;
+  const panel = event.target?.closest?.(CONFIGURATION_PANEL_SELECTOR);
+  if (!panel || panel.classList.contains("hidden")) return;
+  const fields = configurationFocusableElements(panel);
+  const index = fields.indexOf(event.target);
+  const nextIndex = index + (event.shiftKey ? -1 : 1);
+  if (index < 0 || nextIndex < 0 || nextIndex >= fields.length) return;
+  const request = { panelId: panel.id, nextIndex };
+  ui.pendingConfigurationTabFocus = request;
+  window.setTimeout(() => {
+    if (ui.pendingConfigurationTabFocus === request) ui.pendingConfigurationTabFocus = null;
+  }, 100);
+}
+
+function restoreQueuedConfigurationTabFocus() {
+  const request = ui.pendingConfigurationTabFocus;
+  if (!request) return;
+  ui.pendingConfigurationTabFocus = null;
+  window.requestAnimationFrame(() => {
+    const panel = document.getElementById(request.panelId);
+    configurationFocusableElements(panel)[request.nextIndex]?.focus({ preventScroll: true });
+  });
+}
+
 function runAction(mutator) {
   if (isExecutionFrozen()) {
     resetExecution();
@@ -10260,7 +10233,10 @@ function runAction(mutator) {
     analyzeModelStaticIssues();
   }
   render();
+  restoreQueuedConfigurationTabFocus();
 }
+
+document.addEventListener("keydown", queueConfigurationTabFocus, true);
 
 function updateHistoryButtons() {
   const frozen = isEditingUiLocked();
@@ -10495,6 +10471,7 @@ function updateEditingLockUi() {
     addMatrixWidgetItem,
     addTableWidgetItem,
     addXYChartWidgetItem,
+    addScene2DWidgetItem,
   ].forEach((btn) => {
     if (btn) {
       btn.disabled = frozen;
@@ -11253,6 +11230,8 @@ function refreshSidebar() {
     if (widgetPanelTitle) {
       widgetPanelTitle.textContent = widget.type === "xychart"
         ? t("panel.widgetChart")
+        : widget.type === "scene2d"
+          ? t("panel.widgetScene2D")
         : widget.type === "slider"
           ? t("panel.widgetSlider")
           : widget.type === "numeric"
@@ -13036,7 +13015,7 @@ function importGraphData(data) {
   const maxTextItemId = textItems.reduce((max, item) => Math.max(max, item.id), 0);
   const widgets = Array.isArray(data.widgets)
     ? data.widgets
-      .filter((w) => Number.isInteger(w.id) && (w.type === "table" || w.type === "xychart" || w.type === "slider" || w.type === "numeric" || w.type === "matrix" || w.type === "button" || w.type === "led" || w.type === "select" || w.type === "text"))
+      .filter((w) => Number.isInteger(w.id) && (w.type === "table" || w.type === "xychart" || w.type === "scene2d" || w.type === "slider" || w.type === "numeric" || w.type === "matrix" || w.type === "button" || w.type === "led" || w.type === "select" || w.type === "text"))
       .map((w) => ({
         id: w.id,
         type: w.type,
@@ -13069,9 +13048,11 @@ function importGraphData(data) {
         yAxisLabel: String(w.yAxisLabel ?? "").trim(),
         showGrid: w.showGrid !== false,
         showAxes: w.showAxes !== false,
+        equalScale: w.equalScale !== false,
         legendPosition: ["none", "top-right", "top-left", "bottom-right", "bottom-left"].includes(String(w.legendPosition ?? ""))
           ? String(w.legendPosition)
           : "top-right",
+        objects: Array.isArray(w.objects) ? w.objects.map((object) => ({ ...object })) : [],
         source: String(w.source ?? ""),
         showNumericValues: w.showNumericValues !== false,
         showIndices: w.showIndices !== false,
@@ -14055,6 +14036,7 @@ const runtimeCore = globalThis.STGraphXRuntimeCore?.createRuntimeCore({
   isSubmodelNode,
   normalizeSubmodelPath,
   normalizeReadDataPath,
+  readDataFromWorkbook: globalThis.STGraphXReadDataCore?.readDataFromWorkbook,
   normalizeEdgeColor,
   normalizeEdgeInfluence,
   parseModelPropertyStoredValue,
@@ -14090,7 +14072,7 @@ const runtimeLoader = globalThis.STGraphXRuntimeLoader?.createRuntimeLoader({
   expressionUsesReadData,
   validateReadDataExpressionUsage,
   extractReadDataPaths,
-  parseCsvMatrix,
+  parseXlsxWorkbook: globalThis.STGraphXReadDataCore?.parseXlsxWorkbook,
   normalizeSubmodelPath,
   isSubmodelNode,
   getSubmodelTemplate: (modelPath) => {
@@ -14217,10 +14199,6 @@ function setModelPropertyValue(key, value) {
     graph.properties.push({ key: name, value: stored });
   }
   return value;
-}
-
-function readDataFromModelCache(model, relativePath) {
-  return runtimeCore.readDataFromModelCache(model, relativePath);
 }
 
 function clearSimulationOutputHistory() {
@@ -15553,6 +15531,12 @@ addXYChartWidgetItem.addEventListener("click", () => {
     addXYChartWidget();
   });
   setStatusKey("status.widgetChartCreated");
+});
+addScene2DWidgetItem?.addEventListener("click", () => {
+  runAction(() => {
+    addScene2DWidget();
+  });
+  setStatusKey("status.widgetScene2DCreated");
 });
 
 fitContentItem.addEventListener("click", () => {

@@ -58,6 +58,10 @@
       async text() {
         return invoke("read_text_file", { path: filePath });
       },
+      async arrayBuffer() {
+        const bytes = await invoke("read_binary_file", { path: filePath });
+        return new Uint8Array(bytes).buffer;
+      },
     };
   }
 

@@ -77,6 +77,20 @@ contextBridge.exposeInMainWorld("STGraphXElectronFiles", {
     }
     throw err;
   },
+  async readBinaryFile(filePath) {
+    const result = await ipcRenderer.invoke("stgraphx:read-binary-file", String(filePath || ""));
+    if (result?.ok && result.bytes != null) {
+      if (result.bytes instanceof ArrayBuffer) return result.bytes;
+      if (result.bytes instanceof Uint8Array) {
+        return result.bytes.buffer.slice(result.bytes.byteOffset, result.bytes.byteOffset + result.bytes.byteLength);
+      }
+      if (Array.isArray(result.bytes?.data)) return new Uint8Array(result.bytes.data).buffer;
+    }
+    const err = new Error(String(result?.message || "Unable to read file"));
+    err.code = String(result?.code || "READ_ERROR");
+    if (err.code === "ENOENT") err.name = "NotFoundError";
+    throw err;
+  },
   writeTextFile: (filePath, text) => ipcRenderer.invoke(
     "stgraphx:write-text-file",
     String(filePath || ""),

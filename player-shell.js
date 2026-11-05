@@ -8,6 +8,8 @@
 (function initPlayerShell(global) {
   const SVG_NS = "http://www.w3.org/2000/svg";
   const PLAYER_LANGS = new Set(["it", "en"]);
+  const scene2dCore = global.STGraphXScene2D || {};
+  const readDataCore = global.STGraphXReadDataCore || {};
   const SUBMODEL_LIBRARY_ICONS = Object.freeze({
     module: "◆",
     layers: "▤",
@@ -107,6 +109,49 @@
 
   function buildNodeMap(model) {
     return new Map((model?.nodes || []).map((node) => [String(node?.name ?? ""), node]));
+  }
+
+  function playerSceneExpressionContext(model, timeValue) {
+    const execution = model?.execution || {};
+    const context = {
+      time: Number.isFinite(Number(timeValue)) ? Number(timeValue) : Number(execution.t0) || 0,
+      t0: Number(execution.t0) || 0,
+      t1: Number(execution.t1) || 0,
+      dt: Number(execution.dt) || 0,
+    };
+    (model?.nodes || []).forEach((node) => {
+      if (!node?.output || node?.computedError || node?.computedValue == null) return;
+      context[String(node.name ?? "")] = node.computedValue;
+    });
+    return context;
+  }
+
+  function evaluatePlayerSceneExpression(expression, context, localFunctions = []) {
+    const result = global.GraphSemantics?.evaluateValueExpression?.(expression, context, { localFunctions });
+    const value = result?.ok ? Number(result.value) : NaN;
+    return Number.isFinite(value) ? value : NaN;
+  }
+
+  function playerSceneObjects(widget, model, timeValue) {
+    const context = playerSceneExpressionContext(model, timeValue);
+    const localFunctions = Array.isArray(model?.localFunctions) ? model.localFunctions : [];
+    return (Array.isArray(widget?.objects) ? widget.objects : []).map((object) => {
+      const out = { ...object };
+      if (object?.type === "segment") {
+        ["x1", "y1", "x2", "y2"].forEach((key) => { out[key] = evaluatePlayerSceneExpression(object[key], context, localFunctions); });
+      } else if (object?.type === "circle") {
+        ["x", "y", "radius", "rotation", "pivotX", "pivotY"].forEach((key) => { out[key] = evaluatePlayerSceneExpression(object[key], context, localFunctions); });
+      } else if (object?.type === "text") {
+        ["x", "y", "rotation"].forEach((key) => { out[key] = evaluatePlayerSceneExpression(object[key], context, localFunctions); });
+        out.pivotX = out.x;
+        out.pivotY = out.y;
+        out.text = String(object.text ?? "").replace(/\{\{([^{}\n]+)\}\}/gu, (_match, source) => {
+          const value = evaluatePlayerSceneExpression(source, context, localFunctions);
+          return Number.isFinite(value) ? String(Number(value.toFixed(6))) : "?";
+        });
+      }
+      return out;
+    });
   }
 
   function nodeBoundaryPoint(node, targetX, targetY) {
@@ -491,9 +536,11 @@
       yAxisLabel: String(widget?.yAxisLabel ?? "").trim(),
       showGrid: widget?.showGrid !== false,
       showAxes: widget?.showAxes !== false,
+      equalScale: widget?.equalScale !== false,
       legendPosition: ["none", "top-right", "top-left", "bottom-right", "bottom-left"].includes(String(widget?.legendPosition ?? ""))
         ? String(widget.legendPosition)
         : "top-right",
+      objects: Array.isArray(widget?.objects) ? widget.objects.map((object) => ({ ...object })) : [],
       showHistory: Boolean(widget?.showHistory),
       expandNonScalarValues: Boolean(widget?.expandNonScalarValues) && !Boolean(widget?.showHistory),
       tableTextAlign: ["left", "center", "right"].includes(String(widget?.tableTextAlign ?? "")) ? String(widget.tableTextAlign) : "left",
@@ -1643,6 +1690,16 @@
             border-radius: 6px;
             background: #fff;
           }
+          .scene2d-canvas {
+            display: block;
+            width: 100%;
+            height: 100%;
+            min-height: 104px;
+            border: 1px solid #d9e2ea;
+            border-radius: 6px;
+            box-sizing: border-box;
+            background: #fff;
+          }
           .led-wrap {
             display: grid;
             justify-items: center;
@@ -2297,6 +2354,7 @@
         !runtimeSharedApi && "STGraphXRuntimeShared",
         !runtimeCoreApi && "STGraphXRuntimeCore",
         !runtimeLoaderApi && "STGraphXRuntimeLoader",
+        !readDataCore.readDataFromWorkbook && "STGraphXReadDataCore",
         !semanticsApi && "GraphSemantics",
       ].filter(Boolean);
       if (missingModules.length > 0) {
@@ -2337,6 +2395,7 @@
         isSubmodelNode,
         normalizeSubmodelPath: runtimeShared.normalizeSubmodelPath,
         normalizeReadDataPath: runtimeShared.normalizeReadDataPath,
+        readDataFromWorkbook: readDataCore.readDataFromWorkbook,
         normalizeEdgeColor: runtimeShared.normalizeEdgeColor,
         normalizeEdgeInfluence: runtimeShared.normalizeEdgeInfluence,
         parseModelPropertyStoredValue: runtimeShared.parseModelPropertyStoredValue,
@@ -2377,59 +2436,13 @@
       const runtimeLoader = runtimeLoaderApi.createRuntimeLoader({
         t: this.t.bind(this),
         normalizeReadDataPath: runtimeShared.normalizeReadDataPath,
-        expressionUsesReadData: (expression) => /\breadData\s*\(/.test(String(expression ?? "")),
-        validateReadDataExpressionUsage: (expression, options = {}) => {
-          const text = String(expression ?? "");
-          if (!/\breadData\s*\(/.test(text)) {
-            return { ok: true };
-          }
-          if (!options.allowReadData) {
-            return { ok: false, message: "readData is only available in parameters" };
-          }
-          const literalPattern = /\breadData\s*\(\s*(['"])((?:\\.|(?!\1).)*)\1\s*\)/g;
-          const callCount = (text.match(/\breadData\s*\(/g) || []).length;
-          const paths = [];
-          literalPattern.lastIndex = 0;
-          let match = literalPattern.exec(text);
-          while (match) {
-            paths.push(String(match[2] ?? "").replace(/\\([\\'"nrt])/g, (_m, escaped) => (
-              escaped === "n" ? "\n" : escaped === "r" ? "\r" : escaped === "t" ? "\t" : escaped
-            )));
-            match = literalPattern.exec(text);
-          }
-          if (paths.length !== callCount) {
-            return { ok: false, message: "readData expects a string literal path" };
-          }
-          const invalidPath = paths.find((path) => !runtimeShared.normalizeReadDataPath(path));
-          if (invalidPath !== undefined) {
-            return { ok: false, message: "readData path is invalid" };
-          }
-          return { ok: true };
-        },
-        extractReadDataPaths: (expression) => {
-          const literalPattern = /\breadData\s*\(\s*(['"])((?:\\.|(?!\1).)*)\1\s*\)/g;
-          const paths = [];
-          literalPattern.lastIndex = 0;
-          let match = literalPattern.exec(String(expression ?? ""));
-          while (match) {
-            paths.push(String(match[2] ?? "").replace(/\\([\\'"nrt])/g, (_m, escaped) => (
-              escaped === "n" ? "\n" : escaped === "r" ? "\r" : escaped === "t" ? "\t" : escaped
-            )));
-            match = literalPattern.exec(String(expression ?? ""));
-          }
-          return paths;
-        },
-        parseCsvMatrix: (text) => {
-          const lines = String(text ?? "").replace(/^\uFEFF/, "").split(/\r?\n/).filter((line) => line.trim().length > 0);
-          if (!lines.length) {
-            throw new Error("readData CSV is empty");
-          }
-          return lines.map((line) => line.split(",").map((cell) => {
-            const trimmed = String(cell ?? "").trim();
-            const value = Number(trimmed);
-            return Number.isFinite(value) ? value : trimmed;
-          }));
-        },
+        expressionUsesReadData: readDataCore.expressionUsesReadData,
+        validateReadDataExpressionUsage: (expression, options = {}) => readDataCore.validateReadDataExpressionUsage(expression, {
+          ...options,
+          normalizeReadDataPath: runtimeShared.normalizeReadDataPath,
+        }),
+        extractReadDataPaths: (expression) => readDataCore.extractReadDataPaths(expression, runtimeShared.normalizeReadDataPath),
+        parseXlsxWorkbook: readDataCore.parseXlsxWorkbook,
         normalizeSubmodelPath: runtimeShared.normalizeSubmodelPath,
         isSubmodelNode,
         getSubmodelTemplate: (modelPath) => {
@@ -2502,12 +2515,12 @@
             name: String(relativePath),
             async getFile() {
               return {
-                async text() {
+                async arrayBuffer() {
                   const response = await fetch(absoluteUrl);
                   if (!response.ok) {
                     throw new Error(`Failed to load ${relativePath}`);
                   }
-                  return response.text();
+                  return response.arrayBuffer();
                 },
               };
             },
@@ -3765,6 +3778,20 @@
         });
         table.appendChild(tbody);
         body.appendChild(table);
+        return;
+      }
+      if (widget.type === "scene2d") {
+        const canvas = document.createElement("canvas");
+        canvas.className = "scene2d-canvas";
+        canvas.style.display = "block";
+        canvas.width = Math.max(160, Math.floor(widget.width * this._zoom - 24));
+        canvas.height = Math.max(120, Math.floor(widget.height * this._zoom - 54));
+        scene2dCore.drawScene2D?.(
+          canvas,
+          playerSceneObjects(widget, this._state.runtimeModel, this.currentDisplayTime()),
+          widget,
+        );
+        body.appendChild(canvas);
         return;
       }
       if (widget.type === "xychart") {

@@ -1,6 +1,6 @@
 # STGraphX - Riferimento rapido alle funzioni
 
-Generato automaticamente da `i18n-inline.js` e `graph-functions.js` (release 2026.09.16).
+Generato automaticamente da `i18n-inline.js` e `graph-functions.js` (release 2026.11.05).
 
 Rigenerare con `npm run docs:functions`.
 
@@ -52,7 +52,7 @@ Istante finale dell'esecuzione.
 
 `this`
 
-Valore corrente del nodo di stato.
+Valore corrente della variabile di stato.
 
 ---
 
@@ -79,7 +79,7 @@ Una proprietà custom del modello.
 
 `getProperty(name, fallback)`
 
-Una proprietà custom del nodo.
+Una proprietà custom della variabile.
 
 **Esempi**
 - `getProperty("unit", "")`
@@ -90,7 +90,7 @@ Una proprietà custom del nodo.
 
 `if(condition, value[, condition, value, ...], defaultValue)`
 
-Valore associato alla prima condizione vera, valutata in ordine, oppure defaultValue. La valutazione e' pigra e opera elemento per elemento con condizioni vettoriali o matriciali.
+Valore associato alla prima condizione vera, valutata in ordine, oppure defaultValue. La valutazione è pigra e opera elemento per elemento con condizioni vettoriali o matriciali.
 
 **Esempi**
 - `if(x > 0, x, 0)`
@@ -135,12 +135,13 @@ Una successione numerica con estremo finale escluso.
 
 ### `readData`
 
-`readData(path)`
+`readData(path, sheet, row, column) | readData(path, sheet, row1, column1, row2, column2)`
 
-Matrice di valori numerici e/o testuali letta da un file CSV relativo alla cartella del modello. Disponibile solo nei parametri.
+Legge valori da un file XLSX relativo alla cartella del modello. Con quattro argomenti restituisce una cella; con sei argomenti legge un intervallo con estremi inclusi, restituendo uno scalare, un vettore o una matrice. Righe e colonne iniziano da 1 e possono essere espressioni che producono interi positivi.
 
 **Esempi**
-- `readData("data/values.csv")`
+- `readData("data/values.xlsx", "Dati", time+1, 3)`
+`readData("data/values.xlsx", "Dati", 2, 1, 10, 4)`
 
 ---
 
@@ -172,7 +173,7 @@ Assegnazione di una proprietà custom del modello, con restituzione del valore a
 
 `setProperty(name, value)`
 
-Assegnazione di una proprietà custom del nodo, con restituzione del valore assegnato.
+Assegnazione di una proprietà custom della variabile, con restituzione del valore assegnato.
 
 **Esempi**
 - `setProperty("unit", "kg")`
@@ -183,7 +184,7 @@ Assegnazione di una proprietà custom del nodo, con restituzione del valore asse
 
 `append(value1, value2[, value3, ...]) | append(vector|matrix, ..., axis)`
 
-Concatena in sequenza due o piu valori. Su vettori aggiunge elementi o concatena vettori. Se e presente una matrice, axis=0 (default) concatena righe e axis=1 colonne: l'ordine degli argomenti stabilisce se sono inserite prima o dopo la matrice. Le matrici agents supportano solo axis=0.
+Concatena in sequenza due o piu valori. Su vettori aggiunge elementi o concatena vettori. Se è presente una matrice, axis=0 (default) concatena righe e axis=1 colonne: l'ordine degli argomenti stabilisce se sono inserite prima o dopo la matrice. Le matrici agents supportano solo axis=0.
 
 **Esempi**
 - `append([1,2], 3, [4,5])`
@@ -261,6 +262,20 @@ Matrice trasformata in vettore concatenando le righe.
 
 **Esempi**
 - `flatten([[1,2],[3,4]]) -> [1,2,3,4]`
+
+---
+
+### `frequency`
+
+`frequency(vector[, n|bins, mode])`
+
+Matrice a due colonne `[centro, frequenza]` calcolata da un vettore numerico. Senza altri argomenti usa come categorie i valori distinti, in ordine crescente. Con `n` intero costruisce n bin uniformi fra minimo e massimo. Con `mode='categories'` il vettore indica le categorie; con `mode='edges'` indica i limiti crescenti degli intervalli, chiusi a sinistra e aperti a destra salvo l'ultimo.
+
+**Esempi**
+- `frequency([1,2,2,3])`
+- `frequency([1,2,2,3], 2)`
+- `frequency([0,10,10,20], [0,10,20], "categories")`
+- `frequency([0.2,0.8,1.1], [0,1,2], "edges")`
 
 ---
 
@@ -574,6 +589,19 @@ Distribuzione di probabilità uniforme (parametri di default: `min=0`, `max=1`).
 - `uniform([0,10], 0.25, 2)`
 
 ## Funzioni matematiche
+
+### `%`
+
+`a % b`
+
+Resto euclideo della divisione di `a` per `b`. Con un divisore positivo il risultato è compreso tra `0` e `b-1`, anche se `a` è negativo. Opera elemento per elemento su vettori e matrici.
+
+**Esempi**
+- `7 % 3 -> 1`
+- `-1 % 3 -> 2`
+- `[1,2,3] % 2 -> [1,0,1]`
+
+---
 
 ### `abs`
 
@@ -936,7 +964,7 @@ Indice di colonna dell'agente o cella corrente nei contesti matriciali agent-bas
 
 `agentIndicesWhere(cond, agents)`
 
-Gli indici degli agenti per cui la condizione e vera. Nella condizione self e la riga dell'agente corrente e $i il suo indice.
+Gli indici degli agenti per cui la condizione è vera. Nella condizione self è la riga dell'agente corrente e $i il suo indice.
 
 **Esempi**
 - `agentIndicesWhere(self[STATE] == 1, agents)`
@@ -1004,7 +1032,7 @@ La colonna j-esima della matrice come vettore.
 
 `filterAgents(cond, agents)`
 
-La sotto-popolazione degli agenti che soddisfano la condizione. Nella condizione self e la riga dell'agente corrente e $i il suo indice.
+La sotto-popolazione degli agenti che soddisfano la condizione. Nella condizione self è la riga dell'agente corrente e $i il suo indice.
 
 **Esempi**
 - `filterAgents(self[ENERGY] > 0, agents)`
@@ -1015,7 +1043,7 @@ La sotto-popolazione degli agenti che soddisfano la condizione. Nella condizione
 
 `mapAgents(expr, agents)`
 
-Trasformazione riga per riga di tutti gli agenti. expr deve restituire per ogni agente una nuova riga con la stessa lunghezza. In expr self e la riga dell'agente corrente e $i il suo indice.
+Trasformazione riga per riga di tutti gli agenti. expr deve restituire per ogni agente una nuova riga con la stessa lunghezza. In expr self è la riga dell'agente corrente e $i il suo indice.
 
 **Esempi**
 - `mapAgents(setAt(self, ENERGY, self[ENERGY] + 1), agents)`
@@ -1092,7 +1120,7 @@ La riga i-esima della matrice. Se la matrice rappresenta agenti, restituisce il 
 
 `self`
 
-Valore locale corrente del nodo. In esecuzione scalare coincide con il valore del nodo; in esecuzione vettoriale indica la componente dell'agente corrente; nei contesti matriciali agent-based coincide con il valore della cella corrente.
+Valore locale corrente della variabile. In esecuzione scalare coincide con il valore della variabile; in esecuzione vettoriale indica la componente dell'agente corrente; nei contesti matriciali agent-based coincide con il valore della cella corrente.
 
 ---
 

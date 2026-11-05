@@ -27,6 +27,11 @@ fn read_text_file(path: String) -> Result<String, String> {
 }
 
 #[tauri::command]
+fn read_binary_file(path: String) -> Result<Vec<u8>, String> {
+    fs::read(path).map_err(|error| error.to_string())
+}
+
+#[tauri::command]
 fn ensure_file_exists(path: String) -> Result<(), String> {
     if Path::new(&path).is_file() {
         Ok(())
@@ -110,6 +115,7 @@ pub fn run() {
         .invoke_handler(tauri::generate_handler![
             get_startup_language,
             read_text_file,
+            read_binary_file,
             ensure_file_exists,
             write_text_file,
             open_file_dialog,

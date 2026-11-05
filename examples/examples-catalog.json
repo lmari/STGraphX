@@ -177,10 +177,10 @@
         },
         {
           "file": "read_data_demo.json",
-          "label": { "it": "Lettura dati CSV", "en": "CSV data import" },
+          "label": { "it": "Lettura dati XLSX", "en": "XLSX data import" },
           "summary": {
-            "it": "Mostra l'uso di readData() per caricare matrici e testi da file CSV nella cartella data.",
-            "en": "Shows how readData() loads matrices and text from CSV files in the data folder."
+            "it": "Mostra l'uso di readData() per leggere celle e intervalli da un file XLSX nella cartella data.",
+            "en": "Shows how readData() reads cells and ranges from an XLSX file in the data folder."
           }
         }
       ]

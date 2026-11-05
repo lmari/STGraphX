@@ -56,8 +56,8 @@ L'editor costruisce, modifica ed esegue modelli e comprende widget, help, analis
 
 Le shell usano `index.html` e i file JavaScript/CSS referenziati da esso. In particolare sono necessari:
 
-- `app.js`, `styles.css`, `widgets.js`;
-- `semantic.js`, `graph-functions.js`, `i18n-inline.js`, `markdown-rendering.js`, `vendor/katex/`;
+- `app.js`, `styles.css`, `widgets.js`, `scene2d-core.js`, `read-data-core.js`;
+- `semantic.js`, `graph-functions.js`, `i18n-inline.js`, `markdown-rendering.js`, `vendor/katex/`, `vendor/fflate/`;
 - `runtime-*.js`;
 - `local-functions-core.js`, `help-content.js`, `model-analysis-*.js`, `watch-debugger-*.js`;
 - `platform/*.js`;
@@ -91,11 +91,14 @@ site/
   styles.css
   app.js
   widgets.js
+  scene2d-core.js
+  read-data-core.js
   semantic.js
   graph-functions.js
   i18n-inline.js
   markdown-rendering.js
   vendor/katex/
+  vendor/fflate/
   runtime-shared.js
   runtime-core.js
   runtime-loader.js
@@ -116,7 +119,7 @@ site/
   LICENSE
 ```
 
-Pubblicare `site/` come document root di un server HTTP(S). I modelli dell'utente possono stare, per esempio, in `site/models/`; sottomodelli e CSV devono rispettare i path relativi dichiarati nel JSON.
+Pubblicare `site/` come document root di un server HTTP(S). I modelli dell'utente possono stare, per esempio, in `site/models/`; sottomodelli e file XLSX devono rispettare i path relativi dichiarati nel JSON.
 
 Non distribuire `node_modules/`, `electron/`, `src-tauri/`, `package-lock.json` o gli script di sviluppo se si sta distribuendo soltanto l'editor web.
 
@@ -283,7 +286,7 @@ site/
   models/
     mio-modello.json
     sotto-modello.json
-    dati.csv
+    dati.xlsx
   LICENSE
 ```
 
@@ -355,7 +358,7 @@ Non serve un server web. Metti insieme:
 - `i18n-inline.js`, `graph-functions.js`, `semantic.js`;
 - `runtime-shared.js`, `runtime-core.js`, `runtime-loader.js`, `runtime-session.js`, `runtime-controller.js`;
 - il tuo script Node.js;
-- modelli, sottomodelli e CSV.
+- modelli, sottomodelli e file XLSX.
 
 Una struttura possibile:
 

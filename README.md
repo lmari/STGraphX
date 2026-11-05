@@ -42,7 +42,7 @@ Ha un'interfaccia utente responsive, che lo rende utilizzabile anche su tablet.
 (*): funzionalità già presente in STGraph ma migliorata in modo significativo  
 (**): funzionalità assente in STGraph e introdotta qui
 
-(a differenza di STGraph che è basato su varie librerie open source, l'unica libreria esterna usata in STGraphX è KaTeX, https://katex.org)
+(a differenza di STGraph che è basato su varie librerie open source, le uniche librerie esterne usate in STGraphX sono KaTeX, https://katex.org, e fflate, https://www.npmjs.com/package/fflate)
 
 #### Funzionalità generali
 
@@ -64,7 +64,7 @@ Ha un'interfaccia utente responsive, che lo rende utilizzabile anche su tablet.
 * Gestione di variabili globali
 * Possibilità di introdurre nodi "bozza" per una prima definizione dei modelli (**)
 * Possibilità di definire funzioni locali ai modelli (*)
-* Gestione di nodi di output e di widget di output: grafici, tabelle, matrici, led, testo; le tabelle possono mostrare una serie storica oppure espandere vettori e matrici in celle scalari; pannello di configurazione aggiornato dinamicamente (*)
+* Gestione di nodi di output e di widget di output: grafici, tabelle, matrici, led, testo, scena 2D; le tabelle possono mostrare una serie storica oppure espandere vettori e matrici in celle scalari; pannello di configurazione aggiornato dinamicamente (*)
 * Gestione di nodi di input e di widget di input, anche per parametri: slider, pulsante, selettore di testo, tabella di input numerico scalare, vettoriale o matriciale; pannello di configurazione aggiornato dinamicamente
 * Gestione dei sottomodelli con file JSON separati, con caricamento dalla stessa cartella del modello, binding dei nodi di input e accesso ai nodi di output con notazione `nomeSottomodello.nomeOutput`
 
@@ -88,7 +88,7 @@ Ha un'interfaccia utente responsive, che lo rende utilizzabile anche su tablet.
 * Alcune funzioni per distribuzioni di probabilità
 * Generazione di vettori con la sintassi `range(inizio, fine, [passo])`; indicizzazione/slicing di vettori e matrici con la sintassi di NumPy, `[inizio:fine]` oppure `[inizio:fine:passo]`, anche con indici opzionali e negativi; gestione di funzioni a valori non scalari, per esempio `sin([1,2,3])`; gestione di operatori con argomenti non scalari (*)
 * Funzioni "special form" per operare su vettori e matrici: `array`, `reduce`, `map`, `filter` (*)
-* Una funzione per leggere il contenuto di file dati in formato csv (*)
+* Una funzione per leggere celle e intervalli da file dati in formato xlsx
 * Gestione di proprietà custom per il modello e i singoli nodi e funzioni `getModelProperty`/`getProperty` e `setModelProperty`/`setProperty` (**)
 * Prima gestione in logica ABM dichiarativa / funzionale, mediante variabili di sistema `self` e `$i$` (**)
 

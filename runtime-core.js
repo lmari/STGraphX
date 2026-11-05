@@ -26,6 +26,7 @@
       isSubmodelNode,
       normalizeSubmodelPath,
       normalizeReadDataPath,
+      readDataFromWorkbook,
       normalizeEdgeColor: normalizeEdgeColorInput,
       normalizeEdgeInfluence,
       parseModelPropertyStoredValue,
@@ -263,7 +264,7 @@
       return deepClone(template);
     }
 
-    function readDataFromModelCache(model, relativePath) {
+    function readDataFromModelCache(model, relativePath, sheetName, row1, column1, row2, column2) {
       const normalizedPath = normalizeReadDataPath(relativePath);
       if (!normalizedPath) {
         throw new Error("readData path is invalid");
@@ -274,7 +275,10 @@
       if (!cache || !Object.prototype.hasOwnProperty.call(cache, normalizedPath)) {
         throw new Error(`readData file is unavailable: ${normalizedPath}`);
       }
-      return cache[normalizedPath];
+      if (typeof readDataFromWorkbook !== "function") {
+        throw new Error("readData XLSX support is unavailable");
+      }
+      return readDataFromWorkbook(cache[normalizedPath], sheetName, row1, column1, row2, column2);
     }
 
     function buildExecutionGlobalsForModel(model, rootExecution, timeValue) {
@@ -299,7 +303,7 @@
           }
           return value;
         },
-        readData: (path) => readDataFromModelCache(model, path),
+        readData: (...args) => readDataFromModelCache(model, ...args),
       };
     }
 

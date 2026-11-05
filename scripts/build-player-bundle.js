@@ -24,6 +24,9 @@ const bundleFiles = [
   "runtime-session.js",
   "runtime-controller.js",
   "watch-debugger-core.js",
+  "scene2d-core.js",
+  "vendor/fflate/fflate.min.js",
+  "read-data-core.js",
   "headless-runtime.js",
   "player-shell.js",
 ];

@@ -7,6 +7,9 @@
 
 (function initHeadlessRuntime(global) {
   const HEADLESS_LANGS = new Set(["it", "en"]);
+  if (typeof require === "function" && !global.STGraphXReadDataCore) {
+    require("./read-data-core.js");
+  }
   const NODE_RUNTIME_FILES = [
     "i18n-inline.js",
     "graph-functions.js",
@@ -256,12 +259,12 @@
             name: String(relativePath),
             async getFile() {
               return {
-                async text() {
+                async arrayBuffer() {
                   const response = await fetch(absoluteUrl);
                   if (!response.ok) {
                     throw new Error(`Failed to load ${relativePath}`);
                   }
-                  return response.text();
+                  return response.arrayBuffer();
                 },
               };
             },
@@ -278,26 +281,15 @@
           name: String(relativePath),
           async getFile() {
             return {
-              async text() {
-                return fs.readFile(absolutePath, "utf8");
+              async arrayBuffer() {
+                const bytes = await fs.readFile(absolutePath);
+                return bytes.buffer.slice(bytes.byteOffset, bytes.byteOffset + bytes.byteLength);
               },
             };
           },
         };
       },
     };
-  }
-
-  function parseCsvMatrix(text) {
-    const lines = String(text ?? "").replace(/^\uFEFF/, "").split(/\r?\n/).filter((line) => line.trim().length > 0);
-    if (!lines.length) {
-      throw new Error("readData CSV is empty");
-    }
-    return lines.map((line) => line.split(",").map((cell) => {
-      const trimmed = String(cell ?? "").trim();
-      const value = Number(trimmed);
-      return Number.isFinite(value) ? value : trimmed;
-    }));
   }
 
   class STGraphXHeadlessRuntimeSession {
@@ -439,6 +431,7 @@
         isSubmodelNode,
         normalizeSubmodelPath: this._shared.normalizeSubmodelPath,
         normalizeReadDataPath: this._shared.normalizeReadDataPath,
+        readDataFromWorkbook: global.STGraphXReadDataCore?.readDataFromWorkbook,
         normalizeEdgeColor: this._shared.normalizeEdgeColor,
         normalizeEdgeInfluence: this._shared.normalizeEdgeInfluence,
         parseModelPropertyStoredValue: this._shared.parseModelPropertyStoredValue,
@@ -479,49 +472,13 @@
       this._loader = runtimeLoaderApi.createRuntimeLoader({
         t: this.t.bind(this),
         normalizeReadDataPath: this._shared.normalizeReadDataPath,
-        expressionUsesReadData: (expression) => /\breadData\s*\(/.test(String(expression ?? "")),
-        validateReadDataExpressionUsage: (expression, options = {}) => {
-          const text = String(expression ?? "");
-          if (!/\breadData\s*\(/.test(text)) {
-            return { ok: true };
-          }
-          if (!options.allowReadData) {
-            return { ok: false, message: "readData is only available in parameters" };
-          }
-          const literalPattern = /\breadData\s*\(\s*(['"])((?:\\.|(?!\1).)*)\1\s*\)/g;
-          const callCount = (text.match(/\breadData\s*\(/g) || []).length;
-          const paths = [];
-          literalPattern.lastIndex = 0;
-          let match = literalPattern.exec(text);
-          while (match) {
-            paths.push(String(match[2] ?? "").replace(/\\([\\'"nrt])/g, (_m, escaped) => (
-              escaped === "n" ? "\n" : escaped === "r" ? "\r" : escaped === "t" ? "\t" : escaped
-            )));
-            match = literalPattern.exec(text);
-          }
-          if (paths.length !== callCount) {
-            return { ok: false, message: "readData expects a string literal path" };
-          }
-          const invalidPath = paths.find((path) => !this._shared.normalizeReadDataPath(path));
-          if (invalidPath !== undefined) {
-            return { ok: false, message: "readData path is invalid" };
-          }
-          return { ok: true };
-        },
-        extractReadDataPaths: (expression) => {
-          const literalPattern = /\breadData\s*\(\s*(['"])((?:\\.|(?!\1).)*)\1\s*\)/g;
-          const paths = [];
-          literalPattern.lastIndex = 0;
-          let match = literalPattern.exec(String(expression ?? ""));
-          while (match) {
-            paths.push(String(match[2] ?? "").replace(/\\([\\'"nrt])/g, (_m, escaped) => (
-              escaped === "n" ? "\n" : escaped === "r" ? "\r" : escaped === "t" ? "\t" : escaped
-            )));
-            match = literalPattern.exec(String(expression ?? ""));
-          }
-          return paths;
-        },
-        parseCsvMatrix,
+        expressionUsesReadData: global.STGraphXReadDataCore.expressionUsesReadData,
+        validateReadDataExpressionUsage: (expression, options = {}) => global.STGraphXReadDataCore.validateReadDataExpressionUsage(expression, {
+          ...options,
+          normalizeReadDataPath: this._shared.normalizeReadDataPath,
+        }),
+        extractReadDataPaths: (expression) => global.STGraphXReadDataCore.extractReadDataPaths(expression, this._shared.normalizeReadDataPath),
+        parseXlsxWorkbook: global.STGraphXReadDataCore.parseXlsxWorkbook,
         normalizeSubmodelPath: this._shared.normalizeSubmodelPath,
         isSubmodelNode,
         getSubmodelTemplate: (modelPath) => {

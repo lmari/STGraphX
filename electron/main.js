@@ -211,6 +211,18 @@ app.whenReady().then(() => {
     }
   });
 
+  ipcMain.handle('stgraphx:read-binary-file', async (_event, filePath) => {
+    try {
+      return { ok: true, bytes: await fs.readFile(String(filePath || '')) };
+    } catch (err) {
+      return {
+        ok: false,
+        code: String(err?.code || 'READ_ERROR'),
+        message: String(err?.message || 'Unable to read file'),
+      };
+    }
+  });
+
   ipcMain.handle('stgraphx:write-text-file', async (_event, filePath, text) => {
     await fs.writeFile(String(filePath || ''), String(text ?? ''), 'utf8');
     return true;

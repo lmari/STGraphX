@@ -75,16 +75,19 @@ Questa è la soluzione più pratica sia per i test sia per l'embed reale e regis
 <script src="markdown-rendering.js"></script>
 <script src="graph-functions.js"></script>
 <script src="semantic.js"></script>
+<script src="vendor/fflate/fflate.min.js"></script>
+<script src="read-data-core.js"></script>
 <script src="runtime-shared.js"></script>
 <script src="runtime-core.js"></script>
 <script src="runtime-loader.js"></script>
 <script src="runtime-session.js"></script>
 <script src="runtime-controller.js"></script>
 <script src="watch-debugger-core.js"></script>
+<script src="scene2d-core.js"></script>
 <script src="player-shell.js"></script>
 ```
 
-In questa modalita devono essere disponibili anche `vendor/katex/katex.min.css` e la cartella `vendor/katex/fonts/`, usate per le formule LaTeX nei testi Markdown. La sintassi supportata e `$formula$` in linea o un blocco delimitato da `$$` su righe separate.
+In questa modalita devono essere disponibili anche `vendor/katex/katex.min.css` e la cartella `vendor/katex/fonts/`, usate per le formule LaTeX nei testi Markdown, e `vendor/fflate/fflate.min.js` per i modelli che usano `readData(...)`. La sintassi supportata e `$formula$` in linea o un blocco delimitato da `$$` su righe separate.
 
 Il file `player-demo.html` mostra un esempio minimo funzionante.
 
@@ -510,13 +513,13 @@ models/demo/main.json
 e usa:
 
 ```txt
-readData("data/init.csv")
+readData("data/init.xlsx", "Dati", 1, 1, 20, 4)
 ```
 
 il player cercherà:
 
 ```txt
-models/demo/data/init.csv
+models/demo/data/init.xlsx
 ```
 
 ## Vista iniziale
@@ -554,6 +557,7 @@ Al momento il player supporta:
 * `matrix`
 * `table`
 * `xychart`
+* `scene2d`
 
 I widget di input aggiornano la preview del modello direttamente nel player.
 
@@ -562,6 +566,8 @@ Il widget `numeric` usa `inputRows` e `inputCols` per definire il valore inserit
 Durante l'esecuzione temporizzata i widget di input vengono bloccati.
 
 Il widget `table` puo mostrare una serie storica oppure, con `expandNonScalarValues: true`, espandere il valore istantaneo di vettori e matrici: ogni elemento compare in una cella distinta, con intestazioni come `nodo[0]` e `nodo[1][2]`.
+
+Il widget `scene2d` disegna una scena cartesiana con segmenti, cerchi e testi. Le coordinate, i raggi, le dimensioni e i testi possono essere espressioni del modello; nei testi sono ammessi anche inserti dinamici nella forma `{{espressione}}`. Segmenti e testi possono ruotare in radianti attorno al proprio centro naturale oppure a un centro `X/Y` esplicito. La prima versione non include ancora sprite o trasformazioni composte.
 
 ## Limitazioni attuali
 

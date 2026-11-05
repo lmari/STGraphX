@@ -8,6 +8,7 @@
 (() => {
 
 const graphFunctionHelpers = globalThis.GraphFunctions?.helpers || {};
+const scene2dCore = globalThis.STGraphXScene2D || {};
 
 // Unit "1" is the internal notation for a dimensionless value and should not
 // consume space in widget labels intended for model readers.
@@ -323,6 +324,40 @@ function addXYChartWidget(at = null) {
   selectWidget(id);
 }
 
+function addScene2DWidget(at = null) {
+  const id = widgetCounter++;
+  const { x, y } = getSmartCanvasInsertionPoint({ width: 320, height: 230, anchor: at });
+  graph.widgets.push({
+    id,
+    type: "scene2d",
+    customTitle: "",
+    x,
+    y,
+    width: 320,
+    height: 230,
+    minimized: false,
+    showTitleBar: true,
+    fontSize: 13,
+    outputOnly: true,
+    xMin: null,
+    xMax: null,
+    yMin: null,
+    yMax: null,
+    xGridStep: null,
+    yGridStep: null,
+    xAxisLabel: "",
+    yAxisLabel: "",
+    showGrid: false,
+    showAxes: false,
+    equalScale: true,
+    objects: [],
+    rows: [],
+    columns: [],
+    xyPairs: [],
+  });
+  selectWidget(id);
+}
+
 function getNodeByName(name) {
   return graph.nodes.find((n) => n.name === name);
 }
@@ -621,6 +656,33 @@ function sanitizeXYChartOptions(widget) {
   widget.legendPosition = ["none", "top-right", "top-left", "bottom-right", "bottom-left"].includes(String(widget.legendPosition ?? ""))
     ? String(widget.legendPosition)
     : "top-right";
+}
+
+function sanitizeScene2DWidgetOptions(widget) {
+  sanitizeWidgetPresentationOptions(widget);
+  const normalized = scene2dCore.normalizeSceneOptions?.(widget) || {};
+  const parseAxisValue = (value) => {
+    if (value == null || String(value).trim() === "") return null;
+    return Number.isFinite(Number(value)) ? Number(value) : null;
+  };
+  widget.xMin = parseAxisValue(normalized.xMin);
+  widget.xMax = parseAxisValue(normalized.xMax);
+  widget.yMin = parseAxisValue(normalized.yMin);
+  widget.yMax = parseAxisValue(normalized.yMax);
+  if (widget.xMin != null && widget.xMax != null && widget.xMax <= widget.xMin) {
+    [widget.xMin, widget.xMax] = [widget.xMax, widget.xMin];
+  }
+  if (widget.yMin != null && widget.yMax != null && widget.yMax <= widget.yMin) {
+    [widget.yMin, widget.yMax] = [widget.yMax, widget.yMin];
+  }
+  widget.xGridStep = Number(normalized.xGridStep) > 0 ? Number(normalized.xGridStep) : null;
+  widget.yGridStep = Number(normalized.yGridStep) > 0 ? Number(normalized.yGridStep) : null;
+  widget.xAxisLabel = String(normalized.xAxisLabel ?? "");
+  widget.yAxisLabel = String(normalized.yAxisLabel ?? "");
+  widget.showGrid = normalized.showGrid !== false;
+  widget.showAxes = normalized.showAxes !== false;
+  widget.equalScale = normalized.equalScale !== false;
+  widget.objects = Array.isArray(normalized.objects) ? normalized.objects : [];
 }
 
 function isFiniteScalar(value) {
@@ -1827,6 +1889,9 @@ function widgetDefaultTitle(widget) {
   if (widget.type === "xychart") {
     return t("widget.chartTitle", { id: widget.id });
   }
+  if (widget.type === "scene2d") {
+    return t("widget.scene2dTitle", { id: widget.id });
+  }
   if (widget.type === "matrix") {
     return t("widget.matrixTitle", { id: widget.id });
   }
@@ -2330,6 +2395,69 @@ function renderMatrixWidgetBody(body, widget, nodeMap = buildNodeNameMap()) {
   }
 }
 
+function scene2DExpressionContext(nodeMap = buildNodeNameMap()) {
+  const execution = graph.execution || {};
+  const time = Number.isFinite(Number(execution.currentTime))
+    ? Number(execution.currentTime)
+    : Number(execution.t0) || 0;
+  const context = {
+    time,
+    t0: Number(execution.t0) || 0,
+    t1: Number(execution.t1) || 0,
+    dt: Number(execution.dt) || 0,
+  };
+  nodeMap.forEach((node, name) => {
+    if (node?.output && !node?.computedError && node?.computedValue != null) {
+      context[name] = node.computedValue;
+    }
+  });
+  return context;
+}
+
+function evaluateScene2DExpression(expression, context) {
+  const result = globalThis.GraphSemantics?.evaluateValueExpression?.(expression, context, {
+    localFunctions: Array.isArray(graph.localFunctions) ? graph.localFunctions : [],
+  });
+  const value = result?.ok ? Number(result.value) : NaN;
+  return Number.isFinite(value) ? value : NaN;
+}
+
+function evaluateScene2DText(template, context) {
+  return String(template ?? "").replace(/\{\{([^{}\n]+)\}\}/gu, (_match, expression) => {
+    const value = evaluateScene2DExpression(expression, context);
+    return Number.isFinite(value) ? formatNumberValue(value) : "?";
+  });
+}
+
+function evaluatedScene2DObjects(widget, nodeMap = buildNodeNameMap()) {
+  sanitizeScene2DWidgetOptions(widget);
+  const context = scene2DExpressionContext(nodeMap);
+  return widget.objects.map((object) => {
+    const out = { ...object };
+    if (object.type === "segment") {
+      ["x1", "y1", "x2", "y2"].forEach((key) => { out[key] = evaluateScene2DExpression(object[key], context); });
+    } else if (object.type === "circle") {
+      ["x", "y", "radius", "rotation", "pivotX", "pivotY"].forEach((key) => { out[key] = evaluateScene2DExpression(object[key], context); });
+    } else if (object.type === "text") {
+      ["x", "y", "rotation"].forEach((key) => { out[key] = evaluateScene2DExpression(object[key], context); });
+      out.pivotX = out.x;
+      out.pivotY = out.y;
+      out.text = evaluateScene2DText(object.text, context);
+    }
+    return out;
+  });
+}
+
+function renderScene2DWidgetBody(body, widget, nodeMap = buildNodeNameMap()) {
+  body.innerHTML = "";
+  const canvas = document.createElement("canvas");
+  canvas.className = "scene2d-canvas";
+  canvas.width = Math.max(160, Math.floor(widget.width - 18));
+  canvas.height = Math.max(120, Math.floor(widget.height - 52));
+  scene2dCore.drawScene2D?.(canvas, evaluatedScene2DObjects(widget, nodeMap), widget);
+  body.appendChild(canvas);
+}
+
 function renderTableWidgetBody(body, widget, nodeMap = buildNodeNameMap()) {
   body.innerHTML = "";
   sanitizeTableWidgetOptions(widget);
@@ -2554,6 +2682,15 @@ function refreshChartWidgetRuntimeBody(root, widget, nodeMap = buildNodeNameMap(
   });
 }
 
+function refreshScene2DWidgetRuntimeBody(root, widget, nodeMap = buildNodeNameMap()) {
+  const body = root.querySelector(".value-widget-body");
+  if (!body) {
+    renderWidgets();
+    return;
+  }
+  renderScene2DWidgetBody(body, widget, nodeMap);
+}
+
 function refreshSliderWidgetRuntimeBody(root, widget) {
   const rangeInput = root.querySelector("input[type='range']");
   const valueInput = root.querySelector(".slider-widget-number");
@@ -2668,6 +2805,8 @@ function refreshRuntimeWidgetContents(excludeWidgetId = null) {
       refreshMatrixWidgetRuntimeBody(root, widget, nodeMap);
     } else if (widget.type === "xychart") {
       refreshChartWidgetRuntimeBody(root, widget, nodeMap);
+    } else if (widget.type === "scene2d") {
+      refreshScene2DWidgetRuntimeBody(root, widget, nodeMap);
     } else if (widget.type === "slider") {
       refreshSliderWidgetRuntimeBody(root, widget);
     } else if (widget.type === "numeric") {
@@ -2758,7 +2897,7 @@ function renderWidgets() {
   };
 
   graph.widgets.forEach((widget) => {
-    if (widget.type !== "table" && widget.type !== "xychart" && widget.type !== "slider" && widget.type !== "numeric" && widget.type !== "matrix" && widget.type !== "button" && widget.type !== "led" && widget.type !== "select" && widget.type !== "text") {
+    if (widget.type !== "table" && widget.type !== "xychart" && widget.type !== "scene2d" && widget.type !== "slider" && widget.type !== "numeric" && widget.type !== "matrix" && widget.type !== "button" && widget.type !== "led" && widget.type !== "select" && widget.type !== "text") {
       return;
     }
     if (typeof isDashboardItemVisible === "function" && !isDashboardItemVisible(widget)) {
@@ -2773,6 +2912,8 @@ function renderWidgets() {
     } else if (widget.type === "xychart") {
       sanitizeWidgetXYPairs(widget);
       sanitizeXYChartOptions(widget);
+    } else if (widget.type === "scene2d") {
+      sanitizeScene2DWidgetOptions(widget);
     } else if (widget.type === "button") {
       sanitizeButtonWidgetOptions(widget);
     } else if (widget.type === "select") {
@@ -3026,6 +3167,8 @@ function renderWidgets() {
       });
       canvasWrap.appendChild(canvas);
       body.appendChild(canvasWrap);
+    } else if (widget.type === "scene2d") {
+      renderScene2DWidgetBody(body, widget);
     } else if (widget.type === "slider") {
       const sliderWrap = document.createElement("div");
       sliderWrap.className = "slider-widget-wrap";
@@ -3685,6 +3828,14 @@ function openBackgroundContextMenu(evt) {
       action: () => {
         runAction(() => addXYChartWidget({ x: p.x, y: p.y }));
         setStatusKey("status.widgetChartCreated");
+      },
+    },
+    {
+      label: t("context.bg.newScene2DWidget"),
+      icon: "◌",
+      action: () => {
+        runAction(() => addScene2DWidget({ x: p.x, y: p.y }));
+        setStatusKey("status.widgetScene2DCreated");
       },
     },
     { separator: true },
@@ -4445,6 +4596,23 @@ function refreshWidgetConfigPanel(widget) {
     "widget.axisYGridStep": "tooltip.widget.axisYGridStep",
     "widget.axisYLabel": "tooltip.widget.axisYLabel",
     "widget.legendPosition": "tooltip.widget.legendPosition",
+    "widget.scene2dX": "tooltip.widget.scene2dX",
+    "widget.scene2dY": "tooltip.widget.scene2dY",
+    "widget.scene2dX1": "tooltip.widget.scene2dX1",
+    "widget.scene2dY1": "tooltip.widget.scene2dY1",
+    "widget.scene2dX2": "tooltip.widget.scene2dX2",
+    "widget.scene2dY2": "tooltip.widget.scene2dY2",
+    "widget.scene2dRadius": "tooltip.widget.scene2dRadius",
+    "widget.scene2dRotation": "tooltip.widget.scene2dRotation",
+    "widget.scene2dPivotX": "tooltip.widget.scene2dPivotX",
+    "widget.scene2dPivotY": "tooltip.widget.scene2dPivotY",
+    "widget.scene2dText": "tooltip.widget.scene2dText",
+    "widget.scene2dFill": "tooltip.widget.scene2dFill",
+    "widget.scene2dStroke": "tooltip.widget.scene2dStroke",
+    "widget.scene2dColor": "tooltip.widget.scene2dColor",
+    "widget.scene2dWidth": "tooltip.widget.scene2dWidth",
+    "widget.scene2dFontSize": "tooltip.widget.scene2dFontSize",
+    "widget.scene2dAlign": "tooltip.widget.scene2dAlign",
   };
 
   const createCompactField = (labelKey, inputEl, tooltipKey = labelKey) => {
@@ -4523,6 +4691,204 @@ function refreshWidgetConfigPanel(widget) {
 
   const outputNodeNames = outputWidgetNodeNames();
   const nodeNames = outputNodeNames;
+
+  if (widget.type === "scene2d") {
+    sanitizeScene2DWidgetOptions(widget);
+    const sceneOutputNames = outputWidgetNodeNames();
+    const validateSceneExpression = (expression) => globalThis.GraphSemantics?.validateExpressionSyntax?.(
+      String(expression ?? ""),
+      sceneOutputNames,
+      { localFunctions: Array.isArray(graph.localFunctions) ? graph.localFunctions : [] },
+    ) || { ok: false, message: t("widget.scene2dOutputOnly") };
+    const validateSceneText = (template) => {
+      let result = { ok: true };
+      String(template ?? "").replace(/\{\{([^{}\n]+)\}\}/gu, (_match, expression) => {
+        const validation = validateSceneExpression(expression);
+        if (!validation.ok) result = validation;
+        return _match;
+      });
+      return result;
+    };
+    const axesSection = createWidgetSection(true);
+    appendWidgetSectionTitle(axesSection, "widget.axisLimitsLabel");
+    const parseAxisValue = (value) => {
+      const text = String(value ?? "").trim();
+      if (!text || text.toLowerCase() === "auto") return null;
+      const numeric = Number(text.replace(",", "."));
+      return Number.isFinite(numeric) ? numeric : null;
+    };
+    const limitsRow = document.createElement("div");
+    limitsRow.className = "row2-exec";
+    [
+      ["widget.axisXMin", "xMin"], ["widget.axisXMax", "xMax"],
+      ["widget.axisYMin", "yMin"], ["widget.axisYMax", "yMax"],
+    ].forEach(([label, property]) => {
+      const input = document.createElement("input");
+      input.type = "text";
+      input.inputMode = "decimal";
+      input.placeholder = t("widget.autoOption");
+      input.value = widget[property] == null ? "" : String(widget[property]);
+      input.addEventListener("change", () => runAction(() => {
+        widget[property] = parseAxisValue(input.value);
+        sanitizeScene2DWidgetOptions(widget);
+      }));
+      limitsRow.appendChild(createCompactField(label, input));
+    });
+    axesSection.appendChild(limitsRow);
+
+    const axisLabelsRow = document.createElement("div");
+    axisLabelsRow.className = "row2-exec";
+    [["widget.axisXLabel", "xAxisLabel"], ["widget.axisYLabel", "yAxisLabel"]].forEach(([label, property]) => {
+      const input = document.createElement("input");
+      input.type = "text";
+      input.value = widget[property] || "";
+      input.addEventListener("change", () => runAction(() => {
+        widget[property] = String(input.value ?? "").trim();
+      }));
+      axisLabelsRow.appendChild(createCompactField(label, input));
+    });
+    axesSection.appendChild(axisLabelsRow);
+
+    const toggles = document.createElement("div");
+    toggles.className = "chart-axis-toggles";
+    [
+      ["widget.showAxes", "showAxes"], ["widget.showGrid", "showGrid"], ["widget.scene2dEqualScale", "equalScale"],
+    ].forEach(([label, property]) => {
+      const control = document.createElement("label");
+      control.className = "menu-check compact-bool";
+      const input = document.createElement("input");
+      input.type = "checkbox";
+      input.checked = widget[property] !== false;
+      input.addEventListener("change", () => runAction(() => { widget[property] = input.checked; }));
+      const text = document.createElement("span");
+      text.textContent = t(label);
+      control.append(input, text);
+      setConfigTooltip(control, property === "equalScale" ? "tooltip.widget.scene2dEqualScale" : `tooltip.${label}`);
+      toggles.appendChild(control);
+    });
+    axesSection.appendChild(toggles);
+
+    const objectsSection = createWidgetSection();
+    appendWidgetSectionTitle(objectsSection, "widget.scene2dObjects");
+    const addObjectBtn = document.createElement("button");
+    addObjectBtn.type = "button";
+    addObjectBtn.className = "small-btn";
+    addObjectBtn.textContent = t("widget.scene2dAddObject");
+    addObjectBtn.addEventListener("click", () => runAction(() => {
+      widget.objects.push(scene2dCore.normalizeObject?.({ type: "segment" }) || { type: "segment" });
+    }));
+    setConfigTooltip(addObjectBtn, "tooltip.widget.scene2dAddObject");
+    objectsSection.appendChild(addObjectBtn);
+
+    const addExpressionField = (row, label, object, property) => {
+      const input = document.createElement("input");
+      input.type = "text";
+      input.value = String(object[property] ?? "");
+      const updateValidation = () => {
+        const validation = property === "text"
+          ? validateSceneText(input.value)
+          : validateSceneExpression(input.value);
+        input.classList.toggle("invalid", !validation.ok);
+        if (validation.ok) {
+          setConfigTooltip(input, compactFieldTooltipKeys[label] || label);
+        } else {
+          setTooltipText(input, `${t("widget.scene2dOutputOnly")} ${validation.message || ""}`.trim());
+        }
+        return validation.ok;
+      };
+      input.addEventListener("input", updateValidation);
+      input.addEventListener("change", () => runAction(() => { object[property] = String(input.value ?? ""); }));
+      row.appendChild(createCompactField(label, input));
+      updateValidation();
+    };
+    const addColorField = (row, label, object, property, fallback) => {
+      const input = document.createElement("input");
+      input.type = "color";
+      const rawColor = String(object[property] ?? "").trim();
+      const shortHex = /^#([0-9a-f]{3})$/iu.exec(rawColor);
+      input.value = shortHex
+        ? `#${shortHex[1].split("").map((digit) => `${digit}${digit}`).join("")}`
+        : /^#[0-9a-f]{6}$/iu.test(rawColor) ? rawColor : fallback;
+      input.addEventListener("change", () => runAction(() => { object[property] = input.value; }));
+      row.appendChild(createCompactField(label, input));
+    };
+    const sceneRow = (columns) => {
+      const row = document.createElement("div");
+      row.className = `scene2d-object-row scene2d-object-row-${columns}`;
+      return row;
+    };
+    widget.objects.forEach((object, index) => {
+      const objectSection = document.createElement("div");
+      objectSection.className = "scene2d-object-config";
+      const header = document.createElement("div");
+      header.className = "scene2d-object-header";
+      const typeSelect = document.createElement("select");
+      ["segment", "circle", "text"].forEach((type) => {
+        const option = document.createElement("option");
+        option.value = type;
+        option.textContent = t(`widget.scene2dObject.${type}`);
+        typeSelect.appendChild(option);
+      });
+      typeSelect.value = object.type;
+      typeSelect.addEventListener("change", () => runAction(() => {
+        widget.objects[index] = scene2dCore.normalizeObject?.({ ...object, type: typeSelect.value }) || { ...object, type: typeSelect.value };
+      }));
+      setConfigTooltip(typeSelect, "tooltip.widget.scene2dObjectType");
+      header.appendChild(typeSelect);
+      [["↑", -1, "widget.moveUp"], ["↓", 1, "widget.moveDown"], ["×", 0, "action.delete"]].forEach(([symbol, direction, label]) => {
+        const button = document.createElement("button");
+        button.type = "button";
+        button.className = "icon-btn";
+        button.textContent = symbol;
+        button.title = t(label);
+        button.disabled = direction < 0 ? index === 0 : direction > 0 ? index === widget.objects.length - 1 : false;
+        button.addEventListener("click", () => runAction(() => {
+          if (direction === 0) {
+            widget.objects.splice(index, 1);
+          } else {
+            const nextIndex = index + direction;
+            if (nextIndex >= 0 && nextIndex < widget.objects.length) {
+              [widget.objects[index], widget.objects[nextIndex]] = [widget.objects[nextIndex], widget.objects[index]];
+            }
+          }
+        }));
+        header.appendChild(button);
+      });
+      objectSection.appendChild(header);
+      if (object.type === "segment") {
+        const row = sceneRow(4);
+        [["widget.scene2dX1", "x1"], ["widget.scene2dY1", "y1"], ["widget.scene2dX2", "x2"], ["widget.scene2dY2", "y2"]].forEach(([label, property]) => addExpressionField(row, label, object, property));
+        objectSection.appendChild(row);
+        const style = sceneRow(2);
+        addColorField(style, "widget.scene2dColor", object, "color", "#334e68");
+        addExpressionField(style, "widget.scene2dWidth", object, "lineWidth");
+        objectSection.appendChild(style);
+      } else if (object.type === "circle") {
+        const row = sceneRow(3);
+        [["widget.scene2dX", "x"], ["widget.scene2dY", "y"], ["widget.scene2dRadius", "radius"]].forEach(([label, property]) => addExpressionField(row, label, object, property));
+        objectSection.appendChild(row);
+        const style = sceneRow(3);
+        addColorField(style, "widget.scene2dFill", object, "fill", "#d64545");
+        addColorField(style, "widget.scene2dStroke", object, "stroke", "#7f1d1d");
+        addExpressionField(style, "widget.scene2dWidth", object, "lineWidth");
+        objectSection.appendChild(style);
+      } else {
+        const row = sceneRow(3);
+        [["widget.scene2dX", "x"], ["widget.scene2dY", "y"], ["widget.scene2dRotation", "rotation"]]
+          .forEach(([label, property]) => addExpressionField(row, label, object, property));
+        objectSection.appendChild(row);
+        const textRow = sceneRow(1);
+        addExpressionField(textRow, "widget.scene2dText", object, "text");
+        objectSection.appendChild(textRow);
+        const style = sceneRow(2);
+        addColorField(style, "widget.scene2dColor", object, "color", "#334e68");
+        addExpressionField(style, "widget.scene2dFontSize", object, "fontSize");
+        objectSection.appendChild(style);
+      }
+      objectsSection.appendChild(objectSection);
+    });
+    return;
+  }
 
   if (widget.type === "slider") {
     sanitizeSliderWidgetOptions(widget);
@@ -6072,6 +6438,7 @@ globalThis.Widgets = {
   addMatrixWidget,
   addSliderWidget,
   addXYChartWidget,
+  addScene2DWidget,
   getNodeByName,
   getModelNodeById,
   buildNodeNameMap,
@@ -6115,10 +6482,12 @@ globalThis.Widgets = {
   sanitizeTextWidgetOptions,
   sanitizeWidgetXYPairs,
   sanitizeXYChartOptions,
+  sanitizeScene2DWidgetOptions,
   sanitizeSliderWidgetOptions,
   sanitizeNumericWidgetOptions,
   sanitizeButtonWidgetOptions,
   drawXYChart,
+  renderScene2DWidgetBody,
   updateXYWidgetsFromComputedValues,
   updateTableWidgetsFromComputedValues,
   clearAllXYChartPoints,

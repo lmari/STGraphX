@@ -41,10 +41,10 @@
         },
         {
           "key": "descrizione",
-          "value": "Matrice numerica letta dal file CSV"
+          "value": "Matrice numerica letta dall'intervallo A2:E6 di un foglio XLSX"
         }
       ],
-      "valueExpression": "readData(\"data/read_data.csv\")"
+      "valueExpression": "readData(\"data/read_data.xlsx\", \"Dati\", 2, 1, 6, 5)"
     },
     {
       "id": 8,
@@ -88,14 +88,14 @@
       "height": 80,
       "fillColor": "",
       "strokeColor": "",
-      "html": "<h1>Esempio di readData()</h1><p>Un parametro legge una matrice da un file CSV.</p>"
+      "html": "<h1>Esempio di readData()</h1><p>Un parametro legge una matrice da un intervallo di celle di un file XLSX.</p>"
     }
   ],
   "widgets": [
     {
       "id": 1,
       "type": "matrix",
-      "customTitle": "Matrice letta da CSV",
+      "customTitle": "Matrice letta da XLSX",
       "x": 540,
       "y": -20,
       "width": 300,

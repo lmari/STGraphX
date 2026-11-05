@@ -21,6 +21,10 @@ function createVirtualFile(filePath) {
     async text() {
       return fs.readFile(filePath, "utf8");
     },
+    async arrayBuffer() {
+      const bytes = await fs.readFile(filePath);
+      return bytes.buffer.slice(bytes.byteOffset, bytes.byteOffset + bytes.byteLength);
+    },
   };
 }
 

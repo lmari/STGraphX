@@ -31,7 +31,12 @@ runtime-shared.js
 semantic.js
 graph-functions.js
 i18n-inline.js
+read-data-core.js
+package.json
+package-lock.json
 ```
+
+Eseguire `npm install` nella cartella che contiene questi file, per installare il parser XLSX e le sue dipendenze.
 
 Il repository include esempi pronti nella cartella `examples-headless/`.
 
@@ -84,6 +89,17 @@ const fromText = await STGraphXHeadlessRuntime.loadFromJsonText(modelText, {
 ```
 
 Con un modello passato direttamente, `basePath` (Node.js) o `baseUrl` (browser) definiscono la base per sottomodelli e file `readData(...)`.
+
+## Lettura XLSX
+
+`readData(...)` legge soltanto file `.xlsx` relativi alla cartella del modello. Le coordinate di riga e colonna iniziano da `1` e possono essere espressioni che restituiscono interi positivi:
+
+```js
+readData("data/valori.xlsx", "Dati", 2, 3)
+readData("data/valori.xlsx", "Dati", 2, 1, 20, 4)
+```
+
+La prima forma restituisce una cella; la seconda uno scalare, un vettore o una matrice secondo le dimensioni dell'intervallo. In una pagina web caricata con i file sorgente, includere anche `vendor/fflate/fflate.min.js` prima di `read-data-core.js`.
 
 Sono disponibili anche gli helper CommonJS:
 

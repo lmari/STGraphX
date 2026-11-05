@@ -13,7 +13,7 @@
       expressionUsesReadData,
       validateReadDataExpressionUsage,
       extractReadDataPaths,
-      parseCsvMatrix,
+      parseXlsxWorkbook,
       normalizeSubmodelPath,
       isSubmodelNode,
       getSubmodelTemplate,
@@ -26,7 +26,7 @@
       || typeof expressionUsesReadData !== "function"
       || typeof validateReadDataExpressionUsage !== "function"
       || typeof extractReadDataPaths !== "function"
-      || typeof parseCsvMatrix !== "function"
+      || typeof parseXlsxWorkbook !== "function"
     ) {
       throw new Error("STGraphXRuntimeLoader requires readData and translation dependencies");
     }
@@ -41,13 +41,20 @@
 
     function collectReadDataPathsForModel(model) {
       const referencedPaths = new Set();
-      const parameterNodes = (model?.nodes || []).filter((node) => node?.shape === "diamond");
-      parameterNodes.forEach((node) => {
-        const source = String(node?.valueExpression ?? "");
+      const sources = [];
+      (model?.nodes || []).forEach((node) => {
+        sources.push(node?.valueExpression, node?.initialStateExpression);
+        if (node?.inputBindings && typeof node.inputBindings === "object") {
+          sources.push(...Object.values(node.inputBindings));
+        }
+      });
+      (model?.localFunctions || []).forEach((definition) => sources.push(definition?.expression));
+      sources.forEach((sourceValue) => {
+        const source = String(sourceValue ?? "");
         if (!expressionUsesReadData(source)) {
           return;
         }
-        const usage = validateReadDataExpressionUsage(source, { allowReadData: true });
+        const usage = validateReadDataExpressionUsage(source);
         if (!usage.ok) {
           throw new Error(usage.message || "readData expects a string literal path");
         }
@@ -80,13 +87,13 @@
         } catch (_err) {
           throw new Error(`readData file is unavailable: ${relativePath}`);
         }
-        let text;
+        let bytes;
         try {
-          text = await file.text();
+          bytes = await file.arrayBuffer();
         } catch (_err) {
           throw new Error(`readData file is unavailable: ${relativePath}`);
         }
-        model.__readDataCache[relativePath] = parseCsvMatrix(text, relativePath);
+        model.__readDataCache[relativePath] = parseXlsxWorkbook(bytes, relativePath);
       }
     }
 

@@ -2033,7 +2033,7 @@
       integral: { kind: "function", signature: "integral(x)", descriptionKey: "expr.help.integral", insertText: "integral()", cursorOffset: 9 },
       map: { kind: "function", signature: "map(expr, array)", descriptionKey: "expr.help.map", insertText: "map()", cursorOffset: 4 },
       range: { kind: "function", signature: "range(stop) | range(start, stop[, step])", descriptionKey: "expr.help.range", insertText: "range()", cursorOffset: 6 },
-      readData: { kind: "function", signature: "readData(path)", descriptionKey: "expr.help.readData", insertText: "readData()", cursorOffset: 9 },
+      readData: { kind: "function", signature: "readData(path, sheet, row, column) | readData(path, sheet, row1, column1, row2, column2)", descriptionKey: "expr.help.readData", insertText: "readData(\"file.xlsx\", \"Sheet1\", 1, 1)", cursorOffset: 9 },
       reduce: { kind: "function", signature: "reduce(op|fn, vector[, init]) | reduce(op|fn, matrix, axis[, init])", descriptionKey: "expr.help.reduce", insertText: "reduce()", cursorOffset: 7 },
       setModelProperty: { kind: "function", signature: "setModelProperty(name, value)", descriptionKey: "expr.help.setModelProperty", insertText: "setModelProperty()", cursorOffset: 17 },
       setProperty: { kind: "function", signature: "setProperty(name, value)", descriptionKey: "expr.help.setProperty", insertText: "setProperty()", cursorOffset: 12 },

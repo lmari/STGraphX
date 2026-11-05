@@ -700,9 +700,21 @@
         const usedByChart = graph.widgets.some((widget) => widget.type === "xychart"
           && Array.isArray(widget.xyPairs)
           && widget.xyPairs.some((pair) => pair?.xSource === node.name || pair?.ySource === node.name));
+        const usedByScene = graph.widgets.some((widget) => widget.type === "scene2d"
+          && Array.isArray(widget.objects)
+          && widget.objects.some((object) => {
+            const expressions = object?.type === "segment"
+              ? [object.x1, object.y1, object.x2, object.y2, object.rotation, object.pivotX, object.pivotY]
+              : object?.type === "circle"
+                ? [object.x, object.y, object.radius, object.rotation, object.pivotX, object.pivotY]
+                : object?.type === "text"
+                  ? [object.x, object.y, object.rotation, object.pivotX, object.pivotY, ...[...String(object.text ?? "").matchAll(/\{\{([^{}\n]+)\}\}/gu)].map((match) => match[1])]
+                  : [];
+            return expressions.some((expression) => collectExpressionIdentifierReferences(expression).has(node.name));
+          }));
         const usedBySourceWidget = graph.widgets.some((widget) => widget.source === node.name);
         const usedImplicitly = nodeIsImplicitlyReferenced(node, graph);
-        const observed = Boolean(node.output || hasOutgoingEdges || usedByTable || usedByChart || usedBySourceWidget || usedImplicitly);
+        const observed = Boolean(node.output || hasOutgoingEdges || usedByTable || usedByChart || usedByScene || usedBySourceWidget || usedImplicitly);
         if (!observed) {
           pushAnalysisIssue(
             issues,

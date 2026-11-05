@@ -1,6 +1,6 @@
 /*!
  * STGraphX Embedded Player Bundle
- * Generated: 2026-11-04T19:17:49.799Z
+ * Generated: 2026-11-05T18:00:42.240Z
  */
 
 /* --- i18n-inline.js --- */
@@ -13,7 +13,7 @@
 
 window.STGraphXAppMeta = {
   author: "Luca Mari",
-  releaseDate: "2026.11.04",
+  releaseDate: "2026.11.05",
   license: "MPL-2.0",
   copyright: "Copyright (c) 2026 Luca Mari",
 };
@@ -22,13 +22,13 @@ window.STGraphXI18nBundles = {
   "it": {
     // Application
     "about.authorLabel": "Autore",
-    "about.body": "Versione sperimentale con shell web ed Electron.",
+    "about.body": "Versione sperimentale con shell web ed Electron\nEngine di simulazione JavaScript o Rust.",
     "about.copyrightLabel": "Copyright",
     "about.iconAlt": "Icona di STGraphX",
     "about.licenseLabel": "Licenza",
     "about.subtitle": "Ambiente per lo sviluppo e l'esecuzione di modelli di sistemi dinamici",
     "about.title": "About STGraphX",
-    "about.versionLabel": "Ultimo aggiornamento",
+    "about.versionLabel": "Versione",
     "action.addMapping": "Aggiungi mappatura",
     "action.addOption": "Aggiungi opzione",
     "action.addProperty": "Aggiungi proprietà",
@@ -100,6 +100,7 @@ window.STGraphXI18nBundles = {
     "context.bg.newMatrixWidget": "Matrice",
     "context.bg.newRect": "Variabile di stato",
     "context.bg.newSelectWidget": "Selettore",
+    "context.bg.newScene2DWidget": "Scena 2D",
     "context.bg.newSliderWidget": "Slider",
     "context.bg.newSubmodel": "Sottomodello",
     "context.bg.newTableWidget": "Tabella",
@@ -172,6 +173,7 @@ window.STGraphXI18nBundles = {
     "menu.insert.numericWidget": "Input numerico",
     "menu.insert.rect": "Variabile di stato",
     "menu.insert.selectWidget": "Selettore",
+    "menu.insert.scene2dWidget": "Scena 2D",
     "menu.insert.sliderWidget": "Slider",
     "menu.insert.submodel": "Sottomodello",
     "menu.insert.tableWidget": "Tabella valori",
@@ -296,6 +298,7 @@ window.STGraphXI18nBundles = {
     "panel.widgetMatrix": "Matrice",
     "panel.widgetNumeric": "Input numerico",
     "panel.widgetSelect": "Selettore",
+    "panel.widgetScene2D": "Scena 2D",
     "panel.widgetSlider": "Slider",
     "panel.widgetTable": "Tabella",
     "panel.widgetText": "Testo output",
@@ -431,7 +434,7 @@ window.STGraphXI18nBundles = {
     "expr.help.rand": "Numero casuale da una distribuzione di probabilità uniforme. Senza argomenti restituisce un valore tra `0` e `1`; con un argomento tra `0` e `max`; con due argomenti tra `min` e `max`. Esempi: rand() ; rand(10) ; rand(-1, 1).",
     "expr.help.randInt": "Numero intero casuale da una distribuzione di probabilità uniforme. Con un argomento restituisce un intero tra `0` e `max`; con due argomenti tra `min` e `max`. Esempi: randInt(5) ; randInt(2, 7).",
     "expr.help.range": "Una successione numerica con estremo finale escluso. Esempio: `range(4) -> [0,1,2,3]`.",
-    "expr.help.readData": "Matrice di valori numerici e/o testuali letta da un file CSV relativo alla cartella del modello. Disponibile solo nei parametri. Esempio: `readData(\"data/values.csv\")`.",
+    "expr.help.readData": "Legge valori da un file XLSX relativo alla cartella del modello. Con quattro argomenti restituisce una cella; con sei argomenti legge un intervallo con estremi inclusi, restituendo uno scalare, un vettore o una matrice. Righe e colonne iniziano da 1 e possono essere espressioni che producono interi positivi. Esempi:\n`readData(\"data/values.xlsx\", \"Dati\", time+1, 3)`\n`readData(\"data/values.xlsx\", \"Dati\", 2, 1, 10, 4)`.",
     "expr.help.reduce": "Riduzione progressiva di un vettore o di una matrice mediante un operatore o una funzione. Per le matrici axis=0 riduce per colonne, axis=1 per righe. Esempi: reduce(+, [1,2,3]) ; reduce(max, [3,7,2]) ; reduce(+, [[1,2],[3,4]], 0).",
     "expr.help.removeAt": "Una copia senza l'elemento indicato del vettore oppure senza la riga o la colonna indicate della matrice. Per le matrici axis=0 rimuove una riga, axis=1 una colonna. Esempi: removeAt([1,2,3], 1) -> [1,3] ; removeAt([[1,2],[3,4]], 0) -> [[3,4]] ; removeAt([[1,2],[3,4]], 1, 1) -> [[1],[3]].",
     "expr.help.removeRow": "Una copia della matrice senza la riga i. Per matrici agents elimina l'agente i. Esempio: `removeRow(agents, 2)`.",
@@ -620,15 +623,19 @@ window.STGraphXI18nBundles = {
     "expr.error.rangeTooLarge": "Il range è troppo grande",
     "expr.error.ratePositive": "rate deve essere > 0",
     "expr.error.rateNonNegative": "rate deve essere >= 0",
-    "expr.error.readDataCsvEmpty": "Il file CSV di readData è vuoto",
-    "expr.error.readDataCsvNumericCell": "La cella CSV di readData in [{row}, {col}] non è numerica",
-    "expr.error.readDataCsvQuotedField": "Il file CSV di readData contiene un campo tra virgolette non terminato",
-    "expr.error.readDataCsvRectangular": "Il file CSV di readData deve essere rettangolare",
     "expr.error.readDataFileUnavailable": "Il file di readData non è disponibile: {path}",
     "expr.error.readDataLiteralPath": "readData richiede un percorso stringa letterale",
     "expr.error.readDataModelFolderUnavailable": "readData richiede accesso alla cartella del modello",
-    "expr.error.readDataOnlyParameters": "readData è disponibile solo nei parametri",
     "expr.error.readDataPathInvalid": "Il percorso di readData non è valido",
+    "expr.error.readDataSignature": "readData richiede 4 o 6 argomenti",
+    "expr.error.readDataXlsxOnly": "readData supporta solo file XLSX",
+    "expr.error.readDataSheetLiteral": "readData richiede il nome del foglio come stringa letterale",
+    "expr.error.readDataCoordinates": "Le coordinate di readData devono essere interi positivi",
+    "expr.error.readDataRangeOrder": "L'estremo finale dell'intervallo di readData non può precedere quello iniziale",
+    "expr.error.readDataXlsxInvalid": "Il file XLSX di readData non è valido: {path}",
+    "expr.error.readDataXlsxNoWorksheets": "Il file XLSX di readData non contiene fogli: {path}",
+    "expr.error.readDataWorksheetUnavailable": "Il foglio XLSX di readData non è disponibile: {sheet}",
+    "expr.error.readDataXlsxCellError": "Errore nella cella XLSX di readData [{row}, {col}]: {error}",
     "expr.error.reduceMatrixAxis": "reduce su matrici richiede un argomento asse",
     "expr.error.reduceNeedsNonEmptyVector": "reduce richiede un vettore non vuoto se manca il valore iniziale",
     "expr.error.reduceOperator": "Il primo argomento di reduce deve essere un operatore o una funzione",
@@ -797,6 +804,34 @@ window.STGraphXI18nBundles = {
     "widget.seriesPointsMode.none": "No punti",
     "widget.showGrid": "Griglia",
     "widget.showAxes": "Assi",
+    "widget.scene2dTitle": "Scena 2D {id}",
+    "widget.scene2dObjects": "Oggetti",
+    "widget.scene2dOutputOnly": "Nella Scena 2D si possono riferire solo variabili marcate come output.",
+    "widget.scene2dAddObject": "Aggiungi oggetto",
+    "widget.scene2dEqualScale": "Scala uniforme",
+    "widget.scene2dObject.segment": "Segmento",
+    "widget.scene2dObject.circle": "Cerchio",
+    "widget.scene2dObject.text": "Testo",
+    "widget.scene2dX": "X",
+    "widget.scene2dY": "Y",
+    "widget.scene2dX1": "X1",
+    "widget.scene2dY1": "Y1",
+    "widget.scene2dX2": "X2",
+    "widget.scene2dY2": "Y2",
+    "widget.scene2dRadius": "Raggio",
+    "widget.scene2dRotation": "Rotazione",
+    "widget.scene2dPivotX": "Centro X",
+    "widget.scene2dPivotY": "Centro Y",
+    "widget.scene2dText": "Testo",
+    "widget.scene2dFill": "Riemp.",
+    "widget.scene2dStroke": "Bordo",
+    "widget.scene2dColor": "Colore",
+    "widget.scene2dWidth": "Spessore",
+    "widget.scene2dFontSize": "Font",
+    "widget.scene2dAlign": "Allinea",
+    "widget.scene2dAlign.left": "Sinistra",
+    "widget.scene2dAlign.center": "Centro",
+    "widget.scene2dAlign.right": "Destra",
     "widget.showBars": "Barre",
     "widget.showHistory": "Serie storica",
     "widget.showInstantProfile": "Profilo istantaneo",
@@ -919,6 +954,7 @@ window.STGraphXI18nBundles = {
     "status.undo": "Undo eseguito.",
     "status.widgetButtonCreated": "Widget pulsante creato.",
     "status.widgetChartCreated": "Widget grafico x-y creato.",
+    "status.widgetScene2DCreated": "Widget scena 2D creato.",
     "status.widgetCopied": "Contenuto del widget copiato.",
     "status.widgetCreated": "Widget tabella creato.",
     "status.widgetDeleted": "Widget eliminato.",
@@ -987,6 +1023,7 @@ window.STGraphXI18nBundles = {
     "tooltip.menu.insert": "Inserisce nuove variabili o widget nel modello.",
     "tooltip.menu.insert.button": "Inserisce un widget pulsante per pilotare ingressi booleani.",
     "tooltip.menu.insert.chart": "Inserisce un widget grafico x-y.",
+    "tooltip.menu.insert.scene2d": "Inserisce una scena 2D composta da oggetti grafici dinamici.",
     "tooltip.menu.insert.diamond": "Inserisce un nuovo parametro.",
     "tooltip.menu.insert.draft": "Inserisce una bozza senza semantica esecutiva, da definire successivamente.",
     "tooltip.menu.insert.ellipse": "Inserisce una nuova variabile algebrica.",
@@ -1103,6 +1140,8 @@ window.STGraphXI18nBundles = {
     "configHelp.widget.table.body": "La tabella visualizza una o più variabili in colonne. Per ciascuna colonna scegli variabile, allineamento e numero di decimali.\n\nLa modalità **serie storica** aggiunge una riga a ogni aggiornamento; **espandi valori non scalari** dispone vettori e matrici in celle separate e non può essere usata insieme alla serie storica.",
     "configHelp.widget.xychart.title": "Widget grafico x-y",
     "configHelp.widget.xychart.body": "Il grafico rappresenta una o più coppie **X-Y** come serie nel tempo o profili istantanei. Per ogni serie puoi configurare linea, punti, barre, colori e spessori.\n\nLe opzioni degli assi controllano limiti, passo della griglia, etichette, assi e griglia. La legenda può essere posizionata oppure nascosta.",
+    "configHelp.widget.scene2d.title": "Widget scena 2D",
+    "configHelp.widget.scene2d.body": "La scena 2D disegna segmenti, cerchi e testi usando espressioni del modello per le coordinate e le dimensioni.\n\nLa scala uniforme mantiene proporzioni geometriche corrette, utile per pendoli, traiettorie e rappresentazioni spaziali.",
     "configHelp.widget.text.title": "Widget testo output",
     "configHelp.widget.text.body": "Il testo output visualizza il valore della variabile scelta, eventualmente trasformandolo in una delle etichette definite nelle **mappature testo**.\n\nÈ utile per stati discreti, messaggi sintetici e valori numerici per cui non serve una tabella.",
     "configHelp.text.title": "Configurazione del testo",
@@ -1195,6 +1234,26 @@ window.STGraphXI18nBundles = {
     "tooltip.widget.inputSource": "Variabile di input controllata da questo widget. Una variabile può essere associata a un solo widget di input.",
     "tooltip.widget.numericDimensions": "Numero di righe e colonne del valore: 1 x 1 produce uno scalare, n x 1 un vettore, n x m una matrice.",
     "tooltip.widget.legendPosition": "Posizione della legenda del grafico, oppure nessuna legenda.",
+    "tooltip.widget.scene2dAlign": "Allineamento orizzontale del testo rispetto alla sua coordinata X.",
+    "tooltip.widget.scene2dAddObject": "Aggiunge un nuovo oggetto alla scena. Gli oggetti successivi sono disegnati sopra quelli precedenti.",
+    "tooltip.widget.scene2dColor": "Colore del segmento o del testo nella scena 2D.",
+    "tooltip.widget.scene2dEqualScale": "Usa la stessa scala sugli assi X e Y, così cerchi e angoli mantengono le proporzioni geometriche.",
+    "tooltip.widget.scene2dFill": "Colore di riempimento del cerchio nella scena 2D.",
+    "tooltip.widget.scene2dFontSize": "Dimensione del testo nella scena 2D, in pixel.",
+    "tooltip.widget.scene2dObjectType": "Tipo di oggetto grafico da disegnare: segmento, cerchio o testo.",
+    "tooltip.widget.scene2dPivotX": "Coordinata X del centro di rotazione. Se vuota, usa il centro naturale dell'oggetto.",
+    "tooltip.widget.scene2dPivotY": "Coordinata Y del centro di rotazione. Se vuota, usa il centro naturale dell'oggetto.",
+    "tooltip.widget.scene2dRadius": "Raggio del cerchio nelle coordinate della scena; può essere un'espressione del modello.",
+    "tooltip.widget.scene2dRotation": "Rotazione dell'oggetto attorno al suo centro; può essere un'espressione del modello.",
+    "tooltip.widget.scene2dStroke": "Colore del bordo del cerchio nella scena 2D.",
+    "tooltip.widget.scene2dText": "Testo da mostrare. Usa {{espressione}} per includere un valore del modello aggiornato durante l'esecuzione.",
+    "tooltip.widget.scene2dWidth": "Spessore di linea o bordo, in pixel.",
+    "tooltip.widget.scene2dX": "Coordinata orizzontale dell'oggetto; può essere un'espressione del modello.",
+    "tooltip.widget.scene2dX1": "Coordinata X del primo estremo del segmento; può essere un'espressione del modello.",
+    "tooltip.widget.scene2dX2": "Coordinata X del secondo estremo del segmento; può essere un'espressione del modello.",
+    "tooltip.widget.scene2dY": "Coordinata verticale dell'oggetto; può essere un'espressione del modello.",
+    "tooltip.widget.scene2dY1": "Coordinata Y del primo estremo del segmento; può essere un'espressione del modello.",
+    "tooltip.widget.scene2dY2": "Coordinata Y del secondo estremo del segmento; può essere un'espressione del modello.",
     "tooltip.widget.lineColor": "Colore usato per disegnare la linea della serie.",
     "tooltip.widget.lineStyle": "Tipo di tratto della linea; scegli 'No linea' per visualizzare solo i punti.",
     "tooltip.widget.lineWidth": "Spessore della linea della serie, in pixel.",
@@ -1478,13 +1537,13 @@ window.STGraphXI18nBundles = {
   "en": {
     // Application
     "about.authorLabel": "Author",
-    "about.body": "Experimental release with web and Electron shells.",
+    "about.body": "Experimental release with web and Electron shells\nJavaScript or Rust simulation engine",
     "about.copyrightLabel": "Copyright",
     "about.iconAlt": "STGraphX icon",
     "about.licenseLabel": "License",
     "about.subtitle": "Workbench for the development and the execution of dynamic system models",
     "about.title": "About STGraphX",
-    "about.versionLabel": "Last update",
+    "about.versionLabel": "Version",
     "action.addMapping": "Add mapping",
     "action.addOption": "Add option",
     "action.addProperty": "Add property",
@@ -1556,6 +1615,7 @@ window.STGraphXI18nBundles = {
     "context.bg.newMatrixWidget": "Matrix",
     "context.bg.newRect": "State variable",
     "context.bg.newSelectWidget": "Selector",
+    "context.bg.newScene2DWidget": "2D scene",
     "context.bg.newSliderWidget": "Slider",
     "context.bg.newSubmodel": "Submodel",
     "context.bg.newTableWidget": "Table",
@@ -1628,6 +1688,7 @@ window.STGraphXI18nBundles = {
     "menu.insert.numericWidget": "Numeric input",
     "menu.insert.rect": "State variable",
     "menu.insert.selectWidget": "Selector",
+    "menu.insert.scene2dWidget": "2D scene",
     "menu.insert.sliderWidget": "Slider",
     "menu.insert.submodel": "Submodel",
     "menu.insert.tableWidget": "Value table",
@@ -1752,6 +1813,7 @@ window.STGraphXI18nBundles = {
     "panel.widgetMatrix": "Matrix",
     "panel.widgetNumeric": "Numeric input",
     "panel.widgetSelect": "Selector",
+    "panel.widgetScene2D": "2D scene",
     "panel.widgetSlider": "Slider",
     "panel.widgetTable": "Table",
     "panel.widgetText": "Output text",
@@ -1887,7 +1949,7 @@ window.STGraphXI18nBundles = {
     "expr.help.rand": "Uniform random number. With no arguments it returns a value between 0 and 1; with one argument between 0 and max; with two arguments between min and max. Examples: rand() ; rand(10) ; rand(-1, 1).",
     "expr.help.randInt": "Uniform random integer, with inclusive upper bound. With one argument it returns an integer between 0 and max; with two arguments between min and max. Examples: randInt(5) ; randInt(2, 7).",
     "expr.help.range": "A numeric sequence with exclusive end value. Example: `range(4) -> [0,1,2,3]`.",
-    "expr.help.readData": "Matrix of numeric and/or textual values read from a CSV file relative to the model folder. Available only in parameters. Example: `readData(\"data/values.csv\")`.",
+    "expr.help.readData": "Reads values from an XLSX file relative to the model folder. With four arguments it returns a cell; with six arguments it reads an inclusive range, returning a scalar, vector, or matrix. Rows and columns start at 1 and can be expressions that evaluate to positive integers. Examples:\n`readData(\"data/values.xlsx\", \"Data\", time+1, 3)`\n`readData(\"data/values.xlsx\", \"Data\", 2, 1, 10, 4)`.",
     "expr.help.reduce": "Progressive reduction of a vector or matrix. For matrices axis=0 reduces columns, axis=1 reduces rows. Examples: reduce(+, [1,2,3]) ; reduce(max, [3,7,2]) ; reduce(+, [[1,2],[3,4]], 0).",
     "expr.help.removeAt": "A copy without the selected vector element or without the selected matrix row or column. For matrices axis=0 removes a row, axis=1 a column. Examples: removeAt([1,2,3], 1) -> [1,3] ; removeAt([[1,2],[3,4]], 0) -> [[3,4]] ; removeAt([[1,2],[3,4]], 1, 1) -> [[1],[3]].",
     "expr.help.removeRow": "A copy of the matrix without row i. For agent matrices it removes agent i. Example: `removeRow(agents, 2)`.",
@@ -2076,15 +2138,19 @@ window.STGraphXI18nBundles = {
     "expr.error.rangeTooLarge": "Range is too large",
     "expr.error.ratePositive": "rate must be > 0",
     "expr.error.rateNonNegative": "rate must be >= 0",
-    "expr.error.readDataCsvEmpty": "readData CSV file is empty",
-    "expr.error.readDataCsvNumericCell": "readData CSV cell at [{row}, {col}] is not numeric",
-    "expr.error.readDataCsvQuotedField": "readData CSV file contains an unterminated quoted field",
-    "expr.error.readDataCsvRectangular": "readData CSV file must be rectangular",
     "expr.error.readDataFileUnavailable": "readData file is unavailable: {path}",
     "expr.error.readDataLiteralPath": "readData expects a string literal path",
     "expr.error.readDataModelFolderUnavailable": "readData requires access to the model folder",
-    "expr.error.readDataOnlyParameters": "readData is only available in parameters",
     "expr.error.readDataPathInvalid": "readData path is invalid",
+    "expr.error.readDataSignature": "readData expects 4 or 6 arguments",
+    "expr.error.readDataXlsxOnly": "readData supports XLSX files only",
+    "expr.error.readDataSheetLiteral": "readData expects a string literal worksheet name",
+    "expr.error.readDataCoordinates": "readData coordinates must be positive integers",
+    "expr.error.readDataRangeOrder": "readData range end must not precede its start",
+    "expr.error.readDataXlsxInvalid": "readData XLSX file is invalid: {path}",
+    "expr.error.readDataXlsxNoWorksheets": "readData XLSX file has no worksheets: {path}",
+    "expr.error.readDataWorksheetUnavailable": "readData worksheet is unavailable: {sheet}",
+    "expr.error.readDataXlsxCellError": "readData XLSX cell error at [{row}, {col}]: {error}",
     "expr.error.reduceMatrixAxis": "reduce on matrices requires an axis argument",
     "expr.error.reduceNeedsNonEmptyVector": "reduce requires a non-empty vector when no initial value is provided",
     "expr.error.reduceOperator": "reduce expects an operator or function as first argument",
@@ -2253,6 +2319,34 @@ window.STGraphXI18nBundles = {
     "widget.seriesPointsMode.none": "No points",
     "widget.showGrid": "Grid",
     "widget.showAxes": "Axes",
+    "widget.scene2dTitle": "2D scene {id}",
+    "widget.scene2dObjects": "Objects",
+    "widget.scene2dOutputOnly": "Only variables marked as output can be referenced in a 2D scene.",
+    "widget.scene2dAddObject": "Add object",
+    "widget.scene2dEqualScale": "Equal scale",
+    "widget.scene2dObject.segment": "Segment",
+    "widget.scene2dObject.circle": "Circle",
+    "widget.scene2dObject.text": "Text",
+    "widget.scene2dX": "X",
+    "widget.scene2dY": "Y",
+    "widget.scene2dX1": "X1",
+    "widget.scene2dY1": "Y1",
+    "widget.scene2dX2": "X2",
+    "widget.scene2dY2": "Y2",
+    "widget.scene2dRadius": "Radius",
+    "widget.scene2dRotation": "Rotation",
+    "widget.scene2dPivotX": "Pivot X",
+    "widget.scene2dPivotY": "Pivot Y",
+    "widget.scene2dText": "Text",
+    "widget.scene2dFill": "Fill",
+    "widget.scene2dStroke": "Stroke",
+    "widget.scene2dColor": "Color",
+    "widget.scene2dWidth": "Width",
+    "widget.scene2dFontSize": "Font",
+    "widget.scene2dAlign": "Align",
+    "widget.scene2dAlign.left": "Left",
+    "widget.scene2dAlign.center": "Center",
+    "widget.scene2dAlign.right": "Right",
     "widget.showBars": "Bars",
     "widget.showHistory": "History series",
     "widget.showInstantProfile": "Instant profile",
@@ -2375,6 +2469,7 @@ window.STGraphXI18nBundles = {
     "status.undo": "Undo executed.",
     "status.widgetButtonCreated": "Button widget created.",
     "status.widgetChartCreated": "x-y chart widget created.",
+    "status.widgetScene2DCreated": "2D scene widget created.",
     "status.widgetCopied": "Widget content copied.",
     "status.widgetCreated": "Table widget created.",
     "status.widgetDeleted": "Widget deleted.",
@@ -2443,6 +2538,7 @@ window.STGraphXI18nBundles = {
     "tooltip.menu.insert": "Inserts new variables or widgets into the model.",
     "tooltip.menu.insert.button": "Inserts a button widget to drive boolean inputs.",
     "tooltip.menu.insert.chart": "Inserts an x-y chart widget.",
+    "tooltip.menu.insert.scene2d": "Inserts a 2D scene made of dynamic graphical objects.",
     "tooltip.menu.insert.diamond": "Inserts a new parameter.",
     "tooltip.menu.insert.draft": "Inserts a draft without execution semantics, to be defined later.",
     "tooltip.menu.insert.ellipse": "Inserts a new algebraic variable.",
@@ -2559,6 +2655,8 @@ window.STGraphXI18nBundles = {
     "configHelp.widget.table.body": "The table displays one or more variables in columns. For each column choose its variable, alignment, and number of decimals.\n\n**Time series** adds a row at every refresh; **expand non-scalar values** lays out vectors and matrices in separate cells and cannot be used with time series.",
     "configHelp.widget.xychart.title": "X-Y chart widget",
     "configHelp.widget.xychart.body": "The chart represents one or more **X-Y** pairs as time series or instant profiles. For each series you can configure line, points, bars, colors, and widths.\n\nAxis options control limits, grid step, labels, axes, and grid. The legend can be positioned or hidden.",
+    "configHelp.widget.scene2d.title": "2D scene widget",
+    "configHelp.widget.scene2d.body": "The 2D scene draws segments, circles, and texts using model expressions for coordinates and dimensions.\n\nEqual scale preserves geometric proportions, useful for pendulums, trajectories, and spatial representations.",
     "configHelp.widget.text.title": "Output text widget",
     "configHelp.widget.text.body": "Output text displays the value of the selected variable, optionally transforming it through the **text mappings**.\n\nIt is useful for discrete states, concise messages, and numeric values that do not require a table.",
     "configHelp.text.title": "Text configuration",
@@ -2651,6 +2749,26 @@ window.STGraphXI18nBundles = {
     "tooltip.widget.inputSource": "Input variable controlled by this widget. A variable can be associated with one input widget only.",
     "tooltip.widget.numericDimensions": "Number of rows and columns: 1 x 1 produces a scalar, n x 1 a vector, n x m a matrix.",
     "tooltip.widget.legendPosition": "Chart legend position, or no legend.",
+    "tooltip.widget.scene2dAlign": "Horizontal text alignment relative to its X coordinate.",
+    "tooltip.widget.scene2dAddObject": "Adds a new object to the scene. Later objects are drawn above earlier ones.",
+    "tooltip.widget.scene2dColor": "Color of the segment or text in the 2D scene.",
+    "tooltip.widget.scene2dEqualScale": "Uses the same scale on X and Y axes, so circles and angles retain their geometric proportions.",
+    "tooltip.widget.scene2dFill": "Fill color of the circle in the 2D scene.",
+    "tooltip.widget.scene2dFontSize": "Text size in the 2D scene, in pixels.",
+    "tooltip.widget.scene2dObjectType": "Type of graphical object to draw: segment, circle, or text.",
+    "tooltip.widget.scene2dPivotX": "X coordinate of the rotation center. If empty, the object's natural center is used.",
+    "tooltip.widget.scene2dPivotY": "Y coordinate of the rotation center. If empty, the object's natural center is used.",
+    "tooltip.widget.scene2dRadius": "Circle radius in scene coordinates; it can be a model expression.",
+    "tooltip.widget.scene2dRotation": "Object rotation around its center; it can be a model expression.",
+    "tooltip.widget.scene2dStroke": "Outline color of the circle in the 2D scene.",
+    "tooltip.widget.scene2dText": "Text to display. Use {{expression}} to include a model value updated during execution.",
+    "tooltip.widget.scene2dWidth": "Line or outline width, in pixels.",
+    "tooltip.widget.scene2dX": "Horizontal coordinate of the object; it can be a model expression.",
+    "tooltip.widget.scene2dX1": "X coordinate of the segment's first endpoint; it can be a model expression.",
+    "tooltip.widget.scene2dX2": "X coordinate of the segment's second endpoint; it can be a model expression.",
+    "tooltip.widget.scene2dY": "Vertical coordinate of the object; it can be a model expression.",
+    "tooltip.widget.scene2dY1": "Y coordinate of the segment's first endpoint; it can be a model expression.",
+    "tooltip.widget.scene2dY2": "Y coordinate of the segment's second endpoint; it can be a model expression.",
     "tooltip.widget.lineColor": "Color used to draw the series line.",
     "tooltip.widget.lineStyle": "Line pattern; select 'No line' to show points only.",
     "tooltip.widget.lineWidth": "Series line width, in pixels.",
@@ -5100,7 +5218,7 @@ window.STGraphXI18nBundles = {
       integral: { kind: "function", signature: "integral(x)", descriptionKey: "expr.help.integral", insertText: "integral()", cursorOffset: 9 },
       map: { kind: "function", signature: "map(expr, array)", descriptionKey: "expr.help.map", insertText: "map()", cursorOffset: 4 },
       range: { kind: "function", signature: "range(stop) | range(start, stop[, step])", descriptionKey: "expr.help.range", insertText: "range()", cursorOffset: 6 },
-      readData: { kind: "function", signature: "readData(path)", descriptionKey: "expr.help.readData", insertText: "readData()", cursorOffset: 9 },
+      readData: { kind: "function", signature: "readData(path, sheet, row, column) | readData(path, sheet, row1, column1, row2, column2)", descriptionKey: "expr.help.readData", insertText: "readData(\"file.xlsx\", \"Sheet1\", 1, 1)", cursorOffset: 9 },
       reduce: { kind: "function", signature: "reduce(op|fn, vector[, init]) | reduce(op|fn, matrix, axis[, init])", descriptionKey: "expr.help.reduce", insertText: "reduce()", cursorOffset: 7 },
       setModelProperty: { kind: "function", signature: "setModelProperty(name, value)", descriptionKey: "expr.help.setModelProperty", insertText: "setModelProperty()", cursorOffset: 17 },
       setProperty: { kind: "function", signature: "setProperty(name, value)", descriptionKey: "expr.help.setProperty", insertText: "setProperty()", cursorOffset: 12 },
@@ -8637,6 +8755,7 @@ window.STGraphXI18nBundles = {
       isSubmodelNode,
       normalizeSubmodelPath,
       normalizeReadDataPath,
+      readDataFromWorkbook,
       normalizeEdgeColor: normalizeEdgeColorInput,
       normalizeEdgeInfluence,
       parseModelPropertyStoredValue,
@@ -8874,7 +8993,7 @@ window.STGraphXI18nBundles = {
       return deepClone(template);
     }
 
-    function readDataFromModelCache(model, relativePath) {
+    function readDataFromModelCache(model, relativePath, sheetName, row1, column1, row2, column2) {
       const normalizedPath = normalizeReadDataPath(relativePath);
       if (!normalizedPath) {
         throw new Error("readData path is invalid");
@@ -8885,7 +9004,10 @@ window.STGraphXI18nBundles = {
       if (!cache || !Object.prototype.hasOwnProperty.call(cache, normalizedPath)) {
         throw new Error(`readData file is unavailable: ${normalizedPath}`);
       }
-      return cache[normalizedPath];
+      if (typeof readDataFromWorkbook !== "function") {
+        throw new Error("readData XLSX support is unavailable");
+      }
+      return readDataFromWorkbook(cache[normalizedPath], sheetName, row1, column1, row2, column2);
     }
 
     function buildExecutionGlobalsForModel(model, rootExecution, timeValue) {
@@ -8910,7 +9032,7 @@ window.STGraphXI18nBundles = {
           }
           return value;
         },
-        readData: (path) => readDataFromModelCache(model, path),
+        readData: (...args) => readDataFromModelCache(model, ...args),
       };
     }
 
@@ -9824,7 +9946,7 @@ window.STGraphXI18nBundles = {
       expressionUsesReadData,
       validateReadDataExpressionUsage,
       extractReadDataPaths,
-      parseCsvMatrix,
+      parseXlsxWorkbook,
       normalizeSubmodelPath,
       isSubmodelNode,
       getSubmodelTemplate,
@@ -9837,7 +9959,7 @@ window.STGraphXI18nBundles = {
       || typeof expressionUsesReadData !== "function"
       || typeof validateReadDataExpressionUsage !== "function"
       || typeof extractReadDataPaths !== "function"
-      || typeof parseCsvMatrix !== "function"
+      || typeof parseXlsxWorkbook !== "function"
     ) {
       throw new Error("STGraphXRuntimeLoader requires readData and translation dependencies");
     }
@@ -9852,13 +9974,20 @@ window.STGraphXI18nBundles = {
 
     function collectReadDataPathsForModel(model) {
       const referencedPaths = new Set();
-      const parameterNodes = (model?.nodes || []).filter((node) => node?.shape === "diamond");
-      parameterNodes.forEach((node) => {
-        const source = String(node?.valueExpression ?? "");
+      const sources = [];
+      (model?.nodes || []).forEach((node) => {
+        sources.push(node?.valueExpression, node?.initialStateExpression);
+        if (node?.inputBindings && typeof node.inputBindings === "object") {
+          sources.push(...Object.values(node.inputBindings));
+        }
+      });
+      (model?.localFunctions || []).forEach((definition) => sources.push(definition?.expression));
+      sources.forEach((sourceValue) => {
+        const source = String(sourceValue ?? "");
         if (!expressionUsesReadData(source)) {
           return;
         }
-        const usage = validateReadDataExpressionUsage(source, { allowReadData: true });
+        const usage = validateReadDataExpressionUsage(source);
         if (!usage.ok) {
           throw new Error(usage.message || "readData expects a string literal path");
         }
@@ -9891,13 +10020,13 @@ window.STGraphXI18nBundles = {
         } catch (_err) {
           throw new Error(`readData file is unavailable: ${relativePath}`);
         }
-        let text;
+        let bytes;
         try {
-          text = await file.text();
+          bytes = await file.arrayBuffer();
         } catch (_err) {
           throw new Error(`readData file is unavailable: ${relativePath}`);
         }
-        model.__readDataCache[relativePath] = parseCsvMatrix(text, relativePath);
+        model.__readDataCache[relativePath] = parseXlsxWorkbook(bytes, relativePath);
       }
     }
 
@@ -10785,6 +10914,646 @@ window.STGraphXI18nBundles = {
 });
 
 
+/* --- scene2d-core.js --- */
+/*
+ * This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at https://mozilla.org/MPL/2.0/.
+ * Copyright (c) 2026 Luca Mari
+ */
+
+(function initScene2dCore(global) {
+  function clamp(value, minimum, maximum) {
+    return Math.min(maximum, Math.max(minimum, value));
+  }
+
+  function finiteOrNull(value) {
+    if (value == null || String(value).trim() === "") return null;
+    const number = Number(value);
+    return Number.isFinite(number) ? number : null;
+  }
+
+  function finiteOr(value, fallback) {
+    const number = Number(value);
+    return Number.isFinite(number) ? number : fallback;
+  }
+
+  function normalizeColor(value, fallback) {
+    const text = String(value ?? "").trim();
+    return text || fallback;
+  }
+
+  function normalizeObject(object) {
+    const type = ["segment", "circle", "text"].includes(String(object?.type ?? ""))
+      ? String(object.type)
+      : "segment";
+    return {
+      type,
+      x1: String(object?.x1 ?? "0"),
+      y1: String(object?.y1 ?? "0"),
+      x2: String(object?.x2 ?? "1"),
+      y2: String(object?.y2 ?? "0"),
+      x: String(object?.x ?? "0"),
+      y: String(object?.y ?? "0"),
+      radius: String(object?.radius ?? "0.1"),
+      rotation: String(object?.rotation ?? "0"),
+      // Text is always centered and rotates around its own position.
+      pivotX: type === "text" ? "" : (object?.pivotX == null ? "" : String(object.pivotX)),
+      pivotY: type === "text" ? "" : (object?.pivotY == null ? "" : String(object.pivotY)),
+      text: String(object?.text ?? ""),
+      color: normalizeColor(object?.color, type === "circle" ? "#d64545" : "#334e68"),
+      fill: normalizeColor(object?.fill, type === "circle" ? "#d64545" : "transparent"),
+      stroke: normalizeColor(object?.stroke, type === "circle" ? "#7f1d1d" : "transparent"),
+      lineWidth: clamp(finiteOr(object?.lineWidth, type === "segment" ? 3 : 1), 0, 40),
+      fontSize: clamp(finiteOr(object?.fontSize, 14), 6, 72),
+      textAlign: type !== "text" && ["left", "center", "right"].includes(String(object?.textAlign ?? ""))
+        ? String(object.textAlign)
+        : "center",
+    };
+  }
+
+  function normalizeSceneOptions(widget = {}) {
+    return {
+      xMin: finiteOrNull(widget.xMin),
+      xMax: finiteOrNull(widget.xMax),
+      yMin: finiteOrNull(widget.yMin),
+      yMax: finiteOrNull(widget.yMax),
+      xGridStep: finiteOrNull(widget.xGridStep),
+      yGridStep: finiteOrNull(widget.yGridStep),
+      showGrid: widget.showGrid !== false,
+      showAxes: widget.showAxes !== false,
+      equalScale: widget.equalScale !== false,
+      xAxisLabel: String(widget.xAxisLabel ?? "").trim(),
+      yAxisLabel: String(widget.yAxisLabel ?? "").trim(),
+      objects: Array.isArray(widget.objects) ? widget.objects.map(normalizeObject) : [],
+    };
+  }
+
+  function niceStep(span) {
+    if (!(span > 0) || !Number.isFinite(span)) return 1;
+    const raw = span / 7;
+    const power = 10 ** Math.floor(Math.log10(raw));
+    const scaled = raw / power;
+    const factor = scaled <= 1 ? 1 : scaled <= 2 ? 2 : scaled <= 5 ? 5 : 10;
+    return factor * power;
+  }
+
+  function formatTick(value) {
+    const magnitude = Math.abs(value);
+    if (magnitude > 0 && (magnitude >= 1e5 || magnitude < 1e-3)) return value.toExponential(2);
+    return Number(value.toFixed(6)).toString();
+  }
+
+  function rotatePoint(x, y, object, fallbackPivotX, fallbackPivotY) {
+    const angle = finiteOr(object?.rotation, 0);
+    if (!angle) return { x, y };
+    const pivotX = finiteOrNull(object?.pivotX) ?? fallbackPivotX;
+    const pivotY = finiteOrNull(object?.pivotY) ?? fallbackPivotY;
+    const dx = x - pivotX;
+    const dy = y - pivotY;
+    const cos = Math.cos(angle);
+    const sin = Math.sin(angle);
+    return { x: pivotX + dx * cos - dy * sin, y: pivotY + dx * sin + dy * cos };
+  }
+
+  function transformedSegment(object) {
+    return {
+      from: { x: object.x1, y: object.y1 },
+      to: { x: object.x2, y: object.y2 },
+    };
+  }
+
+  function transformedPoint(object) {
+    const centeredObject = object?.type === "text"
+      ? { ...object, pivotX: "", pivotY: "" }
+      : object;
+    return rotatePoint(object.x, object.y, centeredObject, object.x, object.y);
+  }
+
+  function sceneBounds(objects, options) {
+    const bounds = { minX: Infinity, maxX: -Infinity, minY: Infinity, maxY: -Infinity };
+    const include = (x, y, radius = 0) => {
+      if (!Number.isFinite(x) || !Number.isFinite(y)) return;
+      bounds.minX = Math.min(bounds.minX, x - radius);
+      bounds.maxX = Math.max(bounds.maxX, x + radius);
+      bounds.minY = Math.min(bounds.minY, y - radius);
+      bounds.maxY = Math.max(bounds.maxY, y + radius);
+    };
+    objects.forEach((object) => {
+      if (object.type === "segment") {
+        const segment = transformedSegment(object);
+        include(segment.from.x, segment.from.y);
+        include(segment.to.x, segment.to.y);
+      } else if (object.type === "circle") {
+        const point = transformedPoint(object);
+        include(point.x, point.y, Math.max(0, object.radius));
+      } else if (object.type === "text") {
+        const point = transformedPoint(object);
+        include(point.x, point.y);
+      }
+    });
+    if (!Number.isFinite(bounds.minX)) {
+      bounds.minX = -1;
+      bounds.maxX = 1;
+      bounds.minY = -1;
+      bounds.maxY = 1;
+    }
+    const pad = (min, max) => {
+      const span = Math.max(Math.abs(max - min), 0.1);
+      return [min - span * 0.12, max + span * 0.12];
+    };
+    if (options.xMin == null || options.xMax == null) {
+      const [min, max] = pad(bounds.minX, bounds.maxX);
+      if (options.xMin == null) bounds.minX = min;
+      if (options.xMax == null) bounds.maxX = max;
+    }
+    if (options.yMin == null || options.yMax == null) {
+      const [min, max] = pad(bounds.minY, bounds.maxY);
+      if (options.yMin == null) bounds.minY = min;
+      if (options.yMax == null) bounds.maxY = max;
+    }
+    if (options.xMin != null) bounds.minX = options.xMin;
+    if (options.xMax != null) bounds.maxX = options.xMax;
+    if (options.yMin != null) bounds.minY = options.yMin;
+    if (options.yMax != null) bounds.maxY = options.yMax;
+    if (!(bounds.maxX > bounds.minX)) {
+      bounds.minX -= 1;
+      bounds.maxX += 1;
+    }
+    if (!(bounds.maxY > bounds.minY)) {
+      bounds.minY -= 1;
+      bounds.maxY += 1;
+    }
+    return bounds;
+  }
+
+  function applyEqualScale(bounds, pixelWidth, pixelHeight) {
+    const worldRatio = (bounds.maxX - bounds.minX) / (bounds.maxY - bounds.minY);
+    const pixelRatio = pixelWidth / pixelHeight;
+    if (!(worldRatio > 0) || !(pixelRatio > 0)) return bounds;
+    if (worldRatio < pixelRatio) {
+      const center = (bounds.minX + bounds.maxX) / 2;
+      const width = (bounds.maxY - bounds.minY) * pixelRatio;
+      bounds.minX = center - width / 2;
+      bounds.maxX = center + width / 2;
+    } else if (worldRatio > pixelRatio) {
+      const center = (bounds.minY + bounds.maxY) / 2;
+      const height = (bounds.maxX - bounds.minX) / pixelRatio;
+      bounds.minY = center - height / 2;
+      bounds.maxY = center + height / 2;
+    }
+    return bounds;
+  }
+
+  function drawScene2D(canvas, rawObjects = [], rawOptions = {}) {
+    const ctx = canvas?.getContext?.("2d");
+    if (!ctx) return;
+    const options = normalizeSceneOptions(rawOptions);
+    const objects = Array.isArray(rawObjects) ? rawObjects : [];
+    const width = Math.max(1, Number(canvas.width) || 1);
+    const height = Math.max(1, Number(canvas.height) || 1);
+    const fontSize = clamp(finiteOr(rawOptions.fontSize, 13), 8, 32);
+    const margin = options.showAxes
+      ? { left: 46, right: 18, top: 18, bottom: 38 }
+      : { left: 12, right: 12, top: 12, bottom: 12 };
+    const plotWidth = Math.max(1, width - margin.left - margin.right);
+    const plotHeight = Math.max(1, height - margin.top - margin.bottom);
+    const bounds = sceneBounds(objects, options);
+    if (options.equalScale) applyEqualScale(bounds, plotWidth, plotHeight);
+    const scaleX = plotWidth / (bounds.maxX - bounds.minX);
+    const scaleY = plotHeight / (bounds.maxY - bounds.minY);
+    const toCanvas = (x, y) => ({
+      x: margin.left + (x - bounds.minX) * scaleX,
+      y: margin.top + (bounds.maxY - y) * scaleY,
+    });
+
+    ctx.clearRect(0, 0, width, height);
+    ctx.fillStyle = "#ffffff";
+    ctx.fillRect(0, 0, width, height);
+    ctx.save();
+    ctx.beginPath();
+    ctx.rect(margin.left, margin.top, plotWidth, plotHeight);
+    ctx.clip();
+
+    const drawGrid = (step, start, end, vertical) => {
+      if (!(step > 0) || !Number.isFinite(step)) return;
+      const first = Math.ceil(start / step) * step;
+      ctx.strokeStyle = "#e7edf3";
+      ctx.lineWidth = 1;
+      for (let value = first, count = 0; value <= end + step * 1e-9 && count < 250; value += step, count += 1) {
+        const point = vertical ? toCanvas(value, 0) : toCanvas(0, value);
+        ctx.beginPath();
+        if (vertical) {
+          ctx.moveTo(point.x, margin.top);
+          ctx.lineTo(point.x, margin.top + plotHeight);
+        } else {
+          ctx.moveTo(margin.left, point.y);
+          ctx.lineTo(margin.left + plotWidth, point.y);
+        }
+        ctx.stroke();
+      }
+    };
+    if (options.showGrid) {
+      drawGrid(options.xGridStep || niceStep(bounds.maxX - bounds.minX), bounds.minX, bounds.maxX, true);
+      drawGrid(options.yGridStep || niceStep(bounds.maxY - bounds.minY), bounds.minY, bounds.maxY, false);
+    }
+
+    if (options.showAxes) {
+      ctx.strokeStyle = "#8ca0b3";
+      ctx.lineWidth = 1.2;
+      if (bounds.minX <= 0 && bounds.maxX >= 0) {
+        const axis = toCanvas(0, 0).x;
+        ctx.beginPath(); ctx.moveTo(axis, margin.top); ctx.lineTo(axis, margin.top + plotHeight); ctx.stroke();
+      }
+      if (bounds.minY <= 0 && bounds.maxY >= 0) {
+        const axis = toCanvas(0, 0).y;
+        ctx.beginPath(); ctx.moveTo(margin.left, axis); ctx.lineTo(margin.left + plotWidth, axis); ctx.stroke();
+      }
+    }
+
+    objects.forEach((object) => {
+      if (object.type === "segment") {
+        const segment = transformedSegment(object);
+        const from = toCanvas(segment.from.x, segment.from.y);
+        const to = toCanvas(segment.to.x, segment.to.y);
+        ctx.strokeStyle = object.color || "#334e68";
+        ctx.lineWidth = object.lineWidth || 1;
+        ctx.lineCap = "round";
+        ctx.beginPath(); ctx.moveTo(from.x, from.y); ctx.lineTo(to.x, to.y); ctx.stroke();
+      } else if (object.type === "circle") {
+        const centerPoint = transformedPoint(object);
+        const center = toCanvas(centerPoint.x, centerPoint.y);
+        const radius = Math.max(0, object.radius) * Math.min(scaleX, scaleY);
+        if (!(radius > 0)) return;
+        ctx.beginPath(); ctx.arc(center.x, center.y, radius, 0, Math.PI * 2);
+        if (object.fill && object.fill !== "transparent") { ctx.fillStyle = object.fill; ctx.fill(); }
+        if (object.stroke && object.stroke !== "transparent" && object.lineWidth > 0) {
+          ctx.strokeStyle = object.stroke; ctx.lineWidth = object.lineWidth; ctx.stroke();
+        }
+      } else if (object.type === "text") {
+        const scenePoint = transformedPoint(object);
+        const point = toCanvas(scenePoint.x, scenePoint.y);
+        ctx.fillStyle = object.color || "#334e68";
+        ctx.font = `${object.fontSize || fontSize}px sans-serif`;
+        ctx.textAlign = "center";
+        ctx.textBaseline = "middle";
+        ctx.save();
+        ctx.translate(point.x, point.y);
+        ctx.rotate(-finiteOr(object.rotation, 0));
+        ctx.fillText(String(object.text ?? ""), 0, 0);
+        ctx.restore();
+      }
+    });
+    ctx.restore();
+
+    if (options.showAxes) {
+      ctx.fillStyle = "#52697d";
+      ctx.font = `${Math.max(9, fontSize - 2)}px sans-serif`;
+      ctx.textAlign = "center";
+      ctx.textBaseline = "top";
+      const xStep = options.xGridStep || niceStep(bounds.maxX - bounds.minX);
+      for (let value = Math.ceil(bounds.minX / xStep) * xStep, count = 0; value <= bounds.maxX + xStep * 1e-9 && count < 30; value += xStep, count += 1) {
+        const point = toCanvas(value, 0);
+        ctx.fillText(formatTick(value), point.x, margin.top + plotHeight + 5);
+      }
+      ctx.save();
+      ctx.translate(13, margin.top + plotHeight / 2);
+      ctx.rotate(-Math.PI / 2);
+      ctx.textBaseline = "middle";
+      ctx.fillText(options.yAxisLabel || "", 0, 0);
+      ctx.restore();
+      ctx.textBaseline = "bottom";
+      ctx.fillText(options.xAxisLabel || "", margin.left + plotWidth / 2, height - 4);
+    }
+  }
+
+  global.STGraphXScene2D = { drawScene2D, normalizeObject, normalizeSceneOptions };
+})(globalThis);
+
+
+/* --- vendor/fflate/fflate.min.js --- */
+!function(f){typeof module!='undefined'&&typeof exports=='object'?module.exports=f():typeof define!='undefined'&&define.amd?define(f):(typeof self!='undefined'?self:this).fflate=f()}(function(){var _e={};"use strict";_e.deflate=zt,_e.deflateSync=kt,_e.inflate=At,_e.inflateSync=Tt,_e.gzip=It,_e.compress=It,_e.gzipSync=Ut,_e.compressSync=Ut,_e.gunzip=Zt,_e.gunzipSync=qt,_e.zlib=Lt,_e.zlibSync=Bt,_e.unzlib=Nt,_e.unzlibSync=Pt,_e.gzip=It,_e.compress=It,_e.decompress=Jt,_e.decompressSync=Kt,_e.strToU8=nn,_e.strFromU8=rn,_e.zip=dn,_e.zipSync=gn,_e.unzip=zn,_e.unzipSync=kn;var t=(typeof module!='undefined'&&typeof exports=='object'?function(_f){"use strict";var e,r,t,n=";var __w=require('worker_threads');__w.parentPort.on('message',function(m){onmessage({data:m})}),postMessage=function(m,t){__w.parentPort.postMessage(m,t)},close=process.exit;self=global";try{e=require("worker_threads"),r=e.Worker,t=e.isMarkedAsUntransferable}catch(e){}exports.default=r?function(e,o,a,s,u){var i=!1,l=new r(e+n,{eval:!0}).on("error",function(e){return u(e,null)}).on("message",function(e){return u(null,e)}).on("exit",function(e){e&&!i&&u(Error("exited with code "+e),null)});return t&&(s=s.filter(function(e){return!t(e)})),l.postMessage(a,s),l.terminate=function(){return i=!0,r.prototype.terminate.call(l)},l}:function(e,r,t,n,o){setImmediate(function(){return o(Error("async operations unsupported - update to Node 12+ (or Node 10-11 with the --experimental-worker CLI flag)"),null)});var a=function(){};return{terminate:a,postMessage:a}};return _f}:function(_f){"use strict";var e={};_f.default=function(r,t,s,a,n){var o=new Worker(e[t]||(e[t]=URL.createObjectURL(new Blob([r+';addEventListener("error",function(e){e=e.error;postMessage({$e$:[e.message,e.code,e.stack]})})'],{type:"text/javascript"}))));return o.onmessage=function(e){var r=e.data,t=r.$e$;if(t){var s=Error(t[0]);s.code=t[1],s.stack=t[2],n(s,null)}else n(null,r)},o.postMessage(s,a),o};return _f})({}),n=Uint8Array,r=Uint16Array,i=Int32Array,e=new n([0,0,0,0,0,0,0,0,1,1,1,1,2,2,2,2,3,3,3,3,4,4,4,4,5,5,5,5,0,0,0,0]),o=new n([0,0,0,0,1,1,2,2,3,3,4,4,5,5,6,6,7,7,8,8,9,9,10,10,11,11,12,12,13,13,0,0]),s=new n([16,17,18,0,8,7,9,6,10,5,11,4,12,3,13,2,14,1,15]),a=function(t,n){for(var e=new r(31),o=0;o<31;++o)e[o]=n+=1<<t[o-1];var s=new i(e[30]);for(o=1;o<30;++o)for(var a=e[o];a<e[o+1];++a)s[a]=a-e[o]<<5|o;return{b:e,r:s}},u=a(e,2),h=u.b,f=u.r;h[28]=258,f[258]=28;for(var c=a(o,0),l=c.b,p=c.r,v=new r(32768),d=0;d<32768;++d){var g=(43690&d)>>1|(21845&d)<<1;v[d]=((65280&(g=(61680&(g=(52428&g)>>2|(13107&g)<<2))>>4|(3855&g)<<4))>>8|(255&g)<<8)>>1}var y=function(t,n,i){for(var e=t.length,o=0,s=new r(n);o<e;++o)t[o]&&++s[t[o]-1];var a,u=new r(n);for(o=1;o<n;++o)u[o]=u[o-1]+s[o-1]<<1;if(i){a=new r(1<<n);var h=15-n;for(o=0;o<e;++o)if(t[o])for(var f=o<<4|t[o],c=n-t[o],l=u[t[o]-1]++<<c,p=l|(1<<c)-1;l<=p;++l)a[v[l]>>h]=f}else for(a=new r(e),o=0;o<e;++o)t[o]&&(a[o]=v[u[t[o]-1]++]>>15-t[o]);return a},m=new n(288);for(d=0;d<144;++d)m[d]=8;for(d=144;d<256;++d)m[d]=9;for(d=256;d<280;++d)m[d]=7;for(d=280;d<288;++d)m[d]=8;var b=new n(32);for(d=0;d<32;++d)b[d]=5;var w=y(m,9,0),x=y(m,9,1),z=y(b,5,0),k=y(b,5,1),M=function(t){for(var n=t[0],r=1;r<t.length;++r)t[r]>n&&(n=t[r]);return n},S=function(t,n,r){var i=n/8|0;return(t[i]|t[i+1]<<8)>>(7&n)&r},A=function(t,n){var r=n/8|0;return(t[r]|t[r+1]<<8|t[r+2]<<16)>>(7&n)},T=function(t){return(t+7)/8|0},D=function(t,r,i){return(null==r||r<0)&&(r=0),(null==i||i>t.length)&&(i=t.length),new n(t.subarray(r,i))};_e.FlateErrorCode={UnexpectedEOF:0,InvalidBlockType:1,InvalidLengthLiteral:2,InvalidDistance:3,StreamFinished:4,NoStreamHandler:5,InvalidHeader:6,NoCallback:7,InvalidUTF8:8,ExtraFieldTooLong:9,InvalidDate:10,FilenameTooLong:11,StreamFinishing:12,InvalidZipData:13,UnknownCompressionMethod:14};var C=["unexpected EOF","invalid block type","invalid length/literal","invalid distance","stream finished","no stream handler",,"no callback","invalid UTF-8 data","extra field too long","date not in range 1980-2099","filename too long","stream finishing","invalid zip data"],I=function(t,n,r){var i=Error(n||C[t]);if(i.code=t,Error.captureStackTrace&&Error.captureStackTrace(i,I),!r)throw i;return i},U=function(t,r,i,a){var u=t.length,f=a?a.length:0;if(!u||r.f&&!r.l)return i||new n(0);var c=!i,p=c||2!=r.i,v=r.i;c&&(i=new n(3*u));var d=function(t){var r=i.length;if(t>r){var e=new n(Math.max(2*r,t));e.set(i),i=e}},g=r.f||0,m=r.p||0,b=r.b||0,w=r.l,z=r.d,C=r.m,U=r.n,F=8*u;do{if(!w){g=S(t,m,1);var E=S(t,m+1,3);if(m+=3,!E){var Z=t[(Y=T(m)+4)-4]|t[Y-3]<<8,q=Y+Z;if(q>u){v&&I(0);break}p&&d(b+Z),i.set(t.subarray(Y,q),b),r.b=b+=Z,r.p=m=8*q,r.f=g;continue}if(1==E)w=x,z=k,C=9,U=5;else if(2==E){var O=S(t,m,31)+257,G=S(t,m+10,15)+4,L=O+S(t,m+5,31)+1;m+=14;for(var B=new n(L),H=new n(19),j=0;j<G;++j)H[s[j]]=S(t,m+3*j,7);m+=3*G;var N=M(H),P=(1<<N)-1,V=y(H,N,1);for(j=0;j<L;){var Y,J=V[S(t,m,P)];if(m+=15&J,(Y=J>>4)<16)B[j++]=Y;else{var K=0,Q=0;for(16==Y?(Q=3+S(t,m,3),m+=2,K=B[j-1]):17==Y?(Q=3+S(t,m,7),m+=3):18==Y&&(Q=11+S(t,m,127),m+=7);Q--;)B[j++]=K}}var R=B.subarray(0,O),W=B.subarray(O);C=M(R),U=M(W),w=y(R,C,1),z=y(W,U,1)}else I(1);if(m>F){v&&I(0);break}}p&&d(b+131072);for(var X=(1<<C)-1,$=(1<<U)-1,_=m;;_=m){var tt=(K=w[A(t,m)&X])>>4;if((m+=15&K)>F){v&&I(0);break}if(K||I(2),tt<256)i[b++]=tt;else{if(256==tt){_=m,w=null;break}var nt=tt-254;tt>264&&(nt=S(t,m,(1<<(et=e[j=tt-257]))-1)+h[j],m+=et);var rt=z[A(t,m)&$],it=rt>>4;if(rt||I(3),m+=15&rt,W=l[it],it>3){var et=o[it];W+=A(t,m)&(1<<et)-1,m+=et}if(m>F){v&&I(0);break}p&&d(b+131072);var ot=b+nt;if(b<W){var st=f-W,at=Math.min(W,ot);for(st+b<0&&I(3);b<at;++b)i[b]=a[st+b]}for(;b<ot;++b)i[b]=i[b-W]}}r.l=w,r.p=_,r.b=b,r.f=g,w&&(g=1,r.m=C,r.d=z,r.n=U)}while(!g);return b!=i.length&&c?D(i,0,b):i.subarray(0,b)},F=function(t,n,r){var i=n/8|0;t[i]|=r<<=7&n,t[i+1]|=r>>8},E=function(t,n,r){var i=n/8|0;t[i]|=r<<=7&n,t[i+1]|=r>>8,t[i+2]|=r>>16},Z=function(t,i){for(var e=[],o=0;o<t.length;++o)t[o]&&e.push({s:o,f:t[o]});var s=e.length,a=e.slice();if(!s)return{t:j,l:0};if(1==s){var u=new n(e[0].s+1);return u[e[0].s]=1,{t:u,l:1}}e.sort(function(t,n){return t.f-n.f}),e.push({s:-1,f:25001});var h=e[0],f=e[1],c=0,l=1,p=2;for(e[0]={s:-1,f:h.f+f.f,l:h,r:f};l!=s-1;)h=e[e[c].f<e[p].f?c++:p++],f=e[c!=l&&e[c].f<e[p].f?c++:p++],e[l++]={s:-1,f:h.f+f.f,l:h,r:f};var v=a[0].s;for(o=1;o<s;++o)a[o].s>v&&(v=a[o].s);var d=new r(v+1),g=q(e[l-1],d,0);if(g>i){o=0;var y=0,m=g-i,b=1<<m;for(a.sort(function(t,n){return d[n.s]-d[t.s]||t.f-n.f});o<s;++o){var w=a[o].s;if(!(d[w]>i))break;y+=b-(1<<g-d[w]),d[w]=i}for(y>>=m;y>0;){var x=a[o].s;d[x]<i?y-=1<<i-d[x]++-1:++o}for(;o>=0&&y;--o){var z=a[o].s;d[z]==i&&(--d[z],++y)}g=i}return{t:new n(d),l:g}},q=function(t,n,r){return-1==t.s?Math.max(q(t.l,n,r+1),q(t.r,n,r+1)):n[t.s]=r},O=function(t){for(var n=t.length;n&&!t[--n];);for(var i=new r(++n),e=0,o=t[0],s=1,a=function(t){i[e++]=t},u=1;u<=n;++u)if(t[u]==o&&u!=n)++s;else{if(!o&&s>2){for(;s>138;s-=138)a(32754);s>2&&(a(s>10?s-11<<5|28690:s-3<<5|12305),s=0)}else if(s>3){for(a(o),--s;s>6;s-=6)a(8304);s>2&&(a(s-3<<5|8208),s=0)}for(;s--;)a(o);s=1,o=t[u]}return{c:i.subarray(0,e),n:n}},G=function(t,n){for(var r=0,i=0;i<n.length;++i)r+=t[i]*n[i];return r},L=function(t,n,r){var i=r.length,e=T(n+2);t[e]=255&i,t[e+1]=i>>8,t[e+2]=255^t[e],t[e+3]=255^t[e+1];for(var o=0;o<i;++o)t[e+o+4]=r[o];return 8*(e+4+i)},B=function(t,n,i,a,u,h,f,c,l,p,v){F(n,v++,i),++u[256];for(var d=Z(u,15),g=d.t,x=d.l,k=Z(h,15),M=k.t,S=k.l,A=O(g),T=A.c,D=A.n,C=O(M),I=C.c,U=C.n,q=new r(19),B=0;B<T.length;++B)++q[31&T[B]];for(B=0;B<I.length;++B)++q[31&I[B]];for(var H=Z(q,7),j=H.t,N=H.l,P=19;P>4&&!j[s[P-1]];--P);var V,Y,J,K,Q=p+5<<3,R=G(u,m)+G(h,b)+f,W=G(u,g)+G(h,M)+f+14+3*P+G(q,j)+2*q[16]+3*q[17]+7*q[18];if(l>=0&&Q<=R&&Q<=W)return L(n,v,t.subarray(l,l+p));if(F(n,v,1+(W<R)),v+=2,W<R){V=y(g,x,0),Y=g,J=y(M,S,0),K=M;var X=y(j,N,0);for(F(n,v,D-257),F(n,v+5,U-1),F(n,v+10,P-4),v+=14,B=0;B<P;++B)F(n,v+3*B,j[s[B]]);v+=3*P;for(var $=[T,I],_=0;_<2;++_){var tt=$[_];for(B=0;B<tt.length;++B)F(n,v,X[rt=31&tt[B]]),v+=j[rt],rt>15&&(F(n,v,tt[B]>>5&127),v+=tt[B]>>12)}}else V=w,Y=m,J=z,K=b;for(B=0;B<c;++B){var nt=a[B];if(nt>255){var rt;E(n,v,V[257+(rt=nt>>18&31)]),v+=Y[rt+257],rt>7&&(F(n,v,nt>>23&31),v+=e[rt]);var it=31&nt;E(n,v,J[it]),v+=K[it],it>3&&(E(n,v,nt>>5&8191),v+=o[it])}else E(n,v,V[nt]),v+=Y[nt]}return E(n,v,V[256]),v+Y[256]},H=new i([65540,131080,131088,131104,262176,1048704,1048832,2114560,2117632]),j=new n(0),N=function(t,s,a,u,h,c){var l=c.z||t.length,v=new n(u+l+5*(1+Math.ceil(l/7e3))+h),d=v.subarray(u,v.length-h),g=c.l,y=7&(c.r||0);if(s){y&&(d[0]=c.r>>3);for(var m=H[s-1],b=m>>13,w=8191&m,x=(1<<a)-1,z=c.p||new r(32768),k=c.h||new r(x+1),M=Math.ceil(a/3),S=2*M,A=function(n){return(t[n]^t[n+1]<<M^t[n+2]<<S)&x},C=new i(25e3),I=new r(288),U=new r(32),F=0,E=0,Z=c.i||0,q=0,O=c.w||0,G=0;Z+2<l;++Z){var j=A(Z),N=32767&Z,P=k[j];if(z[N]=P,k[j]=N,O<=Z){var V=l-Z;if((F>7e3||q>24576)&&(V>423||!g)){y=B(t,d,0,C,I,U,E,q,G,Z-G,y),q=F=E=0,G=Z;for(var Y=0;Y<286;++Y)I[Y]=0;for(Y=0;Y<30;++Y)U[Y]=0}var J=2,K=0,Q=w,R=N-P&32767;if(V>2&&j==A(Z-R))for(var W=Math.min(b,V)-1,X=Math.min(32767,Z),$=Math.min(258,V);R<=X&&--Q&&N!=P;){if(t[Z+J]==t[Z+J-R]){for(var _=0;_<$&&t[Z+_]==t[Z+_-R];++_);if(_>J){if(J=_,K=R,_>W)break;var tt=Math.min(R,_-2),nt=0;for(Y=0;Y<tt;++Y){var rt=Z-R+Y&32767,it=rt-z[rt]&32767;it>nt&&(nt=it,P=rt)}}}R+=(N=P)-(P=z[N])&32767}if(K){C[q++]=268435456|f[J]<<18|p[K];var et=31&f[J],ot=31&p[K];E+=e[et]+o[ot],++I[257+et],++U[ot],O=Z+J,++F}else C[q++]=t[Z],++I[t[Z]]}}for(Z=Math.max(Z,O);Z<l;++Z)C[q++]=t[Z],++I[t[Z]];y=B(t,d,g,C,I,U,E,q,G,Z-G,y),g||(c.r=7&y|d[y/8|0]<<3,y-=7,c.h=k,c.p=z,c.i=Z,c.w=O)}else{for(Z=c.w||0;Z<l+g;Z+=65535){var st=Z+65535;st>=l&&(d[y/8|0]=g,st=l),y=L(d,y+1,t.subarray(Z,st))}c.i=l}return D(v,0,u+T(y)+h)},P=function(){for(var t=new Int32Array(256),n=0;n<256;++n){for(var r=n,i=9;--i;)r=(1&r&&-306674912)^r>>>1;t[n]=r}return t}(),V=function(){var t=-1;return{p:function(n){for(var r=t,i=0;i<n.length;++i)r=P[255&r^n[i]]^r>>>8;t=r},d:function(){return~t}}},Y=function(){var t=1,n=0;return{p:function(r){for(var i=t,e=n,o=0|r.length,s=0;s!=o;){for(var a=Math.min(s+2655,o);s<a;++s)e+=i+=r[s];i=(65535&i)+15*(i>>16),e=(65535&e)+15*(e>>16)}t=i,n=e},d:function(){return(255&(t%=65521))<<24|(65280&t)<<8|(255&(n%=65521))<<8|n>>8}}},J=function(t,r,i,e,o){if(!o&&(o={l:1},r.dictionary)){var s=r.dictionary.subarray(-32768),a=new n(s.length+t.length);a.set(s),a.set(t,s.length),t=a,o.w=s.length}return N(t,null==r.level?6:r.level,null==r.mem?o.l?Math.ceil(1.5*Math.max(8,Math.min(13,Math.log(t.length)))):20:12+r.mem,i,e,o)},K=function(t,n){var r={};for(var i in t)r[i]=t[i];for(var i in n)r[i]=n[i];return r},Q=function(t,n,r){for(var i=t(),e=""+t,o=e.slice(e.indexOf("[")+1,e.lastIndexOf("]")).replace(/\s+/g,"").split(","),s=0;s<i.length;++s){var a=i[s],u=o[s];if("function"==typeof a){n+=";"+u+"=";var h=""+a;if(a.prototype)if(-1!=h.indexOf("[native code]")){var f=h.indexOf(" ",8)+1;n+=h.slice(f,h.indexOf("(",f))}else for(var c in n+=h,a.prototype)n+=";"+u+".prototype."+c+"="+a.prototype[c];else n+=h}else r[u]=a}return n},R=[],W=function(t){var n=[];for(var r in t)t[r].buffer&&n.push((t[r]=new t[r].constructor(t[r])).buffer);return n},X=function(n,r,i,e){if(!R[i]){for(var o="",s={},a=n.length-1,u=0;u<a;++u)o=Q(n[u],o,s);R[i]={c:Q(n[a],o,s),e:s}}var h=K({},R[i].e);return(0,t.default)(R[i].c+";onmessage=function(e){for(var k in e.data)self[k]=e.data[k];onmessage="+r+"}",i,h,W(h),e)},$=function(){return[n,r,i,e,o,s,h,l,x,k,v,C,y,M,S,A,T,D,I,U,Tt,et,ot]},_=function(){return[n,r,i,e,o,s,f,p,w,m,z,b,v,H,j,y,F,E,Z,q,O,G,L,B,T,D,N,J,kt,et]},tt=function(){return[pt,gt,lt,V,P]},nt=function(){return[vt,dt]},rt=function(){return[yt,lt,Y]},it=function(){return[mt]},et=function(t){return postMessage(t,[t.buffer])},ot=function(t){return t&&{out:t.size&&new n(t.size),dictionary:t.dictionary}},st=function(t,n,r,i,e,o){var s=X(r,i,e,function(t,n){s.terminate(),o(t,n)});return s.postMessage([t,n],n.consume?[t.buffer]:[]),function(){s.terminate()}},at=function(t){return t.ondata=function(t,n){return postMessage([t,n],[t.buffer])},function(n){n.data[0]?(t.push(n.data[0],n.data[1]),postMessage([n.data[0].length])):t.flush(n.data[1])}},ut=function(t,n,r,i,e,o,s){var a,u=X(t,i,e,function(t,r){t?(u.terminate(),n.ondata.call(n,t)):Array.isArray(r)?1==r.length?(n.queuedSize-=r[0],n.ondrain&&n.ondrain(r[0])):(r[1]&&u.terminate(),n.ondata.call(n,t,r[0],r[1])):s(r)});u.postMessage(r),n.queuedSize=0,n.push=function(t,r){n.ondata||I(5),a&&n.ondata(I(4,0,1),null,!!r),n.queuedSize+=t.length,u.postMessage([t,a=r],t.buffer instanceof ArrayBuffer?[t.buffer]:[])},n.terminate=function(){u.terminate()},o&&(n.flush=function(t){u.postMessage([0,t])})},ht=function(t,n){return t[n]|t[n+1]<<8},ft=function(t,n){return(t[n]|t[n+1]<<8|t[n+2]<<16|t[n+3]<<24)>>>0},ct=function(t,n){return ft(t,n)+4294967296*ft(t,n+4)},lt=function(t,n,r){for(;r;++n)t[n]=r,r>>>=8},pt=function(t,n){var r=n.filename;if(t[0]=31,t[1]=139,t[2]=8,t[8]=n.level<2?4:9==n.level?2:0,t[9]=3,0!=n.mtime&&lt(t,4,Math.floor(new Date(n.mtime||Date.now())/1e3)),r){t[3]=8;for(var i=0;i<=r.length;++i)t[i+10]=r.charCodeAt(i)}},vt=function(t){31==t[0]&&139==t[1]&&8==t[2]||I(6,"invalid gzip data");var n=t[3],r=10;4&n&&(r+=2+(t[10]|t[11]<<8));for(var i=(n>>3&1)+(n>>4&1);i>0;i-=!t[r++]);return r+(2&n)},dt=function(t){var n=t.length;return(t[n-4]|t[n-3]<<8|t[n-2]<<16|t[n-1]<<24)>>>0},gt=function(t){return 10+(t.filename?t.filename.length+1:0)},yt=function(t,n){var r=n.level,i=0==r?0:r<6?1:9==r?3:2;if(t[0]=120,t[1]=i<<6|(n.dictionary&&32),t[1]|=31-(t[0]<<8|t[1])%31,n.dictionary){var e=Y();e.p(n.dictionary),lt(t,2,e.d())}},mt=function(t,n){return(8!=(15&t[0])||t[0]>>4>7||(t[0]<<8|t[1])%31)&&I(6,"invalid zlib data"),(t[1]>>5&1)==+!n&&I(6,"invalid zlib data: "+(32&t[1]?"need":"unexpected")+" dictionary"),2+(t[1]>>3&4)};function bt(t,n){return"function"==typeof t&&(n=t,t={}),this.ondata=n,t}var wt=function(){function t(t,r){if("function"==typeof t&&(r=t,t={}),this.ondata=r,this.o=t||{},this.s={l:0,i:32768,w:32768,z:32768},this.b=new n(98304),this.o.dictionary){var i=this.o.dictionary.subarray(-32768);this.b.set(i,32768-i.length),this.s.i=32768-i.length}}return t.prototype.p=function(t,n){this.ondata(J(t,this.o,0,0,this.s),n)},t.prototype.push=function(t,r){this.ondata||I(5),this.s.l&&I(4);var i=t.length+this.s.z;if(i>this.b.length){if(i>2*this.b.length-32768){var e=new n(-32768&i);e.set(this.b.subarray(0,this.s.z)),this.b=e}var o=this.b.length-this.s.z;this.b.set(t.subarray(0,o),this.s.z),this.s.z=this.b.length,this.p(this.b,!1),this.b.set(this.b.subarray(-32768)),this.b.set(t.subarray(o),32768),this.s.z=t.length-o+32768,this.s.i=32766,this.s.w=32768}else this.b.set(t,this.s.z),this.s.z+=t.length;this.s.l=1&r,(this.s.z>this.s.w+8191||r)&&(this.p(this.b,r||!1),this.s.w=this.s.i,this.s.i-=2),r&&(this.s=this.o={},this.b=j)},t.prototype.flush=function(t){if(this.ondata||I(5),this.s.l&&I(4),this.p(this.b,!1),this.s.w=this.s.i,this.s.i-=2,t){var r=new n(6);r[0]=this.s.r>>3;var i=L(r,this.s.r,j);this.s.r=0,this.ondata(r.subarray(0,i>>3),!1)}},t}();_e.Deflate=wt;var xt=function(){return function(t,n){ut([_,function(){return[at,wt]}],this,bt.call(this,t,n),function(t){var n=new wt(t.data);onmessage=at(n)},6,1)}}();function zt(t,n,r){return r||(r=n,n={}),"function"!=typeof r&&I(7),st(t,n,[_],function(t){return et(kt(t.data[0],t.data[1]))},0,r)}function kt(t,n){return J(t,n||{},0,0)}_e.AsyncDeflate=xt;var Mt=function(){function t(t,r){"function"==typeof t&&(r=t,t={}),this.ondata=r;var i=t&&t.dictionary&&t.dictionary.subarray(-32768);this.s={i:0,b:i?i.length:0},this.o=new n(32768),this.p=new n(0),i&&this.o.set(i)}return t.prototype.e=function(t){if(this.ondata||I(5),this.d&&I(4),this.p.length){if(t.length){var r=new n(this.p.length+t.length);r.set(this.p),r.set(t,this.p.length),this.p=r}}else this.p=t},t.prototype.c=function(t){this.s.i=+(this.d=t||!1);var n=this.s.b,r=U(this.p,this.s,this.o);this.ondata(D(r,n,this.s.b),this.d),this.o=D(r,this.s.b-32768),this.s.b=this.o.length,this.p=D(this.p,this.s.p/8|0),this.s.p&=7},t.prototype.push=function(t,n){this.e(t),this.c(n)},t}();_e.Inflate=Mt;var St=function(){return function(t,n){ut([$,function(){return[at,Mt]}],this,bt.call(this,t,n),function(t){var n=new Mt(t.data);onmessage=at(n)},7,0)}}();function At(t,n,r){return r||(r=n,n={}),"function"!=typeof r&&I(7),st(t,n,[$],function(t){return et(Tt(t.data[0],ot(t.data[1])))},1,r)}function Tt(t,n){return U(t,{i:2},n&&n.out,n&&n.dictionary)}_e.AsyncInflate=St;var Dt=function(){function t(t,n){this.c=V(),this.l=0,this.v=1,wt.call(this,t,n)}return t.prototype.push=function(t,n){this.c.p(t),this.l+=t.length,wt.prototype.push.call(this,t,n)},t.prototype.p=function(t,n){var r=J(t,this.o,this.v&&gt(this.o),n&&8,this.s);this.v&&(pt(r,this.o),this.v=0),n&&(lt(r,r.length-8,this.c.d()),lt(r,r.length-4,this.l)),this.ondata(r,n)},t.prototype.flush=function(t){wt.prototype.flush.call(this,t)},t}();_e.Gzip=Dt,_e.Compress=Dt;var Ct=function(){return function(t,n){ut([_,tt,function(){return[at,wt,Dt]}],this,bt.call(this,t,n),function(t){var n=new Dt(t.data);onmessage=at(n)},8,1)}}();function It(t,n,r){return r||(r=n,n={}),"function"!=typeof r&&I(7),st(t,n,[_,tt,function(){return[Ut]}],function(t){return et(Ut(t.data[0],t.data[1]))},2,r)}function Ut(t,n){n||(n={});var r=V(),i=t.length;r.p(t);var e=J(t,n,gt(n),8),o=e.length;return pt(e,n),lt(e,o-8,r.d()),lt(e,o-4,i),e}_e.AsyncGzip=Ct,_e.AsyncCompress=Ct;var Ft=function(){function t(t,n){this.v=1,this.r=0,Mt.call(this,t,n)}return t.prototype.push=function(t,r){if(Mt.prototype.e.call(this,t),this.r+=t.length,this.v){var i=this.p.subarray(this.v-1),e=i.length>3?vt(i):4;if(e>i.length){if(!r)return}else this.v>1&&this.onmember&&this.onmember(this.r-i.length);this.p=i.subarray(e),this.v=0}Mt.prototype.c.call(this,0),this.s.f&&!this.s.l?(this.v=T(this.s.p)+9,this.s={i:0},this.o=new n(0),this.push(new n(0),r)):r&&Mt.prototype.c.call(this,r)},t}();_e.Gunzip=Ft;var Et=function(){return function(t,n){var r=this;ut([$,nt,function(){return[at,Mt,Ft]}],this,bt.call(this,t,n),function(t){var n=new Ft(t.data);n.onmember=function(t){return postMessage(t)},onmessage=at(n)},9,0,function(t){return r.onmember&&r.onmember(t)})}}();function Zt(t,n,r){return r||(r=n,n={}),"function"!=typeof r&&I(7),st(t,n,[$,nt,function(){return[qt]}],function(t){return et(qt(t.data[0],t.data[1]))},3,r)}function qt(t,r){var i=vt(t);return i+8>t.length&&I(6,"invalid gzip data"),U(t.subarray(i,-8),{i:2},r&&r.out||new n(dt(t)),r&&r.dictionary)}_e.AsyncGunzip=Et;var Ot=function(){function t(t,n){this.c=Y(),this.v=1,wt.call(this,t,n)}return t.prototype.push=function(t,n){this.c.p(t),wt.prototype.push.call(this,t,n)},t.prototype.p=function(t,n){var r=J(t,this.o,this.v&&(this.o.dictionary?6:2),n&&4,this.s);this.v&&(yt(r,this.o),this.v=0),n&&lt(r,r.length-4,this.c.d()),this.ondata(r,n)},t.prototype.flush=function(t){wt.prototype.flush.call(this,t)},t}();_e.Zlib=Ot;var Gt=function(){return function(t,n){ut([_,rt,function(){return[at,wt,Ot]}],this,bt.call(this,t,n),function(t){var n=new Ot(t.data);onmessage=at(n)},10,1)}}();function Lt(t,n,r){return r||(r=n,n={}),"function"!=typeof r&&I(7),st(t,n,[_,rt,function(){return[Bt]}],function(t){return et(Bt(t.data[0],t.data[1]))},4,r)}function Bt(t,n){n||(n={});var r=Y();r.p(t);var i=J(t,n,n.dictionary?6:2,4);return yt(i,n),lt(i,i.length-4,r.d()),i}_e.AsyncZlib=Gt;var Ht=function(){function t(t,n){Mt.call(this,t,n),this.v=t&&t.dictionary?2:1}return t.prototype.push=function(t,n){if(Mt.prototype.e.call(this,t),this.v){if(this.p.length<6&&!n)return;this.p=this.p.subarray(mt(this.p,this.v-1)),this.v=0}n&&(this.p.length<4&&I(6,"invalid zlib data"),this.p=this.p.subarray(0,-4)),Mt.prototype.c.call(this,n)},t}();_e.Unzlib=Ht;var jt=function(){return function(t,n){ut([$,it,function(){return[at,Mt,Ht]}],this,bt.call(this,t,n),function(t){var n=new Ht(t.data);onmessage=at(n)},11,0)}}();function Nt(t,n,r){return r||(r=n,n={}),"function"!=typeof r&&I(7),st(t,n,[$,it,function(){return[Pt]}],function(t){return et(Pt(t.data[0],ot(t.data[1])))},5,r)}function Pt(t,n){return U(t.subarray(mt(t,n&&n.dictionary),-4),{i:2},n&&n.out,n&&n.dictionary)}_e.AsyncUnzlib=jt;var Vt=function(){function t(t,n){this.o=bt.call(this,t,n)||{},this.G=Ft,this.I=Mt,this.Z=Ht}return t.prototype.i=function(){var t=this;this.s.ondata=function(n,r){t.ondata(n,r)}},t.prototype.push=function(t,r){if(this.ondata||I(5),this.s)this.s.push(t,r);else{if(this.p&&this.p.length){var i=new n(this.p.length+t.length);i.set(this.p),i.set(t,this.p.length)}else this.p=t;this.p.length>2&&(this.s=31==this.p[0]&&139==this.p[1]&&8==this.p[2]?new this.G(this.o):8!=(15&this.p[0])||this.p[0]>>4>7||(this.p[0]<<8|this.p[1])%31?new this.I(this.o):new this.Z(this.o),this.i(),this.s.push(this.p,r),this.p=null)}},t}();_e.Decompress=Vt;var Yt=function(){function t(t,n){Vt.call(this,t,n),this.queuedSize=0,this.G=Et,this.I=St,this.Z=jt}return t.prototype.i=function(){var t=this;this.s.ondata=function(n,r,i){t.ondata(n,r,i)},this.s.ondrain=function(n){t.queuedSize-=n,t.ondrain&&t.ondrain(n)}},t.prototype.push=function(t,n){this.queuedSize+=t.length,Vt.prototype.push.call(this,t,n)},t}();function Jt(t,n,r){return r||(r=n,n={}),"function"!=typeof r&&I(7),31==t[0]&&139==t[1]&&8==t[2]?Zt(t,n,r):8!=(15&t[0])||t[0]>>4>7||(t[0]<<8|t[1])%31?At(t,n,r):Nt(t,n,r)}function Kt(t,n){return 31==t[0]&&139==t[1]&&8==t[2]?qt(t,n):8!=(15&t[0])||t[0]>>4>7||(t[0]<<8|t[1])%31?Tt(t,n):Pt(t,n)}_e.AsyncDecompress=Yt;var Qt=function(t,r,i,e){for(var o in t){var s=t[o],a=r+o,u=e;Array.isArray(s)&&(u=K(e,s[1]),s=s[0]),ArrayBuffer.isView(s)?i[a]=[s,u]:(i[a+="/"]=[new n(0),u],Qt(s,a,i,e))}},Rt="undefined"!=typeof TextEncoder&&new TextEncoder,Wt="undefined"!=typeof TextDecoder&&new TextDecoder,Xt=0;try{Wt.decode(j,{stream:!0}),Xt=1}catch(t){}var $t=function(t){for(var n="",r=0;;){var i=t[r++],e=(i>127)+(i>223)+(i>239);if(r+e>t.length)return{s:n,r:D(t,r-1)};e?3==e?(i=((15&i)<<18|(63&t[r++])<<12|(63&t[r++])<<6|63&t[r++])-65536,n+=String.fromCharCode(55296|i>>10,56320|1023&i)):n+=String.fromCharCode(1&e?(31&i)<<6|63&t[r++]:(15&i)<<12|(63&t[r++])<<6|63&t[r++]):n+=String.fromCharCode(i)}},_t=function(){function t(t){this.ondata=t,Xt?this.t=new TextDecoder:this.p=j}return t.prototype.push=function(t,r){if(this.ondata||I(5),r=!!r,this.t)return this.ondata(this.t.decode(t,{stream:!0}),r),void(r&&(this.t.decode().length&&I(8),this.t=null));this.p||I(4);var i=new n(this.p.length+t.length);i.set(this.p),i.set(t,this.p.length);var e=$t(i),o=e.s,s=e.r;r?(s.length&&I(8),this.p=null):this.p=s,this.ondata(o,r)},t}();_e.DecodeUTF8=_t;var tn=function(){function t(t){this.ondata=t}return t.prototype.push=function(t,n){this.ondata||I(5),this.d&&I(4),this.ondata(nn(t),this.d=n||!1)},t}();function nn(t,r){if(r){for(var i=new n(t.length),e=0;e<t.length;++e)i[e]=t.charCodeAt(e);return i}if(Rt)return Rt.encode(t);var o=t.length,s=new n(t.length+(t.length>>1)),a=0,u=function(t){s[a++]=t};for(e=0;e<o;++e){if(a+5>s.length){var h=new n(a+8+(o-e<<1));h.set(s),s=h}var f=t.charCodeAt(e);f<128||r?u(f):f<2048?(u(192|f>>6),u(128|63&f)):f>55295&&f<57344?(u(240|(f=65536+(1047552&f)|1023&t.charCodeAt(++e))>>18),u(128|f>>12&63),u(128|f>>6&63),u(128|63&f)):(u(224|f>>12),u(128|f>>6&63),u(128|63&f))}return D(s,0,a)}function rn(t,n){if(n){for(var r="",i=0;i<t.length;i+=16384)r+=String.fromCharCode.apply(null,t.subarray(i,i+16384));return r}if(Wt)return Wt.decode(t);var e=$t(t),o=e.s;return(r=e.r).length&&I(8),o}_e.EncodeUTF8=tn;var en=function(t){return 1==t?3:t<6?2:9==t?1:0},on=function(t,n){return n+30+ht(t,n+26)+ht(t,n+28)},sn=function(t,n,r){var i=ht(t,n+28),e=ht(t,n+30),o=rn(t.subarray(n+46,n+46+i),!(2048&ht(t,n+8))),s=n+46+i,a=an(t,s,e,r,ft(t,n+20),ft(t,n+24),ft(t,n+42)),u=a[0],h=a[1],f=a[2];return[ht(t,n+10),u,h,o,s+e+ht(t,n+32),f]},an=function(t,n,r,i,e,o,s){var a=4294967295==e,u=4294967295==o,h=4294967295==s,f=n+r;if(i&&a+u+h){for(;n+4<f;n+=4+ht(t,n+2))if(1==ht(t,n))return[a?ct(t,n+4+8*u):e,u?ct(t,n+4):o,h?ct(t,n+4+8*(u+a)):s,1];i<2&&I(13)}return[e,o,s,0]},un=function(t){var n=0;if(t)for(var r in t){var i=t[r].length;i>65535&&I(9),n+=i+4}return n},hn=function(t,n,r,i,e,o,s,a){var u=i.length,h=r.extra,f=a&&a.length,c=un(h);lt(t,n,null!=s?33639248:67324752),n+=4,null!=s&&(t[n++]=20,t[n++]=r.os),t[n]=20,n+=2,t[n++]=r.flag<<1|(o<0&&8),t[n++]=e&&8,t[n++]=255&r.compression,t[n++]=r.compression>>8;var l=new Date(null==r.mtime?Date.now():r.mtime),p=l.getFullYear()-1980;if((p<0||p>119)&&I(10),lt(t,n,p<<25|l.getMonth()+1<<21|l.getDate()<<16|l.getHours()<<11|l.getMinutes()<<5|l.getSeconds()>>1),n+=4,-1!=o&&(lt(t,n,r.crc),lt(t,n+4,o<0?-o-2:o),lt(t,n+8,r.size)),lt(t,n+12,u),lt(t,n+14,c),n+=16,null!=s&&(lt(t,n,f),lt(t,n+6,r.attrs),lt(t,n+10,s),n+=14),t.set(i,n),n+=u,c)for(var v in h){var d=h[v],g=d.length;lt(t,n,+v),lt(t,n+2,g),t.set(d,n+4),n+=4+g}return f&&(t.set(a,n),n+=f),n},fn=function(t,n,r,i,e){lt(t,n,101010256),lt(t,n+8,r),lt(t,n+10,r),lt(t,n+12,i),lt(t,n+16,e)},cn=function(){function t(t){this.filename=t,this.c=V(),this.size=0,this.compression=0}return t.prototype.process=function(t,n){this.ondata(null,t,n)},t.prototype.push=function(t,n){this.ondata||I(5),this.c.p(t),this.size+=t.length,n&&(this.crc=this.c.d()),this.process(t,n||!1)},t}();_e.ZipPassThrough=cn;var ln=function(){function t(t,n){var r=this;n||(n={}),cn.call(this,t),this.d=new wt(n,function(t,n){r.ondata(null,t,n)}),this.compression=8,this.flag=en(n.level)}return t.prototype.process=function(t,n){try{this.d.push(t,n)}catch(t){this.ondata(t,null,n)}},t.prototype.push=function(t,n){cn.prototype.push.call(this,t,n)},t}();_e.ZipDeflate=ln;var pn=function(){function t(t,n){var r=this;n||(n={}),cn.call(this,t),this.d=new xt(n,function(t,n,i){r.ondata(t,n,i)}),this.compression=8,this.flag=en(n.level),this.terminate=this.d.terminate}return t.prototype.process=function(t,n){this.d.push(t,n)},t.prototype.push=function(t,n){cn.prototype.push.call(this,t,n)},t}();_e.AsyncZipDeflate=pn;var vn=function(){function t(t){this.ondata=t,this.u=[],this.d=1}return t.prototype.add=function(t){var r=this;if(this.ondata||I(5),2&this.d)this.ondata(I(4+8*(1&this.d),0,1),null,!1);else{var i=nn(t.filename),e=i.length,o=t.comment,s=o&&nn(o),a=e!=t.filename.length||s&&o.length!=s.length,u=e+un(t.extra)+30;e>65535&&this.ondata(I(11,0,1),null,!1);var h=new n(u);hn(h,0,t,i,a,-1);var f=[h],c=function(){for(var t=0,n=f;t<n.length;t++)r.ondata(null,n[t],!1);f=[]},l=this.d;this.d=0;var p=this.u.length,v=K(t,{f:i,u:a,o:s,t:function(){t.terminate&&t.terminate()},r:function(){if(c(),l){var t=r.u[p+1];t?t.r():r.d=1}l=1}}),d=0;t.ondata=function(i,e,o){if(i)r.ondata(i,e,o),r.terminate();else if(d+=e.length,f.push(e),o){var s=new n(16);lt(s,0,134695760),lt(s,4,t.crc),lt(s,8,d),lt(s,12,t.size),f.push(s),v.c=d,v.b=u+d+16,v.crc=t.crc,v.size=t.size,l&&v.r(),l=1}else l&&c()},this.u.push(v)}},t.prototype.end=function(){var t=this;2&this.d?this.ondata(I(4+8*(1&this.d),0,1),null,!0):(this.d?this.e():this.u.push({r:function(){1&t.d&&(t.u.splice(-1,1),t.e())},t:function(){}}),this.d=3)},t.prototype.e=function(){for(var t=0,r=0,i=0,e=0,o=this.u;e<o.length;e++)i+=46+(h=o[e]).f.length+un(h.extra)+(h.o?h.o.length:0);for(var s=new n(i+22),a=0,u=this.u;a<u.length;a++){var h;hn(s,t,h=u[a],h.f,h.u,-h.c-2,r,h.o),t+=46+h.f.length+un(h.extra)+(h.o?h.o.length:0),r+=h.b}fn(s,t,this.u.length,i,r),this.ondata(null,s,!0),this.d=2},t.prototype.terminate=function(){for(var t=0,n=this.u;t<n.length;t++)n[t].t();this.d=2},t}();function dn(t,r,i){i||(i=r,r={}),"function"!=typeof i&&I(7);var e={};Qt(t,"",e,r);var o=Object.keys(e),s=o.length,a=0,u=0,h=s,f=Array(s),c=[],l=function(){for(var t=0;t<c.length;++t)c[t]()},p=function(t,n){xn(function(){i(t,n)})};xn(function(){p=i});var v=function(){var t=new n(u+22),r=a,i=u-a;u=0;for(var e=0;e<h;++e){var o=f[e];try{var s=o.c.length;hn(t,u,o,o.f,o.u,s);var c=30+o.f.length+un(o.extra),l=u+c;t.set(o.c,l),hn(t,a,o,o.f,o.u,s,u,o.m),a+=16+c+(o.m?o.m.length:0),u=l+s}catch(t){return p(t,null)}}fn(t,a,f.length,i,r),p(null,t)};s||v();for(var d=function(t){var n=o[t],r=e[n],i=r[0],h=r[1],d=V(),g=i.length;d.p(i);var y=nn(n),m=y.length,b=h.comment,w=b&&nn(b),x=w&&w.length,z=un(h.extra),k=0==h.level?0:8,M=function(r,i){if(r)l(),p(r,null);else{var e=i.length;f[t]=K(h,{size:g,crc:d.d(),c:i,f:y,m:w,u:m!=n.length||w&&b.length!=x,compression:k}),a+=30+m+z+e,u+=76+2*(m+z)+(x||0)+e,--s||v()}};if(m>65535&&M(I(11,0,1),null),k)if(g<16e4)try{M(null,kt(i,h))}catch(t){M(t,null)}else c.push(zt(i,h,M));else M(null,i)},g=0;g<h;++g)d(g);return l}function gn(t,r){r||(r={});var i={},e=[];Qt(t,"",i,r);var o=0,s=0;for(var a in i){var u=i[a],h=u[0],f=u[1],c=0==f.level?0:8,l=(M=nn(a)).length,p=f.comment,v=p&&nn(p),d=v&&v.length,g=un(f.extra);l>65535&&I(11);var y=c?kt(h,f):h,m=y.length,b=V();b.p(h),e.push(K(f,{size:h.length,crc:b.d(),c:y,f:M,m:v,u:l!=a.length||v&&p.length!=d,o:o,compression:c})),o+=30+l+g+m,s+=76+2*(l+g)+(d||0)+m}for(var w=new n(s+22),x=o,z=s-o,k=0;k<e.length;++k){var M;hn(w,(M=e[k]).o,M,M.f,M.u,M.c.length);var S=30+M.f.length+un(M.extra);w.set(M.c,M.o+S),hn(w,o,M,M.f,M.u,M.c.length,M.o,M.m),o+=16+S+(M.m?M.m.length:0)}return fn(w,o,e.length,z,x),w}_e.Zip=vn;var yn=function(){function t(){}return t.prototype.push=function(t,n){this.ondata(null,t,n)},t.compression=0,t}();_e.UnzipPassThrough=yn;var mn=function(){function t(){var t=this;this.i=new Mt(function(n,r){t.ondata(null,n,r)})}return t.prototype.push=function(t,n){try{this.i.push(t,n)}catch(t){this.ondata(t,null,n)}},t.compression=8,t}();_e.UnzipInflate=mn;var bn=function(){function t(t,n){var r=this;n<32e4?this.i=new Mt(function(t,n){r.ondata(null,t,n)}):(this.i=new St(function(t,n,i){r.ondata(t,n,i)}),this.terminate=this.i.terminate)}return t.prototype.push=function(t,n){this.i.terminate&&(t=D(t,0)),this.i.push(t,n)},t.compression=8,t}();_e.AsyncUnzipInflate=bn;var wn=function(){function t(t){this.onfile=t,this.k=[],this.o={0:yn},this.p=j}return t.prototype.push=function(t,r){var i=this;if(this.onfile||I(5),this.p||I(4),this.c>0){var e=Math.min(this.c,t.length),o=t.subarray(0,e);if(this.c-=e,this.d?this.d.push(o,!this.c):this.k[0].push(o),(t=t.subarray(e)).length)return this.push(t,r)}else{var s=0,a=0,u=void 0,h=void 0;this.p.length?t.length?((h=new n(this.p.length+t.length)).set(this.p),h.set(t,this.p.length)):h=this.p:h=t;for(var f=h.length,c=this.c,l=c&&this.d,p=function(){var t=ft(h,a);if(67324752==t){s=1,u=a,v.d=null,v.c=0;var n=ht(h,a+6),r=ht(h,a+8),e=2048&n,o=8&n,l=ht(h,a+26),p=ht(h,a+28);if(f>a+30+l+p){var d=[];v.k.unshift(d),s=2;var g,y=ft(h,a+18),m=ft(h,a+22),b=rn(h.subarray(a+30,a+=30+l),!e),w=an(h,a,p,2,y,m,0),x=w[0],z=w[1];o&&(x=-1-w[3]),a+=p,v.c=x;var k={name:b,compression:r,start:function(){if(k.ondata||I(5),x){var t=i.o[r];t||k.ondata(I(14,"unknown compression type "+r,1),null,!1),(g=x<0?new t(b):new t(b,x,z)).ondata=function(t,n,r){k.ondata(t,n,r)};for(var n=0,e=d;n<e.length;n++)g.push(e[n],!1);i.k[0]==d&&i.c?i.d=g:g.push(j,!0)}else k.ondata(null,j,!0)},terminate:function(){g&&g.terminate&&g.terminate()}};x>=0&&(k.size=x,k.originalSize=z),v.onfile(k)}return"break"}if(c){if(134695760==t)return u=a+=12+(-2==c&&8),s=3,v.c=0,"break";if(33639248==t)return u=a-=4,s=3,v.c=0,"break"}},v=this;a<f-4&&"break"!==p();++a);if(this.p=j,c<0){var d=h.subarray(0,s?u-12-(-2==c&&8)-(134695760==ft(h,u-16)&&4):a);l?l.push(d,!!s):this.k[+(2==s)].push(d)}if(2&s)return this.push(h.subarray(a),r);this.p=h.subarray(a)}r&&(this.c&&I(13),this.p=null)},t.prototype.register=function(t){this.o[t.compression]=t},t}();_e.Unzip=wn;var xn="function"==typeof queueMicrotask?queueMicrotask:"function"==typeof setTimeout?setTimeout:function(t){t()};function zn(t,r,i){i||(i=r,r={}),"function"!=typeof i&&I(7);var e=[],o=function(){for(var t=0;t<e.length;++t)e[t]()},s={},a=function(t,n){xn(function(){i(t,n)})};xn(function(){a=i});for(var u=t.length-22;101010256!=ft(t,u);--u)if(!u||t.length-u>65558)return a(I(13,0,1),null),o;var h=ht(t,u+8);if(h){var f=h,c=ft(t,u+16),l=117853008==ft(t,u-20);if(l){var p=ft(t,u-12);(l=101075792==ft(t,p))&&(f=h=ft(t,p+32),c=ft(t,p+48))}for(var v=r&&r.filter,d=function(r){var i=sn(t,c,l),u=i[0],f=i[1],p=i[2],d=i[3],g=i[4],y=on(t,i[5]);c=g;var m=function(t,n){t?(o(),a(t,null)):(n&&(s[d]=n),--h||a(null,s))};if(!v||v({name:d,size:f,originalSize:p,compression:u}))if(u)if(8==u){var b=t.subarray(y,y+f);if(p<524288||f>.8*p)try{m(null,Tt(b,{out:new n(p)}))}catch(t){m(t,null)}else e.push(At(b,{size:p},m))}else m(I(14,"unknown compression type "+u,1),null);else m(null,D(t,y,y+f));else m(null,null)},g=0;g<f;++g)d()}else a(null,{});return o}function kn(t,r){for(var i={},e=t.length-22;101010256!=ft(t,e);--e)(!e||t.length-e>65558)&&I(13);var o=ht(t,e+8);if(!o)return{};var s=ft(t,e+16),a=117853008==ft(t,e-20);if(a){var u=ft(t,e-12);(a=101075792==ft(t,u))&&(o=ft(t,u+32),s=ft(t,u+48))}for(var h=r&&r.filter,f=0;f<o;++f){var c=sn(t,s,a),l=c[0],p=c[1],v=c[2],d=c[3],g=c[4],y=on(t,c[5]);s=g,h&&!h({name:d,size:p,originalSize:v,compression:l})||(l?8==l?i[d]=Tt(t.subarray(y,y+p),{out:new n(v)}):I(14,"unknown compression type "+l):i[d]=D(t,y,y+p))}return i}return _e});
+
+
+/* --- read-data-core.js --- */
+/*
+ * This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at https://mozilla.org/MPL/2.0/.
+ * Copyright (c) 2026 Luca Mari
+ */
+
+(function initReadDataCore(global) {
+  const MAX_XLSX_BYTES = 20 * 1024 * 1024;
+  const MAX_XLSX_UNCOMPRESSED_BYTES = 80 * 1024 * 1024;
+
+  function archiveLibrary() {
+    if (global.fflate) return global.fflate;
+    if (typeof require === "function") {
+      try {
+        return require("fflate");
+      } catch (_error) {
+        return null;
+      }
+    }
+    return null;
+  }
+
+  function expressionUsesReadData(expression) {
+    return /\breadData\s*\(/u.test(String(expression ?? ""));
+  }
+
+  function readDataCalls(expression) {
+    if (!expressionUsesReadData(expression)) return { ok: true, calls: [] };
+    const parser = global.GraphSemantics?.parseExpressionAst;
+    if (typeof parser !== "function") {
+      return { ok: false, message: "readData parser is unavailable", calls: [] };
+    }
+    let ast;
+    try {
+      ast = parser(String(expression ?? ""));
+    } catch (error) {
+      return { ok: false, message: error?.message || "readData expression is invalid", calls: [] };
+    }
+    const calls = [];
+    const seen = new Set();
+    const visit = (node) => {
+      if (!node || typeof node !== "object" || seen.has(node)) return;
+      seen.add(node);
+      if (node.type === "call" && node.name === "readData") calls.push(node);
+      Object.values(node).forEach((value) => {
+        if (Array.isArray(value)) value.forEach(visit);
+        else if (value && typeof value === "object") visit(value);
+      });
+    };
+    visit(ast);
+    return { ok: true, calls };
+  }
+
+  function literalString(node) {
+    return node?.type === "literal" && typeof node.value === "string" ? node.value : null;
+  }
+
+  function isXlsxPath(value) {
+    return /\.xlsx$/iu.test(String(value ?? "").trim());
+  }
+
+  function normalizeReadDataCall(call, normalizeReadDataPath) {
+    const args = Array.isArray(call?.args) ? call.args : [];
+    if (args.length !== 4 && args.length !== 6) {
+      return { ok: false, message: "readData expects 4 or 6 arguments" };
+    }
+    const path = literalString(args[0]);
+    if (path == null) return { ok: false, message: "readData expects a string literal path" };
+    const normalizedPath = normalizeReadDataPath(path);
+    if (!normalizedPath) return { ok: false, message: "readData path is invalid" };
+    if (!isXlsxPath(normalizedPath)) return { ok: false, message: "readData supports XLSX files only" };
+    const sheet = literalString(args[1]);
+    if (!sheet?.trim()) return { ok: false, message: "readData expects a string literal sheet name" };
+    const literalCoordinates = args.slice(2).map((node) => node?.type === "literal" ? node.value : null);
+    if (literalCoordinates.some((value) => value != null && (!Number.isInteger(value) || value <= 0))) {
+      return { ok: false, message: "readData coordinates must be positive integers" };
+    }
+    if (
+      literalCoordinates.length === 4
+      && literalCoordinates.every((value) => value != null)
+      && (literalCoordinates[2] < literalCoordinates[0] || literalCoordinates[3] < literalCoordinates[1])
+    ) {
+      return { ok: false, message: "readData range end must not precede its start" };
+    }
+    return {
+      ok: true,
+      path: normalizedPath,
+      sheet: sheet.trim(),
+    };
+  }
+
+  function validateReadDataExpressionUsage(expression, options = {}) {
+    if (!expressionUsesReadData(expression)) return { ok: true, calls: [] };
+    if (typeof options.normalizeReadDataPath !== "function") {
+      return { ok: false, message: "readData path validation is unavailable" };
+    }
+    const parsed = readDataCalls(expression);
+    if (!parsed.ok) return parsed;
+    const calls = [];
+    for (const call of parsed.calls) {
+      const normalized = normalizeReadDataCall(call, options.normalizeReadDataPath);
+      if (!normalized.ok) return normalized;
+      calls.push(normalized);
+    }
+    return { ok: true, calls };
+  }
+
+  function extractReadDataPaths(expression, normalizeReadDataPath) {
+    const result = validateReadDataExpressionUsage(expression, {
+      normalizeReadDataPath,
+    });
+    return result.ok ? result.calls.map((call) => call.path) : [];
+  }
+
+  function cellKey(row, column) {
+    return `${row}:${column}`;
+  }
+
+  function decodeXmlText(value) {
+    const entities = { amp: "&", apos: "'", gt: ">", lt: "<", quot: "\"" };
+    return String(value ?? "")
+      .replace(/<!\[CDATA\[([\s\S]*?)\]\]>/gu, "$1")
+      .replace(/&#x([0-9a-f]+);/giu, (_match, hex) => String.fromCodePoint(Number.parseInt(hex, 16)))
+      .replace(/&#(\d+);/gu, (_match, decimal) => String.fromCodePoint(Number.parseInt(decimal, 10)))
+      .replace(/&([a-z]+);/giu, (_match, name) => entities[name.toLowerCase()] ?? _match)
+      .replace(/<[^>]*>/gu, "");
+  }
+
+  function xmlAttribute(fragment, name) {
+    const escapedName = String(name).replace(/[.*+?^${}()|[\]\\]/gu, "\\$&");
+    const match = new RegExp(`\\b${escapedName}\\s*=\\s*([\"'])([\\s\\S]*?)\\1`, "u").exec(fragment);
+    return match ? decodeXmlText(match[2]) : null;
+  }
+
+  function resolveArchivePath(basePath, target) {
+    const normalizedTarget = String(target ?? "").replace(/\\\\/gu, "/");
+    if (normalizedTarget.startsWith("/")) return normalizedTarget.slice(1);
+    const parts = basePath.split("/").filter(Boolean);
+    parts.pop();
+    for (const part of normalizedTarget.split("/")) {
+      if (!part || part === ".") continue;
+      if (part === "..") parts.pop();
+      else parts.push(part);
+    }
+    return parts.join("/");
+  }
+
+  function spreadsheetColumn(columnName) {
+    let result = 0;
+    for (const character of String(columnName ?? "").toUpperCase()) {
+      const value = character.charCodeAt(0) - 64;
+      if (value < 1 || value > 26) return null;
+      result = result * 26 + value;
+    }
+    return result || null;
+  }
+
+  function spreadsheetCellAddress(reference) {
+    const match = /^([A-Z]+)([1-9]\d*)$/iu.exec(String(reference ?? ""));
+    if (!match) return null;
+    const column = spreadsheetColumn(match[1]);
+    const row = Number(match[2]);
+    return Number.isInteger(row) && column ? { row, column } : null;
+  }
+
+  function xmlTagValue(xml, tagName) {
+    const escapedName = String(tagName).replace(/[.*+?^${}()|[\]\\]/gu, "\\$&");
+    const match = new RegExp(`<${escapedName}\\b[^>]*>([\\s\\S]*?)<\\/${escapedName}>`, "u").exec(xml);
+    return match ? decodeXmlText(match[1]) : null;
+  }
+
+  function parseSharedStrings(xml) {
+    const strings = [];
+    String(xml ?? "").replace(/<si\b[^>]*>([\s\S]*?)<\/si>/gu, (_match, item) => {
+      let value = "";
+      String(item).replace(/<t\b[^>]*>([\s\S]*?)<\/t>/gu, (_textMatch, text) => {
+        value += decodeXmlText(text);
+        return _textMatch;
+      });
+      strings.push(value);
+      return _match;
+    });
+    return strings;
+  }
+
+  function parseWorksheet(xml, sharedStrings) {
+    const cells = Object.create(null);
+    const cellPattern = /<c\b([^>]*)>([\s\S]*?)<\/c>|<c\b([^>]*)\/>/gu;
+    let match;
+    while ((match = cellPattern.exec(String(xml ?? "")))) {
+      const attributes = match[1] || match[3] || "";
+      const position = spreadsheetCellAddress(xmlAttribute(attributes, "r"));
+      if (!position) continue;
+      const type = xmlAttribute(attributes, "t") || "n";
+      const content = match[2] || "";
+      const rawValue = xmlTagValue(content, "v");
+      let value = null;
+      if (type === "s") {
+        const index = Number.parseInt(rawValue, 10);
+        value = Number.isInteger(index) ? (sharedStrings[index] ?? null) : null;
+      } else if (type === "inlineStr") {
+        value = xmlTagValue(content, "is") ?? "";
+      } else if (type === "b") {
+        value = rawValue === "1" || /^true$/iu.test(rawValue || "");
+      } else if (type === "e") {
+        value = { error: rawValue || "#ERROR", row: position.row, column: position.column };
+      } else if (type === "str" || type === "d") {
+        value = rawValue;
+      } else if (rawValue != null && rawValue !== "") {
+        const numericValue = Number(rawValue);
+        value = Number.isFinite(numericValue) ? numericValue : rawValue;
+      }
+      cells[cellKey(position.row, position.column)] = value;
+    }
+    return { cells };
+  }
+
+  function workbookCellValue(cell, row, column) {
+    if (!cell) return null;
+    if (cell.t === "e") {
+      return { error: String(cell.w || cell.v || "#ERROR"), row, column };
+    }
+    if (cell.v == null) return null;
+    if (typeof cell.v === "number" || typeof cell.v === "string" || typeof cell.v === "boolean") return cell.v;
+    return String(cell.v);
+  }
+
+  function parseXlsxWorkbook(bytes, sourcePath = "") {
+    const archive = archiveLibrary();
+    if (typeof archive?.unzipSync !== "function") {
+      throw new Error("readData XLSX support is unavailable");
+    }
+    const input = bytes instanceof Uint8Array ? bytes : new Uint8Array(bytes);
+    if (!input.byteLength || input.byteLength > MAX_XLSX_BYTES) {
+      throw new Error(`readData XLSX file is invalid: ${sourcePath}`);
+    }
+    let files;
+    try {
+      files = archive.unzipSync(input);
+    } catch (_error) {
+      throw new Error(`readData XLSX file is invalid: ${sourcePath}`);
+    }
+    const fileEntries = Object.entries(files || {});
+    const uncompressedSize = fileEntries.reduce((total, [, value]) => total + value.byteLength, 0);
+    if (uncompressedSize > MAX_XLSX_UNCOMPRESSED_BYTES) {
+      throw new Error(`readData XLSX file is invalid: ${sourcePath}`);
+    }
+    const decoder = new TextDecoder("utf-8");
+    const textFile = (name) => files?.[name] ? decoder.decode(files[name]) : null;
+    const workbookXml = textFile("xl/workbook.xml");
+    const relationshipsXml = textFile("xl/_rels/workbook.xml.rels");
+    if (!workbookXml || !relationshipsXml) {
+      throw new Error(`readData XLSX file is invalid: ${sourcePath}`);
+    }
+    const relationships = Object.create(null);
+    relationshipsXml.replace(/<Relationship\b([^>]*)\/?\s*>/gu, (_match, attributes) => {
+      const id = xmlAttribute(attributes, "Id");
+      const target = xmlAttribute(attributes, "Target");
+      if (id && target) relationships[id] = resolveArchivePath("xl/workbook.xml", target);
+      return _match;
+    });
+    const sharedStrings = parseSharedStrings(textFile("xl/sharedStrings.xml"));
+    const sheets = Object.create(null);
+    workbookXml.replace(/<sheet\b([^>]*)\/?\s*>/gu, (_match, attributes) => {
+      const sheetName = xmlAttribute(attributes, "name");
+      const relationId = xmlAttribute(attributes, "r:id");
+      const worksheetXml = relationId ? textFile(relationships[relationId]) : null;
+      if (sheetName && worksheetXml != null) sheets[sheetName] = parseWorksheet(worksheetXml, sharedStrings);
+      return _match;
+    });
+    if (!Object.keys(sheets).length) {
+      throw new Error(`readData XLSX file has no worksheets: ${sourcePath}`);
+    }
+    return { sheets };
+  }
+
+  function positiveInteger(value) {
+    return Number.isInteger(value) && value > 0;
+  }
+
+  function readDataFromWorkbook(workbook, sheetName, row1, column1, row2 = row1, column2 = column1) {
+    const sheet = workbook?.sheets?.[String(sheetName ?? "")];
+    if (!sheet) throw new Error(`readData worksheet is unavailable: ${String(sheetName ?? "")}`);
+    const coordinates = [row1, column1, row2, column2];
+    if (!coordinates.every(positiveInteger)) throw new Error("readData coordinates must be positive integers");
+    if (row2 < row1 || column2 < column1) throw new Error("readData range end must not precede its start");
+    const valueAt = (row, column) => {
+      const value = sheet.cells?.[cellKey(row, column)] ?? null;
+      if (value && typeof value === "object" && Object.prototype.hasOwnProperty.call(value, "error")) {
+        throw new Error(`readData XLSX cell error at [${row}, ${column}]: ${value.error}`);
+      }
+      return value;
+    };
+    if (row1 === row2 && column1 === column2) return valueAt(row1, column1);
+    const matrix = [];
+    for (let row = row1; row <= row2; row += 1) {
+      const values = [];
+      for (let column = column1; column <= column2; column += 1) values.push(valueAt(row, column));
+      matrix.push(values);
+    }
+    if (matrix.length === 1) return matrix[0];
+    if (matrix[0].length === 1) return matrix.map((row) => row[0]);
+    return matrix;
+  }
+
+  const api = {
+    expressionUsesReadData,
+    validateReadDataExpressionUsage,
+    extractReadDataPaths,
+    parseXlsxWorkbook,
+    readDataFromWorkbook,
+  };
+  if (typeof module === "object" && module.exports) module.exports = api;
+  global.STGraphXReadDataCore = api;
+})(typeof globalThis !== "undefined" ? globalThis : this);
+
+
 /* --- headless-runtime.js --- */
 /*
  * This Source Code Form is subject to the terms of the Mozilla Public
@@ -10795,6 +11564,9 @@ window.STGraphXI18nBundles = {
 
 (function initHeadlessRuntime(global) {
   const HEADLESS_LANGS = new Set(["it", "en"]);
+  if (typeof require === "function" && !global.STGraphXReadDataCore) {
+    require("./read-data-core.js");
+  }
   const NODE_RUNTIME_FILES = [
     "i18n-inline.js",
     "graph-functions.js",
@@ -11044,12 +11816,12 @@ window.STGraphXI18nBundles = {
             name: String(relativePath),
             async getFile() {
               return {
-                async text() {
+                async arrayBuffer() {
                   const response = await fetch(absoluteUrl);
                   if (!response.ok) {
                     throw new Error(`Failed to load ${relativePath}`);
                   }
-                  return response.text();
+                  return response.arrayBuffer();
                 },
               };
             },
@@ -11066,26 +11838,15 @@ window.STGraphXI18nBundles = {
           name: String(relativePath),
           async getFile() {
             return {
-              async text() {
-                return fs.readFile(absolutePath, "utf8");
+              async arrayBuffer() {
+                const bytes = await fs.readFile(absolutePath);
+                return bytes.buffer.slice(bytes.byteOffset, bytes.byteOffset + bytes.byteLength);
               },
             };
           },
         };
       },
     };
-  }
-
-  function parseCsvMatrix(text) {
-    const lines = String(text ?? "").replace(/^\uFEFF/, "").split(/\r?\n/).filter((line) => line.trim().length > 0);
-    if (!lines.length) {
-      throw new Error("readData CSV is empty");
-    }
-    return lines.map((line) => line.split(",").map((cell) => {
-      const trimmed = String(cell ?? "").trim();
-      const value = Number(trimmed);
-      return Number.isFinite(value) ? value : trimmed;
-    }));
   }
 
   class STGraphXHeadlessRuntimeSession {
@@ -11227,6 +11988,7 @@ window.STGraphXI18nBundles = {
         isSubmodelNode,
         normalizeSubmodelPath: this._shared.normalizeSubmodelPath,
         normalizeReadDataPath: this._shared.normalizeReadDataPath,
+        readDataFromWorkbook: global.STGraphXReadDataCore?.readDataFromWorkbook,
         normalizeEdgeColor: this._shared.normalizeEdgeColor,
         normalizeEdgeInfluence: this._shared.normalizeEdgeInfluence,
         parseModelPropertyStoredValue: this._shared.parseModelPropertyStoredValue,
@@ -11267,49 +12029,13 @@ window.STGraphXI18nBundles = {
       this._loader = runtimeLoaderApi.createRuntimeLoader({
         t: this.t.bind(this),
         normalizeReadDataPath: this._shared.normalizeReadDataPath,
-        expressionUsesReadData: (expression) => /\breadData\s*\(/.test(String(expression ?? "")),
-        validateReadDataExpressionUsage: (expression, options = {}) => {
-          const text = String(expression ?? "");
-          if (!/\breadData\s*\(/.test(text)) {
-            return { ok: true };
-          }
-          if (!options.allowReadData) {
-            return { ok: false, message: "readData is only available in parameters" };
-          }
-          const literalPattern = /\breadData\s*\(\s*(['"])((?:\\.|(?!\1).)*)\1\s*\)/g;
-          const callCount = (text.match(/\breadData\s*\(/g) || []).length;
-          const paths = [];
-          literalPattern.lastIndex = 0;
-          let match = literalPattern.exec(text);
-          while (match) {
-            paths.push(String(match[2] ?? "").replace(/\\([\\'"nrt])/g, (_m, escaped) => (
-              escaped === "n" ? "\n" : escaped === "r" ? "\r" : escaped === "t" ? "\t" : escaped
-            )));
-            match = literalPattern.exec(text);
-          }
-          if (paths.length !== callCount) {
-            return { ok: false, message: "readData expects a string literal path" };
-          }
-          const invalidPath = paths.find((path) => !this._shared.normalizeReadDataPath(path));
-          if (invalidPath !== undefined) {
-            return { ok: false, message: "readData path is invalid" };
-          }
-          return { ok: true };
-        },
-        extractReadDataPaths: (expression) => {
-          const literalPattern = /\breadData\s*\(\s*(['"])((?:\\.|(?!\1).)*)\1\s*\)/g;
-          const paths = [];
-          literalPattern.lastIndex = 0;
-          let match = literalPattern.exec(String(expression ?? ""));
-          while (match) {
-            paths.push(String(match[2] ?? "").replace(/\\([\\'"nrt])/g, (_m, escaped) => (
-              escaped === "n" ? "\n" : escaped === "r" ? "\r" : escaped === "t" ? "\t" : escaped
-            )));
-            match = literalPattern.exec(String(expression ?? ""));
-          }
-          return paths;
-        },
-        parseCsvMatrix,
+        expressionUsesReadData: global.STGraphXReadDataCore.expressionUsesReadData,
+        validateReadDataExpressionUsage: (expression, options = {}) => global.STGraphXReadDataCore.validateReadDataExpressionUsage(expression, {
+          ...options,
+          normalizeReadDataPath: this._shared.normalizeReadDataPath,
+        }),
+        extractReadDataPaths: (expression) => global.STGraphXReadDataCore.extractReadDataPaths(expression, this._shared.normalizeReadDataPath),
+        parseXlsxWorkbook: global.STGraphXReadDataCore.parseXlsxWorkbook,
         normalizeSubmodelPath: this._shared.normalizeSubmodelPath,
         isSubmodelNode,
         getSubmodelTemplate: (modelPath) => {
@@ -11743,6 +12469,8 @@ window.STGraphXI18nBundles = {
 (function initPlayerShell(global) {
   const SVG_NS = "http://www.w3.org/2000/svg";
   const PLAYER_LANGS = new Set(["it", "en"]);
+  const scene2dCore = global.STGraphXScene2D || {};
+  const readDataCore = global.STGraphXReadDataCore || {};
   const SUBMODEL_LIBRARY_ICONS = Object.freeze({
     module: "◆",
     layers: "▤",
@@ -11842,6 +12570,49 @@ window.STGraphXI18nBundles = {
 
   function buildNodeMap(model) {
     return new Map((model?.nodes || []).map((node) => [String(node?.name ?? ""), node]));
+  }
+
+  function playerSceneExpressionContext(model, timeValue) {
+    const execution = model?.execution || {};
+    const context = {
+      time: Number.isFinite(Number(timeValue)) ? Number(timeValue) : Number(execution.t0) || 0,
+      t0: Number(execution.t0) || 0,
+      t1: Number(execution.t1) || 0,
+      dt: Number(execution.dt) || 0,
+    };
+    (model?.nodes || []).forEach((node) => {
+      if (!node?.output || node?.computedError || node?.computedValue == null) return;
+      context[String(node.name ?? "")] = node.computedValue;
+    });
+    return context;
+  }
+
+  function evaluatePlayerSceneExpression(expression, context, localFunctions = []) {
+    const result = global.GraphSemantics?.evaluateValueExpression?.(expression, context, { localFunctions });
+    const value = result?.ok ? Number(result.value) : NaN;
+    return Number.isFinite(value) ? value : NaN;
+  }
+
+  function playerSceneObjects(widget, model, timeValue) {
+    const context = playerSceneExpressionContext(model, timeValue);
+    const localFunctions = Array.isArray(model?.localFunctions) ? model.localFunctions : [];
+    return (Array.isArray(widget?.objects) ? widget.objects : []).map((object) => {
+      const out = { ...object };
+      if (object?.type === "segment") {
+        ["x1", "y1", "x2", "y2"].forEach((key) => { out[key] = evaluatePlayerSceneExpression(object[key], context, localFunctions); });
+      } else if (object?.type === "circle") {
+        ["x", "y", "radius", "rotation", "pivotX", "pivotY"].forEach((key) => { out[key] = evaluatePlayerSceneExpression(object[key], context, localFunctions); });
+      } else if (object?.type === "text") {
+        ["x", "y", "rotation"].forEach((key) => { out[key] = evaluatePlayerSceneExpression(object[key], context, localFunctions); });
+        out.pivotX = out.x;
+        out.pivotY = out.y;
+        out.text = String(object.text ?? "").replace(/\{\{([^{}\n]+)\}\}/gu, (_match, source) => {
+          const value = evaluatePlayerSceneExpression(source, context, localFunctions);
+          return Number.isFinite(value) ? String(Number(value.toFixed(6))) : "?";
+        });
+      }
+      return out;
+    });
   }
 
   function nodeBoundaryPoint(node, targetX, targetY) {
@@ -12226,9 +12997,11 @@ window.STGraphXI18nBundles = {
       yAxisLabel: String(widget?.yAxisLabel ?? "").trim(),
       showGrid: widget?.showGrid !== false,
       showAxes: widget?.showAxes !== false,
+      equalScale: widget?.equalScale !== false,
       legendPosition: ["none", "top-right", "top-left", "bottom-right", "bottom-left"].includes(String(widget?.legendPosition ?? ""))
         ? String(widget.legendPosition)
         : "top-right",
+      objects: Array.isArray(widget?.objects) ? widget.objects.map((object) => ({ ...object })) : [],
       showHistory: Boolean(widget?.showHistory),
       expandNonScalarValues: Boolean(widget?.expandNonScalarValues) && !Boolean(widget?.showHistory),
       tableTextAlign: ["left", "center", "right"].includes(String(widget?.tableTextAlign ?? "")) ? String(widget.tableTextAlign) : "left",
@@ -13378,6 +14151,16 @@ window.STGraphXI18nBundles = {
             border-radius: 6px;
             background: #fff;
           }
+          .scene2d-canvas {
+            display: block;
+            width: 100%;
+            height: 100%;
+            min-height: 104px;
+            border: 1px solid #d9e2ea;
+            border-radius: 6px;
+            box-sizing: border-box;
+            background: #fff;
+          }
           .led-wrap {
             display: grid;
             justify-items: center;
@@ -14032,6 +14815,7 @@ window.STGraphXI18nBundles = {
         !runtimeSharedApi && "STGraphXRuntimeShared",
         !runtimeCoreApi && "STGraphXRuntimeCore",
         !runtimeLoaderApi && "STGraphXRuntimeLoader",
+        !readDataCore.readDataFromWorkbook && "STGraphXReadDataCore",
         !semanticsApi && "GraphSemantics",
       ].filter(Boolean);
       if (missingModules.length > 0) {
@@ -14072,6 +14856,7 @@ window.STGraphXI18nBundles = {
         isSubmodelNode,
         normalizeSubmodelPath: runtimeShared.normalizeSubmodelPath,
         normalizeReadDataPath: runtimeShared.normalizeReadDataPath,
+        readDataFromWorkbook: readDataCore.readDataFromWorkbook,
         normalizeEdgeColor: runtimeShared.normalizeEdgeColor,
         normalizeEdgeInfluence: runtimeShared.normalizeEdgeInfluence,
         parseModelPropertyStoredValue: runtimeShared.parseModelPropertyStoredValue,
@@ -14112,59 +14897,13 @@ window.STGraphXI18nBundles = {
       const runtimeLoader = runtimeLoaderApi.createRuntimeLoader({
         t: this.t.bind(this),
         normalizeReadDataPath: runtimeShared.normalizeReadDataPath,
-        expressionUsesReadData: (expression) => /\breadData\s*\(/.test(String(expression ?? "")),
-        validateReadDataExpressionUsage: (expression, options = {}) => {
-          const text = String(expression ?? "");
-          if (!/\breadData\s*\(/.test(text)) {
-            return { ok: true };
-          }
-          if (!options.allowReadData) {
-            return { ok: false, message: "readData is only available in parameters" };
-          }
-          const literalPattern = /\breadData\s*\(\s*(['"])((?:\\.|(?!\1).)*)\1\s*\)/g;
-          const callCount = (text.match(/\breadData\s*\(/g) || []).length;
-          const paths = [];
-          literalPattern.lastIndex = 0;
-          let match = literalPattern.exec(text);
-          while (match) {
-            paths.push(String(match[2] ?? "").replace(/\\([\\'"nrt])/g, (_m, escaped) => (
-              escaped === "n" ? "\n" : escaped === "r" ? "\r" : escaped === "t" ? "\t" : escaped
-            )));
-            match = literalPattern.exec(text);
-          }
-          if (paths.length !== callCount) {
-            return { ok: false, message: "readData expects a string literal path" };
-          }
-          const invalidPath = paths.find((path) => !runtimeShared.normalizeReadDataPath(path));
-          if (invalidPath !== undefined) {
-            return { ok: false, message: "readData path is invalid" };
-          }
-          return { ok: true };
-        },
-        extractReadDataPaths: (expression) => {
-          const literalPattern = /\breadData\s*\(\s*(['"])((?:\\.|(?!\1).)*)\1\s*\)/g;
-          const paths = [];
-          literalPattern.lastIndex = 0;
-          let match = literalPattern.exec(String(expression ?? ""));
-          while (match) {
-            paths.push(String(match[2] ?? "").replace(/\\([\\'"nrt])/g, (_m, escaped) => (
-              escaped === "n" ? "\n" : escaped === "r" ? "\r" : escaped === "t" ? "\t" : escaped
-            )));
-            match = literalPattern.exec(String(expression ?? ""));
-          }
-          return paths;
-        },
-        parseCsvMatrix: (text) => {
-          const lines = String(text ?? "").replace(/^\uFEFF/, "").split(/\r?\n/).filter((line) => line.trim().length > 0);
-          if (!lines.length) {
-            throw new Error("readData CSV is empty");
-          }
-          return lines.map((line) => line.split(",").map((cell) => {
-            const trimmed = String(cell ?? "").trim();
-            const value = Number(trimmed);
-            return Number.isFinite(value) ? value : trimmed;
-          }));
-        },
+        expressionUsesReadData: readDataCore.expressionUsesReadData,
+        validateReadDataExpressionUsage: (expression, options = {}) => readDataCore.validateReadDataExpressionUsage(expression, {
+          ...options,
+          normalizeReadDataPath: runtimeShared.normalizeReadDataPath,
+        }),
+        extractReadDataPaths: (expression) => readDataCore.extractReadDataPaths(expression, runtimeShared.normalizeReadDataPath),
+        parseXlsxWorkbook: readDataCore.parseXlsxWorkbook,
         normalizeSubmodelPath: runtimeShared.normalizeSubmodelPath,
         isSubmodelNode,
         getSubmodelTemplate: (modelPath) => {
@@ -14237,12 +14976,12 @@ window.STGraphXI18nBundles = {
             name: String(relativePath),
             async getFile() {
               return {
-                async text() {
+                async arrayBuffer() {
                   const response = await fetch(absoluteUrl);
                   if (!response.ok) {
                     throw new Error(`Failed to load ${relativePath}`);
                   }
-                  return response.text();
+                  return response.arrayBuffer();
                 },
               };
             },
@@ -15500,6 +16239,20 @@ window.STGraphXI18nBundles = {
         });
         table.appendChild(tbody);
         body.appendChild(table);
+        return;
+      }
+      if (widget.type === "scene2d") {
+        const canvas = document.createElement("canvas");
+        canvas.className = "scene2d-canvas";
+        canvas.style.display = "block";
+        canvas.width = Math.max(160, Math.floor(widget.width * this._zoom - 24));
+        canvas.height = Math.max(120, Math.floor(widget.height * this._zoom - 54));
+        scene2dCore.drawScene2D?.(
+          canvas,
+          playerSceneObjects(widget, this._state.runtimeModel, this.currentDisplayTime()),
+          widget,
+        );
+        body.appendChild(canvas);
         return;
       }
       if (widget.type === "xychart") {

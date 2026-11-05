@@ -27,6 +27,8 @@ const files = [
   "feedback-loop-core.js",
   "watch-debugger-core.js",
   "watch-debugger-ui.js",
+  "scene2d-core.js",
+  "read-data-core.js",
   "runtime-shared.js",
   "runtime-core.js",
   "sensitivity-analysis-core.js",

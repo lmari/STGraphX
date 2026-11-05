@@ -45,7 +45,7 @@ Se vuoi aprire modelli esistenti, ti servono anche:
 
 - il file JSON del modello;
 - eventuali file JSON di sottomodelli;
-- eventuali file CSV usati dal modello tramite `readData(...)`.
+- eventuali file XLSX usati dal modello tramite `readData(...)`.
 
 ### 1.3 Quali file devono essere presenti
 
@@ -53,12 +53,12 @@ Se usi l'editor desktop:
 
 - ti basta avere l'app desktop STGraphX;
 - i file dei modelli possono stare in qualunque cartella leggibile dall'app;
-- i sottomodelli e i file CSV è bene che stiano nella stessa cartella del modello, o comunque in posizioni coerenti con i path usati dal modello.
+- i sottomodelli e i file XLSX è bene che stiano nella stessa cartella del modello, o comunque in posizioni coerenti con i path usati dal modello.
 
 Se usi l'editor web:
 
 - deve esistere una pagina dell'editor già predisposta;
-- i file del modello, dei sottomodelli e dei CSV devono essere raggiungibili dal browser.
+- i file del modello, dei sottomodelli e degli XLSX devono essere raggiungibili dal browser.
 
 ### 1.4 Dove devono stare i file
 
@@ -66,7 +66,7 @@ Nel caso più semplice:
 
 - metti il modello principale `.json` in una cartella;
 - metti nella stessa cartella anche gli eventuali sottomodelli;
-- metti nelle sottocartelle o nella stessa cartella gli eventuali file CSV;
+- metti nelle sottocartelle o nella stessa cartella gli eventuali file XLSX;
 - usa nei modelli path coerenti con questa struttura.
 
 Questo è particolarmente importante per:
@@ -132,7 +132,7 @@ Ti serve:
 Se il modello usa risorse esterne, servono anche:
 
 - i file JSON dei sottomodelli;
-- i file CSV letti da `readData(...)`.
+- i file XLSX letti da `readData(...)`.
 
 ### 2.3 Quali file devono essere presenti
 
@@ -143,7 +143,7 @@ Perché il player funzioni, in generale devono essere presenti:
 - il bundle del player oppure i file sorgente del player;
 - il file JSON del modello;
 - eventuali sottomodelli;
-- eventuali file CSV.
+- eventuali file XLSX.
 
 La configurazione consigliata è:
 
@@ -168,7 +168,7 @@ site/
     mio-modello.json
     sotto1.json
     sotto2.json
-    dati.csv
+    dati.xlsx
 ```
 
 Dentro `mypage.html` puoi allora scrivere, per esempio:
@@ -188,7 +188,7 @@ La regola pratica è:
 
 - la pagina HTML deve poter leggere `player-runtime-loader.js`;
 - il loader deve poter leggere il bundle del player;
-- il modello deve poter leggere gli eventuali sottomodelli e CSV usando path validi rispetto alla posizione del modello o della pagina, secondo i casi gestiti dal runtime.
+- il modello deve poter leggere gli eventuali sottomodelli e file XLSX usando path validi rispetto alla posizione del modello o della pagina, secondo i casi gestiti dal runtime.
 
 ### 2.5 Serve un server web?
 
@@ -209,7 +209,7 @@ L'uso diretto aprendo `mypage.html` via `file:` non è consigliato, perché può
 
 - modello JSON;
 - sottomodelli;
-- file CSV;
+- file XLSX;
 - script del player.
 
 ### 2.6 Come si usa
@@ -270,7 +270,7 @@ Per l'API headless in Node.js ti serve:
 Se il modello li usa, servono anche:
 
 - sottomodelli JSON;
-- file CSV.
+- file XLSX.
 
 ### 3.3 Quali file devono essere presenti
 
@@ -337,13 +337,13 @@ Per l'API web:
 
 - la tua pagina HTML e il loader devono stare in una posizione coerente;
 - il path nel `src` del player deve puntare davvero al modello JSON;
-- i sottomodelli e i CSV devono essere raggiungibili dai path usati dal modello.
+- i sottomodelli e i file XLSX devono essere raggiungibili dai path usati dal modello.
 
 Per l'API headless Node.js:
 
 - i file JavaScript del runtime devono stare in posizioni che il tuo script possa importare;
 - il modello JSON deve stare in un path corretto rispetto allo script o alle opzioni passate al runtime;
-- se usi `data` invece di `src`, devi comunque indicare un `basePath` corretto quando servono sottomodelli o CSV.
+- se usi `data` invece di `src`, devi comunque indicare un `basePath` corretto quando servono sottomodelli o file XLSX.
 
 ### 3.5 Serve un server web?
 

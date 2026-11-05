@@ -1,6 +1,6 @@
 # STGraphX - Quick Function Reference
 
-Generated automatically da `i18n-inline.js` e `graph-functions.js` (release 2026.09.12).
+Generated automatically da `i18n-inline.js` e `graph-functions.js` (release 2026.11.05).
 
 Regenerate with `npm run docs:functions`.
 
@@ -14,11 +14,15 @@ List of functions, system variables, and utilities available in expressions.
 
 In array(...), current value of the first axis ($0), second axis ($1), and so on.
 
+---
+
 ### `$i0`
 
 `$i0, $i1, ...`
 
 In array(...), zero-based index of the first axis ($i0), second axis ($i1), and so on.
+
+---
 
 ### `dt`
 
@@ -26,11 +30,15 @@ In array(...), zero-based index of the first axis ($i0), second axis ($i1), and 
 
 Execution time step.
 
+---
+
 ### `t0`
 
 `t0`
 
 Execution start time.
+
+---
 
 ### `t1`
 
@@ -38,11 +46,15 @@ Execution start time.
 
 Execution end time.
 
+---
+
 ### `this`
 
 `this`
 
-'this' is the current full value of the state node. In scalar mode it is a single value; in vector mode it is the whole vector.
+'this' is the current full value of the state variable. In scalar mode it is a single value; in vector mode it is the whole vector.
+
+---
 
 ### `time`
 
@@ -61,14 +73,18 @@ A custom model property.
 **Examples**
 - `getModelProperty("title", "untitled")`
 
+---
+
 ### `getProperty`
 
 `getProperty(name, fallback)`
 
-A custom property from the current node.
+A custom property from the current variable.
 
 **Examples**
 - `getProperty("unit", "")`
+
+---
 
 ### `if`
 
@@ -80,6 +96,8 @@ Value associated with the first true condition, evaluated in order, or defaultVa
 - `if(x > 0, x, 0)`
 - `if(x < 0, -1, x == 0, 0, 1)`
 
+---
+
 ### `integral`
 
 `integral(x)`
@@ -88,6 +106,8 @@ Integrates x over time. With Euler it is equivalent to this + x * dt; with RK4 i
 
 **Examples**
 - `integral(flow)`
+
+---
 
 ### `map`
 
@@ -100,6 +120,8 @@ Element-by-element transformation of a vector or matrix. Inside expr, $value is 
 - `map($0+$value, [10,20,30])`
 - `map($0+$1, [[1,2],[3,4]])`
 
+---
+
 ### `range`
 
 `range(stop) | range(start, stop[, step])`
@@ -109,14 +131,19 @@ A numeric sequence with exclusive end value.
 **Examples**
 - `range(4) -> [0,1,2,3]`
 
+---
+
 ### `readData`
 
-`readData(path)`
+`readData(path, sheet, row, column) | readData(path, sheet, row1, column1, row2, column2)`
 
-Matrix of numeric and/or textual values read from a CSV file relative to the model folder. Available only in parameters.
+Reads values from an XLSX file relative to the model folder. With four arguments it returns a cell; with six arguments it reads an inclusive range, returning a scalar, vector, or matrix. Rows and columns start at 1 and can be expressions that evaluate to positive integers.
 
 **Examples**
-- `readData("data/values.csv")`
+- `readData("data/values.xlsx", "Data", time+1, 3)`
+`readData("data/values.xlsx", "Data", 2, 1, 10, 4)`
+
+---
 
 ### `reduce`
 
@@ -129,6 +156,8 @@ Progressive reduction of a vector or matrix. For matrices axis=0 reduces columns
 - `reduce(max, [3,7,2])`
 - `reduce(+, [[1,2],[3,4]], 0)`
 
+---
+
 ### `setModelProperty`
 
 `setModelProperty(name, value)`
@@ -138,11 +167,13 @@ Assignment of a custom model property, returning the assigned value.
 **Examples**
 - `setModelProperty("title", "Experiment")`
 
+---
+
 ### `setProperty`
 
 `setProperty(name, value)`
 
-Assignment of a custom property on the current node, returning the assigned value.
+Assignment of a custom property on the current variable, returning the assigned value.
 
 **Examples**
 - `setProperty("unit", "kg")`
@@ -151,15 +182,17 @@ Assignment of a custom property on the current node, returning the assigned valu
 
 ### `append`
 
-`append(vector, value|vector) | append(value, vector) | append(matrix, rowVector)`
+`append(value1, value2[, value3, ...]) | append(vector|matrix, ..., axis)`
 
-Appends or prepends an element to a vector, concatenates two vectors, or appends a row to a matrix.
+Concatenates two or more values in sequence. On vectors it appends elements or vectors. If a matrix is present, axis=0 (default) concatenates rows and axis=1 columns: argument order determines whether they are placed before or after the matrix. Agent matrices support axis=0 only.
 
 **Examples**
-- `append([1,2], 3)`
-- `append(1, [2,3])`
-- `append([1,2], [3,4])`
-- `append([[1,2],[3,4]], [5,6])`
+- `append([1,2], 3, [4,5])`
+- `append([[1,2]], [3,4], [5,6])`
+- `append([[1,2],[3,4]], [5,6], 1)`
+- `append([5,6], [[1,2],[3,4]], 1)`
+
+---
 
 ### `argmax`
 
@@ -170,6 +203,8 @@ The index of the first maximum value. For a vector it returns an index; for a ma
 **Examples**
 - `argmax([2,7,4]) -> 1`
 
+---
+
 ### `argmin`
 
 `argmin(vector|matrix)`
@@ -178,6 +213,8 @@ The index of the first minimum value. For a vector it returns an index; for a ma
 
 **Examples**
 - `argmin([2,-1,4]) -> 1`
+
+---
 
 ### `array`
 
@@ -188,6 +225,8 @@ Array obtained by evaluating expr for every combination of axes. An axis can be 
 **Examples**
 - `array(range(-2,3), $0^2)`
 
+---
+
 ### `coords`
 
 `coords(matrix[, value])`
@@ -197,6 +236,8 @@ The [row, column] coordinates of non-zero cells in a matrix, or only of the cell
 **Examples**
 - `coords([[0,1,0],[2,0,3]]) -> [[0,1],[1,0],[1,2]]`
 - `coords([[0,1,0],[2,0,3]], 2) -> [[1,0]]`
+
+---
 
 ### `filter`
 
@@ -209,6 +250,8 @@ Selection from a vector or matrix. With omitted mode or 'elements' it keeps the 
 - `filter($0===$1, [[1,2],[3,4]])`
 - `filter(grid[$value]==1, coordinates, 'rows')`
 
+---
+
 ### `flatten`
 
 `flatten(matrix)`
@@ -217,6 +260,22 @@ Turns a matrix into a vector by concatenating its rows.
 
 **Examples**
 - `flatten([[1,2],[3,4]]) -> [1,2,3,4]`
+
+---
+
+### `frequency`
+
+`frequency(vector[, n|bins, mode])`
+
+A two-column `[center, frequency]` matrix computed from a numeric vector. Without further arguments it uses distinct values as categories, in increasing order. With integer `n`, it builds n uniform bins from the minimum to the maximum. With `mode='categories'`, the vector supplies categories; with `mode='edges'`, it supplies increasing interval boundaries, left-closed and right-open except for the last interval.
+
+**Examples**
+- `frequency([1,2,2,3])`
+- `frequency([1,2,2,3], 2)`
+- `frequency([0,10,10,20], [0,10,20], "categories")`
+- `frequency([0.2,0.8,1.1], [0,1,2], "edges")`
+
+---
 
 ### `grid`
 
@@ -230,6 +289,8 @@ A spatial matrix from non-negative integer coordinates. rows gives the rows, col
 - `grid([1,1], [0,0], 'sum') -> [[0],[2]]`
 - `grid([1,1], [0,2], [4,5], 'error', [1,2])`
 
+---
+
 ### `indicesWhere`
 
 `indicesWhere(array) | indicesWhere(cond, array)`
@@ -241,6 +302,8 @@ Indices of truthy elements or of elements matching the condition. For a vector i
 - `indicesWhere($value>0, [-2,0,3]) -> [2]`
 - `indicesWhere($0===$1, [[1,2],[3,4]]) -> [[0,0],[1,1]]`
 
+---
+
 ### `intersection`
 
 `intersection(vectorA, vectorB)`
@@ -249,6 +312,8 @@ The elements present in both vectors, without duplicates and preserving the orde
 
 **Examples**
 - `intersection([1,2,2,3], [2,3,4]) -> [2,3]`
+
+---
 
 ### `neighbors`
 
@@ -261,6 +326,8 @@ The values of cells neighboring the selected one. With diagonals=true it uses th
 - `neighbors([[1,2,3],[4,5,6],[7,8,9]], 1, 1, false) -> [2,4,6,8]`
 - `neighbors([[1,2,3],[4,5,6],[7,8,9]], 0, 0, false, true) -> [2,4,3,7]`
 
+---
+
 ### `removeAt`
 
 `removeAt(vector, index) | removeAt(matrix, index[, axis])`
@@ -272,6 +339,20 @@ A copy without the selected vector element or without the selected matrix row or
 - `removeAt([[1,2],[3,4]], 0) -> [[3,4]]`
 - `removeAt([[1,2],[3,4]], 1, 1) -> [[1],[3]]`
 
+---
+
+### `resize`
+
+`resize(vector, length) | resize(matrix, rows, cols)`
+
+A copy of a vector or matrix with different dimensions. It keeps existing positions, drops excess values, and fills new positions with zeros. Agent matrices are not supported.
+
+**Examples**
+- `resize([1,2], 4) -> [1,2,0,0]`
+- `resize([[1,2],[3,4]], 3, 4) -> [[1,2,0,0],[3,4,0,0],[0,0,0,0]]`
+
+---
+
 ### `set`
 
 `set(vector)`
@@ -280,6 +361,8 @@ Vector without duplicates, preserving first appearance order.
 
 **Examples**
 - `set([3,1,3,2,1]) -> [3,1,2]`
+
+---
 
 ### `setAt`
 
@@ -291,6 +374,8 @@ A copy with the element or row replaced.
 - `setAt([1,2,3], 1, 9) -> [1,9,3]`
 - `setAt([[1,2],[3,4]], [1,0], 8) -> [[1,2],[8,4]]`
 
+---
+
 ### `shuffle`
 
 `shuffle(vector|matrix)`
@@ -300,6 +385,8 @@ A copy of the vector with its elements randomly shuffled or a copy of the matrix
 **Examples**
 - `shuffle([1,2,3,4])`
 - `shuffle([[1,2],[3,4],[5,6]])`
+
+---
 
 ### `size`
 
@@ -312,6 +399,8 @@ The size of a vector or matrix. For a vector it returns the length; for a matrix
 - `size([[1,2],[3,4]]) -> [2,2]`
 - `size([[1,2],[3,4]], 1) -> 2`
 
+---
+
 ### `sort`
 
 `sort(vector)`
@@ -320,6 +409,8 @@ A copy of the vector sorted in ascending order.
 
 **Examples**
 - `sort([3,1,2]) -> [1,2,3]`
+
+---
 
 ### `sum`
 
@@ -331,6 +422,8 @@ Sum of the elements of a vector or matrix. For a matrix without axis it returns 
 - `sum([1,2,3]) -> 6`
 - `sum([[1,2],[3,4]]) -> 10`
 - `sum([[1,2],[3,4]], 0) -> [4,6]`
+
+---
 
 ### `union`
 
@@ -354,6 +447,8 @@ Arithmetic mean of a vector or matrix. For a matrix without axis it returns the 
 - `average([[1,2],[3,4]]) -> 2.5`
 - `average([[1,2],[3,4]], 0) -> [2,3]`
 
+---
+
 ### `bernoulli`
 
 `bernoulli([p], x, mode)`
@@ -363,6 +458,8 @@ Bernoulli distribution; p defaults to 0.5. If x is omitted it samples 0 or 1. Wi
 **Examples**
 - `bernoulli()`
 - `bernoulli([0.3], 1, 0)`
+
+---
 
 ### `binomial`
 
@@ -374,6 +471,8 @@ Binomial distribution with n trials and success probability p; n defaults to 1 a
 - `binomial()`
 - `binomial([10,0.2], 3, 0)`
 
+---
+
 ### `choice`
 
 `choice(vector|matrix)`
@@ -383,6 +482,8 @@ Randomly picks one element from a non-empty vector or one row from a non-empty m
 **Examples**
 - `choice([10,20,30])`
 - `choice([[1,2],[3,4]])`
+
+---
 
 ### `count`
 
@@ -394,6 +495,8 @@ Counts truthy elements or elements matching the condition, using $value and loca
 - `count([1,0,1]) -> 2`
 - `count($value>0, [-2,0,3]) -> 1`
 - `count($value==1, [[1,0],[1,1]], 1) -> [1,2]`
+
+---
 
 ### `exponential`
 
@@ -407,6 +510,8 @@ Exponential distribution; rate defaults to 1. If x is omitted it samples a value
 - `exponential([2], 1.5, 0)`
 - `exponential([2], 0.9, 2)`
 
+---
+
 ### `gaussian`
 
 `gaussian([mu, sigma], x, mode)`
@@ -419,6 +524,8 @@ Normal distribution; mu defaults to 0 and sigma to 1. If x is omitted it samples
 - `gaussian([0,1], 0, 0)`
 - `gaussian([0,1], 0.95, 2)`
 
+---
+
 ### `poisson`
 
 `poisson([rate], x, mode)`
@@ -428,6 +535,8 @@ Poisson distribution with rate; rate defaults to 1. If x is omitted it samples a
 **Examples**
 - `poisson()`
 - `poisson([4], 2, 0)`
+
+---
 
 ### `rand`
 
@@ -440,6 +549,8 @@ Uniform random number. With no arguments it returns a value between 0 and 1; wit
 - `rand(10)`
 - `rand(-1, 1)`
 
+---
+
 ### `randInt`
 
 `randInt(max) | randInt(min, max)`
@@ -450,6 +561,8 @@ Uniform random integer, with inclusive upper bound. With one argument it returns
 - `randInt(5)`
 - `randInt(2, 7)`
 
+---
+
 ### `stdev`
 
 `stdev(array[, axis])`
@@ -458,6 +571,8 @@ Standard deviation of a vector or matrix. For a matrix without axis it returns t
 
 **Examples**
 - `stdev([1,2,3])`
+
+---
 
 ### `uniform`
 
@@ -472,6 +587,19 @@ Uniform distribution; min defaults to 0 and max to 1. If x is omitted it samples
 
 ## Math functions
 
+### `%`
+
+`a % b`
+
+Euclidean remainder of `a` divided by `b`. With a positive divisor, the result is between `0` and `b-1`, even when `a` is negative. It operates element by element on vectors and matrices.
+
+**Examples**
+- `7 % 3 -> 1`
+- `-1 % 3 -> 2`
+- `[1,2,3] % 2 -> [1,0,1]`
+
+---
+
 ### `abs`
 
 `abs(x)`
@@ -480,6 +608,8 @@ Absolute value.
 
 **Examples**
 - `abs(-3) -> 3`
+
+---
 
 ### `acos`
 
@@ -490,6 +620,8 @@ Arc cosine.
 **Examples**
 - `acos(1) -> 0`
 
+---
+
 ### `and`
 
 `a and b`
@@ -498,6 +630,8 @@ Boolean operator equivalent to &&.
 
 **Examples**
 - `a and b`
+
+---
 
 ### `asin`
 
@@ -508,6 +642,8 @@ Arc sine.
 **Examples**
 - `asin(0) -> 0`
 
+---
+
 ### `atan`
 
 `atan(x)`
@@ -516,6 +652,8 @@ Arc tangent.
 
 **Examples**
 - `atan(0) -> 0`
+
+---
 
 ### `atan2`
 
@@ -526,6 +664,8 @@ Two-argument arc tangent (y, x).
 **Examples**
 - `atan2(0, 1) -> 0`
 
+---
+
 ### `ceil`
 
 `ceil(x)`
@@ -534,6 +674,8 @@ Round up.
 
 **Examples**
 - `ceil(1.2) -> 2`
+
+---
 
 ### `cos`
 
@@ -544,6 +686,8 @@ Trigonometric cosine.
 **Examples**
 - `cos(0) -> 1`
 
+---
+
 ### `cosh`
 
 `cosh(x)`
@@ -552,6 +696,8 @@ Hyperbolic cosine.
 
 **Examples**
 - `cosh(0) -> 1`
+
+---
 
 ### `exp`
 
@@ -562,6 +708,8 @@ Natural exponential e^x.
 **Examples**
 - `exp(0) -> 1`
 
+---
+
 ### `floor`
 
 `floor(x)`
@@ -570,6 +718,8 @@ Round down.
 
 **Examples**
 - `floor(1.8) -> 1`
+
+---
 
 ### `int`
 
@@ -580,6 +730,8 @@ Remove the fractional part.
 **Examples**
 - `int(-1.8) -> -1`
 
+---
+
 ### `log`
 
 `log(x)`
@@ -588,6 +740,8 @@ Natural logarithm.
 
 **Examples**
 - `log(1) -> 0`
+
+---
 
 ### `log10`
 
@@ -598,6 +752,8 @@ Base-10 logarithm.
 **Examples**
 - `log10(100) -> 2`
 
+---
+
 ### `log2`
 
 `log2(x)`
@@ -606,6 +762,8 @@ Base-2 logarithm.
 
 **Examples**
 - `log2(8) -> 3`
+
+---
 
 ### `max`
 
@@ -616,6 +774,8 @@ Maximum of the provided values.
 **Examples**
 - `max(2, 7, 4) -> 7`
 
+---
+
 ### `min`
 
 `min(x1, x2, ...)`
@@ -624,6 +784,8 @@ Minimum of the provided values.
 
 **Examples**
 - `min(2, 7, 4) -> 2`
+
+---
 
 ### `not`
 
@@ -634,6 +796,8 @@ Boolean operator equivalent to !.
 **Examples**
 - `not x`
 
+---
+
 ### `or`
 
 `a or b`
@@ -642,6 +806,8 @@ Boolean operator equivalent to ||.
 
 **Examples**
 - `a or b`
+
+---
 
 ### `piecewise`
 
@@ -652,6 +818,8 @@ Signal defined by control points with linear interpolation. cx and cy are numeri
 **Examples**
 - `piecewise([0,2,5], [0,10,4], time)`
 
+---
+
 ### `pos`
 
 `pos(x)`
@@ -660,6 +828,8 @@ Positive part of x: x if positive, otherwise 0. It also operates element by elem
 
 **Examples**
 - `pos(-2) -> 0`
+
+---
 
 ### `pow`
 
@@ -670,6 +840,8 @@ Power: base raised to exponent.
 **Examples**
 - `pow(2, 3) -> 8`
 
+---
+
 ### `round`
 
 `round(x)`
@@ -678,6 +850,8 @@ Round to the nearest integer.
 
 **Examples**
 - `round(1.6) -> 2`
+
+---
 
 ### `sign`
 
@@ -688,6 +862,8 @@ Sign of the number: -1, 0, or 1.
 **Examples**
 - `sign(-4) -> -1`
 
+---
+
 ### `sin`
 
 `sin(x)`
@@ -696,6 +872,8 @@ Trigonometric sine.
 
 **Examples**
 - `sin(0) -> 0`
+
+---
 
 ### `sinh`
 
@@ -706,6 +884,8 @@ Hyperbolic sine.
 **Examples**
 - `sinh(0) -> 0`
 
+---
+
 ### `spline`
 
 `spline(cx, cy, x)`
@@ -714,6 +894,8 @@ Signal defined by control points with a natural cubic spline. cx and cy are nume
 
 **Examples**
 - `spline([0,2,5], [0,10,4], time)`
+
+---
 
 ### `sqrt`
 
@@ -724,6 +906,8 @@ Square root.
 **Examples**
 - `sqrt(9) -> 3`
 
+---
+
 ### `tan`
 
 `tan(x)`
@@ -733,6 +917,8 @@ Trigonometric tangent.
 **Examples**
 - `tan(0) -> 0`
 
+---
+
 ### `tanh`
 
 `tanh(x)`
@@ -741,6 +927,8 @@ Hyperbolic tangent.
 
 **Examples**
 - `tanh(0) -> 0`
+
+---
 
 ### `trunc`
 
@@ -759,11 +947,15 @@ Remove the fractional part.
 
 Row index of the current agent or cell. In scalar execution it is 0; in vector execution it identifies the local component; in matrix agent-based contexts it is the current row.
 
+---
+
 ### `$j`
 
 `$j`
 
 Column index of the current agent or cell in matrix agent-based contexts. It is not available for non-matrix structures.
+
+---
 
 ### `agentIndicesWhere`
 
@@ -773,6 +965,8 @@ The indices of agents for which the condition is true. Inside the condition self
 
 **Examples**
 - `agentIndicesWhere(self[STATE] == 1, agents)`
+
+---
 
 ### `agents`
 
@@ -785,6 +979,8 @@ Creates an agent matrix with a property schema. fieldNames is a vector of field 
 - `agents(["ID","STATE"], [[1,0],[2,1]])`
 - `agents(["X","Y","VX","VY"], 10)`
 
+---
+
 ### `agentSpace`
 
 `agentSpace(agents, xCol, yCol[, idCol][, [rows, cols][, neighborhood[, toroidal[, radius]]]])`
@@ -793,6 +989,8 @@ A spatial index for an agent population with non-negative integer coordinates in
 
 **Examples**
 - `agentSpace(agents, X, Y)`
+
+---
 
 ### `allNeighborCounts`
 
@@ -803,6 +1001,8 @@ A vector with the neighbor count of every agent.
 **Examples**
 - `allNeighborCounts(agents, space)`
 
+---
+
 ### `appendRow`
 
 `appendRow(matrix, row)`
@@ -811,6 +1011,8 @@ A copy of the matrix with a new row appended at the end. For agent matrices it a
 
 **Examples**
 - `appendRow(agents, [3,1])`
+
+---
 
 ### `col`
 
@@ -821,6 +1023,8 @@ Column j from the matrix as a vector.
 **Examples**
 - `col(agents, ENERGY)`
 
+---
+
 ### `filterAgents`
 
 `filterAgents(cond, agents)`
@@ -829,6 +1033,8 @@ The sub-population of agents satisfying the condition. Inside the condition self
 
 **Examples**
 - `filterAgents(self[ENERGY] > 0, agents)`
+
+---
 
 ### `mapAgents`
 
@@ -839,6 +1045,8 @@ Row-by-row transformation of all agents. expr must return a new row with the sam
 **Examples**
 - `mapAgents(setAt(self, ENERGY, self[ENERGY] + 1), agents)`
 
+---
+
 ### `ncols`
 
 `ncols(matrix)`
@@ -847,6 +1055,8 @@ The number of matrix columns. For an agent population it matches the number of p
 
 **Examples**
 - `ncols(agents)`
+
+---
 
 ### `neighborCountOf`
 
@@ -857,6 +1067,8 @@ How many neighbors agent i has in the given space.
 **Examples**
 - `neighborCountOf(agents, space, 0)`
 
+---
+
 ### `neighborsOf`
 
 `neighborsOf(agents, space, i)`
@@ -865,6 +1077,8 @@ The references of agents neighboring the agent at row i, using the space built w
 
 **Examples**
 - `neighborsOf(agents, space, 0)`
+
+---
 
 ### `nrows`
 
@@ -875,6 +1089,8 @@ The number of matrix rows. For an agent population it matches the number of agen
 **Examples**
 - `nrows(agents)`
 
+---
+
 ### `removeRow`
 
 `removeRow(matrix, i)`
@@ -883,6 +1099,8 @@ A copy of the matrix without row i. For agent matrices it removes agent i.
 
 **Examples**
 - `removeRow(agents, 2)`
+
+---
 
 ### `row`
 
@@ -893,11 +1111,15 @@ Row i from the matrix. If the matrix represents agents, it returns the property 
 **Examples**
 - `row(agents, 0)`
 
+---
+
 ### `self`
 
 `self`
 
-Current local node value. In scalar execution it matches the node value; in vector execution it refers to the current agent component; in matrix agent-based contexts it matches the current cell value.
+Current local variable value. In scalar execution it matches the variable value; in vector execution it refers to the current agent component; in matrix agent-based contexts it matches the current cell value.
+
+---
 
 ### `setCol`
 
@@ -908,6 +1130,8 @@ A copy of the matrix with column j replaced by the vector values. The vector mus
 **Examples**
 - `setCol(agents, ENERGY, newEnergy)`
 
+---
+
 ### `setRow`
 
 `setRow(matrix, i, row)`
@@ -916,6 +1140,8 @@ A copy of the matrix with row i replaced by row.
 
 **Examples**
 - `setRow(agents, 3, [10,1,4,7])`
+
+---
 
 ### `spaceMatrix`
 
