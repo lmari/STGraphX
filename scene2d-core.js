@@ -26,12 +26,22 @@
     return text || fallback;
   }
 
+  function normalizeImagePath(value) {
+    let path = String(value ?? "").trim().replace(/\\/gu, "/");
+    while (path.startsWith("./")) path = path.slice(2);
+    if (!path || path.startsWith("/") || /^[A-Za-z]:\//u.test(path)) return "";
+    const parts = path.split("/").filter(Boolean);
+    if (!parts.length || parts.some((part) => part === "." || part === "..")) return "";
+    return parts.join("/");
+  }
+
   function normalizeObject(object) {
-    const type = ["segment", "circle", "text"].includes(String(object?.type ?? ""))
+    const type = ["segment", "circle", "text", "image"].includes(String(object?.type ?? ""))
       ? String(object.type)
       : "segment";
     return {
       type,
+      collapsed: object?.collapsed === true,
       x1: String(object?.x1 ?? "0"),
       y1: String(object?.y1 ?? "0"),
       x2: String(object?.x2 ?? "1"),
@@ -39,6 +49,9 @@
       x: String(object?.x ?? "0"),
       y: String(object?.y ?? "0"),
       radius: String(object?.radius ?? "0.1"),
+      width: String(object?.width ?? "1"),
+      height: String(object?.height ?? "1"),
+      imagePath: normalizeImagePath(object?.imagePath),
       rotation: String(object?.rotation ?? "0"),
       // Text is always centered and rotates around its own position.
       pivotX: type === "text" ? "" : (object?.pivotX == null ? "" : String(object.pivotX)),
@@ -133,6 +146,10 @@
       } else if (object.type === "text") {
         const point = transformedPoint(object);
         include(point.x, point.y);
+      } else if (object.type === "image") {
+        const point = transformedPoint(object);
+        const halfDiagonal = Math.hypot(Math.max(0, Number(object.width) || 0), Math.max(0, Number(object.height) || 0)) / 2;
+        include(point.x, point.y, halfDiagonal);
       }
     });
     if (!Number.isFinite(bounds.minX)) {
@@ -285,6 +302,33 @@
         ctx.rotate(-finiteOr(object.rotation, 0));
         ctx.fillText(String(object.text ?? ""), 0, 0);
         ctx.restore();
+      } else if (object.type === "image") {
+        const scenePoint = transformedPoint(object);
+        const point = toCanvas(scenePoint.x, scenePoint.y);
+        const imageWidth = Math.max(0, Number(object.width) || 0) * scaleX;
+        const imageHeight = Math.max(0, Number(object.height) || 0) * scaleY;
+        if (!(imageWidth > 0) || !(imageHeight > 0)) return;
+        ctx.save();
+        ctx.translate(point.x, point.y);
+        ctx.rotate(-finiteOr(object.rotation, 0));
+        const image = object.image;
+        const drawable = image && image.complete !== false
+          && Number(image.naturalWidth ?? image.width ?? 0) > 0;
+        if (drawable) {
+          ctx.drawImage(image, -imageWidth / 2, -imageHeight / 2, imageWidth, imageHeight);
+        } else {
+          ctx.strokeStyle = object.imageStatus === "error" ? "#c2410c" : "#94a3b8";
+          ctx.lineWidth = 1;
+          ctx.setLineDash([4, 3]);
+          ctx.strokeRect(-imageWidth / 2, -imageHeight / 2, imageWidth, imageHeight);
+          ctx.setLineDash([]);
+          ctx.fillStyle = object.imageStatus === "error" ? "#c2410c" : "#64748b";
+          ctx.font = `${Math.max(10, Math.min(16, imageHeight / 3))}px sans-serif`;
+          ctx.textAlign = "center";
+          ctx.textBaseline = "middle";
+          ctx.fillText(object.imageStatus === "error" ? "!" : "…", 0, 0);
+        }
+        ctx.restore();
       }
     });
     ctx.restore();
@@ -310,5 +354,5 @@
     }
   }
 
-  global.STGraphXScene2D = { drawScene2D, normalizeObject, normalizeSceneOptions };
+  global.STGraphXScene2D = { drawScene2D, normalizeImagePath, normalizeObject, normalizeSceneOptions };
 })(globalThis);

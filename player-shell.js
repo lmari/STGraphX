@@ -132,7 +132,7 @@
     return Number.isFinite(value) ? value : NaN;
   }
 
-  function playerSceneObjects(widget, model, timeValue) {
+  function playerSceneObjects(widget, model, timeValue, resolveImageAsset = () => ({ status: "invalid", image: null })) {
     const context = playerSceneExpressionContext(model, timeValue);
     const localFunctions = Array.isArray(model?.localFunctions) ? model.localFunctions : [];
     return (Array.isArray(widget?.objects) ? widget.objects : []).map((object) => {
@@ -149,6 +149,13 @@
           const value = evaluatePlayerSceneExpression(source, context, localFunctions);
           return Number.isFinite(value) ? String(Number(value.toFixed(6))) : "?";
         });
+      } else if (object?.type === "image") {
+        ["x", "y", "width", "height", "rotation"].forEach((key) => { out[key] = evaluatePlayerSceneExpression(object[key], context, localFunctions); });
+        out.pivotX = out.x;
+        out.pivotY = out.y;
+        const asset = resolveImageAsset(object.imagePath);
+        out.image = asset?.image || null;
+        out.imageStatus = asset?.status || "error";
       }
       return out;
     });
@@ -2529,6 +2536,30 @@
       };
     }
 
+    scene2DImageAsset(path) {
+      const normalizedPath = scene2dCore.normalizeImagePath?.(path) || "";
+      if (!normalizedPath) return { status: "invalid", image: null };
+      const baseUrl = String(this._state.srcUrl || document.baseURI);
+      const url = new URL(normalizedPath, baseUrl).href;
+      this._scene2DImageAssets ||= new Map();
+      const existing = this._scene2DImageAssets.get(url);
+      if (existing) return existing;
+      const asset = { status: "loading", image: null };
+      this._scene2DImageAssets.set(url, asset);
+      const image = new Image();
+      image.onload = () => {
+        asset.status = "ready";
+        asset.image = image;
+        this.renderAll();
+      };
+      image.onerror = () => {
+        asset.status = "error";
+        this.renderAll();
+      };
+      image.src = url;
+      return asset;
+    }
+
     initializeRuntime() {
       const runtimeModel = this._state.runtimeModel;
       const inputValues = this._state.inputValues;
@@ -3788,7 +3819,7 @@
         canvas.height = Math.max(120, Math.floor(widget.height * this._zoom - 54));
         scene2dCore.drawScene2D?.(
           canvas,
-          playerSceneObjects(widget, this._state.runtimeModel, this.currentDisplayTime()),
+          playerSceneObjects(widget, this._state.runtimeModel, this.currentDisplayTime(), (path) => this.scene2DImageAsset(path)),
           widget,
         );
         body.appendChild(canvas);

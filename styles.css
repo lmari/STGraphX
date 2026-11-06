@@ -2102,6 +2102,7 @@ input.inferred-unit[readonly] { color: #6d7782; background: #f4f6f8; }
 .scene2d-object-row-2 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 .scene2d-object-row-3 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
 .scene2d-object-row-4 { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+.scene2d-image-source-row { grid-template-columns: minmax(0, 1fr) minmax(84px, 0.45fr); }
 
 .scene2d-object-row .compact-field {
   min-width: 0;

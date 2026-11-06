@@ -28,6 +28,13 @@ assert.equal(text.textAlign, "center", "text must remain centered");
 assert.equal(text.pivotX, "", "text must rotate around its position");
 assert.equal(text.pivotY, "", "text must rotate around its position");
 
+assert.equal(scene.normalizeImagePath("sprites/ball.png"), "sprites/ball.png");
+assert.equal(scene.normalizeImagePath("../ball.png"), "", "image paths must stay inside the model folder");
+const imageObject = scene.normalizeObject({ type: "image", imagePath: "ball.png", width: "2", height: "1" });
+assert.equal(imageObject.imagePath, "ball.png");
+assert.equal(imageObject.width, "2");
+assert.equal(scene.normalizeObject({ type: "circle", collapsed: true }).collapsed, true);
+
 const calls = [];
 const context = new Proxy({}, {
   get(_target, property) {
@@ -68,5 +75,23 @@ scene.drawScene2D(
   { showAxes: false, showGrid: false, equalScale: true },
 );
 assert.ok(!segmentCalls.some(([name]) => name === "rotate"), "segment endpoints must define its orientation directly");
+
+const imageCalls = [];
+const imageContext = new Proxy({}, {
+  get(_target, property) {
+    if (property === "measureText") return () => ({ width: 20 });
+    return (...args) => { imageCalls.push([property, ...args]); };
+  },
+  set(_target, property, value) {
+    imageCalls.push(["set", property, value]);
+    return true;
+  },
+});
+scene.drawScene2D(
+  { width: 320, height: 220, getContext: () => imageContext },
+  [{ type: "image", x: 0, y: 0, width: 1, height: 1, rotation: 0, image: { complete: true, naturalWidth: 24 } }],
+  { showAxes: false, showGrid: false, equalScale: true },
+);
+assert.ok(imageCalls.some(([name]) => name === "drawImage"), "an available image must be drawn");
 
 process.stdout.write("scene2d-core.test.js: ok\n");

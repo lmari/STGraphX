@@ -9,6 +9,65 @@
 
 const graphFunctionHelpers = globalThis.GraphFunctions?.helpers || {};
 const scene2dCore = globalThis.STGraphXScene2D || {};
+const scene2DImageAssets = new Map();
+
+function scene2DImageMimeType(path) {
+  const extension = String(path ?? "").trim().split(".").pop()?.toLowerCase();
+  return {
+    png: "image/png",
+    jpg: "image/jpeg",
+    jpeg: "image/jpeg",
+    gif: "image/gif",
+    webp: "image/webp",
+    svg: "image/svg+xml",
+    avif: "image/avif",
+  }[extension] || "application/octet-stream";
+}
+
+async function scene2DImageBlob(file, path) {
+  const mimeType = String(file?.type ?? "").trim() || scene2DImageMimeType(path);
+  if (typeof Blob !== "undefined" && file instanceof Blob) {
+    return file.type ? file : new Blob([file], { type: mimeType });
+  }
+  return new Blob([await file.arrayBuffer()], { type: mimeType });
+}
+
+function requestScene2DImageAsset(path) {
+  const normalizedPath = scene2dCore.normalizeImagePath?.(path) || "";
+  if (!normalizedPath) return { status: "invalid", image: null };
+  if (ui.loadingModel) return { status: "waiting", image: null };
+  const directoryPath = String(currentModelDirectoryHandle?.path ?? graph.__directoryPath ?? "");
+  const key = `${directoryPath}\u0000${normalizedPath}`;
+  const existing = scene2DImageAssets.get(key);
+  if (existing) return existing;
+  const asset = { status: "loading", image: null };
+  scene2DImageAssets.set(key, asset);
+  (async () => {
+    try {
+      const directoryHandle = await getModelDirectoryHandleForExternalAsset(graph);
+      const fileHandle = await directoryHandle.getFileHandle(normalizedPath);
+      const file = await fileHandle.getFile();
+      const objectUrl = URL.createObjectURL(await scene2DImageBlob(file, normalizedPath));
+      const image = new Image();
+      image.onload = () => {
+        asset.status = "ready";
+        asset.image = image;
+        URL.revokeObjectURL(objectUrl);
+        render();
+      };
+      image.onerror = () => {
+        asset.status = "error";
+        URL.revokeObjectURL(objectUrl);
+        render();
+      };
+      image.src = objectUrl;
+    } catch (_err) {
+      asset.status = "error";
+      render();
+    }
+  })();
+  return asset;
+}
 
 // Unit "1" is the internal notation for a dimensionless value and should not
 // consume space in widget labels intended for model readers.
@@ -2443,6 +2502,13 @@ function evaluatedScene2DObjects(widget, nodeMap = buildNodeNameMap()) {
       out.pivotX = out.x;
       out.pivotY = out.y;
       out.text = evaluateScene2DText(object.text, context);
+    } else if (object.type === "image") {
+      ["x", "y", "width", "height", "rotation"].forEach((key) => { out[key] = evaluateScene2DExpression(object[key], context); });
+      out.pivotX = out.x;
+      out.pivotY = out.y;
+      const asset = requestScene2DImageAsset(object.imagePath);
+      out.image = asset.image;
+      out.imageStatus = asset.status;
     }
     return out;
   });
@@ -4603,6 +4669,9 @@ function refreshWidgetConfigPanel(widget) {
     "widget.scene2dX2": "tooltip.widget.scene2dX2",
     "widget.scene2dY2": "tooltip.widget.scene2dY2",
     "widget.scene2dRadius": "tooltip.widget.scene2dRadius",
+    "widget.scene2dImage": "tooltip.widget.scene2dImage",
+    "widget.scene2dImageWidth": "tooltip.widget.scene2dImageWidth",
+    "widget.scene2dImageHeight": "tooltip.widget.scene2dImageHeight",
     "widget.scene2dRotation": "tooltip.widget.scene2dRotation",
     "widget.scene2dPivotX": "tooltip.widget.scene2dPivotX",
     "widget.scene2dPivotY": "tooltip.widget.scene2dPivotY",
@@ -4801,6 +4870,21 @@ function refreshWidgetConfigPanel(widget) {
       row.appendChild(createCompactField(label, input));
       updateValidation();
     };
+    const addImagePathField = (row, object) => {
+      const input = document.createElement("input");
+      input.type = "text";
+      input.value = String(object.imagePath ?? "");
+      const updateValidation = () => {
+        const hasValue = Boolean(input.value.trim());
+        const valid = !hasValue || Boolean(scene2dCore.normalizeImagePath?.(input.value));
+        input.classList.toggle("invalid", !valid);
+        setConfigTooltip(input, valid ? "tooltip.widget.scene2dImage" : "tooltip.widget.scene2dImageInvalid");
+      };
+      input.addEventListener("input", updateValidation);
+      input.addEventListener("change", () => runAction(() => { object.imagePath = String(input.value ?? ""); }));
+      row.appendChild(createCompactField("widget.scene2dImage", input));
+      updateValidation();
+    };
     const addColorField = (row, label, object, property, fallback) => {
       const input = document.createElement("input");
       input.type = "color";
@@ -4823,7 +4907,7 @@ function refreshWidgetConfigPanel(widget) {
       const header = document.createElement("div");
       header.className = "scene2d-object-header";
       const typeSelect = document.createElement("select");
-      ["segment", "circle", "text"].forEach((type) => {
+      ["segment", "circle", "text", "image"].forEach((type) => {
         const option = document.createElement("option");
         option.value = type;
         option.textContent = t(`widget.scene2dObject.${type}`);
@@ -4835,6 +4919,16 @@ function refreshWidgetConfigPanel(widget) {
       }));
       setConfigTooltip(typeSelect, "tooltip.widget.scene2dObjectType");
       header.appendChild(typeSelect);
+      const expanded = object.collapsed !== true;
+      const toggleDetails = document.createElement("button");
+      toggleDetails.type = "button";
+      toggleDetails.className = "icon-btn";
+      toggleDetails.textContent = expanded ? "▾" : "▸";
+      setConfigTooltip(toggleDetails, expanded ? "tooltip.widget.scene2dCollapseObject" : "tooltip.widget.scene2dExpandObject");
+      toggleDetails.addEventListener("click", () => runAction(() => {
+        object.collapsed = expanded;
+      }));
+      header.appendChild(toggleDetails);
       [["↑", -1, "widget.moveUp"], ["↓", 1, "widget.moveDown"], ["×", 0, "action.delete"]].forEach(([symbol, direction, label]) => {
         const button = document.createElement("button");
         button.type = "button";
@@ -4855,6 +4949,10 @@ function refreshWidgetConfigPanel(widget) {
         header.appendChild(button);
       });
       objectSection.appendChild(header);
+      if (!expanded) {
+        objectsSection.appendChild(objectSection);
+        return;
+      }
       if (object.type === "segment") {
         const row = sceneRow(4);
         [["widget.scene2dX1", "x1"], ["widget.scene2dY1", "y1"], ["widget.scene2dX2", "x2"], ["widget.scene2dY2", "y2"]].forEach(([label, property]) => addExpressionField(row, label, object, property));
@@ -4872,7 +4970,7 @@ function refreshWidgetConfigPanel(widget) {
         addColorField(style, "widget.scene2dStroke", object, "stroke", "#7f1d1d");
         addExpressionField(style, "widget.scene2dWidth", object, "lineWidth");
         objectSection.appendChild(style);
-      } else {
+      } else if (object.type === "text") {
         const row = sceneRow(3);
         [["widget.scene2dX", "x"], ["widget.scene2dY", "y"], ["widget.scene2dRotation", "rotation"]]
           .forEach(([label, property]) => addExpressionField(row, label, object, property));
@@ -4884,6 +4982,16 @@ function refreshWidgetConfigPanel(widget) {
         addColorField(style, "widget.scene2dColor", object, "color", "#334e68");
         addExpressionField(style, "widget.scene2dFontSize", object, "fontSize");
         objectSection.appendChild(style);
+      } else {
+        const pathRow = sceneRow(2);
+        pathRow.classList.add("scene2d-image-source-row");
+        addImagePathField(pathRow, object);
+        addExpressionField(pathRow, "widget.scene2dRotation", object, "rotation");
+        objectSection.appendChild(pathRow);
+        const row = sceneRow(4);
+        [["widget.scene2dX", "x"], ["widget.scene2dY", "y"], ["widget.scene2dImageWidth", "width"], ["widget.scene2dImageHeight", "height"]]
+          .forEach(([label, property]) => addExpressionField(row, label, object, property));
+        objectSection.appendChild(row);
       }
       objectsSection.appendChild(objectSection);
     });

@@ -1,6 +1,6 @@
 /*!
  * STGraphX Embedded Player Bundle
- * Generated: 2026-11-05T18:00:42.240Z
+ * Generated: 2026-11-06T11:07:43.689Z
  */
 
 /* --- i18n-inline.js --- */
@@ -812,6 +812,7 @@ window.STGraphXI18nBundles = {
     "widget.scene2dObject.segment": "Segmento",
     "widget.scene2dObject.circle": "Cerchio",
     "widget.scene2dObject.text": "Testo",
+    "widget.scene2dObject.image": "Immagine",
     "widget.scene2dX": "X",
     "widget.scene2dY": "Y",
     "widget.scene2dX1": "X1",
@@ -819,6 +820,9 @@ window.STGraphXI18nBundles = {
     "widget.scene2dX2": "X2",
     "widget.scene2dY2": "Y2",
     "widget.scene2dRadius": "Raggio",
+    "widget.scene2dImage": "File immagine",
+    "widget.scene2dImageWidth": "Larg.",
+    "widget.scene2dImageHeight": "Alt.",
     "widget.scene2dRotation": "Rotazione",
     "widget.scene2dPivotX": "Centro X",
     "widget.scene2dPivotY": "Centro Y",
@@ -1141,7 +1145,7 @@ window.STGraphXI18nBundles = {
     "configHelp.widget.xychart.title": "Widget grafico x-y",
     "configHelp.widget.xychart.body": "Il grafico rappresenta una o più coppie **X-Y** come serie nel tempo o profili istantanei. Per ogni serie puoi configurare linea, punti, barre, colori e spessori.\n\nLe opzioni degli assi controllano limiti, passo della griglia, etichette, assi e griglia. La legenda può essere posizionata oppure nascosta.",
     "configHelp.widget.scene2d.title": "Widget scena 2D",
-    "configHelp.widget.scene2d.body": "La scena 2D disegna segmenti, cerchi e testi usando espressioni del modello per le coordinate e le dimensioni.\n\nLa scala uniforme mantiene proporzioni geometriche corrette, utile per pendoli, traiettorie e rappresentazioni spaziali.",
+    "configHelp.widget.scene2d.body": "La scena 2D disegna segmenti, cerchi, testi e immagini usando espressioni del modello per le coordinate e le dimensioni. Le immagini sono file nella stessa cartella del modello e possono essere ruotate e ridimensionate dinamicamente.\n\nLa scala uniforme mantiene proporzioni geometriche corrette, utile per pendoli, traiettorie e rappresentazioni spaziali.",
     "configHelp.widget.text.title": "Widget testo output",
     "configHelp.widget.text.body": "Il testo output visualizza il valore della variabile scelta, eventualmente trasformandolo in una delle etichette definite nelle **mappature testo**.\n\nÈ utile per stati discreti, messaggi sintetici e valori numerici per cui non serve una tabella.",
     "configHelp.text.title": "Configurazione del testo",
@@ -1240,7 +1244,13 @@ window.STGraphXI18nBundles = {
     "tooltip.widget.scene2dEqualScale": "Usa la stessa scala sugli assi X e Y, così cerchi e angoli mantengono le proporzioni geometriche.",
     "tooltip.widget.scene2dFill": "Colore di riempimento del cerchio nella scena 2D.",
     "tooltip.widget.scene2dFontSize": "Dimensione del testo nella scena 2D, in pixel.",
-    "tooltip.widget.scene2dObjectType": "Tipo di oggetto grafico da disegnare: segmento, cerchio o testo.",
+    "tooltip.widget.scene2dImage": "Percorso relativo del file immagine, nella stessa cartella del modello. Sono ammessi i formati supportati dal browser, ad esempio PNG, JPEG, SVG e WebP.",
+    "tooltip.widget.scene2dImageInvalid": "Indica un percorso relativo senza riferimenti a cartelle superiori, ad esempio pendolo.png.",
+    "tooltip.widget.scene2dImageWidth": "Larghezza dell'immagine nelle coordinate della scena; può essere un'espressione del modello.",
+    "tooltip.widget.scene2dImageHeight": "Altezza dell'immagine nelle coordinate della scena; può essere un'espressione del modello.",
+    "tooltip.widget.scene2dCollapseObject": "Nasconde i campi di configurazione di questo oggetto.",
+    "tooltip.widget.scene2dExpandObject": "Mostra i campi di configurazione di questo oggetto.",
+    "tooltip.widget.scene2dObjectType": "Tipo di oggetto grafico da disegnare: segmento, cerchio, testo o immagine.",
     "tooltip.widget.scene2dPivotX": "Coordinata X del centro di rotazione. Se vuota, usa il centro naturale dell'oggetto.",
     "tooltip.widget.scene2dPivotY": "Coordinata Y del centro di rotazione. Se vuota, usa il centro naturale dell'oggetto.",
     "tooltip.widget.scene2dRadius": "Raggio del cerchio nelle coordinate della scena; può essere un'espressione del modello.",
@@ -2327,6 +2337,7 @@ window.STGraphXI18nBundles = {
     "widget.scene2dObject.segment": "Segment",
     "widget.scene2dObject.circle": "Circle",
     "widget.scene2dObject.text": "Text",
+    "widget.scene2dObject.image": "Image",
     "widget.scene2dX": "X",
     "widget.scene2dY": "Y",
     "widget.scene2dX1": "X1",
@@ -2334,6 +2345,9 @@ window.STGraphXI18nBundles = {
     "widget.scene2dX2": "X2",
     "widget.scene2dY2": "Y2",
     "widget.scene2dRadius": "Radius",
+    "widget.scene2dImage": "Image file",
+    "widget.scene2dImageWidth": "Width",
+    "widget.scene2dImageHeight": "Height",
     "widget.scene2dRotation": "Rotation",
     "widget.scene2dPivotX": "Pivot X",
     "widget.scene2dPivotY": "Pivot Y",
@@ -2656,7 +2670,7 @@ window.STGraphXI18nBundles = {
     "configHelp.widget.xychart.title": "X-Y chart widget",
     "configHelp.widget.xychart.body": "The chart represents one or more **X-Y** pairs as time series or instant profiles. For each series you can configure line, points, bars, colors, and widths.\n\nAxis options control limits, grid step, labels, axes, and grid. The legend can be positioned or hidden.",
     "configHelp.widget.scene2d.title": "2D scene widget",
-    "configHelp.widget.scene2d.body": "The 2D scene draws segments, circles, and texts using model expressions for coordinates and dimensions.\n\nEqual scale preserves geometric proportions, useful for pendulums, trajectories, and spatial representations.",
+    "configHelp.widget.scene2d.body": "The 2D scene draws segments, circles, texts, and images using model expressions for coordinates and dimensions. Images are files in the model folder and can be dynamically rotated and resized.\n\nEqual scale preserves geometric proportions, useful for pendulums, trajectories, and spatial representations.",
     "configHelp.widget.text.title": "Output text widget",
     "configHelp.widget.text.body": "Output text displays the value of the selected variable, optionally transforming it through the **text mappings**.\n\nIt is useful for discrete states, concise messages, and numeric values that do not require a table.",
     "configHelp.text.title": "Text configuration",
@@ -2755,7 +2769,13 @@ window.STGraphXI18nBundles = {
     "tooltip.widget.scene2dEqualScale": "Uses the same scale on X and Y axes, so circles and angles retain their geometric proportions.",
     "tooltip.widget.scene2dFill": "Fill color of the circle in the 2D scene.",
     "tooltip.widget.scene2dFontSize": "Text size in the 2D scene, in pixels.",
-    "tooltip.widget.scene2dObjectType": "Type of graphical object to draw: segment, circle, or text.",
+    "tooltip.widget.scene2dImage": "Relative path of the image file in the model folder. Browser-supported formats are accepted, for example PNG, JPEG, SVG, and WebP.",
+    "tooltip.widget.scene2dImageInvalid": "Enter a relative path without parent-folder references, for example pendulum.png.",
+    "tooltip.widget.scene2dImageWidth": "Image width in scene coordinates; it can be a model expression.",
+    "tooltip.widget.scene2dImageHeight": "Image height in scene coordinates; it can be a model expression.",
+    "tooltip.widget.scene2dCollapseObject": "Hides this object's configuration fields.",
+    "tooltip.widget.scene2dExpandObject": "Shows this object's configuration fields.",
+    "tooltip.widget.scene2dObjectType": "Type of graphical object to draw: segment, circle, text, or image.",
     "tooltip.widget.scene2dPivotX": "X coordinate of the rotation center. If empty, the object's natural center is used.",
     "tooltip.widget.scene2dPivotY": "Y coordinate of the rotation center. If empty, the object's natural center is used.",
     "tooltip.widget.scene2dRadius": "Circle radius in scene coordinates; it can be a model expression.",
@@ -10943,12 +10963,22 @@ window.STGraphXI18nBundles = {
     return text || fallback;
   }
 
+  function normalizeImagePath(value) {
+    let path = String(value ?? "").trim().replace(/\\/gu, "/");
+    while (path.startsWith("./")) path = path.slice(2);
+    if (!path || path.startsWith("/") || /^[A-Za-z]:\//u.test(path)) return "";
+    const parts = path.split("/").filter(Boolean);
+    if (!parts.length || parts.some((part) => part === "." || part === "..")) return "";
+    return parts.join("/");
+  }
+
   function normalizeObject(object) {
-    const type = ["segment", "circle", "text"].includes(String(object?.type ?? ""))
+    const type = ["segment", "circle", "text", "image"].includes(String(object?.type ?? ""))
       ? String(object.type)
       : "segment";
     return {
       type,
+      collapsed: object?.collapsed === true,
       x1: String(object?.x1 ?? "0"),
       y1: String(object?.y1 ?? "0"),
       x2: String(object?.x2 ?? "1"),
@@ -10956,6 +10986,9 @@ window.STGraphXI18nBundles = {
       x: String(object?.x ?? "0"),
       y: String(object?.y ?? "0"),
       radius: String(object?.radius ?? "0.1"),
+      width: String(object?.width ?? "1"),
+      height: String(object?.height ?? "1"),
+      imagePath: normalizeImagePath(object?.imagePath),
       rotation: String(object?.rotation ?? "0"),
       // Text is always centered and rotates around its own position.
       pivotX: type === "text" ? "" : (object?.pivotX == null ? "" : String(object.pivotX)),
@@ -11050,6 +11083,10 @@ window.STGraphXI18nBundles = {
       } else if (object.type === "text") {
         const point = transformedPoint(object);
         include(point.x, point.y);
+      } else if (object.type === "image") {
+        const point = transformedPoint(object);
+        const halfDiagonal = Math.hypot(Math.max(0, Number(object.width) || 0), Math.max(0, Number(object.height) || 0)) / 2;
+        include(point.x, point.y, halfDiagonal);
       }
     });
     if (!Number.isFinite(bounds.minX)) {
@@ -11202,6 +11239,33 @@ window.STGraphXI18nBundles = {
         ctx.rotate(-finiteOr(object.rotation, 0));
         ctx.fillText(String(object.text ?? ""), 0, 0);
         ctx.restore();
+      } else if (object.type === "image") {
+        const scenePoint = transformedPoint(object);
+        const point = toCanvas(scenePoint.x, scenePoint.y);
+        const imageWidth = Math.max(0, Number(object.width) || 0) * scaleX;
+        const imageHeight = Math.max(0, Number(object.height) || 0) * scaleY;
+        if (!(imageWidth > 0) || !(imageHeight > 0)) return;
+        ctx.save();
+        ctx.translate(point.x, point.y);
+        ctx.rotate(-finiteOr(object.rotation, 0));
+        const image = object.image;
+        const drawable = image && image.complete !== false
+          && Number(image.naturalWidth ?? image.width ?? 0) > 0;
+        if (drawable) {
+          ctx.drawImage(image, -imageWidth / 2, -imageHeight / 2, imageWidth, imageHeight);
+        } else {
+          ctx.strokeStyle = object.imageStatus === "error" ? "#c2410c" : "#94a3b8";
+          ctx.lineWidth = 1;
+          ctx.setLineDash([4, 3]);
+          ctx.strokeRect(-imageWidth / 2, -imageHeight / 2, imageWidth, imageHeight);
+          ctx.setLineDash([]);
+          ctx.fillStyle = object.imageStatus === "error" ? "#c2410c" : "#64748b";
+          ctx.font = `${Math.max(10, Math.min(16, imageHeight / 3))}px sans-serif`;
+          ctx.textAlign = "center";
+          ctx.textBaseline = "middle";
+          ctx.fillText(object.imageStatus === "error" ? "!" : "…", 0, 0);
+        }
+        ctx.restore();
       }
     });
     ctx.restore();
@@ -11227,7 +11291,7 @@ window.STGraphXI18nBundles = {
     }
   }
 
-  global.STGraphXScene2D = { drawScene2D, normalizeObject, normalizeSceneOptions };
+  global.STGraphXScene2D = { drawScene2D, normalizeImagePath, normalizeObject, normalizeSceneOptions };
 })(globalThis);
 
 
@@ -12593,7 +12657,7 @@ window.STGraphXI18nBundles = {
     return Number.isFinite(value) ? value : NaN;
   }
 
-  function playerSceneObjects(widget, model, timeValue) {
+  function playerSceneObjects(widget, model, timeValue, resolveImageAsset = () => ({ status: "invalid", image: null })) {
     const context = playerSceneExpressionContext(model, timeValue);
     const localFunctions = Array.isArray(model?.localFunctions) ? model.localFunctions : [];
     return (Array.isArray(widget?.objects) ? widget.objects : []).map((object) => {
@@ -12610,6 +12674,13 @@ window.STGraphXI18nBundles = {
           const value = evaluatePlayerSceneExpression(source, context, localFunctions);
           return Number.isFinite(value) ? String(Number(value.toFixed(6))) : "?";
         });
+      } else if (object?.type === "image") {
+        ["x", "y", "width", "height", "rotation"].forEach((key) => { out[key] = evaluatePlayerSceneExpression(object[key], context, localFunctions); });
+        out.pivotX = out.x;
+        out.pivotY = out.y;
+        const asset = resolveImageAsset(object.imagePath);
+        out.image = asset?.image || null;
+        out.imageStatus = asset?.status || "error";
       }
       return out;
     });
@@ -14990,6 +15061,30 @@ window.STGraphXI18nBundles = {
       };
     }
 
+    scene2DImageAsset(path) {
+      const normalizedPath = scene2dCore.normalizeImagePath?.(path) || "";
+      if (!normalizedPath) return { status: "invalid", image: null };
+      const baseUrl = String(this._state.srcUrl || document.baseURI);
+      const url = new URL(normalizedPath, baseUrl).href;
+      this._scene2DImageAssets ||= new Map();
+      const existing = this._scene2DImageAssets.get(url);
+      if (existing) return existing;
+      const asset = { status: "loading", image: null };
+      this._scene2DImageAssets.set(url, asset);
+      const image = new Image();
+      image.onload = () => {
+        asset.status = "ready";
+        asset.image = image;
+        this.renderAll();
+      };
+      image.onerror = () => {
+        asset.status = "error";
+        this.renderAll();
+      };
+      image.src = url;
+      return asset;
+    }
+
     initializeRuntime() {
       const runtimeModel = this._state.runtimeModel;
       const inputValues = this._state.inputValues;
@@ -16249,7 +16344,7 @@ window.STGraphXI18nBundles = {
         canvas.height = Math.max(120, Math.floor(widget.height * this._zoom - 54));
         scene2dCore.drawScene2D?.(
           canvas,
-          playerSceneObjects(widget, this._state.runtimeModel, this.currentDisplayTime()),
+          playerSceneObjects(widget, this._state.runtimeModel, this.currentDisplayTime(), (path) => this.scene2DImageAsset(path)),
           widget,
         );
         body.appendChild(canvas);

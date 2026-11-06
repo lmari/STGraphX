@@ -1114,6 +1114,7 @@ const ui = {
   tooltipHideTimer: null,
   executionPlan: null,
   pendingConfigurationTabFocus: null,
+  loadingModel: false,
   activeChartPairByWidgetId: new Map(),
   sidebarNodeId: null,
   lastNodeActivate: null,
@@ -13343,6 +13344,7 @@ function derivedDirectoryHandleDisplayName(handle) {
 
 function loadGraphFromJsonText(jsonText, sourceName = "", fileHandle = null, directoryHandle = null, preserveSubmodelCache = false) {
   stopTimedExecution(false);
+  ui.loadingModel = true;
   try {
     if (!preserveSubmodelCache) {
       submodelTemplateCache.clear();
@@ -13359,6 +13361,8 @@ function loadGraphFromJsonText(jsonText, sourceName = "", fileHandle = null, dir
     graph.__directoryPath = String(effectiveDirectoryHandle?.path ?? "");
     graph.__readDataCache = Object.create(null);
     currentFileName = sourceName || currentFileName || defaultGraphFilename();
+    ui.loadingModel = false;
+    render();
     history.undo = [];
     history.redo = [];
     updateHistoryButtons();
@@ -13382,6 +13386,7 @@ function loadGraphFromJsonText(jsonText, sourceName = "", fileHandle = null, dir
       });
     });
   } catch (err) {
+    ui.loadingModel = false;
     cancelTransaction();
     setStatus(t("error.load", { message: err.message }));
   }
@@ -13423,6 +13428,10 @@ async function ensureCurrentModelDirectoryHandle() {
 }
 
 async function getModelDirectoryHandleForReadData(model) {
+  return getModelDirectoryHandleForExternalAsset(model);
+}
+
+async function getModelDirectoryHandleForExternalAsset(model) {
   if (model === graph) {
     return ensureCurrentModelDirectoryHandle();
   }
@@ -13430,7 +13439,7 @@ async function getModelDirectoryHandleForReadData(model) {
   if (directoryPath && hasPlatformApi("createDirectoryHandleFromDirectoryPath")) {
     return window.STGraphXPlatform.createDirectoryHandleFromDirectoryPath(directoryPath);
   }
-  throw new Error("readData requires access to the model folder");
+  throw new Error("external file requires access to the model folder");
 }
 
 async function prepareReadDataCacheForModel(model) {
