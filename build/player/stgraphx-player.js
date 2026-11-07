@@ -1,6 +1,6 @@
 /*!
  * STGraphX Embedded Player Bundle
- * Generated: 2026-11-06T11:07:43.689Z
+ * Generated: 2026-11-07T07:53:04.465Z
  */
 
 /* --- i18n-inline.js --- */
@@ -13,7 +13,7 @@
 
 window.STGraphXAppMeta = {
   author: "Luca Mari",
-  releaseDate: "2026.11.05",
+  releaseDate: "2026.11.06",
   license: "MPL-2.0",
   copyright: "Copyright (c) 2026 Luca Mari",
 };
@@ -121,6 +121,7 @@ window.STGraphXI18nBundles = {
     "context.text.delete": "Elimina testo",
     "context.text.edit": "Modifica testo...",
     "context.widget.copy": "Copia contenuto",
+    "context.widget.copyImage": "Copia immagine",
     "context.widget.delete": "Elimina",
     "context.widget.hideTitleBar": "Nascondi barra del titolo",
     "context.widget.minimize": "Minimizza",
@@ -960,6 +961,7 @@ window.STGraphXI18nBundles = {
     "status.widgetChartCreated": "Widget grafico x-y creato.",
     "status.widgetScene2DCreated": "Widget scena 2D creato.",
     "status.widgetCopied": "Contenuto del widget copiato.",
+    "status.widgetImageCopied": "Immagine del widget copiata.",
     "status.widgetCreated": "Widget tabella creato.",
     "status.widgetDeleted": "Widget eliminato.",
     "status.widgetLedCreated": "Widget LED creato.",
@@ -1485,6 +1487,7 @@ window.STGraphXI18nBundles = {
     // Errors
     "error.breakpointInvalid": "Condizione di breakpoint non valida: {reason}",
     "error.clipboardTextCopyFailed": "Impossibile copiare il testo nella clipboard.",
+    "error.widgetImageCopyFailed": "Impossibile copiare l'immagine nella clipboard.",
     "error.csvExportFailed": "Esportazione CSV non riuscita.",
     "error.csvNoData": "Nessun dato di simulazione disponibile da esportare.",
     "error.csvNoOutputs": "Non ci sono variabili marcate come output da esportare.",
@@ -1646,6 +1649,7 @@ window.STGraphXI18nBundles = {
     "context.text.delete": "Delete text",
     "context.text.edit": "Edit text...",
     "context.widget.copy": "Copy content",
+    "context.widget.copyImage": "Copy image",
     "context.widget.delete": "Delete",
     "context.widget.hideTitleBar": "Hide title bar",
     "context.widget.minimize": "Minimize",
@@ -2485,6 +2489,7 @@ window.STGraphXI18nBundles = {
     "status.widgetChartCreated": "x-y chart widget created.",
     "status.widgetScene2DCreated": "2D scene widget created.",
     "status.widgetCopied": "Widget content copied.",
+    "status.widgetImageCopied": "Widget image copied.",
     "status.widgetCreated": "Table widget created.",
     "status.widgetDeleted": "Widget deleted.",
     "status.widgetLedCreated": "LED widget created.",
@@ -3010,6 +3015,7 @@ window.STGraphXI18nBundles = {
     // Errors
     "error.breakpointInvalid": "Invalid breakpoint condition: {reason}",
     "error.clipboardTextCopyFailed": "Unable to copy the text to the clipboard.",
+    "error.widgetImageCopyFailed": "Unable to copy the image to the clipboard.",
     "error.csvExportFailed": "CSV export failed.",
     "error.csvNoData": "No simulation data is available to export.",
     "error.csvNoOutputs": "There are no variables marked as output to export.",

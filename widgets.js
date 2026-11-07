@@ -1729,6 +1729,25 @@ function copyTextToClipboard(text) {
   }
 }
 
+async function copyCanvasImageToClipboard(canvas) {
+  if (!canvas?.toBlob || !navigator.clipboard?.write || typeof ClipboardItem === "undefined") {
+    return false;
+  }
+  let blob = null;
+  try {
+    blob = await new Promise((resolve) => canvas.toBlob(resolve, "image/png"));
+  } catch (_err) {
+    return false;
+  }
+  if (!blob) return false;
+  try {
+    await navigator.clipboard.write([new ClipboardItem({ "image/png": blob })]);
+    return true;
+  } catch (_err) {
+    return false;
+  }
+}
+
 function renderMatrixGrid(body, widget, matrix) {
   const rowCount = matrix.length;
   const colCount = rowCount > 0 ? matrix[0].length : 0;
@@ -4004,6 +4023,8 @@ function addOutputWidgetForNode(node, type) {
     addTableWidget(anchor);
   } else if (type === "xychart") {
     addXYChartWidget(anchor);
+  } else if (type === "scene2d") {
+    addScene2DWidget(anchor);
   } else {
     return false;
   }
@@ -4015,6 +4036,21 @@ function addOutputWidgetForNode(node, type) {
   } else if (type === "xychart") {
     widget.xyPairs[0].ySource = target.name;
     sanitizeXYChartOptions(widget);
+  } else if (type === "scene2d") {
+    widget.objects = [scene2dCore.normalizeObject?.({
+      type: "text",
+      x: "0",
+      y: "0",
+      text: `${target.name}: {{${target.name}}}`,
+      fontSize: 18,
+    }) || {
+      type: "text",
+      x: "0",
+      y: "0",
+      text: `${target.name}: {{${target.name}}}`,
+      fontSize: 18,
+    }];
+    sanitizeScene2DWidgetOptions(widget);
   } else {
     widget.source = target.name;
     if (type === "led") sanitizeLedWidgetOptions(widget);
@@ -4048,6 +4084,7 @@ function openNodeContextMenu(evt, node) {
     ["matrix", "menu.insert.matrixWidget", "status.widgetMatrixCreated"],
     ["table", "menu.insert.tableWidget", "status.widgetCreated"],
     ["xychart", "menu.insert.xyChartWidget", "status.widgetChartCreated"],
+    ["scene2d", "menu.insert.scene2dWidget", "status.widgetScene2DCreated"],
   ].map(([type, labelKey, statusKey]) => ({
     label: t(labelKey),
     action: () => {
@@ -4150,6 +4187,17 @@ function openWidgetContextMenu(evt, widget) {
         setStatusKey(ok ? "status.widgetCopied" : "status.clipboardEmpty");
       },
       disabled: !widgetRenderedText(widget),
+    });
+  }
+  if (widget.type === "xychart" || widget.type === "scene2d") {
+    const canvas = widgetLayer.querySelector(`.value-widget[data-widget-id="${widget.id}"] canvas`);
+    items.push({
+      label: t("context.widget.copyImage"),
+      action: async () => {
+        const ok = await copyCanvasImageToClipboard(canvas);
+        setStatusKey(ok ? "status.widgetImageCopied" : "error.widgetImageCopyFailed");
+      },
+      disabled: !canvas,
     });
   }
   items.push(
