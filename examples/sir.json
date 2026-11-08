@@ -1,55 +1,62 @@
 {
   "version": 1,
-  "modelTitle": "Modello epidemiologico SIR",
+  "modelTitle": "modello SIR",
+  "localFunctions": [],
+  "view": {
+    "zoom": 0.8,
+    "showGrid": true,
+    "highlightNodeEdges": true,
+    "showNodeValues": true,
+    "checkUnits": true,
+    "gridSize": 20,
+    "tooltipDelayMs": 300,
+    "scrollLeft": 0,
+    "scrollTop": 0
+  },
+  "debug": {
+    "watches": [],
+    "breakpointEnabled": false,
+    "breakpointExpression": "",
+    "breakpointMessage": ""
+  },
   "modelProperties": [],
-  "nodeCounter": 15,
-  "edgeCounter": 17,
-  "widgetCounter": 8,
-  "textItemCounter": 8,
+  "unitDefinitions": [],
+  "scenarios": [],
+  "nodeCounter": 26,
+  "edgeCounter": 29,
+  "widgetCounter": 16,
+  "textItemCounter": 9,
+  "presentationGroupCounter": 9,
+  "presentationGroups": [],
+  "dashboard": null,
   "execution": {
     "t0": 0,
     "dt": 0.1,
-    "t1": 100,
+    "timeUnit": "giorno",
+    "t1": 50,
     "delayMs": 1,
+    "renderEverySteps": 1,
     "decimals": 3,
-    "integrator": "euler",
-    "strictDefinitions": false
+    "integrator": "rk4",
+    "strictDefinitions": false,
+    "stopOnRuntimeError": false,
+    "checkRanges": false,
+    "randomSeed": null
   },
   "nodes": [
     {
-      "id": 1,
-      "name": "beta",
-      "output": false,
-      "type": "parameter",
-      "x": 140,
-      "y": 140,
-      "width": 110,
-      "height": 70,
-      "fillColor": "",
-      "strokeColor": "",
-      "properties": [
-        {
-          "key": "note formula",
-          "value": ""
-        },
-        {
-          "key": "descrizione",
-          "value": "Tasso di contagio per contatto tra suscettibili e infetti"
-        }
-      ],
-      "valueExpression": "0.3"
-    },
-    {
       "id": 2,
-      "name": "gamma",
+      "name": "a",
       "output": false,
+      "global": false,
       "type": "parameter",
-      "x": 140,
-      "y": 300,
-      "width": 110,
+      "x": 280,
+      "y": 80,
+      "width": 120,
       "height": 70,
       "fillColor": "",
       "strokeColor": "",
+      "unit": "individui^-1*giorno^-1",
       "properties": [
         {
           "key": "note formula",
@@ -57,22 +64,24 @@
         },
         {
           "key": "descrizione",
-          "value": "Tasso di guarigione o rimozione degli infetti"
+          "value": "tasso di infezione"
         }
       ],
-      "valueExpression": "0.1"
+      "valueExpression": "0.001"
     },
     {
       "id": 3,
-      "name": "N",
-      "output": false,
-      "type": "parameter",
-      "x": 140,
-      "y": 220,
-      "width": 110,
+      "name": "S",
+      "output": true,
+      "global": false,
+      "type": "state",
+      "x": 160,
+      "y": 0,
+      "width": 120,
       "height": 70,
       "fillColor": "",
       "strokeColor": "",
+      "unit": "",
       "properties": [
         {
           "key": "note formula",
@@ -80,46 +89,25 @@
         },
         {
           "key": "descrizione",
-          "value": "Popolazione totale del sistema"
+          "value": "numero di suscettibili (sani infettabili)"
         }
       ],
-      "valueExpression": "1000"
-    },
-    {
-      "id": 4,
-      "name": "S",
-      "output": true,
-      "type": "state",
-      "x": 640,
-      "y": 160,
-      "width": 130,
-      "height": 76,
-      "fillColor": "",
-      "strokeColor": "",
-      "properties": [
-        {
-          "key": "note formula",
-          "value": ""
-        },
-        {
-          "key": "descrizione",
-          "value": "Numero di suscettibili"
-        }
-      ],
-      "stateTransition": "integral(-incidence)",
-      "initialState": "999"
+      "stateTransition": "integral(-a*this*I)",
+      "initialState": "S0"
     },
     {
       "id": 5,
       "name": "I",
       "output": true,
+      "global": false,
       "type": "state",
-      "x": 640,
-      "y": 260,
-      "width": 130,
-      "height": 76,
+      "x": 380,
+      "y": 0,
+      "width": 120,
+      "height": 70,
       "fillColor": "",
       "strokeColor": "",
+      "unit": "",
       "properties": [
         {
           "key": "note formula",
@@ -127,23 +115,25 @@
         },
         {
           "key": "descrizione",
-          "value": "Numero di infetti"
+          "value": "numero di infetti"
         }
       ],
-      "stateTransition": "integral(incidence - recovery)",
-      "initialState": "1"
+      "stateTransition": "integral(a*this*S-b*this)",
+      "initialState": "I0"
     },
     {
-      "id": 6,
+      "id": 15,
       "name": "R",
       "output": true,
+      "global": false,
       "type": "state",
-      "x": 640,
-      "y": 360,
-      "width": 130,
-      "height": 76,
+      "x": 600,
+      "y": 0,
+      "width": 120,
+      "height": 70,
       "fillColor": "",
       "strokeColor": "",
+      "unit": "",
       "properties": [
         {
           "key": "note formula",
@@ -151,23 +141,25 @@
         },
         {
           "key": "descrizione",
-          "value": "Numero di rimossi o guariti"
+          "value": "numero di recuperati (guariti non più infettabili)"
         }
       ],
-      "stateTransition": "integral(recovery)",
-      "initialState": "0"
+      "stateTransition": "integral(b*I)",
+      "initialState": "R0"
     },
     {
-      "id": 7,
-      "name": "incidence",
+      "id": 16,
+      "name": "b",
       "output": false,
-      "type": "algebraic",
-      "x": 360,
-      "y": 200,
-      "width": 150,
-      "height": 76,
+      "global": false,
+      "type": "parameter",
+      "x": 480,
+      "y": 80,
+      "width": 120,
+      "height": 70,
       "fillColor": "",
       "strokeColor": "",
+      "unit": "giorno^-1",
       "properties": [
         {
           "key": "note formula",
@@ -175,23 +167,24 @@
         },
         {
           "key": "descrizione",
-          "value": "Nuovi contagi per unità di tempo"
+          "value": "tasso di guarigione"
         }
       ],
-      "input": false,
-      "valueExpression": "beta * S * I / N"
+      "valueExpression": "0.1"
     },
     {
-      "id": 8,
-      "name": "recovery",
+      "id": 17,
+      "name": "S0",
       "output": false,
-      "type": "algebraic",
-      "x": 360,
-      "y": 300,
-      "width": 150,
-      "height": 76,
+      "global": false,
+      "type": "parameter",
+      "x": 160,
+      "y": -100,
+      "width": 120,
+      "height": 70,
       "fillColor": "",
       "strokeColor": "",
+      "unit": "individui",
       "properties": [
         {
           "key": "note formula",
@@ -199,110 +192,190 @@
         },
         {
           "key": "descrizione",
-          "value": "Nuove guarigioni per unità di tempo"
+          "value": "numero iniziale di individui suscettibili"
         }
       ],
-      "input": false,
-      "valueExpression": "gamma * I"
+      "valueExpression": "999"
+    },
+    {
+      "id": 18,
+      "name": "I0",
+      "output": false,
+      "global": false,
+      "type": "parameter",
+      "x": 380,
+      "y": -100,
+      "width": 120,
+      "height": 70,
+      "fillColor": "",
+      "strokeColor": "",
+      "unit": "individui",
+      "properties": [
+        {
+          "key": "note formula",
+          "value": ""
+        },
+        {
+          "key": "descrizione",
+          "value": "numero iniziale di individui infetti"
+        }
+      ],
+      "valueExpression": "1"
+    },
+    {
+      "id": 19,
+      "name": "R0",
+      "output": false,
+      "global": false,
+      "type": "parameter",
+      "x": 600,
+      "y": -100,
+      "width": 120,
+      "height": 70,
+      "fillColor": "",
+      "strokeColor": "",
+      "unit": "individui",
+      "properties": [
+        {
+          "key": "note formula",
+          "value": ""
+        },
+        {
+          "key": "descrizione",
+          "value": "numero iniziale di individui recuperati"
+        }
+      ],
+      "valueExpression": "0"
     }
   ],
   "edges": [
     {
-      "id": 1,
-      "from": 1,
-      "to": 7,
-      "controlPoints": []
-    },
-    {
       "id": 2,
-      "from": 3,
-      "to": 7,
+      "from": 2,
+      "to": 3,
+      "color": "",
+      "influence": "none",
       "controlPoints": []
     },
     {
       "id": 3,
-      "from": 4,
-      "to": 7,
-      "controlPoints": []
-    },
-    {
-      "id": 4,
-      "from": 5,
-      "to": 7,
-      "controlPoints": []
-    },
-    {
-      "id": 5,
-      "from": 2,
-      "to": 8,
-      "controlPoints": []
-    },
-    {
-      "id": 6,
-      "from": 5,
-      "to": 8,
-      "controlPoints": []
-    },
-    {
-      "id": 7,
-      "from": 7,
-      "to": 4,
+      "from": 3,
+      "to": 5,
+      "color": "",
+      "influence": "none",
       "controlPoints": [
         {
-          "x": 500,
-          "y": 180
+          "x": 260,
+          "y": -20
         }
       ]
     },
     {
-      "id": 8,
-      "from": 7,
+      "id": 4,
+      "from": 5,
+      "to": 3,
+      "color": "",
+      "influence": "none",
+      "controlPoints": [
+        {
+          "x": 260,
+          "y": 20
+        }
+      ]
+    },
+    {
+      "id": 15,
+      "from": 2,
       "to": 5,
+      "color": "",
+      "influence": "none",
       "controlPoints": []
     },
     {
-      "id": 9,
-      "from": 8,
-      "to": 5,
+      "id": 17,
+      "from": 5,
+      "to": 15,
+      "color": "",
+      "influence": "none",
       "controlPoints": []
     },
     {
-      "id": 10,
-      "from": 8,
-      "to": 6,
+      "id": 18,
+      "from": 16,
+      "to": 15,
+      "color": "",
+      "influence": "none",
+      "controlPoints": []
+    },
+    {
+      "id": 19,
+      "from": 16,
+      "to": 5,
+      "color": "",
+      "influence": "none",
+      "controlPoints": []
+    },
+    {
+      "id": 20,
+      "from": 17,
+      "to": 3,
+      "color": "",
+      "influence": "none",
+      "controlPoints": []
+    },
+    {
+      "id": 21,
+      "from": 18,
+      "to": 5,
+      "color": "",
+      "influence": "none",
+      "controlPoints": []
+    },
+    {
+      "id": 23,
+      "from": 19,
+      "to": 15,
+      "color": "",
+      "influence": "none",
       "controlPoints": []
     }
   ],
-  "textItems": [
-    {
-      "id": 2,
-      "x": 120,
-      "y": 20,
-      "width": 540,
-      "height": 60,
-      "fillColor": "#eef6ff",
-      "strokeColor": "#c44b61",
-      "html": "<h1>Un modello epidemiologico SIR</h1>"
-    }
-  ],
+  "notes": {
+    "markdown": ""
+  },
+  "textItems": [],
   "widgets": [
     {
       "id": 1,
       "type": "xychart",
-      "customTitle": "Dinamica SIR",
-      "x": 733.6090141107386,
-      "y": 12.28931901064934,
-      "width": 626.4453125,
-      "height": 439.9609375,
+      "customTitle": "modello SIR",
+      "x": 100,
+      "y": 160,
+      "width": 591.5340724496425,
+      "height": 373.02428525016245,
+      "dashboardPageId": null,
       "minimized": false,
+      "showTitleBar": true,
+      "fontSize": 13,
       "outputOnly": false,
       "showHistory": false,
-      "xMin": 0,
-      "xMax": 0,
-      "yMin": 0,
-      "yMax": 1000,
+      "expandNonScalarValues": false,
+      "tableTextAlign": "left",
+      "tableDecimalDigits": 0,
+      "tableColumnFormats": {},
+      "xMin": "auto",
+      "xMax": "auto",
+      "yMin": "auto",
+      "yMax": "auto",
+      "xGridStep": 10,
+      "yGridStep": 250,
+      "xAxisLabel": "",
+      "yAxisLabel": "",
       "showGrid": true,
+      "showAxes": true,
+      "equalScale": true,
       "legendPosition": "top-right",
+      "objects": [],
       "source": "",
       "showNumericValues": true,
       "showIndices": true,
@@ -313,10 +386,19 @@
       "displayRows": null,
       "displayCols": null,
       "colorScheme": "blue",
+      "viewMode": "grid",
+      "surfaceStyle": "solid",
+      "surfaceAzimuth": 45,
+      "surfaceElevation": 32,
+      "surfaceHeightScale": 1,
       "min": 0,
       "max": 100,
       "step": 1,
       "value": 0,
+      "falseLabel": "",
+      "trueLabel": "",
+      "options": [],
+      "mappings": [],
       "columns": [],
       "xyPairs": [
         {
@@ -325,9 +407,16 @@
           "showTimeSeries": true,
           "showInstantProfile": false,
           "color": "#0e7ac4",
+          "pointColor": "#0e7ac4",
           "showLine": true,
-          "lineWidth": 3,
+          "lineWidth": 2.2,
           "lineStyle": "solid",
+          "barMode": "none",
+          "showBars": false,
+          "barColor": "#0e7ac4",
+          "barWidth": 2.2,
+          "showArea": false,
+          "areaColor": "#0e7ac4",
           "pointMode": "none",
           "pointSize": 2.4
         },
@@ -336,10 +425,17 @@
           "ySource": "I",
           "showTimeSeries": true,
           "showInstantProfile": false,
-          "color": "#c0392b",
+          "color": "#e67e22",
+          "pointColor": "#e67e22",
           "showLine": true,
-          "lineWidth": 3,
+          "lineWidth": 2.2,
           "lineStyle": "solid",
+          "barMode": "none",
+          "showBars": false,
+          "barColor": "#e67e22",
+          "barWidth": 2.2,
+          "showArea": false,
+          "areaColor": "#e67e22",
           "pointMode": "none",
           "pointSize": 2.4
         },
@@ -349,9 +445,16 @@
           "showTimeSeries": true,
           "showInstantProfile": false,
           "color": "#27ae60",
+          "pointColor": "#27ae60",
           "showLine": true,
-          "lineWidth": 3,
+          "lineWidth": 2.2,
           "lineStyle": "solid",
+          "barMode": "none",
+          "showBars": false,
+          "barColor": "#27ae60",
+          "barWidth": 2.2,
+          "showArea": false,
+          "areaColor": "#27ae60",
           "pointMode": "none",
           "pointSize": 2.4
         }

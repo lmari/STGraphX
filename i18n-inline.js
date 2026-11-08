@@ -7,7 +7,7 @@
 
 window.STGraphXAppMeta = {
   author: "Luca Mari",
-  releaseDate: "2026.11.07",
+  releaseDate: "2026.11.08",
   license: "MPL-2.0",
   copyright: "Copyright (c) 2026 Luca Mari",
 };
@@ -780,7 +780,7 @@ window.STGraphXI18nBundles = {
     "widget.outputOnly": "Solo variabili di output",
     "widget.pointColor": "Colore punti",
     "widget.pointSize": "Dim. punto",
-    "widget.pointSizeShort": "Dimensione",
+    "widget.pointSizeShort": "Dim",
     "widget.removeColumn": "Rimuovi colonna",
     "widget.removePair": "Rimuovi coppia",
     "widget.restore": "Ripristina",
@@ -1297,6 +1297,8 @@ window.STGraphXI18nBundles = {
     "tooltip.widget.showGrid": "Mostra le linee della griglia nel grafico.",
     "tooltip.widget.showAxes": "Mostra gli assi, le tacche e le etichette numeriche del grafico.",
     "tooltip.widget.showBars": "Disegna una barra verticale da ogni punto della serie all'asse X.",
+    "tooltip.widget.showLine": "Mostra la linea che collega i punti della serie.",
+    "tooltip.widget.showPoints": "Mostra i punti della serie.",
     "tooltip.widget.showHistory": "Conserva una riga per ogni istante dell'esecuzione.",
     "tooltip.widget.showInstantProfile": "Traccia, a ogni istante, il profilo dei valori non scalari della serie selezionata.",
     "tooltip.widget.showTimeSeries": "Accumula i valori della serie nel tempo durante l'esecuzione.",
@@ -2825,6 +2827,8 @@ window.STGraphXI18nBundles = {
     "tooltip.widget.showGrid": "Shows grid lines in the chart.",
     "tooltip.widget.showAxes": "Shows chart axes, ticks, and numeric labels.",
     "tooltip.widget.showBars": "Draws a vertical bar from every series point to the X axis.",
+    "tooltip.widget.showLine": "Shows the line joining the series points.",
+    "tooltip.widget.showPoints": "Shows the series points.",
     "tooltip.widget.showHistory": "Keeps one row for every execution instant.",
     "tooltip.widget.showInstantProfile": "Draws, at each instant, the profile of the selected series non-scalar values.",
     "tooltip.widget.showTimeSeries": "Accumulates the series values over time during execution.",

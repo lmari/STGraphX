@@ -687,10 +687,23 @@ const modelLoadingHelpers = globalThis.STGraphXModelLoading?.createModelLoadingH
     saveActiveWorkspaceTabState();
     closeDocumentTransientUi();
     const previousActiveTabId = workspace.activeTabId;
+    const activeTab = currentWorkspaceTab();
     workspace.activeTabId = null;
-    return { previousActiveTabId };
+    return {
+      previousActiveTabId,
+      replaceInitialPlaceholder: isPristineInitialWorkspaceTab(activeTab),
+    };
   },
-  afterOpenInNewTab() {
+  afterOpenInNewTab(checkpoint) {
+    if (checkpoint?.replaceInitialPlaceholder && checkpoint.previousActiveTabId != null) {
+      const placeholderTab = getWorkspaceTabById(checkpoint.previousActiveTabId);
+      if (placeholderTab) {
+        placeholderTab.state = captureWorkspaceTabState();
+        workspace.activeTabId = placeholderTab.id;
+        refreshWorkspaceTabBar();
+        return;
+      }
+    }
     createWorkspaceTabFromCurrentState({ activate: true });
     refreshWorkspaceTabBar();
   },
@@ -7158,6 +7171,29 @@ function workspaceContextHasUnsavedChanges(context) {
   return workspaceTabsCore.contextHasUnsavedChanges(context);
 }
 
+function isPristineInitialWorkspaceTab(tab) {
+  const context = tab?.state?.context;
+  const data = context?.data;
+  if (!context || !data || workspaceContextHasUnsavedChanges(context)) {
+    return false;
+  }
+  if (context.currentFileHandle || context.currentFileName || context.currentModelDirectoryHandle) {
+    return false;
+  }
+  return !String(data.modelTitle ?? "").trim()
+    && !String(data.notes?.markdown ?? "").trim()
+    && !data.nodes?.length
+    && !data.edges?.length
+    && !data.widgets?.length
+    && !data.textItems?.length
+    && !data.localFunctions?.length
+    && !data.modelProperties?.length
+    && !data.unitDefinitions?.length
+    && !data.scenarios?.length
+    && !data.presentationGroups?.length
+    && !data.dashboard;
+}
+
 function cloneRuntimeNodeState(node) {
   return workspaceRuntimeStateHelpers.cloneRuntimeNodeState(node);
 }
@@ -7491,7 +7527,12 @@ function updateFileStatusLabel(dirty = dirtySinceLastSave) {
   }
   const activeTab = currentWorkspaceTab();
   if (activeTab?.state?.context) {
+    // Keep the file association in the tab as well as in the active globals.
+    // Otherwise returning to a tab after Save restores a stale null handle
+    // and the web shell falls back to downloading a suffixed filename.
+    activeTab.state.context.currentFileHandle = currentFileHandle;
     activeTab.state.context.currentFileName = currentFileName;
+    activeTab.state.context.currentModelDirectoryHandle = currentModelDirectoryHandle;
     activeTab.state.context.lastSavedSnapshot = lastSavedSnapshot;
     activeTab.state.context.dirtySinceLastSave = dirty;
     activeTab.state.context.data = exportGraphData();
@@ -13783,6 +13824,11 @@ async function saveGraphJson(forceSaveAs = false) {
       }));
     },
   });
+  if (result.ok) {
+    // saveJsonModel updates the live document. Persist the complete file
+    // identity in its workspace tab before another tab can be activated.
+    saveActiveWorkspaceTabState();
+  }
   return result.ok;
 }
 

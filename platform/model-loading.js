@@ -77,6 +77,14 @@
       ? options.onOpenPreparedFailure
       : () => {};
 
+    function isWritableFileHandle(entry) {
+      return Boolean(
+        entry
+        && typeof entry.getFile === "function"
+        && typeof entry.createWritable === "function"
+      );
+    }
+
     async function openPreparedJsonEntry(rootEntry) {
       if (!rootEntry) {
         return false;
@@ -135,7 +143,31 @@
         let rootEntry = null;
         const handle = await resolveRecentModelHandle(entry);
         const directoryHandle = await resolveRecentModelDirectoryHandle(entry);
-        if (handle) {
+        // Files obtained through <input type="file"> and saved snapshots can
+        // be reopened, but cannot overwrite their source file. When the
+        // native picker is available, relink them first so a subsequent Save
+        // writes to the selected file rather than creating a browser download.
+        let relinked = false;
+        if (!isWritableFileHandle(handle) && supportsOpenFilePicker()) {
+          try {
+            const handles = await showOpenFilePickerCompat({
+              multiple: true,
+              startIn: directoryHandle || undefined,
+              types: [{
+                description: "JSON",
+                accept: { "application/json": [".json"] },
+              }],
+            });
+            if (handles && handles.length > 0) {
+              rootEntry = await prepareSelectedJsonEntries(handles);
+              relinked = Boolean(rootEntry);
+            }
+          } catch (_err) {
+            // The legacy reference or snapshot below is still usable for
+            // reading when the user declines to relink the writable handle.
+          }
+        }
+        if (!rootEntry && handle) {
           try {
             rootEntry = await prepareSelectedJsonEntries([handle]);
             if (rootEntry && directoryHandle) {
@@ -158,10 +190,10 @@
             }
           }
         }
-        let relinked = false;
         if (!rootEntry && supportsOpenFilePicker()) {
           const handles = await showOpenFilePickerCompat({
             multiple: true,
+            startIn: directoryHandle || undefined,
             types: [{
               description: "JSON",
               accept: { "application/json": [".json"] },

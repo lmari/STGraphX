@@ -2023,6 +2023,45 @@ input.inferred-unit[readonly] { color: #6d7782; background: #f4f6f8; }
   align-items: center;
 }
 
+.chart-pair-visibility {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 10px;
+  align-items: center;
+}
+
+.chart-pair-style-options {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 58px 66px;
+  gap: 4px;
+  align-items: end;
+  padding: 4px 0 1px;
+  border-top: 1px solid #e5edf3;
+}
+
+.chart-pair-style-options .compact-field {
+  min-width: 0;
+}
+
+.chart-pair-style-options .chart-pair-color-field {
+  min-width: 0;
+}
+
+.chart-pair-style-options input[type="number"] {
+  min-width: 48px;
+}
+
+.chart-pair-style-options input[type="color"] {
+  width: 100%;
+  height: 27px;
+  margin: 0;
+  padding: 2px;
+}
+
+.chart-pair-style-options-single {
+  grid-template-columns: 66px;
+}
+
 .chart-pair-style-row {
   display: grid;
   gap: 4px;
