@@ -1,22 +1,41 @@
 # STGraphX: Readme tecnico
 
-versione 31 agosto 2026
+versione 9 novembre 2026
 
 Copyright (c) 2026 Luca Mari
+
+## Responsabilità dei documenti
+
+Questo documento descrive i componenti dell'applicazione e i loro confini.
+Per i dettagli complementari:
+
+- [AGENTS.md](AGENTS.md): norme di sviluppo, flusso Git e controlli richiesti;
+- [README-HEADLESS.md](README-HEADLESS.md): API JavaScript senza interfaccia;
+- [README-PLAYER.md](README-PLAYER.md): player incorporabile;
+- [rust/README.md](rust/README.md): capacità e limiti correnti del motore Rust;
+- [tests/](tests/) e [fixture Rust](rust/stgraphx-engine/tests/fixtures/):
+  comportamento atteso e verifiche di parità.
+
+Le attività pianificate sono tracciate nelle issue, non in questa panoramica.
 
 ## Architettura
 
 STGraphX mantiene un unico codice applicativo per tre shell:
 
 - web, per accesso da browser via `http:` (e con qualche limitazione anche `file:`);
-- desktop, mediante `Electron`.
+- desktop, mediante `Electron`;
 - desktop, mediante `Tauri`.
 
-L'obiettivo è evitare duplicazione del codice applicativo e isolare le differenze di piattaforma, relative solo al layer di accesso a file e cartelle.
+L'obiettivo è evitare duplicazione del codice applicativo e isolare le differenze di piattaforma, come accesso a file e cartelle, clipboard e dialoghi nativi, nel layer di piattaforma.
+
+Il motore JavaScript è il percorso predefinito e il riferimento semantico.
+Il motore Rust è un'alternativa sperimentale, richiamata dal frontend tramite
+WebAssembly: scegliere Electron o Tauri non cambia il motore predefinito.
+La shell Tauri in `src-tauri/` e il motore in `rust/` sono progetti distinti.
 
 ## Struttura del progetto
 
-Frontend condiviso:
+Principali moduli del frontend condiviso (non un inventario completo):
 
 - `index.html`
 - `styles.css`
@@ -39,6 +58,17 @@ Frontend condiviso:
 - `semantic.js`
 - `graph-functions.js`
 - `i18n-inline.js`
+- `runtime-shared.js`, `runtime-core.js`, `runtime-loader.js`
+- `runtime-session.js`, `runtime-controller.js`
+- `headless-runtime.js`, `player-shell.js`, `player-runtime-loader.js`
+- `rust-engine-adapter.js`
+
+Motore Rust e bridge:
+
+- `rust/stgraphx-engine/`
+- `rust/stgraphx-cli/`
+- `rust/stgraphx-wasm/`
+- `rust-engine-wasm/` (artefatti generati)
 
 Shell Electron:
 
@@ -226,12 +256,68 @@ Espone in particolare:
   - `reduce(...)`
   - `append(...)`
   - forme condizionali di `count(...)` e `indicesWhere(...)`
-- runtime dei modelli e delle transizioni di stato
+- piani di valutazione, dipendenze e semantica delle transizioni di stato
 
 In pratica:
 
 - `graph-functions.js` definisce cosa il linguaggio sa fare
 - `semantic.js` definisce come il linguaggio viene interpretato
+
+### Runtime JavaScript, headless e player
+
+Il runtime è condiviso dall'editor e dalle modalità senza editor:
+
+- `runtime-shared.js`: normalizzazione e helper comuni;
+- `runtime-core.js`: costruzione dei modelli runtime, valutazione, integrazione
+  temporale e gestione dell'esecuzione dei sottomodelli tramite `semantic.js`;
+- `runtime-loader.js`: parsing JSON e preparazione delle risorse `readData`;
+- `runtime-session.js`: ciclo di vita del modello, inizializzazione e promozione
+  degli stati, con hook per l'integrazione;
+- `runtime-controller.js`: comandi di esecuzione completa, manuale e temporizzata.
+
+`app.js` collega questi componenti alla UI, al debugger e ai widget.
+`headless-runtime.js` li rende utilizzabili senza DOM dell'editor, anche da
+Node.js. `player-shell.js` offre il custom element `stgraphx-player`, caricato
+con i moduli necessari da `player-runtime-loader.js`; il rendering dei widget
+nel player resta distinto da quello dell'editor, con componenti condivisi come
+`scene2d-core.js`. Le API sono documentate nei README dedicati collegati sopra.
+
+### Motore Rust e confine WebAssembly
+
+Il workspace [rust/Cargo.toml](rust/Cargo.toml) separa tre responsabilità:
+
+- `stgraphx-engine`: libreria pura, indipendente da DOM, Node.js, shell desktop
+  e API del sistema operativo. Separa il documento JSON dal modello compilato
+  e dai risultati di valutazione e simulazione;
+- `stgraphx-cli`: eseguibile nativo che legge un file JSON, invoca il core e
+  stampa i valori finali (e il tempo finale per i modelli con stato);
+- `stgraphx-wasm`: binding dello stesso core con gli export `engineInfoJson`
+  ed `executeModelJson`.
+
+Il comando esplicito `Esegui → Completo con motore Rust` in `app.js` prepara
+un documento completo e lo passa a `rust-engine-adapter.js`. L'adattatore carica
+il modulo WASM al primo uso, verifica il contratto dei risultati e fornisce
+un seme temporaneo quando manca quello del modello, senza alterare il documento
+aperto. In Electron i byte WASM sono letti attraverso il preload.
+
+`executeModelJson` compila ed esegue l'intero modello in una chiamata e restituisce
+un payload JSON con tutti gli snapshot (tempo e valori per nome di nodo).
+La UI usa questi risultati per aggiornare valori, tabelle, grafici e storico CSV.
+Non ci sono chiamate WASM per singolo nodo né esecuzioni miste JS/Rust dello
+stesso modello. La chiamata di calcolo è sincrona; questo percorso non offre
+avanzamento manuale o temporizzato e rifiuta i breakpoint attivi. Gli errori
+sono riportati all'utente senza ripiegare automaticamente sul motore JavaScript.
+
+Rust implementa un sottoinsieme della semantica JavaScript. Il dettaglio delle
+capacità, delle limitazioni e dei test appartiene a [rust/README.md](rust/README.md);
+l'ABM resta nel percorso JavaScript. I test `tests/rust-engine-reference.test.js`
+e `tests/rust-engine-wasm.test.mjs` verificano i risultati delle fixture condivise,
+mentre `tests/rust-engine-adapter.test.js` verifica l'adattatore.
+
+`npm run build:rust-engine:wasm` genera il bridge in `rust-engine-wasm/` con
+`wasm-pack`. Questi artefatti sono distribuiti con il frontend web e inclusi
+nel packaging Electron e Tauri; non vanno modificati manualmente. La shell Tauri
+non esegue il modello tramite il proprio backend Rust: usa lo stesso bridge WASM.
 
 ### Layer di piattaforma
 
@@ -257,11 +343,9 @@ Questi wrapper preferiscono:
 
 ### Main process
 
-`electron/main.js` crea la finestra e gestisce tre canali IPC:
-
-- `stgraphx:show-open-dialog`
-- `stgraphx:show-save-dialog`
-- `stgraphx:show-directory-dialog`
+`electron/main.js` crea la finestra e gestisce i canali IPC per selettori di file
+e cartelle, lettura e scrittura di file, clipboard, conferme native, apertura
+di URL esterni e lettura del binario WASM del motore Rust.
 
 ### Preload
 
@@ -270,6 +354,9 @@ Questi wrapper preferiscono:
 - `window.STGraphXPlatform.showOpenFilePicker(...)`
 - `window.STGraphXPlatform.showSaveFilePicker(...)`
 - `window.STGraphXPlatform.showDirectoryPicker(...)`
+
+Il preload espone inoltre `STGraphXElectronFiles` per i percorsi nativi,
+l'accesso ai file e il caricamento del binario WASM.
 
 Le API esposte imitano il più possibile gli handle del File System Access API del browser, così il renderer non deve conoscere la piattaforma concreta.
 
@@ -294,7 +381,7 @@ Il bridge desktop non definisce più direttamente gli handle e le API di piattaf
 In questo modo:
 
 - `electron/preload.js` resta un adapter sottile;
-- il contratto `STGraphXPlatform` è versionato e dichiara identità della shell e capacità disponibili, così un adapter Tauri può offrire gli stessi handle e selettori senza modificare il renderer;
+- il contratto `STGraphXPlatform` è versionato e dichiara identità della shell e capacità disponibili, e l’adapter Tauri offre gli stessi handle e selettori senza modificare il renderer;
 - gli handle file/cartella restano riusabili;
 - gli helper di nomi file, download e derivazione delle cartelle modello non restano più dispersi dentro `app.js`;
 - la preparazione delle entry JSON e la scelta degli handle di salvataggio non restano più incorporate direttamente nella shell editor;
@@ -304,7 +391,7 @@ In questo modo:
 - la risoluzione dei file dei sottomodelli e il caricamento dei relativi template/interfacce non restano più dispersi nella shell editor;
 - la coordinazione UI dei sottomodelli, inclusi preload, refresh delle interfacce e apertura nel modello corrente o in un nuovo tab, non resta più mescolata al renderer principale;
 - la gestione dei modelli recenti è isolata dalla UI e riusabile tra shell diverse;
-- l'app è preparata a future shell desktop alternative, per esempio Tauri, senza toccare la logica del renderer.
+- Electron e Tauri condividono il renderer attraverso lo stesso contratto di piattaforma.
 
 ### Shell Tauri
 
@@ -375,19 +462,6 @@ npm run start:desktop -- --lang=it
 
 Se non passi `--lang`, la shell Electron prova a usare la lingua del sistema operativo.
 
-## Pagina esempi
-
-La gestione della finestra `Help -> Modelli di esempio...` è mantenuta nella cartella `examples/`.
-
-File principali:
-
-- `examples/examples-catalog.json`
-- `examples/examples-catalog.template.json`
-- `examples/examples-help.css`
-- `examples/README-EXAMPLES.md`
-
-Il renderer carica dinamicamente catalogo e CSS, così contenuti e layout della pagina esempi possono essere mantenuti localmente in quella cartella.
-
 5. Genera una build unpacked di prova:
 
 ```bash
@@ -425,14 +499,10 @@ A seconda del sistema operativo, `electron-builder` produrrà file diversi. Il p
 - Linux: `STGraphX260909.AppImage` e `STGraphX260909.tar.gz`
 - macOS: `STGraphX260909.dmg` e `STGraphX260909.zip`
 
-### Risorse opzionali ma consigliate
+### Risorse di packaging
 
-La cartella `build/` è predisposta per contenere risorse di packaging, in particolare:
-
-- icone applicative
-- eventuali immagini usate dagli installer
-
-Se non inserisci icone personalizzate, il packaging funziona comunque, ma userà i default di Electron o di `electron-builder`.
+`package.json` configura le icone applicative presenti nella radice (`icon.png`
+e `icon.ico`) e usa `build/` come cartella delle risorse di packaging.
 
 ### Nota sui target cross-platform
 
@@ -448,14 +518,18 @@ Output previsto:
 
 - cartella `dist/`
 
-### Estensioni possibili
+## Pagina esempi
 
-Passi successivi plausibili:
+La gestione della finestra `Help -> Modelli di esempio...` è mantenuta nella cartella `examples/`.
 
-1. icone dedicate per Windows/macOS/Linux
-2. packaging firmato
-3. eventuale layer di persistenza più esplicito per preferenze applicative
-4. eventuale toolbar o splash specifici per la shell desktop
+File principali:
+
+- `examples/examples-catalog.json`
+- `examples/examples-catalog.template.json`
+- `examples/examples-help.css`
+- `examples/README-EXAMPLES.md`
+
+Il renderer carica dinamicamente catalogo e CSS, così contenuti e layout della pagina esempi possono essere mantenuti localmente in quella cartella.
 
 ## Avvio
 
