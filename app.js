@@ -221,6 +221,7 @@ const modelNotesInsertStructureBtn = document.getElementById("modelNotesInsertSt
 const widgetConfig = document.getElementById("widgetConfig");
 const contextMenu = document.getElementById("contextMenu");
 const canvasContent = document.getElementById("canvasContent");
+const canvasTextLayer = document.getElementById("canvasTextLayer");
 const widgetLayer = document.getElementById("widgetLayer");
 const expressionEditorModal = document.getElementById("expressionEditorModal");
 const expressionEditorTitle = document.getElementById("expressionEditorTitle");
@@ -9068,6 +9069,7 @@ function applyCanvasVisibility() {
   marqueeLayer.style.display = ui.showGraph ? "" : "none";
   widgetLayer.style.display = ui.showWidgets ? "" : "none";
   textLayer.style.display = ui.showWidgets ? "" : "none";
+  if (canvasTextLayer) canvasTextLayer.style.display = ui.showWidgets ? "" : "none";
   const graphLabel = ui.showGraph ? t("view.btn.hideGraph") : t("view.btn.showGraph");
   const widgetsLabel = ui.showWidgets ? t("view.btn.hideWidgets") : t("view.btn.showWidgets");
   if (toggleGraphBtn) {
@@ -11859,6 +11861,7 @@ function render(options = {}) {
   edgesLayer.innerHTML = "";
   nodesLayer.innerHTML = "";
   textLayer.innerHTML = "";
+  canvasTextLayer?.replaceChildren();
   controlsLayer.innerHTML = "";
   previewLayer.innerHTML = "";
   marqueeLayer.innerHTML = "";
@@ -12834,26 +12837,29 @@ function render(options = {}) {
     frame.setAttribute("rx", "6");
     frame.setAttribute("ry", "6");
 
-    const foreignObject = document.createElementNS(SVG_NS, "foreignObject");
-    foreignObject.setAttribute("x", "0");
-    foreignObject.setAttribute("y", "0");
-    foreignObject.setAttribute("width", String(item.width));
-    foreignObject.setAttribute("height", String(item.height));
-    foreignObject.classList.add("canvas-text-fo");
-    // Safari requires an explicit XHTML child in an SVG foreignObject.
-    const div = document.createElementNS(XHTML_NS, "div");
-    div.setAttribute("xmlns", XHTML_NS);
-    div.className = "canvas-text-content";
-    div.innerHTML = canvasTextDisplayHtml(item);
-    div.addEventListener("dblclick", (evt) => {
-      evt.preventDefault();
-      evt.stopPropagation();
-      if (!(ui.selected?.type === "text" && ui.selected.id === item.id)) {
-        selectTextItem(item.id);
-      }
-      openTextEditor();
-    });
-    foreignObject.appendChild(div);
+    let foreignObject = null;
+    if (!usesSafariCanvasTextOverlay()) {
+      foreignObject = document.createElementNS(SVG_NS, "foreignObject");
+      foreignObject.setAttribute("x", "0");
+      foreignObject.setAttribute("y", "0");
+      foreignObject.setAttribute("width", String(item.width));
+      foreignObject.setAttribute("height", String(item.height));
+      foreignObject.classList.add("canvas-text-fo");
+      // Safari requires an explicit XHTML child in an SVG foreignObject.
+      const div = document.createElementNS(XHTML_NS, "div");
+      div.setAttribute("xmlns", XHTML_NS);
+      div.className = "canvas-text-content";
+      div.innerHTML = canvasTextDisplayHtml(item);
+      div.addEventListener("dblclick", (evt) => {
+        evt.preventDefault();
+        evt.stopPropagation();
+        if (!(ui.selected?.type === "text" && ui.selected.id === item.id)) {
+          selectTextItem(item.id);
+        }
+        openTextEditor();
+      });
+      foreignObject.appendChild(div);
+    }
 
     const handle = document.createElementNS(SVG_NS, "circle");
     handle.classList.add("resize-handle");
@@ -12923,7 +12929,7 @@ function render(options = {}) {
     });
 
     g.appendChild(frame);
-    g.appendChild(foreignObject);
+    if (foreignObject) g.appendChild(foreignObject);
     g.appendChild(handle);
     textLayer.appendChild(g);
   });
@@ -12931,6 +12937,7 @@ function render(options = {}) {
   refreshActiveTooltip();
 
   updateCanvasSize();
+  renderSafariCanvasTextOverlays();
   applyCanvasVisibility();
   if (!options.preserveWidgets && ui.sliderInteraction == null) {
     renderWidgets();
@@ -12942,6 +12949,123 @@ function render(options = {}) {
   updateHistoryButtons();
   updateEditingLockUi();
   updateExecutionProgress();
+}
+
+function usesSafariCanvasTextOverlay() {
+  const userAgent = String(globalThis.navigator?.userAgent || "");
+  return /Safari\//u.test(userAgent) && !/(?:Chrome|Chromium|CriOS|Edg|OPR)\//u.test(userAgent);
+}
+
+function renderSafariCanvasTextOverlays() {
+  if (!canvasTextLayer) return;
+  canvasTextLayer.replaceChildren();
+  if (!usesSafariCanvasTextOverlay()) return;
+
+  const viewBox = svg.viewBox?.baseVal;
+  const viewWidth = Number(viewBox?.width);
+  const viewHeight = Number(viewBox?.height);
+  if (!(viewWidth > 0) || !(viewHeight > 0)) return;
+
+  const scaleX = Math.max(0.001, svg.clientWidth / viewWidth);
+  const scaleY = Math.max(0.001, svg.clientHeight / viewHeight);
+  const textScale = Math.min(scaleX, scaleY);
+
+  graph.textItems.forEach((item) => {
+    sanitizeTextItem(item);
+    if (!isDashboardItemVisible(item)) return;
+    const position = dashboardItemPosition(item);
+    const root = document.createElement("div");
+    root.className = "canvas-text-html-overlay";
+    if (ui.selected?.type === "text" && ui.selected.id === item.id) {
+      root.classList.add("selected");
+    }
+    if (item.strokeColor) root.classList.add("has-custom-stroke");
+    root.style.left = `${(position.x - viewBox.x) * scaleX}px`;
+    root.style.top = `${(position.y - viewBox.y) * scaleY}px`;
+    root.style.width = `${item.width * scaleX}px`;
+    root.style.height = `${item.height * scaleY}px`;
+    root.style.setProperty("--canvas-text-scale", String(textScale));
+    root.style.setProperty("--text-box-fill", item.fillColor || "transparent");
+    root.style.setProperty("--text-box-stroke", item.strokeColor || "transparent");
+
+    const content = document.createElement("div");
+    content.className = "canvas-text-content";
+    content.innerHTML = canvasTextDisplayHtml(item);
+    content.addEventListener("click", (evt) => {
+      const link = evt.target.closest("[data-stgraphx-node]");
+      if (!link) return;
+      evt.preventDefault();
+      evt.stopPropagation();
+      revealNodeFromModelNotes(link.dataset.stgraphxNode);
+    });
+
+    root.addEventListener("pointerdown", (evt) => {
+      if (evt.target.closest("a")) return;
+      if (isTabletCanvasPanMode()) return;
+      evt.stopPropagation();
+      if (!(ui.selected?.type === "text" && ui.selected.id === item.id)) {
+        selectTextItem(item.id);
+      }
+      if (isEditingUiLocked()) {
+        render();
+        return;
+      }
+      ui.textDrag = {
+        id: item.id,
+        pointerId: evt.pointerId,
+        startClientX: evt.clientX,
+        startClientY: evt.clientY,
+        startX: item.x,
+        startY: item.y,
+      };
+      beginTransaction();
+    });
+    root.addEventListener("contextmenu", (evt) => {
+      evt.preventDefault();
+      evt.stopPropagation();
+      if (!(ui.selected?.type === "text" && ui.selected.id === item.id)) {
+        selectTextItem(item.id);
+      }
+      openTextContextMenu(evt, item);
+    });
+    root.addEventListener("dblclick", (evt) => {
+      evt.preventDefault();
+      evt.stopPropagation();
+      if (!(ui.selected?.type === "text" && ui.selected.id === item.id)) {
+        selectTextItem(item.id);
+      }
+      openTextEditor();
+    });
+
+    const handle = document.createElement("button");
+    handle.type = "button";
+    handle.className = "canvas-text-html-resize-handle";
+    handle.setAttribute("aria-label", t("action.resize"));
+    handle.addEventListener("pointerdown", (evt) => {
+      if (isTabletCanvasPanMode()) return;
+      evt.preventDefault();
+      evt.stopPropagation();
+      if (!(ui.selected?.type === "text" && ui.selected.id === item.id)) {
+        selectTextItem(item.id);
+      }
+      if (isEditingUiLocked()) {
+        render();
+        return;
+      }
+      ui.textResize = {
+        id: item.id,
+        pointerId: evt.pointerId,
+        startClientX: evt.clientX,
+        startClientY: evt.clientY,
+        startWidth: item.width,
+        startHeight: item.height,
+      };
+      beginTransaction();
+    });
+
+    root.append(content, handle);
+    canvasTextLayer.appendChild(root);
+  });
 }
 
 function isValidPoint(p) {

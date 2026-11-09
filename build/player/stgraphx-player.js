@@ -1,6 +1,6 @@
 /*!
  * STGraphX Embedded Player Bundle
- * Generated: 2026-11-07T07:53:04.465Z
+ * Generated: 2026-11-09T13:43:20.446Z
  */
 
 /* --- i18n-inline.js --- */
@@ -13,7 +13,7 @@
 
 window.STGraphXAppMeta = {
   author: "Luca Mari",
-  releaseDate: "2026.11.06",
+  releaseDate: "2026.11.09",
   license: "MPL-2.0",
   copyright: "Copyright (c) 2026 Luca Mari",
 };
@@ -44,6 +44,7 @@ window.STGraphXI18nBundles = {
     "action.chooseIcon": "Scegli immagine...",
     "action.copy": "Copia",
     "action.delete": "Elimina",
+    "action.resize": "Ridimensiona",
     "action.discard": "Scarta",
     "action.edit": "Modifica",
     "action.help": "Aiuto",
@@ -786,7 +787,7 @@ window.STGraphXI18nBundles = {
     "widget.outputOnly": "Solo variabili di output",
     "widget.pointColor": "Colore punti",
     "widget.pointSize": "Dim. punto",
-    "widget.pointSizeShort": "Dimensione",
+    "widget.pointSizeShort": "Dim",
     "widget.removeColumn": "Rimuovi colonna",
     "widget.removePair": "Rimuovi coppia",
     "widget.restore": "Ripristina",
@@ -1303,6 +1304,8 @@ window.STGraphXI18nBundles = {
     "tooltip.widget.showGrid": "Mostra le linee della griglia nel grafico.",
     "tooltip.widget.showAxes": "Mostra gli assi, le tacche e le etichette numeriche del grafico.",
     "tooltip.widget.showBars": "Disegna una barra verticale da ogni punto della serie all'asse X.",
+    "tooltip.widget.showLine": "Mostra la linea che collega i punti della serie.",
+    "tooltip.widget.showPoints": "Mostra i punti della serie.",
     "tooltip.widget.showHistory": "Conserva una riga per ogni istante dell'esecuzione.",
     "tooltip.widget.showInstantProfile": "Traccia, a ogni istante, il profilo dei valori non scalari della serie selezionata.",
     "tooltip.widget.showTimeSeries": "Accumula i valori della serie nel tempo durante l'esecuzione.",
@@ -1572,6 +1575,7 @@ window.STGraphXI18nBundles = {
     "action.chooseIcon": "Choose image...",
     "action.copy": "Copy",
     "action.delete": "Delete",
+    "action.resize": "Resize",
     "action.discard": "Discard",
     "action.edit": "Edit",
     "action.help": "Help",
@@ -2831,6 +2835,8 @@ window.STGraphXI18nBundles = {
     "tooltip.widget.showGrid": "Shows grid lines in the chart.",
     "tooltip.widget.showAxes": "Shows chart axes, ticks, and numeric labels.",
     "tooltip.widget.showBars": "Draws a vertical bar from every series point to the X axis.",
+    "tooltip.widget.showLine": "Shows the line joining the series points.",
+    "tooltip.widget.showPoints": "Shows the series points.",
     "tooltip.widget.showHistory": "Keeps one row for every execution instant.",
     "tooltip.widget.showInstantProfile": "Draws, at each instant, the profile of the selected series non-scalar values.",
     "tooltip.widget.showTimeSeries": "Accumulates the series values over time during execution.",
@@ -12603,6 +12609,11 @@ window.STGraphXI18nBundles = {
     return clamp(value, 0.2, 4);
   }
 
+  function usesSafariCanvasTextOverlay() {
+    const userAgent = String(global.navigator?.userAgent || "");
+    return /Safari\//u.test(userAgent) && !/(?:Chrome|Chromium|CriOS|Edg|OPR)\//u.test(userAgent);
+  }
+
   function isStateNode(node) {
     return node?.shape === "rect";
   }
@@ -14111,6 +14122,24 @@ window.STGraphXI18nBundles = {
           svg {
             display: block;
           }
+          .canvas-text-layer {
+            position: absolute;
+            inset: 0;
+            pointer-events: none;
+            z-index: 2;
+          }
+          .canvas-text-html-overlay {
+            position: absolute;
+            box-sizing: border-box;
+            overflow: hidden;
+            border: calc(1px * var(--canvas-text-scale, 1)) solid #d7e1eb;
+            border-radius: calc(6px * var(--canvas-text-scale, 1));
+            background: rgba(255,255,255,0.92);
+          }
+          .canvas-text-html-overlay .canvas-text-content {
+            padding: calc(8px * var(--canvas-text-scale, 1)) calc(10px * var(--canvas-text-scale, 1));
+            font-size: calc(12px * var(--canvas-text-scale, 1));
+          }
           .widgets {
             position: absolute;
             inset: 0;
@@ -14645,6 +14674,7 @@ window.STGraphXI18nBundles = {
               </button>
               <div class="canvas-content" data-role="canvasContent">
                 <svg data-role="svg"></svg>
+                <div class="canvas-text-layer" data-role="canvasTextLayer"></div>
                 <div class="widgets" data-role="widgets"></div>
               </div>
             </div>
@@ -14671,6 +14701,7 @@ window.STGraphXI18nBundles = {
       this.$title = this.shadowRoot.querySelector('[data-role="title"]');
       this.$status = this.shadowRoot.querySelector('[data-role="status"]');
       this.$svg = this.shadowRoot.querySelector('[data-role="svg"]');
+      this.$canvasTextLayer = this.shadowRoot.querySelector('[data-role="canvasTextLayer"]');
       this.$widgets = this.shadowRoot.querySelector('[data-role="widgets"]');
       this.$canvasContent = this.shadowRoot.querySelector('[data-role="canvasContent"]');
       this.$canvas = this.shadowRoot.querySelector(".canvas");
@@ -15394,6 +15425,9 @@ window.STGraphXI18nBundles = {
       if (this.$widgets) {
         this.$widgets.style.display = this._view.showWidgets ? "" : "none";
       }
+      if (this.$canvasTextLayer) {
+        this.$canvasTextLayer.style.display = this._view.showWidgets ? "" : "none";
+      }
     }
 
     async run() {
@@ -15779,6 +15813,7 @@ window.STGraphXI18nBundles = {
       this.$svg.setAttribute("width", String(bounds.width * zoom));
       this.$svg.setAttribute("height", String(bounds.height * zoom));
       this.$svg.innerHTML = "";
+      this.$canvasTextLayer?.replaceChildren();
 
       const defs = document.createElementNS(SVG_NS, "defs");
       const createArrowMarker = (id, color) => {
@@ -16057,21 +16092,43 @@ window.STGraphXI18nBundles = {
         frame.setAttribute("height", String(Number(item.height) || 120));
         frame.setAttribute("rx", "6");
         frame.setAttribute("ry", "6");
-        const foreignObject = document.createElementNS(SVG_NS, "foreignObject");
-        foreignObject.setAttribute("x", "0");
-        foreignObject.setAttribute("y", "0");
-        foreignObject.setAttribute("width", String(Number(item.width) || 220));
-        foreignObject.setAttribute("height", String(Number(item.height) || 120));
-        foreignObject.setAttribute("class", "canvas-text-fo");
-        const div = document.createElement("div");
-        div.setAttribute("xmlns", "http://www.w3.org/1999/xhtml");
-        div.className = "canvas-text-content";
-        div.innerHTML = canvasTextDisplayHtml(item, this._model, this.t.bind(this));
-        foreignObject.appendChild(div);
+        let foreignObject = null;
+        if (!usesSafariCanvasTextOverlay()) {
+          foreignObject = document.createElementNS(SVG_NS, "foreignObject");
+          foreignObject.setAttribute("x", "0");
+          foreignObject.setAttribute("y", "0");
+          foreignObject.setAttribute("width", String(Number(item.width) || 220));
+          foreignObject.setAttribute("height", String(Number(item.height) || 120));
+          foreignObject.setAttribute("class", "canvas-text-fo");
+          const div = document.createElement("div");
+          div.setAttribute("xmlns", "http://www.w3.org/1999/xhtml");
+          div.className = "canvas-text-content";
+          div.innerHTML = canvasTextDisplayHtml(item, this._model, this.t.bind(this));
+          foreignObject.appendChild(div);
+        }
         g.appendChild(frame);
-        g.appendChild(foreignObject);
+        if (foreignObject) g.appendChild(foreignObject);
         this.$svg.appendChild(g);
       });
+
+      if (usesSafariCanvasTextOverlay() && this.$canvasTextLayer) {
+        (model.textItems || []).forEach((item) => {
+          if (!this.isDashboardItemVisible(item)) return;
+          const position = this.dashboardItemPosition(item);
+          const root = document.createElement("div");
+          root.className = "canvas-text-html-overlay";
+          root.style.left = `${(position.x - bounds.minX) * zoom}px`;
+          root.style.top = `${(position.y - bounds.minY) * zoom}px`;
+          root.style.width = `${(Number(item.width) || 220) * zoom}px`;
+          root.style.height = `${(Number(item.height) || 120) * zoom}px`;
+          root.style.setProperty("--canvas-text-scale", String(zoom));
+          const div = document.createElement("div");
+          div.className = "canvas-text-content";
+          div.innerHTML = canvasTextDisplayHtml(item, this._model, this.t.bind(this));
+          root.appendChild(div);
+          this.$canvasTextLayer.appendChild(root);
+        });
+      }
     }
 
     renderWidgets({ preserveInputWidgetId = null } = {}) {

@@ -589,6 +589,57 @@ body.sidebar-hidden .sidebar {
   z-index: 3;
 }
 
+.canvas-text-layer {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 2;
+}
+
+.canvas-text-html-overlay {
+  position: absolute;
+  box-sizing: border-box;
+  pointer-events: auto;
+  cursor: grab;
+  border: calc(1.5px * var(--canvas-text-scale, 1)) solid transparent;
+  border-radius: calc(6px * var(--canvas-text-scale, 1));
+}
+
+.canvas-text-html-overlay.has-custom-stroke {
+  border-color: var(--text-box-stroke, #6b7b8a);
+  border-width: calc(2.4px * var(--canvas-text-scale, 1));
+}
+
+.canvas-text-html-overlay.selected {
+  border-color: var(--accent);
+  border-style: dashed;
+}
+
+.canvas-text-html-overlay .canvas-text-content {
+  box-sizing: border-box;
+  padding: calc(8px * var(--canvas-text-scale, 1)) calc(10px * var(--canvas-text-scale, 1));
+  font-size: calc(16px * var(--canvas-text-scale, 1));
+}
+
+.canvas-text-html-resize-handle {
+  position: absolute;
+  right: calc(-6px * var(--canvas-text-scale, 1));
+  bottom: calc(-6px * var(--canvas-text-scale, 1));
+  width: calc(12px * var(--canvas-text-scale, 1));
+  height: calc(12px * var(--canvas-text-scale, 1));
+  min-width: 0;
+  min-height: 0;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: var(--accent);
+  cursor: nwse-resize;
+}
+
+.canvas-text-html-overlay:not(.selected) .canvas-text-html-resize-handle {
+  display: none;
+}
+
 .value-widget {
   position: absolute;
   pointer-events: auto;
