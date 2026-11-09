@@ -1,0 +1,14 @@
+{
+
+"githubIssues.queries": [
+    {
+        "label": "Tutte le Issues aperte",
+        "query": "repo:lmari/stgraphx is:issue is:open sort:created-desc"
+    },
+    {
+        "label": "Issues chiuse",
+        "query": "repo:lmari/stgraphx is:issue is:closed sort:updated-desc"
+    }
+]
+
+}

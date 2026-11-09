@@ -4490,9 +4490,10 @@ function buildNodeTooltipText(node) {
 function canvasTextDisplayHtml(item) {
   if (typeof item?.markdown === "string") {
     return globalThis.STGraphXMarkdown?.renderMarkdownToHtml(item.markdown, {
-      // Safari is more reliable with KaTeX's HTML-only output inside the
-      // SVG foreignObject used for canvas text items.
-      latexOutput: "html",
+      // Safari does not reliably apply the document's KaTeX stylesheet to
+      // XHTML inside an SVG foreignObject. Its native MathML renderer avoids
+      // that dependency; other browsers keep KaTeX's more consistent HTML.
+      latexOutput: canvasTextLatexOutput(),
       resolveVariable(name) {
         const node = getNodeByName(name);
         if (!node) return null;
@@ -4505,6 +4506,12 @@ function canvasTextDisplayHtml(item) {
   }
   const sanitized = sanitizeRichTextHtml(item?.html ?? "");
   return sanitized || `<p>${t("text.defaultCanvasText")}</p>`;
+}
+
+function canvasTextLatexOutput() {
+  const userAgent = typeof navigator === "undefined" ? "" : String(navigator.userAgent || "");
+  const isSafari = /Safari\//u.test(userAgent) && !/(?:Chrome|Chromium|CriOS|Edg|OPR)\//u.test(userAgent);
+  return isSafari ? "mathml" : "html";
 }
 
 function updateSelectedTextHtml(nextValue) {

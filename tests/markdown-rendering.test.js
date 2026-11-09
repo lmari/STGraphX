@@ -18,6 +18,10 @@ const canvasFormula = renderMarkdownToHtml("$x^2$", { latexOutput: "html" });
 assert.match(canvasFormula, /katex-html/, "HTML-only LaTeX output must retain the visual KaTeX markup");
 assert.doesNotMatch(canvasFormula, /katex-mathml/, "HTML-only LaTeX output must omit MathML for SVG foreignObject compatibility");
 
+const safariCanvasFormula = renderMarkdownToHtml("$x^2$", { latexOutput: "mathml" });
+assert.match(safariCanvasFormula, /<math /, "MathML LaTeX output must be available for Safari SVG foreignObject rendering");
+assert.doesNotMatch(safariCanvasFormula, /katex-html/, "MathML-only LaTeX output must not rely on KaTeX HTML styles");
+
 const code = renderMarkdownToHtml("`$x^2$`");
 assert.match(code, /<code>\$x\^2\$<\/code>/, "inline code must not be interpreted as LaTeX");
 
