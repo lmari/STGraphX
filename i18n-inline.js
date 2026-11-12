@@ -7,7 +7,7 @@
 
 window.STGraphXAppMeta = {
   author: "Luca Mari",
-  releaseDate: "2026.11.09",
+  releaseDate: "2026.11.12",
   license: "MPL-2.0",
   copyright: "Copyright (c) 2026 Luca Mari",
 };
@@ -342,6 +342,8 @@ window.STGraphXI18nBundles = {
     "expr.editor.title": "Espressione",
     "expr.filter.placeholder": "Filtra simboli...",
     "expr.hint": "Nell'editor: Tab inserisce un tab, Invio un ritorno a capo, Ctrl+Enter applica. Shift+Invio inserisce il simbolo selezionato, Shift+Freccia su/giu cambia selezione nel pannello. Selezionando il nome di una variabile, appare un tooltip con il valore della variabile.",
+    "tooltip.expr.hideLibrary": "Nasconde la colonna con le variabili e le funzioni disponibili.",
+    "tooltip.expr.showLibrary": "Mostra la colonna con le variabili e le funzioni disponibili.",
     "expr.syntaxError": "Errore di sintassi: {message}",
     "expr.syntaxOk": "Sintassi valida.",
     "expr.view.editor": "Formula",
@@ -1873,6 +1875,8 @@ window.STGraphXI18nBundles = {
     "expr.editor.title": "Expression",
     "expr.filter.placeholder": "Filter symbols...",
     "expr.hint": "In the editor: Tab inserts a tab, Enter inserts a newline, Ctrl+Enter applies. Shift+Enter inserts the selected symbol, Shift+Up/Down changes the panel selection. By selecting the name of a variable, the tooltip will show the value of the variable.",
+    "tooltip.expr.hideLibrary": "Hide the column containing available variables and functions.",
+    "tooltip.expr.showLibrary": "Show the column containing available variables and functions.",
     "expr.syntaxError": "Syntax error: {message}",
     "expr.syntaxOk": "Syntax is valid.",
     "expr.view.editor": "Formula",

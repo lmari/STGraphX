@@ -3399,8 +3399,12 @@ function renderWidgets() {
       for (let row = 0; row < widget.inputRows; row += 1) {
         for (let col = 0; col < widget.inputCols; col += 1) {
           const input = document.createElement("input");
-          input.type = "number";
-          input.step = "any";
+          // Browsers can localize type=number to a decimal comma. Model
+          // expressions and JSON use an invariant decimal point instead.
+          input.type = "text";
+          input.inputMode = "decimal";
+          input.autocomplete = "off";
+          input.spellcheck = false;
           input.value = String(matrix[row][col]);
           input.disabled = lockedForRun;
           input.setAttribute("aria-label", `${row + 1}, ${col + 1}`);
@@ -3414,8 +3418,9 @@ function renderWidgets() {
           });
           input.addEventListener("input", (evt) => {
             evt.stopPropagation();
-            if (Number.isFinite(Number(input.value))) {
-              matrix[row][col] = Number(input.value);
+            const value = Number(String(input.value ?? "").trim().replace(",", "."));
+            if (Number.isFinite(value)) {
+              matrix[row][col] = value;
               commit(false);
             }
           });

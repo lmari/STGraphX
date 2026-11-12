@@ -3977,16 +3977,21 @@
         for (let row = 0; row < widget.inputRows; row += 1) {
           for (let col = 0; col < widget.inputCols; col += 1) {
             const input = document.createElement("input");
-            input.type = "number";
-            input.step = "any";
+            // Keep the model's invariant decimal point instead of letting
+            // browsers localize type=number with a decimal comma.
+            input.type = "text";
+            input.inputMode = "decimal";
+            input.autocomplete = "off";
+            input.spellcheck = false;
             input.value = String(matrix[row][col]);
             input.dataset.stgraphxInputSource = widget.source;
             input.disabled = lockedForRun;
             input.addEventListener("pointerdown", () => { this._activeInputWidgetId = widget.id; });
             input.addEventListener("focus", () => { this._activeInputWidgetId = widget.id; });
             input.addEventListener("input", () => {
-              if (Number.isFinite(Number(input.value))) {
-                matrix[row][col] = Number(input.value);
+              const value = Number(String(input.value ?? "").trim().replace(",", "."));
+              if (Number.isFinite(value)) {
+                matrix[row][col] = value;
                 commit(false);
               }
             });

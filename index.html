@@ -450,7 +450,10 @@
       <div class="modal-card expression-editor-card" role="dialog" aria-modal="false" aria-labelledby="expressionEditorTitle">
         <div class="modal-head">
           <h3 id="expressionEditorTitle" data-i18n="expr.editor.title"></h3>
-          <button id="expressionEditorCloseBtn" class="icon-btn modal-close-btn" type="button" data-i18n-aria-label="aria.close">×</button>
+          <div class="expression-editor-head-actions">
+            <button id="expressionSidebarToggleBtn" class="icon-btn expression-sidebar-toggle" type="button" aria-expanded="true" data-i18n-aria-label="tooltip.expr.hideLibrary" data-title-i18n="tooltip.expr.hideLibrary">›</button>
+            <button id="expressionEditorCloseBtn" class="icon-btn modal-close-btn" type="button" data-i18n-aria-label="aria.close">×</button>
+          </div>
         </div>
         <div class="expression-editor-toolbar">
           <div id="expressionEditorViewTabs" class="expression-editor-view-tabs" role="tablist" aria-label="Expression editor sections">

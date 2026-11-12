@@ -1,6 +1,6 @@
 /*!
  * STGraphX Embedded Player Bundle
- * Generated: 2026-11-09T13:43:20.446Z
+ * Generated: 2026-11-12T13:36:32.648Z
  */
 
 /* --- i18n-inline.js --- */
@@ -348,6 +348,8 @@ window.STGraphXI18nBundles = {
     "expr.editor.title": "Espressione",
     "expr.filter.placeholder": "Filtra simboli...",
     "expr.hint": "Nell'editor: Tab inserisce un tab, Invio un ritorno a capo, Ctrl+Enter applica. Shift+Invio inserisce il simbolo selezionato, Shift+Freccia su/giu cambia selezione nel pannello. Selezionando il nome di una variabile, appare un tooltip con il valore della variabile.",
+    "tooltip.expr.hideLibrary": "Nasconde la colonna con le variabili e le funzioni disponibili.",
+    "tooltip.expr.showLibrary": "Mostra la colonna con le variabili e le funzioni disponibili.",
     "expr.syntaxError": "Errore di sintassi: {message}",
     "expr.syntaxOk": "Sintassi valida.",
     "expr.view.editor": "Formula",
@@ -1879,6 +1881,8 @@ window.STGraphXI18nBundles = {
     "expr.editor.title": "Expression",
     "expr.filter.placeholder": "Filter symbols...",
     "expr.hint": "In the editor: Tab inserts a tab, Enter inserts a newline, Ctrl+Enter applies. Shift+Enter inserts the selected symbol, Shift+Up/Down changes the panel selection. By selecting the name of a variable, the tooltip will show the value of the variable.",
+    "tooltip.expr.hideLibrary": "Hide the column containing available variables and functions.",
+    "tooltip.expr.showLibrary": "Show the column containing available variables and functions.",
     "expr.syntaxError": "Syntax error: {message}",
     "expr.syntaxOk": "Syntax is valid.",
     "expr.view.editor": "Formula",
@@ -16514,16 +16518,21 @@ window.STGraphXI18nBundles = {
         for (let row = 0; row < widget.inputRows; row += 1) {
           for (let col = 0; col < widget.inputCols; col += 1) {
             const input = document.createElement("input");
-            input.type = "number";
-            input.step = "any";
+            // Keep the model's invariant decimal point instead of letting
+            // browsers localize type=number with a decimal comma.
+            input.type = "text";
+            input.inputMode = "decimal";
+            input.autocomplete = "off";
+            input.spellcheck = false;
             input.value = String(matrix[row][col]);
             input.dataset.stgraphxInputSource = widget.source;
             input.disabled = lockedForRun;
             input.addEventListener("pointerdown", () => { this._activeInputWidgetId = widget.id; });
             input.addEventListener("focus", () => { this._activeInputWidgetId = widget.id; });
             input.addEventListener("input", () => {
-              if (Number.isFinite(Number(input.value))) {
-                matrix[row][col] = Number(input.value);
+              const value = Number(String(input.value ?? "").trim().replace(",", "."));
+              if (Number.isFinite(value)) {
+                matrix[row][col] = value;
                 commit(false);
               }
             });

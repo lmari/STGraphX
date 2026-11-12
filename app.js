@@ -229,6 +229,7 @@ const expressionEditorViewTabs = document.getElementById("expressionEditorViewTa
 const expressionEditorViewEditorBtn = document.getElementById("expressionEditorViewEditorBtn");
 const expressionEditorViewNotesBtn = document.getElementById("expressionEditorViewNotesBtn");
 const expressionEditorViewHelpBtn = document.getElementById("expressionEditorViewHelpBtn");
+const expressionSidebarToggleBtn = document.getElementById("expressionSidebarToggleBtn");
 const expressionStateInitialBlock = document.getElementById("expressionStateInitialBlock");
 const expressionStateInitialHighlight = document.getElementById("expressionStateInitialHighlight");
 const expressionStateInitialInput = document.getElementById("expressionStateInitialInput");
@@ -1120,6 +1121,8 @@ const ui = {
   showWidgets: true,
   expressionEditor: null,
   expressionEditorView: "editor",
+  expressionSidebarCollapsed: false,
+  expressionSidebarExpandedWidth: null,
   modalDrag: null,
   modalResize: null,
   tooltipTarget: null,
@@ -6054,6 +6057,31 @@ function setExpressionEditorView(view, options = {}) {
   }
 }
 
+function setExpressionSidebarCollapsed(collapsed) {
+  const isCollapsed = Boolean(collapsed);
+  const wasCollapsed = expressionEditorCard?.classList.contains("expression-sidebar-collapsed") === true;
+  if (expressionEditorCard && isCollapsed && !wasCollapsed) {
+    ui.expressionSidebarExpandedWidth = expressionEditorCard.getBoundingClientRect().width;
+    expressionEditorCard.style.width = "";
+  }
+  if (expressionEditorCard && !isCollapsed && wasCollapsed && ui.expressionSidebarExpandedWidth != null) {
+    const width = clamp(Number(ui.expressionSidebarExpandedWidth), 480, Math.max(480, window.innerWidth - 20));
+    expressionEditorCard.style.width = `${Math.round(width)}px`;
+  }
+  ui.expressionSidebarCollapsed = isCollapsed;
+  expressionEditorCard?.classList.toggle("expression-sidebar-collapsed", isCollapsed);
+  if (expressionSidebar) {
+    expressionSidebar.inert = isCollapsed;
+  }
+  if (expressionSidebarToggleBtn) {
+    expressionSidebarToggleBtn.textContent = isCollapsed ? "‹" : "›";
+    expressionSidebarToggleBtn.setAttribute("aria-expanded", isCollapsed ? "false" : "true");
+    const tooltipKey = isCollapsed ? "tooltip.expr.showLibrary" : "tooltip.expr.hideLibrary";
+    expressionSidebarToggleBtn.setAttribute("aria-label", t(tooltipKey));
+    setTooltipText(expressionSidebarToggleBtn, t(tooltipKey));
+  }
+}
+
 function clearExpressionPreviewTimer() {
   if (ui.expressionPreviewTimer != null) {
     window.clearTimeout(ui.expressionPreviewTimer);
@@ -6370,6 +6398,7 @@ function closeExpressionEditor() {
     expressionSymbolsFilter.value = "";
   }
   expressionSidebar?.classList.remove("hidden");
+  setExpressionSidebarCollapsed(ui.expressionSidebarCollapsed);
   setExpressionEditorView("editor", { focus: false });
   setExpressionHelp(null);
   hideExpressionStatus(expressionEditorStatus);
@@ -6535,6 +6564,7 @@ function openExpressionEditor(fieldKey) {
   expressionEditorTextarea.value = String(ui.expressionEditor.initialValue ?? "");
   expressionEditorModal.classList.remove("hidden");
   resetExpressionEditorCardPosition();
+  setExpressionSidebarCollapsed(ui.expressionSidebarCollapsed);
   setExpressionEditorView("editor", { focus: false });
   syncExpressionEditorFormulaNotes();
   setActiveExpressionEditor(isStateNode(node) && fieldKey === "initial" ? "initial" : "main");
@@ -15067,8 +15097,11 @@ window.addEventListener("pointermove", (evt) => {
   if (ui.modalResize && evt.pointerId === ui.modalResize.pointerId) {
     const card = ui.modalResize.card;
     if (card) {
-      const nextWidth = clamp(ui.modalResize.startWidth + (evt.clientX - ui.modalResize.startClientX), 780, window.innerWidth - 20);
-      const nextHeight = clamp(ui.modalResize.startHeight + (evt.clientY - ui.modalResize.startClientY), 420, window.innerHeight - 20);
+      const nextWidth = ui.modalResize.lockWidth
+        ? ui.modalResize.startWidth
+        : clamp(ui.modalResize.startWidth + (evt.clientX - ui.modalResize.startClientX), 780, window.innerWidth - 20);
+      const minHeight = ui.modalResize.compactExpressionEditor ? 300 : 420;
+      const nextHeight = clamp(ui.modalResize.startHeight + (evt.clientY - ui.modalResize.startClientY), minHeight, window.innerHeight - 20);
       card.style.transform = "none";
       card.style.left = `${ui.modalResize.startLeft}px`;
       card.style.top = `${ui.modalResize.startTop}px`;
@@ -17172,6 +17205,11 @@ if (expressionResizeObserver) {
 if (expressionEditorCloseBtn) {
   expressionEditorCloseBtn.addEventListener("click", closeExpressionEditor);
 }
+if (expressionSidebarToggleBtn) {
+  expressionSidebarToggleBtn.addEventListener("click", () => {
+    setExpressionSidebarCollapsed(!ui.expressionSidebarCollapsed);
+  });
+}
 if (expressionEditorCancelBtn) {
   expressionEditorCancelBtn.addEventListener("click", closeExpressionEditor);
 }
@@ -17255,6 +17293,8 @@ if (expressionEditorModal) {
         startHeight: rect.height,
         startLeft: rect.left,
         startTop: rect.top,
+        lockWidth: modalCard.classList.contains("expression-sidebar-collapsed"),
+        compactExpressionEditor: modalCard.classList.contains("expression-sidebar-collapsed"),
         card: modalCard,
       };
       evt.currentTarget?.setPointerCapture?.(evt.pointerId);
