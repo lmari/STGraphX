@@ -24,6 +24,64 @@ assert.equal(
   2,
 );
 
+// Statistical reducers preserve their inputs and share the matrix-axis convention.
+const sample = [9, -1, 3, 3];
+assert.equal(scope.median(sample), 3);
+assert.deepEqual(sample, [9, -1, 3, 3]);
+assert.equal(scope.median([10, 2, 4]), 4);
+assert.equal(scope.median([1, 4]), 2.5);
+assert.equal(scope.median([Number.MAX_VALUE, Number.MAX_VALUE]), Number.MAX_VALUE);
+assert.equal(scope.median([-Number.MAX_VALUE, Number.MAX_VALUE]), 0);
+assert.equal(scope.median([Number.MIN_VALUE, Number.MIN_VALUE]), Number.MIN_VALUE);
+assert.equal(scope.mode(sample), 3);
+assert.equal(scope.mode([4, 2, 4, 2]), 2);
+assert.equal(scope.mode([9, -1, 3]), -1);
+assert.equal(scope.mode([-2]), -2);
+const matrix = [[1, 8, 3], [7, 8, 1]];
+assert.equal(scope.median(matrix), 5);
+assert.deepEqual(scope.median(matrix, 0), [4, 8, 2]);
+assert.deepEqual(scope.median(matrix, 1), [3, 7]);
+assert.equal(scope.mode(matrix), 1);
+assert.deepEqual(scope.mode(matrix, 0), [1, 8, 1]);
+assert.deepEqual(scope.mode(matrix, 1), [1, 1]);
+assert.deepEqual(matrix, [[1, 8, 3], [7, 8, 1]]);
+for (const name of ["median", "mode"]) {
+  assert.equal(scope[name]([2, 1], 0), name === "median" ? 1.5 : 1);
+  for (const bad of [[], [[]], [[1], [2, 3]], [1, [2]], [[[1]]], [NaN], [Infinity], ["1"], 1]) {
+    assert.throws(() => scope[name](bad), /non-empty numeric vector or matrix/);
+  }
+  for (const axis of [-1, 2, 0.5, "0"]) {
+    assert.throws(() => scope[name](matrix, axis), /axis/);
+    assert.throws(() => scope[name]([1, 2], axis), /axis/);
+  }
+  assert.throws(() => scope[name]([1, 2], 1), /axis/);
+}
+const near = (value, expected) => assert.ok(Math.abs(value - expected) < 1e-12, `${value} != ${expected}`);
+near(scope.correlation([1, 2, 3], [2, 4, 6]), 1);
+near(scope.correlation([1, 2, 3], [6, 4, 2]), -1);
+near(scope.correlation([-1, 0, 1], [1, 0, 1]), 0);
+near(scope.correlation([1, 2, 3], [1, 3, 2]), 0.5);
+near(scope.correlation([1, 2], [9, 7]), -1);
+near(scope.correlation([1e300, 2e300, 3e300], [1e-300, 2e-300, 3e-300]), 1);
+for (const [x, y] of [[[], []], [[1], [1]], [[1, 2], [1, 2, 3]], [[[1, 2]], [[1, 2]]], [[NaN, 2], [1, 2]], [[1, 2], [Infinity, 2]], [["1", 2], [1, 2]], [1, [1, 2]]]) {
+  assert.throws(() => scope.correlation(x, y), /two numeric vectors/);
+}
+for (const [x, y] of [[[1, 1], [1, 2]], [[1, 2], [0, 0]], [[0, 0], [1, 2]]]) {
+  assert.throws(() => scope.correlation(x, y), /non-constant/);
+}
+const evaluate = context.window.GraphSemantics.evaluateValueExpression;
+near(evaluate("median([1,4])").value, 2.5);
+assert.equal(evaluate("mode([4,2,4,2])").value, 2);
+near(evaluate("correlation([1,2,3],[1,3,2])").value, 0.5);
+assert.deepEqual(evaluate("median([[1,8,3],[7,8,1]],0)").value, [4, 8, 2]);
+assert.deepEqual(evaluate("mode([[1,8,3],[7,8,1]],1)").value, [1, 1]);
+for (const expr of ["median([])", "mode([[1],[2,3]])", "correlation([1,1],[1,2])", "correlation([1],[1,2])"]) {
+  assert.equal(evaluate(expr).ok, false);
+}
+for (const name of ["median", "mode", "correlation"]) {
+  assert.equal(context.window.GraphFunctions.expressionDocs.functions[name].descriptionKey, `expr.help.${name}`);
+}
+
 assert.equal(scope.pos(-3), 0);
 assert.equal(scope.pos(0), 0);
 assert.equal(scope.pos(2.5), 2.5);

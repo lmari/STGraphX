@@ -230,8 +230,8 @@
           if (first.kind === "zero") return zero();
           return unit(new Map([...first.factors].map(([name, power]) => [name, power / 2])), first.labels);
         }
-        if (["size", "rows", "cols", "count", "argmin", "argmax", "indicesWhere", "rand", "randInt"].includes(node.name)) return dimensionless();
-        if (["sum", "mean", "min", "max", "abs", "pos", "neg", "floor", "ceil", "round", "int", "flatten", "resize", "col", "row", "append", "appendRow", "appendCol"].includes(node.name)) return first;
+        if (["size", "rows", "cols", "count", "argmin", "argmax", "indicesWhere", "rand", "randInt", "correlation"].includes(node.name)) return dimensionless();
+        if (["sum", "mean", "median", "mode", "min", "max", "abs", "pos", "neg", "floor", "ceil", "round", "int", "flatten", "resize", "col", "row", "append", "appendRow", "appendCol"].includes(node.name)) return first;
         if (node.name === "integral") {
           const timeUnit = isKnown(context.timeUnit) ? context.timeUnit : parseUnit("s").value;
           return combine(first, timeUnit, 1);

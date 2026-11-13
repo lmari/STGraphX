@@ -3974,6 +3974,11 @@ input.inferred-unit[readonly] { color: #6d7782; background: #f4f6f8; }
   margin: 0;
 }
 
+#expressionNodeShapeInput {
+  height: 34px;
+  min-height: 34px;
+}
+
 .expression-node-options-row .menu-check {
   margin: 0;
   padding: 0;
@@ -4162,6 +4167,7 @@ input.inferred-unit[readonly] { color: #6d7782; background: #f4f6f8; }
 @media (min-width: 701px) {
   body:not(.tablet-sidebar-layout) .expression-editor-card.expression-sidebar-collapsed {
     width: min(640px, calc(100vw - 40px));
+    height: min(48vh, 460px);
     min-width: 480px;
     min-height: 300px;
   }
@@ -5185,7 +5191,6 @@ body.tablet-sidebar-layout .expression-editor-resize-handle {
 }
 
 .context-menu-submenu:hover > .context-menu-submenu-panel,
-.context-menu-submenu:focus-within > .context-menu-submenu-panel,
 .context-menu-submenu.open > .context-menu-submenu-panel {
   display: block;
 }

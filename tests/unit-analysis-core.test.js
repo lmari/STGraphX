@@ -104,4 +104,13 @@ const mechanicsAnalysis = createModelAnalysisCoreHelpers({
 });
 assert(!mechanicsAnalysis.analyzeModelStaticIssues().some((issue) => issue.target?.id === 13 && issue.key === "analysis.issue.unitExpressionMismatch"));
 assert.equal(mechanicsGraph.nodes[2].inferredUnit, "m/s^2");
+
+for (const name of ["median", "mode"]) {
+  assert.equal(unitAnalysis.display(unitAnalysis.inferAst(context.window.GraphSemantics.parseExpressionAst(`${name}(amounts)`), {
+    resolve: () => unitAnalysis.parseUnit("m").value,
+  })), "m");
+}
+assert(unitAnalysis.same(unitAnalysis.inferAst(context.window.GraphSemantics.parseExpressionAst("correlation(x,y)"), {
+  resolve: (name) => unitAnalysis.parseUnit(name === "x" ? "m" : "s").value,
+}), unitAnalysis.dimensionless()));
 console.log("unit-analysis-core.test.js: ok");

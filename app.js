@@ -1123,6 +1123,7 @@ const ui = {
   expressionEditorView: "editor",
   expressionSidebarCollapsed: false,
   expressionSidebarExpandedWidth: null,
+  expressionSidebarExpandedHeight: null,
   modalDrag: null,
   modalResize: null,
   tooltipTarget: null,
@@ -2493,6 +2494,29 @@ function localizeExpressionErrorMessage(message) {
   const reducerCallableMatch = raw.match(/^([A-Za-z_$][A-Za-z0-9_$]*) is not callable$/i);
   if (reducerCallableMatch) {
     return t("expr.error.notCallable", { name: reducerCallableMatch[1] });
+  }
+  const regressionErrors = {
+    "regression expects two non-empty numeric vectors of equal length": "expr.error.regressionVectors",
+    "regression degree must be a non-negative integer smaller than the number of observations": "expr.error.regressionDegree",
+    "regression requires enough distinct x values and a numerically independent polynomial basis": "expr.error.regressionRank",
+    "regression result exceeds numeric precision or range": "expr.error.regressionRange",
+  };
+  if (Object.prototype.hasOwnProperty.call(regressionErrors, lower)) {
+    return t(regressionErrors[lower]);
+  }
+  const statisticalArrayError = raw.match(/^(median|mode) expects a non-empty numeric vector or matrix$/i);
+  if (statisticalArrayError) {
+    return t("expr.error.statisticalNumericArray", { name: statisticalArrayError[1] });
+  }
+  const statisticalAxisError = raw.match(/^(median|mode) axis for (vectors|matrices) must be (0|0 or 1)$/i);
+  if (statisticalAxisError) {
+    return t(statisticalAxisError[2].toLowerCase() === "vectors" ? "expr.error.vectorAxisZero" : "expr.error.axisZeroOrOne", { name: statisticalAxisError[1] });
+  }
+  if (lower === "correlation expects two numeric vectors of equal length with at least two values") {
+    return t("expr.error.correlationVectors");
+  }
+  if (lower === "correlation requires non-constant vectors") {
+    return t("expr.error.correlationConstant");
   }
   if (lower === "reduce expects a vector or matrix" || lower === "sum expects a vector or matrix" || lower === "count expects a vector or matrix" || lower === "indiceswhere expects a vector or matrix" || lower === "size expects a vector or matrix" || lower === "average expects a vector or matrix" || lower === "stdev expects a vector or matrix" || lower === "resize expects a vector or matrix") {
     const fn = raw.split(" ")[0];
@@ -6060,12 +6084,19 @@ function setExpressionSidebarCollapsed(collapsed) {
   const isCollapsed = Boolean(collapsed);
   const wasCollapsed = expressionEditorCard?.classList.contains("expression-sidebar-collapsed") === true;
   if (expressionEditorCard && isCollapsed && !wasCollapsed) {
-    ui.expressionSidebarExpandedWidth = expressionEditorCard.getBoundingClientRect().width;
+    const rect = expressionEditorCard.getBoundingClientRect();
+    ui.expressionSidebarExpandedWidth = rect.width;
+    ui.expressionSidebarExpandedHeight = rect.height;
     expressionEditorCard.style.width = "";
+    expressionEditorCard.style.height = "";
   }
   if (expressionEditorCard && !isCollapsed && wasCollapsed && ui.expressionSidebarExpandedWidth != null) {
     const width = clamp(Number(ui.expressionSidebarExpandedWidth), 480, Math.max(480, window.innerWidth - 20));
     expressionEditorCard.style.width = `${Math.round(width)}px`;
+  }
+  if (expressionEditorCard && !isCollapsed && wasCollapsed && ui.expressionSidebarExpandedHeight != null) {
+    const height = clamp(Number(ui.expressionSidebarExpandedHeight), 480, Math.max(480, window.innerHeight - 20));
+    expressionEditorCard.style.height = `${Math.round(height)}px`;
   }
   ui.expressionSidebarCollapsed = isCollapsed;
   expressionEditorCard?.classList.toggle("expression-sidebar-collapsed", isCollapsed);

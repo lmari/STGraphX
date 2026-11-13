@@ -95,6 +95,9 @@ Il filtro conserva solo risultati tensoriali rettangolari e non supporta ancora
 le modalità testuali `rows` e `cols`. Non sono inoltre supportate in RK4 le
 transizioni che combinano `integral(...)` con altre operazioni esterne, né i
 sottomodelli o gli input esterni.
+Le funzioni statistiche `median`, `mode`, `correlation`, `linearRegression` e
+`polynomialRegression` sono disponibili nel motore JavaScript e non sono
+ancora supportate dal motore Rust.
 
 Il core portabile richiede un seme esplicito quando un modello usa funzioni
 casuali. L'adattatore WebAssembly crea un seme temporaneo per la singola

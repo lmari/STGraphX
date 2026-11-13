@@ -1,6 +1,6 @@
 # STGraphX - Riferimento rapido alle funzioni
 
-Generato automaticamente da `i18n-inline.js` e `graph-functions.js` (release 2026.11.05).
+Generato automaticamente da `i18n-inline.js` e `graph-functions.js` (release 2026.11.13).
 
 Rigenerare con `npm run docs:functions`.
 
@@ -487,6 +487,17 @@ Elemento estratto casualmente da un vettore non vuoto oppure riga estratta casua
 
 ---
 
+### `correlation`
+
+`correlation(x, y)`
+
+Coefficiente di correlazione lineare di Pearson tra due vettori numerici della stessa lunghezza, con almeno due valori. Restituisce un numero tra -1 e 1; genera un errore se uno dei vettori è costante.
+
+**Esempi**
+- `correlation([1,2,3],[2,4,6]) -> 1`
+
+---
+
 ### `count`
 
 `count(array[, axis]) | count(cond, array[, axis])`
@@ -528,6 +539,40 @@ Distribuzione di probabilità gaussiana (parametri di default: `mu=0`, `sigma=1`
 
 ---
 
+### `linearRegression`
+
+`linearRegression(x, y)`
+
+Regressione lineare ai minimi quadrati con intercetta, equivalente a polynomialRegression(x,y,1). Restituisce il vettore [a0,a1,...,R²]: coefficienti in ordine crescente di potenza (a0+a1*x+...) e infine R². Richiede almeno due coppie numeriche e valori x non tutti uguali.
+
+**Esempi**
+- `linearRegression([0,1,2],[1,3,5]) -> circa [1,2,1]`
+
+---
+
+### `median`
+
+`median(array[, axis])`
+
+Mediana di un vettore o di una matrice numerici non vuoti. Con un numero pari di valori restituisce la media dei due centrali. Per una matrice, senza `axis` usa tutti i valori; con `axis=0` opera per colonna, con `axis=1` per riga.
+
+**Esempi**
+- `median([3,1,2]) -> 2`
+- `median([1,4]) -> 2.5`
+
+---
+
+### `mode`
+
+`mode(array[, axis])`
+
+Moda di un vettore o di una matrice numerici non vuoti. Restituisce il valore più frequente; in caso di parità sceglie il più piccolo, anche quando tutti i valori sono distinti. Per una matrice, senza `axis` usa tutti i valori; con `axis=0` opera per colonna, con `axis=1` per riga.
+
+**Esempi**
+- `mode([3,1,3,1]) -> 1`
+
+---
+
 ### `poisson`
 
 `poisson([rate], x, mode)`
@@ -537,6 +582,17 @@ Distribuzione di Poisson (parametro predefinito: `rate=1`). Se `x` manca, estrae
 **Esempi**
 - `poisson()`
 - `poisson([4], 2, 0)`
+
+---
+
+### `polynomialRegression`
+
+`polynomialRegression(x, y[, degree])`
+
+Regressione polinomiale ai minimi quadrati, con intercetta. `degree` è un intero non negativo, predefinito 1; occorrono almeno degree+1 osservazioni e valori x distinti sufficienti. Restituisce il vettore [a0,a1,...,R²]: coefficienti in ordine crescente di potenza (a0+a1*x+...) e infine R². Il grado 0 stima la media. Con y costante R² vale 1. Usa QR con dati riscalati; segnala basi numericamente dipendenti o risultati non rappresentabili. Con gradi elevati o x molto traslati, i coefficienti nelle coordinate originali possono perdere precisione.
+
+**Esempi**
+- `polynomialRegression([0,1,2],[1,4,9],2) -> circa [1,2,1,1]`
 
 ---
 

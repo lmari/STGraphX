@@ -3684,6 +3684,7 @@ function removeSelected() {
       graph.nodes
         .filter((n) => selectedIds.has(n.id))
         .forEach((n) => {
+          removeNodeFromAllWidgetDisplays(n.name);
           removeNodeFromInputWidgetBindings(n.name);
           removeNodeFromSubmodelInputBindings(n.name);
         });
@@ -4176,6 +4177,7 @@ function openNodeContextMenu(evt, node) {
           return;
         }
         runAction(() => {
+          removeNodeFromAllWidgetDisplays(node.name);
           removeNodeFromInputWidgetBindings(node.name);
           removeNodeFromSubmodelInputBindings(node.name);
           graph.nodes = graph.nodes.filter((n) => n.id !== node.id);

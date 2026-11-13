@@ -1473,6 +1473,168 @@
     return value.map((row) => stdevOfVector(row));
   }
 
+  function reduceStatisticalArray(value, axis, name, reduceVector) {
+    const validNumber = (item) => typeof item === "number" && Number.isFinite(item);
+    if (!Array.isArray(value) || !value.length) {
+      throw new Error(`${name} expects a non-empty numeric vector or matrix`);
+    }
+    if (value.every(validNumber)) {
+      if (axis != null && axis !== 0) {
+        throw new Error(`${name} axis for vectors must be 0`);
+      }
+      return reduceVector(value);
+    }
+    if (!value.every((row) => Array.isArray(row) && row.length > 0
+      && row.length === value[0].length && row.every(validNumber))) {
+      throw new Error(`${name} expects a non-empty numeric vector or matrix`);
+    }
+    if (axis == null) return reduceVector(value.flat());
+    if (axis !== 0 && axis !== 1) {
+      throw new Error(`${name} axis for matrices must be 0 or 1`);
+    }
+    return axis === 0
+      ? value[0].map((_, column) => reduceVector(value.map((row) => row[column])))
+      : value.map(reduceVector);
+  }
+
+  function medianArrayValues(value, axis = null) {
+    return reduceStatisticalArray(value, axis, "median", (vector) => {
+      const sorted = vector.slice().sort((a, b) => a - b);
+      const middle = Math.floor(sorted.length / 2);
+      if (sorted.length % 2) return sorted[middle];
+      const left = sorted[middle - 1];
+      const right = sorted[middle];
+      // Avoid overflow for large values and underflow for equal tiny values.
+      return Math.sign(left) === Math.sign(right) ? left + (right - left) / 2 : (left + right) / 2;
+    });
+  }
+
+  function modeArrayValues(value, axis = null) {
+    return reduceStatisticalArray(value, axis, "mode", (vector) => {
+      const counts = new Map();
+      let best = vector[0];
+      let bestCount = 0;
+      for (const item of vector) {
+        const count = (counts.get(item) || 0) + 1;
+        counts.set(item, count);
+        if (count > bestCount || (count === bestCount && item < best)) {
+          best = item;
+          bestCount = count;
+        }
+      }
+      return best;
+    });
+  }
+
+  function correlationOfVectors(x, y) {
+    const isNumericVector = (value) => Array.isArray(value)
+      && value.every((item) => typeof item === "number" && Number.isFinite(item));
+    if (!isNumericVector(x) || !isNumericVector(y) || x.length < 2 || x.length !== y.length) {
+      throw new Error("correlation expects two numeric vectors of equal length with at least two values");
+    }
+    const normalizedDeviations = (vector) => {
+      const scale = vector.reduce((largest, item) => Math.max(largest, Math.abs(item)), 0);
+      if (scale === 0) throw new Error("correlation requires non-constant vectors");
+      const origin = vector[0] / scale;
+      const offsets = vector.map((item) => item / scale - origin);
+      const mean = offsets.reduce((sum, item) => sum + item / vector.length, 0);
+      const deviations = offsets.map((item) => item - mean);
+      const norm = deviations.reduce((length, item) => Math.hypot(length, item), 0);
+      if (norm === 0) throw new Error("correlation requires non-constant vectors");
+      return deviations.map((item) => item / norm);
+    };
+    const dx = normalizedDeviations(x);
+    const dy = normalizedDeviations(y);
+    const result = dx.reduce((sum, item, index) => sum + item * dy[index], 0);
+    return Math.max(-1, Math.min(1, result));
+  }
+
+  function polynomialRegression(x, y, degree = 1) {
+    const numericVector = (value) => Array.isArray(value)
+      && value.every((item) => typeof item === "number" && Number.isFinite(item));
+    if (!numericVector(x) || !numericVector(y) || !x.length || x.length !== y.length) {
+      throw new Error("regression expects two non-empty numeric vectors of equal length");
+    }
+    if (!Number.isInteger(degree) || degree < 0 || degree >= x.length) {
+      throw new Error("regression degree must be a non-negative integer smaller than the number of observations");
+    }
+    const count = x.length;
+    const width = degree + 1;
+    const minimum = x.reduce((a, b) => Math.min(a, b));
+    const maximum = x.reduce((a, b) => Math.max(a, b));
+    const center = minimum / 2 + maximum / 2;
+    const scale = Math.max(Math.abs(minimum - center), Math.abs(maximum - center)) || 1;
+    const z = x.map((item) => (item - center) / scale);
+    const yScale = y.reduce((largest, item) => Math.max(largest, Math.abs(item)), 0) || 1;
+    const normalizedY = y.map((item) => item / yScale);
+    const rhs = normalizedY.slice();
+    const matrix = z.map((item) => {
+      const row = [1];
+      for (let power = 1; power < width; power += 1) row.push(row[power - 1] * item);
+      return row;
+    });
+    // Householder QR on the scaled Vandermonde matrix. Do not form A^T A:
+    // normal equations square the condition number of the least-squares problem.
+    const tolerance = 16 * Number.EPSILON * Math.max(count, width) * Math.sqrt(count);
+    for (let column = 0; column < width; column += 1) {
+      let norm = 0;
+      for (let row = column; row < count; row += 1) norm = Math.hypot(norm, matrix[row][column]);
+      if (norm <= tolerance) {
+        throw new Error("regression requires enough distinct x values and a numerically independent polynomial basis");
+      }
+      const diagonal = matrix[column][column] >= 0 ? -norm : norm;
+      const reflector = matrix.slice(column).map((row) => row[column]);
+      reflector[0] -= diagonal;
+      const squaredNorm = reflector.reduce((sum, item) => sum + item * item, 0);
+      const applyReflector = (get, set) => {
+        let dot = 0;
+        for (let i = 0; i < reflector.length; i += 1) dot += reflector[i] * get(column + i);
+        const factor = 2 * dot / squaredNorm;
+        for (let i = 0; i < reflector.length; i += 1) set(column + i, get(column + i) - factor * reflector[i]);
+      };
+      for (let j = column + 1; j < width; j += 1) {
+        applyReflector((row) => matrix[row][j], (row, value) => { matrix[row][j] = value; });
+      }
+      applyReflector((row) => rhs[row], (row, value) => { rhs[row] = value; });
+      matrix[column][column] = diagonal;
+    }
+    const scaledCoefficients = Array(width).fill(0);
+    for (let row = width - 1; row >= 0; row -= 1) {
+      let value = rhs[row];
+      for (let j = row + 1; j < width; j += 1) value -= matrix[row][j] * scaledCoefficients[j];
+      scaledCoefficients[row] = value / matrix[row][row];
+    }
+    const predictNormalized = (value) => {
+      let result = scaledCoefficients[degree];
+      for (let j = degree - 1; j >= 0; j -= 1) result = result * value + scaledCoefficients[j];
+      return result;
+    };
+    const fittedNormalized = z.map(predictNormalized);
+    // Convert p((x-center)/scale) to coefficients in the original x coordinates.
+    let coefficients = [scaledCoefficients[degree] * yScale];
+    for (let power = degree - 1; power >= 0; power -= 1) {
+      const next = Array(coefficients.length + 1).fill(0);
+      for (let j = 0; j < coefficients.length; j += 1) {
+        const slope = coefficients[j] / scale;
+        next[j] -= slope * center;
+        next[j + 1] += slope;
+      }
+      next[0] += scaledCoefficients[power] * yScale;
+      coefficients = next;
+    }
+    if (!coefficients.every(Number.isFinite)) {
+      throw new Error("regression result exceeds numeric precision or range");
+    }
+    const mean = normalizedY.reduce((sum, item) => sum + item / count, 0);
+    const residual = normalizedY.reduce((sum, item, i) => sum + (item - fittedNormalized[i]) ** 2, 0);
+    const total = normalizedY.reduce((sum, item) => sum + (item - mean) ** 2, 0);
+    // With an intercept, a constant response is fitted perfectly (R² convention: 1).
+    const constantY = y.every((item) => item === y[0]);
+    const rSquared = constantY ? 1 : Math.max(0, Math.min(1, 1 - residual / total));
+    if (!Number.isFinite(rSquared)) throw new Error("regression result exceeds numeric precision or range");
+    return [...coefficients, rSquared];
+  }
+
   function normalizeGridDimensions(sizeValue) {
     const dims = ensureVectorLike(sizeValue, "grid");
     if (dims.length !== 2) {
@@ -1919,6 +2081,11 @@
 
       // Statistical, probabilistic, and random functions.
       average: averageArrayValues,
+      median: medianArrayValues,
+      mode: modeArrayValues,
+      correlation: correlationOfVectors,
+      polynomialRegression,
+      linearRegression: (x, y) => polynomialRegression(x, y, 1),
       bernoulli: (...args) => bernoulliWithRandom(randomSource, args),
       binomial: (...args) => binomialWithRandom(randomSource, args),
       choice: (values) => chooseRandomElement(values, randomSource),
@@ -2081,6 +2248,11 @@
       union: { kind: "array", signature: "union(vectorA, vectorB)", descriptionKey: "expr.help.union", insertText: "union()", cursorOffset: 6 },
 
       // Statistical and probabilistic functions
+      polynomialRegression: { kind: "probability", signature: "polynomialRegression(x, y[, degree])", descriptionKey: "expr.help.polynomialRegression", insertText: "polynomialRegression()", cursorOffset: 21 },
+      linearRegression: { kind: "probability", signature: "linearRegression(x, y)", descriptionKey: "expr.help.linearRegression", insertText: "linearRegression()", cursorOffset: 17 },
+      median: { kind: "probability", signature: "median(array[, axis])", descriptionKey: "expr.help.median", insertText: "median()", cursorOffset: 7 },
+      mode: { kind: "probability", signature: "mode(array[, axis])", descriptionKey: "expr.help.mode", insertText: "mode()", cursorOffset: 5 },
+      correlation: { kind: "probability", signature: "correlation(x, y)", descriptionKey: "expr.help.correlation", insertText: "correlation()", cursorOffset: 12 },
       average: { kind: "probability", signature: "average(array[, axis])", descriptionKey: "expr.help.average", insertText: "average()", cursorOffset: 8 },
       bernoulli: { kind: "probability", signature: "bernoulli([p], x, mode)", descriptionKey: "expr.help.bernoulli", insertText: "bernoulli()", cursorOffset: 10 },
       binomial: { kind: "probability", signature: "binomial([n, p], x, mode)", descriptionKey: "expr.help.binomial", insertText: "binomial()", cursorOffset: 9 },

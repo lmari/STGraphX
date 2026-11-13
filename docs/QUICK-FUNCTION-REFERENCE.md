@@ -1,6 +1,6 @@
 # STGraphX - Quick Function Reference
 
-Generated automatically da `i18n-inline.js` e `graph-functions.js` (release 2026.11.05).
+Generated automatically da `i18n-inline.js` e `graph-functions.js` (release 2026.11.13).
 
 Regenerate with `npm run docs:functions`.
 
@@ -485,6 +485,17 @@ Randomly picks one element from a non-empty vector or one row from a non-empty m
 
 ---
 
+### `correlation`
+
+`correlation(x, y)`
+
+Pearson linear correlation coefficient of two numeric vectors of equal length, with at least two values. Returns a number between -1 and 1; reports an error if either vector is constant.
+
+**Examples**
+- `correlation([1,2,3],[2,4,6]) -> 1`
+
+---
+
 ### `count`
 
 `count(array[, axis]) | count(cond, array[, axis])`
@@ -526,6 +537,40 @@ Normal distribution; mu defaults to 0 and sigma to 1. If x is omitted it samples
 
 ---
 
+### `linearRegression`
+
+`linearRegression(x, y)`
+
+Linear least-squares regression with an intercept, equivalent to polynomialRegression(x,y,1). Returns the vector [a0,a1,...,R²]: coefficients in ascending power order (a0+a1*x+...), followed by R². Requires at least two numeric pairs and non-constant x values.
+
+**Examples**
+- `linearRegression([0,1,2],[1,3,5]) -> approximately [1,2,1]`
+
+---
+
+### `median`
+
+`median(array[, axis])`
+
+Median of a non-empty numeric vector or matrix. With an even number of values it returns the mean of the two middle values. For a matrix, omit `axis` to use all values, use `axis=0` for columns or `axis=1` for rows.
+
+**Examples**
+- `median([3,1,2]) -> 2`
+- `median([1,4]) -> 2.5`
+
+---
+
+### `mode`
+
+`mode(array[, axis])`
+
+Mode of a non-empty numeric vector or matrix. Returns the most frequent value; ties select the smallest value, including when all values are distinct. For a matrix, omit `axis` to use all values, use `axis=0` for columns or `axis=1` for rows.
+
+**Examples**
+- `mode([3,1,3,1]) -> 1`
+
+---
+
 ### `poisson`
 
 `poisson([rate], x, mode)`
@@ -535,6 +580,17 @@ Poisson distribution with rate; rate defaults to 1. If x is omitted it samples a
 **Examples**
 - `poisson()`
 - `poisson([4], 2, 0)`
+
+---
+
+### `polynomialRegression`
+
+`polynomialRegression(x, y[, degree])`
+
+Polynomial least-squares regression with an intercept. `degree` is a non-negative integer, default 1; requires at least degree+1 observations and enough distinct x values. Returns the vector [a0,a1,...,R²]: coefficients in ascending power order (a0+a1*x+...), followed by R². Degree 0 estimates the mean. For constant y, R² is 1. Uses QR with scaled data; reports numerically dependent bases or unrepresentable results. For high degrees or strongly shifted x, original-coordinate coefficients may lose precision.
+
+**Examples**
+- `polynomialRegression([0,1,2],[1,4,9],2) -> approximately [1,2,1,1]`
 
 ---
 
