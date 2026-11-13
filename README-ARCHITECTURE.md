@@ -163,6 +163,12 @@ Espone nel renderer:
 
 In questo modo la logica diagnostica del modello non resta più incorporata direttamente in `app.js` ed è riusabile separatamente dalla UI.
 
+Le anteprime dell'editor e dell'analisi riportano le incompatibilità di forma
+tra stato e derivata di `integral(...)` come errori di valutazione, senza
+interrompere l'applicazione delle modifiche o la chiusura dell'editor.
+La validazione delle espressioni è diagnostica: anche le definizioni errate
+possono essere applicate dall'editor, come dalla barra di configurazione del nodo.
+
 `model-analysis-ui.js` contiene la logica UI della funzione `Analizza modello`:
 
 - help dei controlli eseguiti

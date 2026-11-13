@@ -3942,7 +3942,6 @@ function syncExpressionEditorToSelectedNode() {
   ui.expressionEditor.secondaryInitialValue = isStateNode(selectedNode)
     ? String(selectedNode.initialStateExpression ?? "")
     : "";
-  ui.expressionEditor.syntaxOk = true;
   expressionEditorTitle.textContent = ui.expressionEditor.baseTitle;
   expressionEditorTextarea.value = meta.value;
   if (expressionStateInitialInput) {
@@ -5189,7 +5188,7 @@ function openExpressionEditorSwitchModal() {
   }
   expressionEditorSwitchModal.classList.remove("hidden");
   if (expressionEditorSwitchApplyBtn) {
-    expressionEditorSwitchApplyBtn.disabled = !Boolean(ui.expressionEditor?.syntaxOk);
+    expressionEditorSwitchApplyBtn.disabled = !ui.expressionEditor || isEditingUiLocked();
   }
   (expressionEditorSwitchApplyBtn && !expressionEditorSwitchApplyBtn.disabled
     ? expressionEditorSwitchApplyBtn
@@ -6268,7 +6267,19 @@ function buildExpressionPreviewEvaluation() {
         };
       }
       const dt = Number(graph.execution.dt);
-      const integralValues = (derivativeList.value || []).map((derivativeValue) => addTensorValues(selfValue, scaleTensorValue(derivativeValue, dt)));
+      let integralValues;
+      try {
+        integralValues = (derivativeList.value || []).map((derivativeValue) => addTensorValues(selfValue, scaleTensorValue(derivativeValue, dt)));
+      } catch (error) {
+        return {
+          ok: false,
+          reason: "runtime",
+          message: error.message,
+          stateTransition: true,
+          currentValue: selfValue,
+          nextValue: null,
+        };
+      }
       const nextValueResult = semantics.evaluateStateTransitionExpressionWithIntegralValues(
         source,
         context,
@@ -6429,29 +6440,23 @@ function refreshExpressionEditorValidation() {
   expressionEditorTextarea.classList.toggle("invalid", !syntaxResult.ok);
   showExpressionStatus(expressionEditorStatus, syntaxResult, false);
   expressionEditorSurface?.classList.toggle("invalid", !syntaxResult.ok);
-  // An empty field is an incomplete definition, not a malformed expression.
-  // It must remain reportable in strict mode without preventing the user from
-  // applying a valid change to the other state-definition field.
-  const mainCanApply = syntaxResult.ok || syntaxResult.empty;
-  let initialCanApply = true;
   if (expressionStateInitialInput && !expressionStateInitialBlock?.classList.contains("hidden")) {
-    const initialResult = updateExpressionFieldState(
+    updateExpressionFieldState(
       expressionStateInitialInput,
       expressionStateInitialStatus,
       expressionStateInitialInput.value,
       true,
       "initial",
     );
-    initialCanApply = initialResult.ok || initialResult.empty;
   } else {
     hideExpressionStatus(expressionStateInitialStatus);
   }
-  const canApply = mainCanApply && initialCanApply;
+  // Validation reports errors without preventing the definition from being saved.
+  const canApply = !isEditingUiLocked();
   expressionEditorApplyBtn.disabled = !canApply;
   if (expressionEditorSwitchApplyBtn && expressionEditorSwitchModal && !expressionEditorSwitchModal.classList.contains("hidden")) {
     expressionEditorSwitchApplyBtn.disabled = !canApply;
   }
-  ui.expressionEditor.syntaxOk = canApply;
   renderExpressionHighlight();
   if (expressionStateInitialInput && expressionStateInitialHighlight && !expressionStateInitialBlock?.classList.contains("hidden")) {
     renderExpressionHighlightFor(expressionStateInitialInput, expressionStateInitialHighlight);
@@ -6548,7 +6553,6 @@ function openExpressionEditor(fieldKey) {
   ui.expressionEditor = {
     nodeId: node.id,
     fieldKey: isStateNode(node) ? "value" : meta.key,
-    syntaxOk: true,
     baseTitle: expressionEditorBaseTitleForNode(node),
     initialValue: isStateNode(node) ? String(node.valueExpression ?? "") : meta.value,
     secondaryInitialValue: isStateNode(node) ? String(node.initialStateExpression ?? "") : "",
@@ -6648,7 +6652,6 @@ function openCustomExpressionEditor(title, initialValue, onApply) {
   ui.expressionEditor = {
     nodeId: null,
     fieldKey: "__custom__",
-    syntaxOk: true,
     baseTitle: String(title ?? ""),
     initialValue: String(initialValue ?? ""),
     onApplyCustom: typeof onApply === "function" ? onApply : null,
@@ -6668,7 +6671,7 @@ function openCustomExpressionEditor(title, initialValue, onApply) {
 }
 
 function commitExpressionEditorValue(closeAfter = true) {
-  if (!ui.expressionEditor || !ui.expressionEditor.syntaxOk || isEditingUiLocked()) {
+  if (!ui.expressionEditor || isEditingUiLocked()) {
     return false;
   }
   if (ui.expressionEditor.fieldKey === "__custom__") {
@@ -10615,7 +10618,7 @@ function updateEditingLockUi() {
     setExplicitControlDisabled(expressionSymbolsFilter, frozen);
   }
   if (expressionEditorApplyBtn) {
-    expressionEditorApplyBtn.disabled = frozen || Boolean(ui.expressionEditor && !ui.expressionEditor.syntaxOk);
+    expressionEditorApplyBtn.disabled = frozen;
   }
   if (runStrictDefinitionsInput) {
     runStrictDefinitionsInput.disabled = frozen;

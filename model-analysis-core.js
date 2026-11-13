@@ -345,8 +345,13 @@
               return derivativeList;
             }
             const dt = Number(previewState.model?.execution?.dt ?? graph.execution.dt);
-            const integralValues = (derivativeList.value || [])
-              .map((derivativeValue) => addTensorValues(currentValueResult.value, scaleTensorValue(derivativeValue, dt)));
+            let integralValues;
+            try {
+              integralValues = (derivativeList.value || [])
+                .map((derivativeValue) => addTensorValues(currentValueResult.value, scaleTensorValue(derivativeValue, dt)));
+            } catch (error) {
+              return { ok: false, reason: "runtime", message: error.message };
+            }
             return semantics.evaluateStateTransitionExpressionWithIntegralValues(
               source,
               context,
