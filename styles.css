@@ -2075,10 +2075,14 @@ input.inferred-unit[readonly] { color: #6d7782; background: #f4f6f8; }
 }
 
 .chart-pair-visibility {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 4px 10px;
+  display: grid;
+  grid-template-columns: repeat(4, max-content);
+  gap: 4px 8px;
   align-items: center;
+}
+
+.chart-pair-visibility .menu-check.compact-bool span {
+  white-space: nowrap;
 }
 
 .chart-pair-style-options {

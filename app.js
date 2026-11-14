@@ -11150,8 +11150,7 @@ function getSmartCanvasInsertionPoint({ width, height, anchor = null } = {}) {
 
 function addNode(shape, atPoint = null) {
   const id = nodeCounter++;
-  const width = shape === "draft" ? 54 : 120;
-  const height = shape === "draft" ? 54 : 70;
+  const { width, height } = getDefaultNodeSize(shape);
   const position = getSmartCanvasInsertionPoint({ width, height, anchor: atPoint });
   const px = position.x + width / 2;
   const py = position.y + height / 2;
@@ -11189,6 +11188,10 @@ function addNode(shape, atPoint = null) {
   sanitizeNodeVisualOptions(node);
   graph.nodes.push(node);
   selectSingleNode(node.id);
+}
+
+function getDefaultNodeSize(shape) {
+  return { width: 54, height: 54 };
 }
 
 function addEdge(fromId, toId) {
@@ -11543,6 +11546,10 @@ function refreshSidebar() {
       }
     }
     renderSubmodelBindingsEditor(submodelNode ? node : null);
+    const expressionEditorButtonRow = stateNode ? nodeInitialStateRow : nodeValueExprRow;
+    if (editNodeValueExprBtn && expressionEditorButtonRow && editNodeValueExprBtn.parentElement !== expressionEditorButtonRow) {
+      expressionEditorButtonRow.appendChild(editNodeValueExprBtn);
+    }
     if (nodeValueExprLabel) {
       nodeValueExprLabel.textContent = parameterNode
         ? t("label.value")
@@ -17084,10 +17091,11 @@ if (expressionFormulaNotesInput) {
 
 if (editNodeValueExprBtn) {
   editNodeValueExprBtn.addEventListener("click", () => {
-    if (isWidgetControlledExpressionNode(selectedNodeForSidebar())) {
+    const node = selectedNodeForSidebar();
+    if (isWidgetControlledExpressionNode(node)) {
       return;
     }
-    openExpressionEditor("value");
+    openExpressionEditor(isStateNode(node) ? "initial" : "value");
   });
 }
 

@@ -4082,6 +4082,21 @@ function openNodeContextMenu(evt, node) {
     return;
   }
   const useSelectionDelete = ui.selectedNodes.has(node.id) && ui.selectedNodes.size > 0;
+  const nodeTypeItems = [
+    ["draft", "shape.draft"],
+    ["ellipse", "shape.ellipse"],
+    ["diamond", "shape.diamond"],
+    ["rect", "shape.rect"],
+    ["submodel", "shape.submodel"],
+  ].map(([shape, labelKey]) => ({
+    label: t(labelKey),
+    action: () => {
+      const target = getNodeById(node.id);
+      if (!target) return;
+      selectSingleNode(target.id);
+      changeNodeShape(target, shape);
+    },
+  }));
   const canCreateInputWidget = canBindSliderToNode(node) && !hasInputWidgetBinding(node);
   const inputWidgetItems = [
     ["slider", "menu.insert.sliderWidget", "status.widgetSliderCreated"],
@@ -4121,16 +4136,8 @@ function openNodeContextMenu(evt, node) {
       },
     },
     {
-      label: t("context.node.addProp"),
-      action: () => {
-        runAction(() => {
-          const target = getNodeById(node.id);
-          if (target) {
-            target.properties.push({ key: "", value: "" });
-          }
-        });
-        setStatusKey("status.propertyAdded");
-      },
+      label: t("context.node.changeType"),
+      children: nodeTypeItems,
     },
     ...(isSubmodelNode(node)
       ? [{

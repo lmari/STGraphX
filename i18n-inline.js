@@ -7,7 +7,7 @@
 
 window.STGraphXAppMeta = {
   author: "Luca Mari",
-  releaseDate: "2026.11.13",
+  releaseDate: "2026.11.14",
   license: "MPL-2.0",
   copyright: "Copyright (c) 2026 Luca Mari",
 };
@@ -108,6 +108,7 @@ window.STGraphXI18nBundles = {
     "context.edge.removeCp": "Elimina punto controllo",
     "context.edge.reverse": "Inverti verso freccia",
     "context.node.addProp": "Aggiungi proprietà",
+    "context.node.changeType": "Cambia tipo",
     "context.node.delete": "Elimina nodo",
     "context.node.readValuesFromWidget": "Leggi i valori da un widget",
     "context.node.showValuesInWidget": "Visualizza i valori in un widget",
@@ -1653,6 +1654,7 @@ window.STGraphXI18nBundles = {
     "context.edge.removeCp": "Delete control point",
     "context.edge.reverse": "Reverse edge direction",
     "context.node.addProp": "Add property",
+    "context.node.changeType": "Change type",
     "context.node.delete": "Delete node",
     "context.node.readValuesFromWidget": "Read values from a widget",
     "context.node.showValuesInWidget": "Show values in a widget",
