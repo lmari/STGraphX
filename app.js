@@ -11200,8 +11200,9 @@ function addEdge(fromId, toId) {
     return null;
   }
 
+  const sourceNode = getNodeById(fromId);
   const targetNode = getNodeById(toId);
-  if (targetNode?.shape === "diamond") {
+  if (targetNode?.shape === "diamond" && sourceNode?.shape !== "diamond") {
     setStatusKey("error.parameterIncomingEdge");
     return null;
   }
@@ -13213,7 +13214,8 @@ function importGraphData(data) {
         return false;
       }
       const targetNode = nodesWithValidNames.find((n) => n.id === e.to);
-      return targetNode?.type !== "parameter";
+      const sourceNode = nodesWithValidNames.find((n) => n.id === e.from);
+      return targetNode?.shape !== "diamond" || sourceNode?.shape === "diamond";
     })
     .map((e) => ({
       id: e.id,

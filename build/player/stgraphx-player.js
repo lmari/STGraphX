@@ -1,6 +1,6 @@
 /*!
  * STGraphX Embedded Player Bundle
- * Generated: 2026-11-12T13:36:32.648Z
+ * Generated: 2026-11-15T14:14:21.085Z
  */
 
 /* --- i18n-inline.js --- */
@@ -13,7 +13,7 @@
 
 window.STGraphXAppMeta = {
   author: "Luca Mari",
-  releaseDate: "2026.11.09",
+  releaseDate: "2026.11.14",
   license: "MPL-2.0",
   copyright: "Copyright (c) 2026 Luca Mari",
 };
@@ -114,6 +114,7 @@ window.STGraphXI18nBundles = {
     "context.edge.removeCp": "Elimina punto controllo",
     "context.edge.reverse": "Inverti verso freccia",
     "context.node.addProp": "Aggiungi proprietà",
+    "context.node.changeType": "Cambia tipo",
     "context.node.delete": "Elimina nodo",
     "context.node.readValuesFromWidget": "Leggi i valori da un widget",
     "context.node.showValuesInWidget": "Visualizza i valori in un widget",
@@ -377,6 +378,18 @@ window.STGraphXI18nBundles = {
     "expr.help.asin": "Arcoseno di `x`. Esempio: `asin(0) -> 0`.",
     "expr.help.atan": "Arcotangente di `x`. Esempio: `atan(0) -> 0`.",
     "expr.help.atan2": "Arcotangente con due argomenti `(y, x)`. Esempio: `atan2(0, 1) -> 0`.",
+    "expr.help.median": "Mediana di un vettore o di una matrice numerici non vuoti. Con un numero pari di valori restituisce la media dei due centrali. Per una matrice, senza `axis` usa tutti i valori; con `axis=0` opera per colonna, con `axis=1` per riga. Esempi: median([3,1,2]) -> 2 ; median([1,4]) -> 2.5.",
+    "expr.help.mode": "Moda di un vettore o di una matrice numerici non vuoti. Restituisce il valore più frequente; in caso di parità sceglie il più piccolo, anche quando tutti i valori sono distinti. Per una matrice, senza `axis` usa tutti i valori; con `axis=0` opera per colonna, con `axis=1` per riga. Esempi: mode([3,1,3,1]) -> 1.",
+    "expr.help.polynomialRegression": "Regressione polinomiale ai minimi quadrati, con intercetta. `degree` è un intero non negativo, predefinito 1; occorrono almeno degree+1 osservazioni e valori x distinti sufficienti. Restituisce il vettore [a0,a1,...,R²]: coefficienti in ordine crescente di potenza (a0+a1*x+...) e infine R². Il grado 0 stima la media. Con y costante R² vale 1. Usa QR con dati riscalati; segnala basi numericamente dipendenti o risultati non rappresentabili. Con gradi elevati o x molto traslati, i coefficienti nelle coordinate originali possono perdere precisione. Esempi: polynomialRegression([0,1,2],[1,4,9],2) -> circa [1,2,1,1].",
+    "expr.help.linearRegression": "Regressione lineare ai minimi quadrati con intercetta, equivalente a polynomialRegression(x,y,1). Restituisce il vettore [a0,a1,...,R²]: coefficienti in ordine crescente di potenza (a0+a1*x+...) e infine R². Richiede almeno due coppie numeriche e valori x non tutti uguali. Esempi: linearRegression([0,1,2],[1,3,5]) -> circa [1,2,1].",
+    "expr.error.regressionVectors": "La regressione richiede due vettori numerici non vuoti della stessa lunghezza",
+    "expr.error.regressionDegree": "Il grado della regressione deve essere un intero non negativo minore del numero di osservazioni",
+    "expr.error.regressionRank": "La regressione richiede valori x distinti sufficienti e una base polinomiale numericamente indipendente",
+    "expr.error.regressionRange": "Il risultato della regressione supera la precisione o l’intervallo numerico disponibile",
+    "expr.help.correlation": "Coefficiente di correlazione lineare di Pearson tra due vettori numerici della stessa lunghezza, con almeno due valori. Restituisce un numero tra -1 e 1; genera un errore se uno dei vettori è costante. Esempi: correlation([1,2,3],[2,4,6]) -> 1.",
+    "expr.error.statisticalNumericArray": "{name} richiede un vettore o una matrice numerici non vuoti",
+    "expr.error.correlationVectors": "correlation richiede due vettori numerici della stessa lunghezza con almeno due valori",
+    "expr.error.correlationConstant": "correlation richiede vettori non costanti",
     "expr.help.average": "Media aritmetica di un vettore o di una matrice. Per una matrice, senza `axis` restituisce la media complessiva; con `axis=0` per colonna, con `axis=1` per riga. Esempi: average([1,2,3]) -> 2 ; average([[1,2],[3,4]]) -> 2.5 ; average([[1,2],[3,4]], 0) -> [2,3].",
     "expr.help.bernoulli": "Distribuzione di Bernoulli (parametro predefinito: `p=0.5`). Se `x` manca, estrae un campione. Con `mode=0` calcola la pmf, con `mode=1` la cdf, con `mode=2` il quantile discreto. Esempi: `bernoulli()`; `bernoulli([0.3], 1, 0)`.",
     "expr.help.binomial": "Distribuzione binomiale (parametri predefiniti: `n=1`, `p=0.5`). Se `x` manca, estrae un campione. Con `mode=0` calcola la pmf, con `mode=1` la cdf, con `mode=2` il quantile discreto. Esempi: `binomial()`; `binomial([10,0.2], 3, 0)`.",
@@ -1529,7 +1542,7 @@ window.STGraphXI18nBundles = {
     "error.submodelInterfaceUnavailable": "Interfaccia del sottomodello non disponibile.",
     "error.nodeDefinition.missingTransition": "funzione di stato prossimo mancante",
     "error.nodeDefinition.missingValue": "valore mancante",
-    "error.parameterIncomingEdge": "Un parametro non può avere frecce entranti.",
+    "error.parameterIncomingEdge": "Un parametro può ricevere frecce solo da altri parametri.",
     "error.recentMissing": "Il file recente selezionato non è più disponibile.",
     "error.renderEveryStepsInvalid": "L'intervallo di aggiornamento visivo deve essere almeno 1.",
     "error.reservedNodeName": "Nome variabile non valido: parola riservata.",
@@ -1647,6 +1660,7 @@ window.STGraphXI18nBundles = {
     "context.edge.removeCp": "Delete control point",
     "context.edge.reverse": "Reverse edge direction",
     "context.node.addProp": "Add property",
+    "context.node.changeType": "Change type",
     "context.node.delete": "Delete node",
     "context.node.readValuesFromWidget": "Read values from a widget",
     "context.node.showValuesInWidget": "Show values in a widget",
@@ -1910,6 +1924,18 @@ window.STGraphXI18nBundles = {
     "expr.help.asin": "Arc sine. Example: `asin(0) -> 0`.",
     "expr.help.atan": "Arc tangent. Example: `atan(0) -> 0`.",
     "expr.help.atan2": "Two-argument arc tangent (y, x). Example: `atan2(0, 1) -> 0`.",
+    "expr.help.median": "Median of a non-empty numeric vector or matrix. With an even number of values it returns the mean of the two middle values. For a matrix, omit `axis` to use all values, use `axis=0` for columns or `axis=1` for rows. Examples: median([3,1,2]) -> 2 ; median([1,4]) -> 2.5.",
+    "expr.help.mode": "Mode of a non-empty numeric vector or matrix. Returns the most frequent value; ties select the smallest value, including when all values are distinct. For a matrix, omit `axis` to use all values, use `axis=0` for columns or `axis=1` for rows. Examples: mode([3,1,3,1]) -> 1.",
+    "expr.help.polynomialRegression": "Polynomial least-squares regression with an intercept. `degree` is a non-negative integer, default 1; requires at least degree+1 observations and enough distinct x values. Returns the vector [a0,a1,...,R²]: coefficients in ascending power order (a0+a1*x+...), followed by R². Degree 0 estimates the mean. For constant y, R² is 1. Uses QR with scaled data; reports numerically dependent bases or unrepresentable results. For high degrees or strongly shifted x, original-coordinate coefficients may lose precision. Examples: polynomialRegression([0,1,2],[1,4,9],2) -> approximately [1,2,1,1].",
+    "expr.help.linearRegression": "Linear least-squares regression with an intercept, equivalent to polynomialRegression(x,y,1). Returns the vector [a0,a1,...,R²]: coefficients in ascending power order (a0+a1*x+...), followed by R². Requires at least two numeric pairs and non-constant x values. Examples: linearRegression([0,1,2],[1,3,5]) -> approximately [1,2,1].",
+    "expr.error.regressionVectors": "Regression expects two non-empty numeric vectors of equal length",
+    "expr.error.regressionDegree": "Regression degree must be a non-negative integer smaller than the number of observations",
+    "expr.error.regressionRank": "Regression requires enough distinct x values and a numerically independent polynomial basis",
+    "expr.error.regressionRange": "Regression result exceeds numeric precision or range",
+    "expr.help.correlation": "Pearson linear correlation coefficient of two numeric vectors of equal length, with at least two values. Returns a number between -1 and 1; reports an error if either vector is constant. Examples: correlation([1,2,3],[2,4,6]) -> 1.",
+    "expr.error.statisticalNumericArray": "{name} expects a non-empty numeric vector or matrix",
+    "expr.error.correlationVectors": "correlation expects two numeric vectors of equal length with at least two values",
+    "expr.error.correlationConstant": "correlation requires non-constant vectors",
     "expr.help.average": "Arithmetic mean of a vector or matrix. For a matrix without axis it returns the overall mean; with axis=0 it returns column means, with axis=1 row means. Examples: average([1,2,3]) -> 2 ; average([[1,2],[3,4]]) -> 2.5 ; average([[1,2],[3,4]], 0) -> [2,3].",
     "expr.help.bernoulli": "Bernoulli distribution; p defaults to 0.5. If x is omitted it samples 0 or 1. With mode=0 it computes the probability mass, with mode=1 the cdf, with mode=2 the discrete quantile. Examples: bernoulli() ; bernoulli([0.3], 1, 0).",
     "expr.help.binomial": "Binomial distribution with n trials and success probability p; n defaults to 1 and p to 0.5. If x is omitted it samples a value. With mode=0 it computes the probability mass, with mode=1 the cdf, with mode=2 the discrete quantile. Examples: binomial() ; binomial([10,0.2], 3, 0).",
@@ -3062,7 +3088,7 @@ window.STGraphXI18nBundles = {
     "error.submodelInterfaceUnavailable": "Submodel interface is unavailable.",
     "error.nodeDefinition.missingTransition": "missing next state function",
     "error.nodeDefinition.missingValue": "missing value",
-    "error.parameterIncomingEdge": "A parameter cannot have incoming edges.",
+    "error.parameterIncomingEdge": "A parameter can receive edges only from other parameters.",
     "error.recentMissing": "The selected recent file is no longer available.",
     "error.renderEveryStepsInvalid": "The visual refresh interval must be at least 1.",
     "error.reservedNodeName": "Invalid variable name: reserved word.",
@@ -4694,6 +4720,168 @@ window.STGraphXI18nBundles = {
     return value.map((row) => stdevOfVector(row));
   }
 
+  function reduceStatisticalArray(value, axis, name, reduceVector) {
+    const validNumber = (item) => typeof item === "number" && Number.isFinite(item);
+    if (!Array.isArray(value) || !value.length) {
+      throw new Error(`${name} expects a non-empty numeric vector or matrix`);
+    }
+    if (value.every(validNumber)) {
+      if (axis != null && axis !== 0) {
+        throw new Error(`${name} axis for vectors must be 0`);
+      }
+      return reduceVector(value);
+    }
+    if (!value.every((row) => Array.isArray(row) && row.length > 0
+      && row.length === value[0].length && row.every(validNumber))) {
+      throw new Error(`${name} expects a non-empty numeric vector or matrix`);
+    }
+    if (axis == null) return reduceVector(value.flat());
+    if (axis !== 0 && axis !== 1) {
+      throw new Error(`${name} axis for matrices must be 0 or 1`);
+    }
+    return axis === 0
+      ? value[0].map((_, column) => reduceVector(value.map((row) => row[column])))
+      : value.map(reduceVector);
+  }
+
+  function medianArrayValues(value, axis = null) {
+    return reduceStatisticalArray(value, axis, "median", (vector) => {
+      const sorted = vector.slice().sort((a, b) => a - b);
+      const middle = Math.floor(sorted.length / 2);
+      if (sorted.length % 2) return sorted[middle];
+      const left = sorted[middle - 1];
+      const right = sorted[middle];
+      // Avoid overflow for large values and underflow for equal tiny values.
+      return Math.sign(left) === Math.sign(right) ? left + (right - left) / 2 : (left + right) / 2;
+    });
+  }
+
+  function modeArrayValues(value, axis = null) {
+    return reduceStatisticalArray(value, axis, "mode", (vector) => {
+      const counts = new Map();
+      let best = vector[0];
+      let bestCount = 0;
+      for (const item of vector) {
+        const count = (counts.get(item) || 0) + 1;
+        counts.set(item, count);
+        if (count > bestCount || (count === bestCount && item < best)) {
+          best = item;
+          bestCount = count;
+        }
+      }
+      return best;
+    });
+  }
+
+  function correlationOfVectors(x, y) {
+    const isNumericVector = (value) => Array.isArray(value)
+      && value.every((item) => typeof item === "number" && Number.isFinite(item));
+    if (!isNumericVector(x) || !isNumericVector(y) || x.length < 2 || x.length !== y.length) {
+      throw new Error("correlation expects two numeric vectors of equal length with at least two values");
+    }
+    const normalizedDeviations = (vector) => {
+      const scale = vector.reduce((largest, item) => Math.max(largest, Math.abs(item)), 0);
+      if (scale === 0) throw new Error("correlation requires non-constant vectors");
+      const origin = vector[0] / scale;
+      const offsets = vector.map((item) => item / scale - origin);
+      const mean = offsets.reduce((sum, item) => sum + item / vector.length, 0);
+      const deviations = offsets.map((item) => item - mean);
+      const norm = deviations.reduce((length, item) => Math.hypot(length, item), 0);
+      if (norm === 0) throw new Error("correlation requires non-constant vectors");
+      return deviations.map((item) => item / norm);
+    };
+    const dx = normalizedDeviations(x);
+    const dy = normalizedDeviations(y);
+    const result = dx.reduce((sum, item, index) => sum + item * dy[index], 0);
+    return Math.max(-1, Math.min(1, result));
+  }
+
+  function polynomialRegression(x, y, degree = 1) {
+    const numericVector = (value) => Array.isArray(value)
+      && value.every((item) => typeof item === "number" && Number.isFinite(item));
+    if (!numericVector(x) || !numericVector(y) || !x.length || x.length !== y.length) {
+      throw new Error("regression expects two non-empty numeric vectors of equal length");
+    }
+    if (!Number.isInteger(degree) || degree < 0 || degree >= x.length) {
+      throw new Error("regression degree must be a non-negative integer smaller than the number of observations");
+    }
+    const count = x.length;
+    const width = degree + 1;
+    const minimum = x.reduce((a, b) => Math.min(a, b));
+    const maximum = x.reduce((a, b) => Math.max(a, b));
+    const center = minimum / 2 + maximum / 2;
+    const scale = Math.max(Math.abs(minimum - center), Math.abs(maximum - center)) || 1;
+    const z = x.map((item) => (item - center) / scale);
+    const yScale = y.reduce((largest, item) => Math.max(largest, Math.abs(item)), 0) || 1;
+    const normalizedY = y.map((item) => item / yScale);
+    const rhs = normalizedY.slice();
+    const matrix = z.map((item) => {
+      const row = [1];
+      for (let power = 1; power < width; power += 1) row.push(row[power - 1] * item);
+      return row;
+    });
+    // Householder QR on the scaled Vandermonde matrix. Do not form A^T A:
+    // normal equations square the condition number of the least-squares problem.
+    const tolerance = 16 * Number.EPSILON * Math.max(count, width) * Math.sqrt(count);
+    for (let column = 0; column < width; column += 1) {
+      let norm = 0;
+      for (let row = column; row < count; row += 1) norm = Math.hypot(norm, matrix[row][column]);
+      if (norm <= tolerance) {
+        throw new Error("regression requires enough distinct x values and a numerically independent polynomial basis");
+      }
+      const diagonal = matrix[column][column] >= 0 ? -norm : norm;
+      const reflector = matrix.slice(column).map((row) => row[column]);
+      reflector[0] -= diagonal;
+      const squaredNorm = reflector.reduce((sum, item) => sum + item * item, 0);
+      const applyReflector = (get, set) => {
+        let dot = 0;
+        for (let i = 0; i < reflector.length; i += 1) dot += reflector[i] * get(column + i);
+        const factor = 2 * dot / squaredNorm;
+        for (let i = 0; i < reflector.length; i += 1) set(column + i, get(column + i) - factor * reflector[i]);
+      };
+      for (let j = column + 1; j < width; j += 1) {
+        applyReflector((row) => matrix[row][j], (row, value) => { matrix[row][j] = value; });
+      }
+      applyReflector((row) => rhs[row], (row, value) => { rhs[row] = value; });
+      matrix[column][column] = diagonal;
+    }
+    const scaledCoefficients = Array(width).fill(0);
+    for (let row = width - 1; row >= 0; row -= 1) {
+      let value = rhs[row];
+      for (let j = row + 1; j < width; j += 1) value -= matrix[row][j] * scaledCoefficients[j];
+      scaledCoefficients[row] = value / matrix[row][row];
+    }
+    const predictNormalized = (value) => {
+      let result = scaledCoefficients[degree];
+      for (let j = degree - 1; j >= 0; j -= 1) result = result * value + scaledCoefficients[j];
+      return result;
+    };
+    const fittedNormalized = z.map(predictNormalized);
+    // Convert p((x-center)/scale) to coefficients in the original x coordinates.
+    let coefficients = [scaledCoefficients[degree] * yScale];
+    for (let power = degree - 1; power >= 0; power -= 1) {
+      const next = Array(coefficients.length + 1).fill(0);
+      for (let j = 0; j < coefficients.length; j += 1) {
+        const slope = coefficients[j] / scale;
+        next[j] -= slope * center;
+        next[j + 1] += slope;
+      }
+      next[0] += scaledCoefficients[power] * yScale;
+      coefficients = next;
+    }
+    if (!coefficients.every(Number.isFinite)) {
+      throw new Error("regression result exceeds numeric precision or range");
+    }
+    const mean = normalizedY.reduce((sum, item) => sum + item / count, 0);
+    const residual = normalizedY.reduce((sum, item, i) => sum + (item - fittedNormalized[i]) ** 2, 0);
+    const total = normalizedY.reduce((sum, item) => sum + (item - mean) ** 2, 0);
+    // With an intercept, a constant response is fitted perfectly (R² convention: 1).
+    const constantY = y.every((item) => item === y[0]);
+    const rSquared = constantY ? 1 : Math.max(0, Math.min(1, 1 - residual / total));
+    if (!Number.isFinite(rSquared)) throw new Error("regression result exceeds numeric precision or range");
+    return [...coefficients, rSquared];
+  }
+
   function normalizeGridDimensions(sizeValue) {
     const dims = ensureVectorLike(sizeValue, "grid");
     if (dims.length !== 2) {
@@ -5140,6 +5328,11 @@ window.STGraphXI18nBundles = {
 
       // Statistical, probabilistic, and random functions.
       average: averageArrayValues,
+      median: medianArrayValues,
+      mode: modeArrayValues,
+      correlation: correlationOfVectors,
+      polynomialRegression,
+      linearRegression: (x, y) => polynomialRegression(x, y, 1),
       bernoulli: (...args) => bernoulliWithRandom(randomSource, args),
       binomial: (...args) => binomialWithRandom(randomSource, args),
       choice: (values) => chooseRandomElement(values, randomSource),
@@ -5302,6 +5495,11 @@ window.STGraphXI18nBundles = {
       union: { kind: "array", signature: "union(vectorA, vectorB)", descriptionKey: "expr.help.union", insertText: "union()", cursorOffset: 6 },
 
       // Statistical and probabilistic functions
+      polynomialRegression: { kind: "probability", signature: "polynomialRegression(x, y[, degree])", descriptionKey: "expr.help.polynomialRegression", insertText: "polynomialRegression()", cursorOffset: 21 },
+      linearRegression: { kind: "probability", signature: "linearRegression(x, y)", descriptionKey: "expr.help.linearRegression", insertText: "linearRegression()", cursorOffset: 17 },
+      median: { kind: "probability", signature: "median(array[, axis])", descriptionKey: "expr.help.median", insertText: "median()", cursorOffset: 7 },
+      mode: { kind: "probability", signature: "mode(array[, axis])", descriptionKey: "expr.help.mode", insertText: "mode()", cursorOffset: 5 },
+      correlation: { kind: "probability", signature: "correlation(x, y)", descriptionKey: "expr.help.correlation", insertText: "correlation()", cursorOffset: 12 },
       average: { kind: "probability", signature: "average(array[, axis])", descriptionKey: "expr.help.average", insertText: "average()", cursorOffset: 8 },
       bernoulli: { kind: "probability", signature: "bernoulli([p], x, mode)", descriptionKey: "expr.help.bernoulli", insertText: "bernoulli()", cursorOffset: 10 },
       binomial: { kind: "probability", signature: "binomial([n, p], x, mode)", descriptionKey: "expr.help.binomial", insertText: "binomial()", cursorOffset: 9 },
@@ -8183,6 +8381,27 @@ window.STGraphXI18nBundles = {
             return;
           }
           context[globalNode.name] = depResult.value;
+        });
+        if (!dependenciesReady) {
+          continue;
+        }
+        (incoming.get(nodeId) || []).forEach((fromId) => {
+          if (!dependenciesReady) {
+            return;
+          }
+          const fromNode = nodeById.get(fromId);
+          if (!isParameterNode(fromNode)) {
+            dependenciesReady = false;
+            return;
+          }
+          const depResult = hasExternalValue(fromNode)
+            ? fixedResults.get(fromId)
+            : parameterResults.get(fromId);
+          if (!depResult || !depResult.ok) {
+            dependenciesReady = false;
+            return;
+          }
+          context[fromNode.name] = depResult.value;
         });
         if (!dependenciesReady) {
           continue;

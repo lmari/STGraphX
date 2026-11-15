@@ -55,6 +55,20 @@ assert.equal(nodeById(model, 2).computedValue, 3);
 assert.equal(nodeById(model, 3).computedValue, 6);
 assert.equal(nodeById(model, 4).computedValue, 9);
 
+const parameterDependencyNodes = [
+  makeNode(1, "base", "diamond", "2"),
+  makeNode(2, "doubleBase", "diamond", "base*2"),
+];
+const parameterDependencyResults = semantics.evaluateStatefulGraphStep(
+  parameterDependencyNodes,
+  [{ from: 1, to: 2 }],
+);
+assert.equal(
+  parameterDependencyResults.algebraic.find((entry) => entry.id === 2)?.result.value,
+  4,
+  "a parameter can depend on an incoming parameter edge",
+);
+
 const cycleModel = {
   properties: [], localFunctions: [], __readDataCache: {},
   nodes: [makeNode(1, "a", "rect", "", "b+1"), makeNode(2, "b", "ellipse", "a+1")],

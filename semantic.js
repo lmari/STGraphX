@@ -2813,6 +2813,27 @@
         if (!dependenciesReady) {
           continue;
         }
+        (incoming.get(nodeId) || []).forEach((fromId) => {
+          if (!dependenciesReady) {
+            return;
+          }
+          const fromNode = nodeById.get(fromId);
+          if (!isParameterNode(fromNode)) {
+            dependenciesReady = false;
+            return;
+          }
+          const depResult = hasExternalValue(fromNode)
+            ? fixedResults.get(fromId)
+            : parameterResults.get(fromId);
+          if (!depResult || !depResult.ok) {
+            dependenciesReady = false;
+            return;
+          }
+          context[fromNode.name] = depResult.value;
+        });
+        if (!dependenciesReady) {
+          continue;
+        }
         parameterResults.set(node.id, evaluateValueExpression(node.valueExpression, context, {
           localFunctions: options?.localFunctions || [],
           random: options?.random,
