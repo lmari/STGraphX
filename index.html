@@ -547,16 +547,9 @@
           <aside id="expressionSidebar" class="expression-sidebar">
             <input id="expressionSymbolsFilter" class="expression-symbols-filter" type="text" data-i18n-placeholder="expr.filter.placeholder" />
             <div id="expressionLibrary" class="expression-library"></div>
-            <div class="expression-help-section">
-              <div class="expression-field-head expression-help-head">
-                <div class="expression-preview-label" data-i18n="expr.help.title"></div>
-                <button id="expressionHelpCopyBtn" class="small-btn expression-copy-btn hidden" type="button" data-i18n="menu.edit.copy"></button>
-              </div>
-              <div id="expressionHelp" class="expression-help" data-i18n="expr.help.empty"></div>
-            </div>
             <div id="expressionPreviewBox" class="expression-preview">
               <div id="expressionPreviewLabel" class="expression-preview-label" data-i18n="expr.preview.title"></div>
-              <pre id="expressionPreviewValue" class="expression-preview-value" data-i18n="expr.preview.empty"></pre>
+              <pre id="expressionPreviewValue" class="expression-preview-value" tabindex="0" data-i18n="expr.preview.empty"></pre>
             </div>
           </aside>
         </div>
@@ -564,9 +557,14 @@
           <div id="expressionEditorStatus" class="expr-status hidden"></div>
           <button id="expressionStatusCopyBtn" class="small-btn expression-copy-btn hidden" type="button" data-i18n="menu.edit.copy"></button>
         </div>
-        <div class="modal-actions">
-          <button id="expressionEditorCancelBtn" type="button" data-i18n="action.cancel"></button>
-          <button id="expressionEditorApplyBtn" type="button" data-i18n="action.apply"></button>
+        <div class="expression-editor-footer">
+          <div class="expression-help-section">
+            <div id="expressionHelp" class="expression-help" tabindex="0" data-i18n="expr.help.empty"></div>
+          </div>
+          <div class="modal-actions expression-editor-actions">
+            <button id="expressionEditorCancelBtn" type="button" data-i18n="action.cancel"></button>
+            <button id="expressionEditorApplyBtn" type="button" data-i18n="action.apply"></button>
+          </div>
         </div>
         <div id="expressionEditorResizeHandle" class="expression-editor-resize-handle" aria-hidden="true"></div>
       </div>

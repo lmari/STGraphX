@@ -3371,6 +3371,8 @@ input.inferred-unit[readonly] { color: #6d7782; background: #f4f6f8; }
   line-height: 1.35;
   color: var(--text);
   overflow: auto;
+  user-select: text;
+  cursor: text;
 }
 
 .expression-formula-notes {
@@ -3751,6 +3753,7 @@ input.inferred-unit[readonly] { color: #6d7782; background: #f4f6f8; }
   flex-direction: column;
   gap: 6px;
   min-height: 0;
+  min-width: 0;
 }
 
 .expression-help-head {
@@ -3776,10 +3779,11 @@ input.inferred-unit[readonly] { color: #6d7782; background: #f4f6f8; }
   line-height: 1.35;
   white-space: normal;
   min-height: 0;
-  height: 124px;
+  height: 76px;
   max-height: none;
   overflow: auto;
   user-select: text;
+  cursor: text;
 }
 
 .expression-help-entry-title {
@@ -4160,12 +4164,28 @@ input.inferred-unit[readonly] { color: #6d7782; background: #f4f6f8; }
 .expression-sidebar {
   display: grid;
   /* The symbol library is the primary aid while writing an expression. */
-  grid-template-rows: auto minmax(180px, 1fr) auto auto;
+  grid-template-rows: auto minmax(180px, 1fr) auto;
   gap: 8px;
   min-width: 0;
   min-height: 0;
   overflow: auto;
   padding-right: 4px;
+}
+
+.expression-editor-footer {
+  display: flex;
+  align-items: stretch;
+  gap: 10px;
+  min-width: 0;
+}
+
+.expression-editor-footer .expression-help-section {
+  flex: 1 1 auto;
+}
+
+.expression-editor-footer .modal-actions {
+  flex: 0 0 auto;
+  align-items: center;
 }
 
 @media (min-width: 701px) {
@@ -4384,7 +4404,7 @@ input.inferred-unit[readonly] { color: #6d7782; background: #f4f6f8; }
   .expression-sidebar {
     min-height: 230px;
     max-height: none;
-    grid-template-rows: auto minmax(180px, 1fr) auto auto;
+    grid-template-rows: auto minmax(180px, 1fr) auto;
   }
 
   .expression-sidebar-toggle {
@@ -4534,7 +4554,7 @@ body.tablet-sidebar-layout .expression-formula-notes-input {
 }
 
 body.tablet-sidebar-layout .expression-sidebar {
-  grid-template-rows: auto minmax(120px, 1fr) auto auto;
+  grid-template-rows: auto minmax(120px, 1fr) auto;
   max-height: min(36vh, 320px);
   overflow: auto;
   padding-right: 0;
@@ -4578,11 +4598,17 @@ body.tablet-sidebar-layout .expression-preview-value {
 }
 
 body.tablet-sidebar-layout .expression-status-row,
-body.tablet-sidebar-layout .modal-actions {
+body.tablet-sidebar-layout .expression-editor-footer {
   position: sticky;
   bottom: 0;
   background: linear-gradient(180deg, rgba(250, 252, 254, 0.92) 0%, rgba(250, 252, 254, 0.98) 100%);
   padding-top: 6px;
+}
+
+body.tablet-sidebar-layout .expression-editor-footer .modal-actions {
+  position: static;
+  padding-top: 0;
+  background: transparent;
 }
 
 body.tablet-sidebar-layout .expression-editor-resize-handle {
@@ -5101,7 +5127,7 @@ body.tablet-sidebar-layout .expression-editor-resize-handle {
 
 .context-menu {
   position: fixed;
-  z-index: 1000;
+  z-index: 1600;
   min-width: 238px;
   max-height: calc(100vh - 16px);
   overflow-y: auto;

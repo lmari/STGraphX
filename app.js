@@ -247,7 +247,6 @@ const expressionMainDocs = document.getElementById("expressionMainDocs");
 const expressionSymbolsFilter = document.getElementById("expressionSymbolsFilter");
 const expressionSidebar = document.getElementById("expressionSidebar");
 const expressionHelp = document.getElementById("expressionHelp");
-const expressionHelpCopyBtn = document.getElementById("expressionHelpCopyBtn");
 const expressionPreviewBox = document.getElementById("expressionPreviewBox");
 const expressionPreviewValue = document.getElementById("expressionPreviewValue");
 const expressionDescriptionBox = document.getElementById("expressionDescriptionBox");
@@ -5729,7 +5728,6 @@ function setExpressionHelp(entry = null) {
   }
   if (!entry) {
     expressionHelp.textContent = t("expr.help.empty");
-    expressionHelpCopyBtn?.classList.add("hidden");
     return;
   }
   const kindKey = `expr.help.kind.${entry.kind || "function"}`;
@@ -5772,7 +5770,6 @@ function setExpressionHelp(entry = null) {
     });
     expressionHelp.append(examples);
   }
-  expressionHelpCopyBtn?.classList.remove("hidden");
 }
 
 function setExpressionEntryTooltip(entry = null) {
@@ -5819,6 +5816,146 @@ async function copyExpressionAuxText(sourceEl, emptyKey = "expr.copy.empty") {
     return;
   }
   setStatusKey("error.clipboardTextCopyFailed");
+}
+
+function selectedExpressionReadOnlyText(sourceEl) {
+  const selection = window.getSelection?.();
+  if (!selection || selection.rangeCount === 0 || selection.isCollapsed) {
+    return "";
+  }
+  const range = selection.getRangeAt(0);
+  if (!sourceEl?.contains(range.commonAncestorContainer)) {
+    return "";
+  }
+  return selection.toString();
+}
+
+function selectAllExpressionReadOnlyText(sourceEl) {
+  if (!sourceEl) return;
+  sourceEl.focus({ preventScroll: true });
+  const selection = window.getSelection?.();
+  if (!selection) return;
+  const range = document.createRange();
+  range.selectNodeContents(sourceEl);
+  selection.removeAllRanges();
+  selection.addRange(range);
+}
+
+async function copySelectedExpressionReadOnlyText(sourceEl) {
+  const content = selectedExpressionReadOnlyText(sourceEl);
+  if (!content) return false;
+  const ok = await copyTextToClipboard(content);
+  setStatusKey(ok ? "status.clipboardTextCopied" : "error.clipboardTextCopyFailed");
+  return ok;
+}
+
+function openExpressionReadOnlyTextContextMenu(evt, sourceEl) {
+  evt.preventDefault();
+  const hasSelection = Boolean(selectedExpressionReadOnlyText(sourceEl));
+  showContextMenu(evt.clientX, evt.clientY, [
+    { label: t("menu.edit.selectAll"), action: () => selectAllExpressionReadOnlyText(sourceEl) },
+    { separator: true },
+    { label: t("menu.edit.copy"), disabled: !hasSelection, action: () => { void copySelectedExpressionReadOnlyText(sourceEl); } },
+  ]);
+}
+
+function handleExpressionReadOnlyClipboardShortcut(evt, sourceEl) {
+  if ((!evt.ctrlKey && !evt.metaKey) || evt.altKey) return false;
+  const key = evt.key.toLowerCase();
+  if (key === "a") {
+    evt.preventDefault();
+    evt.stopPropagation();
+    selectAllExpressionReadOnlyText(sourceEl);
+    return true;
+  }
+  if (key === "c") {
+    evt.preventDefault();
+    evt.stopPropagation();
+    void copySelectedExpressionReadOnlyText(sourceEl);
+    return true;
+  }
+  return false;
+}
+
+function expressionInputSelectionText(input) {
+  if (!input) return "";
+  const start = input.selectionStart ?? 0;
+  const end = input.selectionEnd ?? start;
+  return input.value.slice(start, end);
+}
+
+function replaceExpressionInputSelection(input, text) {
+  if (!input) return false;
+  const start = input.selectionStart ?? 0;
+  const end = input.selectionEnd ?? start;
+  const content = String(text ?? "");
+  input.value = `${input.value.slice(0, start)}${content}${input.value.slice(end)}`;
+  const caret = start + content.length;
+  input.focus();
+  input.setSelectionRange(caret, caret);
+  input.dispatchEvent(new Event("input", { bubbles: true }));
+  return true;
+}
+
+async function copyExpressionInputSelection(input) {
+  const content = expressionInputSelectionText(input);
+  if (!content) return false;
+  const ok = await copyTextToClipboard(content);
+  setStatusKey(ok ? "status.clipboardTextCopied" : "error.clipboardTextCopyFailed");
+  return ok;
+}
+
+async function cutExpressionInputSelection(input) {
+  if (!await copyExpressionInputSelection(input)) return false;
+  return replaceExpressionInputSelection(input, "");
+}
+
+async function pasteExpressionInputText(input) {
+  const content = await readPlainClipboardText();
+  if (!content) return false;
+  return replaceExpressionInputSelection(input, content);
+}
+
+function openExpressionInputContextMenu(evt, input) {
+  evt.preventDefault();
+  const hasSelection = Boolean(expressionInputSelectionText(input));
+  showContextMenu(evt.clientX, evt.clientY, [
+    { label: t("menu.edit.selectAll"), action: () => { input.focus(); input.select(); } },
+    { separator: true },
+    { label: t("menu.edit.cut"), disabled: !hasSelection, action: () => { void cutExpressionInputSelection(input); } },
+    { label: t("menu.edit.copy"), disabled: !hasSelection, action: () => { void copyExpressionInputSelection(input); } },
+    { label: t("menu.edit.paste"), action: () => { void pasteExpressionInputText(input); } },
+  ]);
+}
+
+function handleExpressionInputClipboardShortcut(evt, input) {
+  if ((!evt.ctrlKey && !evt.metaKey) || evt.altKey) return false;
+  const key = evt.key.toLowerCase();
+  if (key === "a") {
+    evt.preventDefault();
+    evt.stopPropagation();
+    input.select();
+    return true;
+  }
+  if (key === "c") {
+    evt.preventDefault();
+    evt.stopPropagation();
+    void copyExpressionInputSelection(input);
+    return true;
+  }
+  if (key === "x") {
+    evt.preventDefault();
+    evt.stopPropagation();
+    void cutExpressionInputSelection(input);
+    return true;
+  }
+  if (key === "v") {
+    evt.preventDefault();
+    evt.stopPropagation();
+    void pasteExpressionInputText(input);
+    return true;
+  }
+  return false;
 }
 
 function expressionValuePreviewForEntry(entry) {
@@ -17072,6 +17209,12 @@ if (expressionDescriptionInput) {
     prop.value = expressionDescriptionInput.value;
     scheduleFileStatusRefresh();
   });
+  expressionDescriptionInput.addEventListener("keydown", (evt) => {
+    handleExpressionInputClipboardShortcut(evt, expressionDescriptionInput);
+  });
+  expressionDescriptionInput.addEventListener("contextmenu", (evt) => {
+    openExpressionInputContextMenu(evt, expressionDescriptionInput);
+  });
 }
 
 if (expressionFormulaNotesInput) {
@@ -17088,6 +17231,12 @@ if (expressionFormulaNotesInput) {
     const prop = normalizeNodeFormulaNotesProperty(node);
     prop.value = expressionFormulaNotesInput.value;
     scheduleFileStatusRefresh();
+  });
+  expressionFormulaNotesInput.addEventListener("keydown", (evt) => {
+    handleExpressionInputClipboardShortcut(evt, expressionFormulaNotesInput);
+  });
+  expressionFormulaNotesInput.addEventListener("contextmenu", (evt) => {
+    openExpressionInputContextMenu(evt, expressionFormulaNotesInput);
   });
 }
 
@@ -17115,6 +17264,9 @@ if (expressionEditorTextarea) {
     renderExpressionHighlight();
   });
   expressionEditorTextarea.addEventListener("keydown", (evt) => {
+    if (handleExpressionInputClipboardShortcut(evt, expressionEditorTextarea)) {
+      return;
+    }
     if (evt.key === "ArrowDown" && evt.shiftKey) {
       evt.preventDefault();
       moveLibrarySelection(1);
@@ -17152,6 +17304,9 @@ if (expressionEditorTextarea) {
     expressionEditorTextarea.addEventListener(eventName, () => {
       renderExpressionHighlight();
     });
+  });
+  expressionEditorTextarea.addEventListener("contextmenu", (evt) => {
+    openExpressionInputContextMenu(evt, expressionEditorTextarea);
   });
 }
 
@@ -17169,6 +17324,9 @@ if (expressionStateInitialInput) {
     renderExpressionHighlight();
   });
   expressionStateInitialInput.addEventListener("keydown", (evt) => {
+    if (handleExpressionInputClipboardShortcut(evt, expressionStateInitialInput)) {
+      return;
+    }
     if (evt.key === "ArrowDown" && evt.shiftKey) {
       evt.preventDefault();
       moveLibrarySelection(1);
@@ -17207,7 +17365,22 @@ if (expressionStateInitialInput) {
       renderExpressionHighlight();
     });
   });
+  expressionStateInitialInput.addEventListener("contextmenu", (evt) => {
+    openExpressionInputContextMenu(evt, expressionStateInitialInput);
+  });
 }
+
+[expressionHelp, expressionPreviewValue].filter(Boolean).forEach((element) => {
+  element.addEventListener("pointerdown", () => {
+    element.focus({ preventScroll: true });
+  });
+  element.addEventListener("contextmenu", (evt) => {
+    openExpressionReadOnlyTextContextMenu(evt, element);
+  });
+  element.addEventListener("keydown", (evt) => {
+    handleExpressionReadOnlyClipboardShortcut(evt, element);
+  });
+});
 
 // `selectionchange` also covers caret movements performed by touch handles,
 // accessibility tools and browser commands, which do not consistently emit a
@@ -17259,11 +17432,6 @@ if (expressionEditorCancelBtn) {
 }
 if (expressionEditorApplyBtn) {
   expressionEditorApplyBtn.addEventListener("click", applyExpressionEditor);
-}
-if (expressionHelpCopyBtn) {
-  expressionHelpCopyBtn.addEventListener("click", () => {
-    copyExpressionAuxText(expressionHelp);
-  });
 }
 if (expressionStatusCopyBtn) {
   expressionStatusCopyBtn.addEventListener("click", () => {
