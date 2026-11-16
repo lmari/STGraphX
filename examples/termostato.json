@@ -1,0 +1,689 @@
+{
+  "version": 1,
+  "modelTitle": "Sistema di riscaldamento termostatato",
+  "localFunctions": [],
+  "view": {
+    "zoom": 1,
+    "showGrid": true,
+    "highlightNodeEdges": true,
+    "showNodeValues": true,
+    "checkUnits": true,
+    "gridSize": 20,
+    "tooltipDelayMs": 300,
+    "scrollLeft": 180,
+    "scrollTop": 272
+  },
+  "debug": {
+    "watches": [],
+    "breakpointEnabled": false,
+    "breakpointExpression": "",
+    "breakpointMessage": ""
+  },
+  "modelProperties": [],
+  "unitDefinitions": [],
+  "scenarios": [],
+  "nodeCounter": 18,
+  "edgeCounter": 16,
+  "widgetCounter": 7,
+  "textItemCounter": 6,
+  "presentationGroupCounter": 5,
+  "presentationGroups": [
+    {
+      "id": 2,
+      "name": "analisi statistica",
+      "nodeIds": [
+        13,
+        14,
+        15
+      ],
+      "visible": false,
+      "showFrame": true
+    },
+    {
+      "id": 3,
+      "name": "sistema principale",
+      "nodeIds": [
+        1,
+        3,
+        4,
+        7,
+        9,
+        11
+      ],
+      "visible": true,
+      "showFrame": true
+    }
+  ],
+  "dashboard": {
+    "visible": true,
+    "x": 240,
+    "y": 360,
+    "width": 669.6484375,
+    "height": 472.07421875,
+    "activePageId": 1,
+    "nextPageId": 3,
+    "pages": [
+      {
+        "id": 1,
+        "title": "Pagina"
+      },
+      {
+        "id": 2,
+        "title": "Pagina 2"
+      }
+    ]
+  },
+  "execution": {
+    "t0": 0,
+    "dt": 0.1,
+    "timeUnit": "s",
+    "t1": 10,
+    "delayMs": 100,
+    "renderEverySteps": 1,
+    "decimals": 3,
+    "integrator": "euler",
+    "strictDefinitions": false,
+    "stopOnRuntimeError": false,
+    "checkRanges": false,
+    "randomSeed": null
+  },
+  "nodes": [
+    {
+      "id": 1,
+      "name": "Tint",
+      "output": true,
+      "global": false,
+      "type": "state",
+      "x": 400,
+      "y": 240,
+      "width": 54,
+      "height": 54,
+      "fillColor": "",
+      "strokeColor": "",
+      "unit": "",
+      "properties": [
+        {
+          "key": "note formula",
+          "value": ""
+        },
+        {
+          "key": "descrizione",
+          "value": "temperatura interna"
+        }
+      ],
+      "stateTransition": "integral(a*R-b*(this-Test))",
+      "initialState": "T0"
+    },
+    {
+      "id": 2,
+      "name": "Test",
+      "output": false,
+      "global": false,
+      "type": "algebraic",
+      "x": 180,
+      "y": 240,
+      "width": 54,
+      "height": 54,
+      "fillColor": "",
+      "strokeColor": "",
+      "unit": "°C",
+      "properties": [
+        {
+          "key": "note formula",
+          "value": ""
+        },
+        {
+          "key": "descrizione",
+          "value": "temperatura esterna"
+        }
+      ],
+      "input": false,
+      "valueExpression": "15"
+    },
+    {
+      "id": 3,
+      "name": "Tdes",
+      "output": false,
+      "global": false,
+      "type": "algebraic",
+      "x": 300,
+      "y": 300,
+      "width": 54,
+      "height": 54,
+      "fillColor": "",
+      "strokeColor": "",
+      "unit": "°C",
+      "properties": [
+        {
+          "key": "note formula",
+          "value": ""
+        },
+        {
+          "key": "descrizione",
+          "value": "temperatura desiderata"
+        }
+      ],
+      "input": true,
+      "valueExpression": "20"
+    },
+    {
+      "id": 4,
+      "name": "R",
+      "output": false,
+      "global": false,
+      "type": "algebraic",
+      "x": 540,
+      "y": 300,
+      "width": 54,
+      "height": 54,
+      "fillColor": "",
+      "strokeColor": "",
+      "unit": "W",
+      "properties": [
+        {
+          "key": "note formula",
+          "value": ""
+        },
+        {
+          "key": "descrizione",
+          "value": "potenza di riscaldamento dal termostato"
+        }
+      ],
+      "input": false,
+      "valueExpression": "10*(Tint<Tdes)"
+    },
+    {
+      "id": 7,
+      "name": "a",
+      "output": false,
+      "global": false,
+      "type": "parameter",
+      "x": 320,
+      "y": 180,
+      "width": 54,
+      "height": 54,
+      "fillColor": "",
+      "strokeColor": "",
+      "unit": "°C/W",
+      "properties": [
+        {
+          "key": "note formula",
+          "value": ""
+        },
+        {
+          "key": "descrizione",
+          "value": "efficacia del riscaldamento"
+        }
+      ],
+      "valueExpression": "1"
+    },
+    {
+      "id": 9,
+      "name": "b",
+      "output": false,
+      "global": false,
+      "type": "parameter",
+      "x": 480,
+      "y": 180,
+      "width": 54,
+      "height": 54,
+      "fillColor": "",
+      "strokeColor": "",
+      "unit": "1/s",
+      "properties": [
+        {
+          "key": "note formula",
+          "value": ""
+        },
+        {
+          "key": "descrizione",
+          "value": "dispersione termica"
+        }
+      ],
+      "valueExpression": "0.1"
+    },
+    {
+      "id": 11,
+      "name": "T0",
+      "output": false,
+      "global": false,
+      "type": "parameter",
+      "x": 400,
+      "y": 140,
+      "width": 54,
+      "height": 54,
+      "fillColor": "",
+      "strokeColor": "",
+      "unit": "°C",
+      "properties": [
+        {
+          "key": "note formula",
+          "value": ""
+        },
+        {
+          "key": "descrizione",
+          "value": "temperatura interna iniziale"
+        }
+      ],
+      "valueExpression": "10"
+    },
+    {
+      "id": 13,
+      "name": "StoriaTint",
+      "output": false,
+      "global": false,
+      "type": "state",
+      "x": 680,
+      "y": 240,
+      "width": 80,
+      "height": 40,
+      "fillColor": "",
+      "strokeColor": "",
+      "unit": "",
+      "properties": [
+        {
+          "key": "note formula",
+          "value": ""
+        },
+        {
+          "key": "descrizione",
+          "value": "serie storica dei valori della temperatura interna "
+        }
+      ],
+      "stateTransition": "append(this,Tint)",
+      "initialState": "[]"
+    },
+    {
+      "id": 14,
+      "name": "StoriaR",
+      "output": false,
+      "global": false,
+      "type": "state",
+      "x": 680,
+      "y": 300,
+      "width": 80,
+      "height": 40,
+      "fillColor": "",
+      "strokeColor": "",
+      "unit": "",
+      "properties": [
+        {
+          "key": "note formula",
+          "value": ""
+        },
+        {
+          "key": "descrizione",
+          "value": "serie storica dei valori della potenza di riscaldamento"
+        }
+      ],
+      "stateTransition": "append(this,R)",
+      "initialState": "[]"
+    },
+    {
+      "id": 15,
+      "name": "correl",
+      "output": true,
+      "global": false,
+      "type": "algebraic",
+      "x": 840,
+      "y": 280,
+      "width": 60,
+      "height": 60,
+      "fillColor": "",
+      "strokeColor": "",
+      "unit": "",
+      "properties": [
+        {
+          "key": "note formula",
+          "value": ""
+        },
+        {
+          "key": "descrizione",
+          "value": "correlazione tra le serie storiche dei valori della temperatura interna e della potenza di riscaldamento"
+        }
+      ],
+      "input": false,
+      "valueExpression": "if(size(StoriaR)>50,correlation(StoriaR,StoriaTint),0)"
+    }
+  ],
+  "edges": [
+    {
+      "id": 1,
+      "from": 4,
+      "to": 1,
+      "color": "",
+      "influence": "none",
+      "controlPoints": [
+        {
+          "x": 460,
+          "y": 280
+        }
+      ]
+    },
+    {
+      "id": 2,
+      "from": 2,
+      "to": 1,
+      "color": "",
+      "influence": "none",
+      "controlPoints": []
+    },
+    {
+      "id": 4,
+      "from": 7,
+      "to": 1,
+      "color": "",
+      "influence": "none",
+      "controlPoints": []
+    },
+    {
+      "id": 5,
+      "from": 9,
+      "to": 1,
+      "color": "",
+      "influence": "none",
+      "controlPoints": []
+    },
+    {
+      "id": 6,
+      "from": 1,
+      "to": 4,
+      "color": "",
+      "influence": "none",
+      "controlPoints": [
+        {
+          "x": 480,
+          "y": 260
+        }
+      ]
+    },
+    {
+      "id": 7,
+      "from": 3,
+      "to": 4,
+      "color": "",
+      "influence": "none",
+      "controlPoints": []
+    },
+    {
+      "id": 8,
+      "from": 11,
+      "to": 1,
+      "color": "",
+      "influence": "none",
+      "controlPoints": []
+    },
+    {
+      "id": 10,
+      "from": 1,
+      "to": 13,
+      "color": "",
+      "influence": "none",
+      "controlPoints": []
+    },
+    {
+      "id": 11,
+      "from": 4,
+      "to": 14,
+      "color": "",
+      "influence": "none",
+      "controlPoints": []
+    },
+    {
+      "id": 12,
+      "from": 13,
+      "to": 15,
+      "color": "",
+      "influence": "none",
+      "controlPoints": []
+    },
+    {
+      "id": 13,
+      "from": 14,
+      "to": 15,
+      "color": "",
+      "influence": "none",
+      "controlPoints": []
+    }
+  ],
+  "notes": {
+    "markdown": "Consideriamo una stanza con riscaldamento controllato da un termostato\n\n$T_{int}$: temperatura interna\n$T_{est}$: temperatura esterna\n$T_{des}$: temperatura desiderata\n$R$: potenza del riscaldamento\n\n* La stanza si raffredda se la temperatura esterna è minore di quella interna\n* Il riscaldamento aumenta la temperatura interna\n* Il termostato attiva il riscaldamento quando la temperatura interna è troppo bassa\n"
+  },
+  "textItems": [
+    {
+      "id": 2,
+      "x": 0,
+      "y": 0,
+      "width": 640,
+      "height": 60,
+      "fillColor": "",
+      "strokeColor": "",
+      "dashboardPageId": 1,
+      "markdown": "# Andamento della temperatura interna"
+    },
+    {
+      "id": 4,
+      "x": 0,
+      "y": 0,
+      "width": 640,
+      "height": 100,
+      "fillColor": "",
+      "strokeColor": "",
+      "dashboardPageId": 2,
+      "markdown": "# Correlazione tra temperatura interna e potenza del riscaldamento"
+    }
+  ],
+  "widgets": [
+    {
+      "id": 1,
+      "type": "xychart",
+      "customTitle": "",
+      "x": 20,
+      "y": 60,
+      "width": 580,
+      "height": 300,
+      "dashboardPageId": 1,
+      "minimized": false,
+      "showTitleBar": true,
+      "fontSize": 13,
+      "outputOnly": false,
+      "showHistory": false,
+      "expandNonScalarValues": false,
+      "tableTextAlign": "left",
+      "tableDecimalDigits": 0,
+      "tableColumnFormats": {},
+      "xMin": "auto",
+      "xMax": "auto",
+      "yMin": "auto",
+      "yMax": "auto",
+      "xGridStep": null,
+      "yGridStep": null,
+      "xAxisLabel": "",
+      "yAxisLabel": "",
+      "showGrid": true,
+      "showAxes": true,
+      "equalScale": true,
+      "legendPosition": "none",
+      "objects": [],
+      "source": "",
+      "showNumericValues": true,
+      "showIndices": true,
+      "autoFitCells": true,
+      "cellSize": 28,
+      "valueMin": "auto",
+      "valueMax": "auto",
+      "displayRows": null,
+      "displayCols": null,
+      "colorScheme": "blue",
+      "viewMode": "grid",
+      "surfaceStyle": "solid",
+      "surfaceAzimuth": 45,
+      "surfaceElevation": 32,
+      "surfaceHeightScale": 1,
+      "min": 0,
+      "max": 100,
+      "step": 1,
+      "value": 0,
+      "falseLabel": "",
+      "trueLabel": "",
+      "options": [],
+      "mappings": [],
+      "columns": [],
+      "xyPairs": [
+        {
+          "xSource": "time",
+          "ySource": "Tint",
+          "showTimeSeries": true,
+          "showInstantProfile": false,
+          "color": "#0e7ac4",
+          "pointColor": "#0e7ac4",
+          "showLine": true,
+          "lineWidth": 1,
+          "lineStyle": "solid",
+          "barMode": "none",
+          "showBars": false,
+          "barColor": "#0e7ac4",
+          "barWidth": 2.2,
+          "showArea": false,
+          "areaColor": "#0e7ac4",
+          "pointMode": "none",
+          "pointSize": 2.4
+        }
+      ]
+    },
+    {
+      "id": 3,
+      "type": "slider",
+      "customTitle": "",
+      "x": 20,
+      "y": 280,
+      "width": 220,
+      "height": 82,
+      "dashboardPageId": null,
+      "minimized": false,
+      "showTitleBar": true,
+      "fontSize": 13,
+      "outputOnly": false,
+      "showHistory": false,
+      "expandNonScalarValues": false,
+      "tableTextAlign": "left",
+      "tableDecimalDigits": 0,
+      "tableColumnFormats": {},
+      "xMin": "auto",
+      "xMax": "auto",
+      "yMin": "auto",
+      "yMax": "auto",
+      "xGridStep": null,
+      "yGridStep": null,
+      "xAxisLabel": "",
+      "yAxisLabel": "",
+      "showGrid": true,
+      "showAxes": true,
+      "equalScale": true,
+      "legendPosition": "top-right",
+      "objects": [],
+      "source": "Tdes",
+      "showNumericValues": true,
+      "showIndices": true,
+      "autoFitCells": true,
+      "cellSize": 28,
+      "valueMin": "auto",
+      "valueMax": "auto",
+      "displayRows": null,
+      "displayCols": null,
+      "colorScheme": "blue",
+      "viewMode": "grid",
+      "surfaceStyle": "solid",
+      "surfaceAzimuth": 45,
+      "surfaceElevation": 32,
+      "surfaceHeightScale": 1,
+      "min": 10,
+      "max": 25,
+      "step": 0.5,
+      "value": 20,
+      "falseLabel": "",
+      "trueLabel": "",
+      "options": [],
+      "mappings": [],
+      "columns": [],
+      "xyPairs": []
+    },
+    {
+      "id": 4,
+      "type": "xychart",
+      "customTitle": "",
+      "x": 20,
+      "y": 100,
+      "width": 580,
+      "height": 280,
+      "dashboardPageId": 2,
+      "minimized": false,
+      "showTitleBar": true,
+      "fontSize": 13,
+      "outputOnly": false,
+      "showHistory": false,
+      "expandNonScalarValues": false,
+      "tableTextAlign": "left",
+      "tableDecimalDigits": 0,
+      "tableColumnFormats": {},
+      "xMin": "auto",
+      "xMax": "auto",
+      "yMin": "auto",
+      "yMax": "auto",
+      "xGridStep": null,
+      "yGridStep": null,
+      "xAxisLabel": "",
+      "yAxisLabel": "",
+      "showGrid": true,
+      "showAxes": true,
+      "equalScale": true,
+      "legendPosition": "none",
+      "objects": [],
+      "source": "",
+      "showNumericValues": true,
+      "showIndices": true,
+      "autoFitCells": true,
+      "cellSize": 28,
+      "valueMin": "auto",
+      "valueMax": "auto",
+      "displayRows": null,
+      "displayCols": null,
+      "colorScheme": "blue",
+      "viewMode": "grid",
+      "surfaceStyle": "solid",
+      "surfaceAzimuth": 45,
+      "surfaceElevation": 32,
+      "surfaceHeightScale": 1,
+      "min": 0,
+      "max": 100,
+      "step": 1,
+      "value": 0,
+      "falseLabel": "",
+      "trueLabel": "",
+      "options": [],
+      "mappings": [],
+      "columns": [],
+      "xyPairs": [
+        {
+          "xSource": "time",
+          "ySource": "correl",
+          "showTimeSeries": true,
+          "showInstantProfile": false,
+          "color": "#0e7ac4",
+          "pointColor": "#0e7ac4",
+          "showLine": true,
+          "lineWidth": 1,
+          "lineStyle": "solid",
+          "barMode": "none",
+          "showBars": false,
+          "barColor": "#0e7ac4",
+          "barWidth": 2.2,
+          "showArea": false,
+          "areaColor": "#0e7ac4",
+          "pointMode": "none",
+          "pointSize": 2.4
+        }
+      ]
+    }
+  ]
+}
