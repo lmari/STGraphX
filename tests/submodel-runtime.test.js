@@ -44,6 +44,28 @@ async function run() {
     [],
     "an undefined parent input must not turn into a submodel runtime error",
   );
+
+  const chainedRuntime = createHeadlessRuntime({ lang: "en" });
+  await chainedRuntime.load({ src: "tests/submodel-chain-parent.json" });
+  const chainedOutputs = await chainedRuntime.step();
+  assert.deepEqual(
+    chainedOutputs.targetModel,
+    { output: 14 },
+    "a submodel input can bind directly to an output of another submodel",
+  );
+
+  const feedbackRuntime = createHeadlessRuntime({ lang: "en" });
+  await feedbackRuntime.load({ src: "tests/submodel-feedback-parent.json" });
+  assert.deepEqual(
+    await feedbackRuntime.step(),
+    { a: 0, b: 1 },
+    "state-mediated feedback between submodels evaluates their current outputs",
+  );
+  assert.deepEqual(
+    feedbackRuntime._runtimeModel.nodes.filter((node) => node.computedError).map((node) => node.name),
+    [],
+    "state-mediated feedback between submodels must not create a dependency error",
+  );
   console.log("submodel-runtime.test.js: ok");
 }
 

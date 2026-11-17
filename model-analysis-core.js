@@ -163,6 +163,13 @@
       return refs;
     }
 
+    function valueStructureForAnalysis(value) {
+      if (!Array.isArray(value)) {
+        return "scalar";
+      }
+      return value.some((item) => Array.isArray(item)) ? "matrix" : "vector";
+    }
+
     function submodelBindingReferences(node) {
       const refs = new Map();
       Object.entries(node?.inputBindings || {}).forEach(([inputName, expr]) => {
@@ -204,7 +211,11 @@
       const nodeById = new Map();
       const adjacency = new Map();
       (model?.nodes || [])
-        .filter((node) => isAlgebraicNode(node) || isSubmodelNode(node))
+        // A submodel is a boundary, not an algebraic variable. Its exposed
+        // outputs can be current states, algebraic values, or both; treating
+        // every edge between two containers as instantaneous creates false
+        // cycles for valid state-mediated feedback across submodels.
+        .filter((node) => isAlgebraicNode(node))
         .forEach((node) => {
           nodeById.set(node.id, node);
           adjacency.set(node.id, []);
@@ -818,9 +829,11 @@
           if (!preview?.current?.ok || !preview?.next?.ok) {
             return;
           }
-          const currentShape = describeExpressionPreviewShape(preview.current.value);
-          const nextShape = describeExpressionPreviewShape(preview.next.value);
-          if (currentShape && nextShape && currentShape !== nextShape) {
+          const currentStructure = valueStructureForAnalysis(preview.current.value);
+          const nextStructure = valueStructureForAnalysis(preview.next.value);
+          if (currentStructure !== nextStructure) {
+            const currentShape = describeExpressionPreviewShape(preview.current.value);
+            const nextShape = describeExpressionPreviewShape(preview.next.value);
             pushAnalysisIssue(
               issues,
               "warning",
@@ -847,6 +860,7 @@
       pureTimedDelayIssue,
       stateTransitionPreviewForAnalysis,
       submodelBindingReferences,
+      valueStructureForAnalysis,
     };
   }
 

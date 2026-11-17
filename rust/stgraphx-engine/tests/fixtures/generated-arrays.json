@@ -69,11 +69,41 @@
       "output": true,
       "initialState": "array(n,0)",
       "stateTransition": "integral(array(n,1))"
+    },
+    {
+      "id": 10,
+      "name": "tailRemoved",
+      "type": "algebraic",
+      "output": true,
+      "valueExpression": "remove(indices,1)"
+    },
+    {
+      "id": 11,
+      "name": "headRemoved",
+      "type": "algebraic",
+      "output": true,
+      "valueExpression": "remove(1,indices)"
+    },
+    {
+      "id": 12,
+      "name": "tailRowsRemoved",
+      "type": "algebraic",
+      "output": true,
+      "valueExpression": "remove([[1,2],[3,4],[5,6]],1)"
+    },
+    {
+      "id": 13,
+      "name": "headRowsRemoved",
+      "type": "algebraic",
+      "output": true,
+      "valueExpression": "remove(2,[[1,2],[3,4],[5,6]])"
     }
   ],
   "edges": [
     { "id": 1, "from": 2, "to": 4 },
     { "id": 2, "from": 2, "to": 5 },
-    { "id": 3, "from": 3, "to": 6 }
+    { "id": 3, "from": 3, "to": 6 },
+    { "id": 4, "from": 3, "to": 10 },
+    { "id": 5, "from": 3, "to": 11 }
   ]
 }

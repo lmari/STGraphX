@@ -1376,7 +1376,9 @@
     if (!Array.isArray(value)) {
       throw new Error("size expects a vector or matrix");
     }
-    const isMatrix = value.every((row) => Array.isArray(row));
+    // Array.prototype.every() is vacuously true for [], but an empty literal
+    // is the empty vector, not an ambiguous 0-by-0 matrix.
+    const isMatrix = value.length > 0 && value.every((row) => Array.isArray(row));
     if (!isMatrix) {
       if (axis == null) {
         return value.length;
@@ -1632,7 +1634,10 @@
     const constantY = y.every((item) => item === y[0]);
     const rSquared = constantY ? 1 : Math.max(0, Math.min(1, 1 - residual / total));
     if (!Number.isFinite(rSquared)) throw new Error("regression result exceeds numeric precision or range");
-    return [...coefficients, rSquared];
+    // Restore response units after taking the root to avoid squaring yScale.
+    const rmse = Math.sqrt(residual / count) * yScale;
+    if (!Number.isFinite(rmse)) throw new Error("regression result exceeds numeric precision or range");
+    return [...coefficients, rSquared, rmse];
   }
 
   function normalizeGridDimensions(sizeValue) {
@@ -2121,6 +2126,7 @@
       map: options.map || unavailable("map", "map is a special expression form"),
       mapAgents: options.mapAgents || unavailable("mapAgents", "mapAgents is a special expression form"),
       reduce: options.reduce || unavailable("reduce", "reduce is a special expression form"),
+      remove: options.remove || unavailable("remove", "remove is a special expression form"),
 
       // Array and matrix utilities.
       argmax: (value) => extremumIndex(value, true, "argmax"),
@@ -2237,6 +2243,7 @@
       indicesWhere: { kind: "array", signature: "indicesWhere(array) | indicesWhere(cond, array)", descriptionKey: "expr.help.indicesWhere", insertText: "indicesWhere()", cursorOffset: 13 },
       intersection: { kind: "array", signature: "intersection(vectorA, vectorB)", descriptionKey: "expr.help.intersection", insertText: "intersection()", cursorOffset: 13 },
       neighbors: { kind: "array", signature: "neighbors(matrix, row, col[, diagonals[, toroidal]])", descriptionKey: "expr.help.neighbors", insertText: "neighbors()", cursorOffset: 10 },
+      remove: { kind: "array", signature: "remove(array, n) | remove(n, array)", descriptionKey: "expr.help.remove", insertText: "remove()", cursorOffset: 7 },
       removeAt: { kind: "array", signature: "removeAt(vector, index) | removeAt(matrix, index[, axis])", descriptionKey: "expr.help.removeAt", insertText: "removeAt()", cursorOffset: 9 },
       resize: { kind: "array", signature: "resize(vector, length) | resize(matrix, rows, cols)", descriptionKey: "expr.help.resize", insertText: "resize()", cursorOffset: 7 },
       set: { kind: "array", signature: "set(vector)", descriptionKey: "expr.help.set", insertText: "set()", cursorOffset: 4 },

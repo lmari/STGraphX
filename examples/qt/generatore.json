@@ -1,0 +1,148 @@
+{
+  "version": 1,
+  "modelTitle": "generatore",
+  "localFunctions": [],
+  "view": {
+    "zoom": 1,
+    "showGrid": true,
+    "highlightNodeEdges": false,
+    "showNodeValues": true,
+    "checkUnits": true,
+    "gridSize": 20,
+    "tooltipDelayMs": 300,
+    "scrollLeft": 0,
+    "scrollTop": 0
+  },
+  "debug": {
+    "watches": [],
+    "breakpointEnabled": false,
+    "breakpointExpression": "",
+    "breakpointMessage": ""
+  },
+  "modelProperties": [],
+  "unitDefinitions": [],
+  "scenarios": [],
+  "nodeCounter": 6,
+  "edgeCounter": 5,
+  "widgetCounter": 3,
+  "textItemCounter": 3,
+  "presentationGroupCounter": 2,
+  "presentationGroups": [],
+  "dashboard": null,
+  "execution": {
+    "t0": 0,
+    "dt": 1,
+    "timeUnit": "s",
+    "t1": 10,
+    "delayMs": 100,
+    "renderEverySteps": 1,
+    "decimals": 3,
+    "integrator": "euler",
+    "strictDefinitions": false,
+    "stopOnRuntimeError": false,
+    "checkRanges": false,
+    "randomSeed": null
+  },
+  "nodes": [
+    {
+      "id": 1,
+      "name": "gen",
+      "output": false,
+      "global": false,
+      "type": "state",
+      "x": 260,
+      "y": 100,
+      "width": 75,
+      "height": 45,
+      "fillColor": "#ffffff",
+      "strokeColor": "#000000",
+      "unit": "",
+      "properties": [
+        {
+          "key": "descrizione",
+          "value": ""
+        },
+        {
+          "key": "note formula",
+          "value": ""
+        }
+      ],
+      "stateTransition": "if(this==0,round(exponential([1/periodo]),0),this-1)",
+      "initialState": "round(exponential([1/periodo]),0)"
+    },
+    {
+      "id": 2,
+      "name": "periodo",
+      "output": false,
+      "global": false,
+      "type": "parameter",
+      "x": 120,
+      "y": 100,
+      "width": 75,
+      "height": 45,
+      "fillColor": "#ffff00",
+      "strokeColor": "#ff0000",
+      "unit": "",
+      "properties": [
+        {
+          "key": "note formula",
+          "value": ""
+        },
+        {
+          "key": "descrizione",
+          "value": "Parametro della distribuzione esponenziale: periodo medio inter-generazione di eventi (1/lambda)\n[default: 2]."
+        }
+      ],
+      "valueExpression": "2"
+    },
+    {
+      "id": 4,
+      "name": "evGen",
+      "output": true,
+      "global": false,
+      "type": "algebraic",
+      "x": 400,
+      "y": 100,
+      "width": 54,
+      "height": 54,
+      "fillColor": "",
+      "strokeColor": "",
+      "unit": "",
+      "properties": [
+        {
+          "key": "note formula",
+          "value": ""
+        },
+        {
+          "key": "descrizione",
+          "value": "Genera eventi booleani, secondo una distribuzione statistica esponenziale con parametro periodo medio inter-generazione di eventi dato.\nLa variabile di stato opera come un countdown: ogni volta che il valore arriva a zero si genera un evento, e quindi si rende disponibile una nuova entità, e si rivaluta la distribuzione."
+        }
+      ],
+      "input": false,
+      "valueExpression": "gen==0"
+    }
+  ],
+  "edges": [
+    {
+      "id": 1,
+      "from": 2,
+      "to": 1,
+      "color": "",
+      "influence": "none",
+      "controlPoints": []
+    },
+    {
+      "id": 3,
+      "from": 1,
+      "to": 4,
+      "color": "",
+      "influence": "none",
+      "controlPoints": []
+    }
+  ],
+  "notes": {
+    "markdown": ""
+  },
+  "textItems": [],
+  "widgets": []
+}

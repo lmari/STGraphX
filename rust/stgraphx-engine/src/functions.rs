@@ -11,6 +11,7 @@ pub(crate) fn is_supported(name: &str) -> bool {
         name,
         "array"
             | "append"
+            | "remove"
             | "filter"
             | "flatten"
             | "indicesWhere"
@@ -53,6 +54,7 @@ pub(crate) fn evaluate(
         "filter" => Err("filter requires an expression body".to_string()),
         "map" => Err("map requires an expression body".to_string()),
         "append" => append(arguments),
+        "remove" => remove(arguments),
         "flatten" => flatten(arguments),
         "indicesWhere" => indices_where(arguments),
         "abs" => unary(name, arguments, f64::abs),
@@ -342,6 +344,52 @@ fn append(arguments: &[Value]) -> Result<Value, String> {
     values[1..]
         .iter()
         .try_fold(values[0].clone(), append_flat_values)
+}
+
+fn remove(arguments: &[Value]) -> Result<Value, String> {
+    if arguments.len() != 2 {
+        return Err("remove expects exactly 2 arguments".to_string());
+    }
+
+    let (target, count, from_start) = match (&arguments[0], &arguments[1]) {
+        (Value::Tensor(target), Value::Scalar(count)) => (target, *count, false),
+        (Value::Scalar(count), Value::Tensor(target)) => (target, *count, true),
+        _ => return Err("remove expects a vector or matrix".to_string()),
+    };
+    if !count.is_finite() || count < 0.0 || count.fract() != 0.0 {
+        return Err("remove must be a non-negative integer".to_string());
+    }
+    let count = count as usize;
+
+    match target.rank() {
+        1 => {
+            let length = target.shape()[0];
+            let start = if from_start { count.min(length) } else { 0 };
+            let end = if from_start {
+                length
+            } else {
+                length.saturating_sub(count)
+            };
+            Value::tensor(vec![end - start], target.elements()[start..end].to_vec())
+        }
+        2 => {
+            let rows = target.shape()[0];
+            let columns = target.shape()[1];
+            let start_row = if from_start { count.min(rows) } else { 0 };
+            let end_row = if from_start {
+                rows
+            } else {
+                rows.saturating_sub(count)
+            };
+            let start = start_row * columns;
+            let end = end_row * columns;
+            Value::tensor(
+                vec![end_row - start_row, columns],
+                target.elements()[start..end].to_vec(),
+            )
+        }
+        _ => Err("remove expects a vector or matrix".to_string()),
+    }
 }
 
 fn is_matrix(value: &Value) -> bool {
@@ -656,6 +704,36 @@ mod tests {
             Value::tensor(vec![2, 3], vec![1.0, 2.0, 1.0, 3.0, 4.0, 2.0])
                 .expect("tensor should be valid")
         );
+    }
+
+    #[test]
+    fn remove_drops_vector_elements_and_matrix_rows() {
+        let vector =
+            Value::tensor(vec![4], vec![1.0, 2.0, 3.0, 4.0]).expect("vector should be valid");
+        assert_eq!(
+            evaluate("remove", &[vector.clone(), Value::scalar(2.0)], None)
+                .expect("vector tail should be removed"),
+            Value::tensor(vec![2], vec![1.0, 2.0]).expect("tensor should be valid")
+        );
+        assert_eq!(
+            evaluate("remove", &[Value::scalar(2.0), vector], None)
+                .expect("vector head should be removed"),
+            Value::tensor(vec![2], vec![3.0, 4.0]).expect("tensor should be valid")
+        );
+
+        let matrix = Value::tensor(vec![3, 2], vec![1.0, 2.0, 3.0, 4.0, 5.0, 6.0])
+            .expect("matrix should be valid");
+        assert_eq!(
+            evaluate("remove", &[matrix.clone(), Value::scalar(1.0)], None)
+                .expect("matrix tail row should be removed"),
+            Value::tensor(vec![2, 2], vec![1.0, 2.0, 3.0, 4.0]).expect("tensor should be valid")
+        );
+        assert_eq!(
+            evaluate("remove", &[Value::scalar(2.0), matrix], None)
+                .expect("matrix head rows should be removed"),
+            Value::tensor(vec![1, 2], vec![5.0, 6.0]).expect("tensor should be valid")
+        );
+        assert!(evaluate("remove", &[Value::scalar(-1.0), Value::scalar(1.0)], None).is_err());
     }
 
     #[test]

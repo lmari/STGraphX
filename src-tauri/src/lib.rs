@@ -7,12 +7,22 @@ use std::fs;
 use std::path::Path;
 use std::process::Command;
 
-fn dialog_with_title(title: &str) -> rfd::FileDialog {
+fn dialog_with_title(title: &str, default_path: &str) -> rfd::FileDialog {
     let dialog = rfd::FileDialog::new().add_filter("JSON", &["json"]);
-    if title.trim().is_empty() {
+    let dialog = if title.trim().is_empty() {
         dialog
     } else {
         dialog.set_title(title)
+    };
+    let initial_directory = Path::new(default_path);
+    if default_path.trim().is_empty() {
+        dialog
+    } else if initial_directory.is_dir() {
+        dialog.set_directory(initial_directory)
+    } else if let Some(parent) = initial_directory.parent() {
+        dialog.set_directory(parent)
+    } else {
+        dialog
     }
 }
 
@@ -46,8 +56,8 @@ fn write_text_file(path: String, contents: String) -> Result<(), String> {
 }
 
 #[tauri::command]
-fn open_file_dialog(multiple: bool, title: String) -> Vec<String> {
-    let dialog = dialog_with_title(&title);
+fn open_file_dialog(multiple: bool, title: String, default_path: String) -> Vec<String> {
+    let dialog = dialog_with_title(&title, &default_path);
     if multiple {
         return dialog
             .pick_files()
@@ -64,7 +74,7 @@ fn open_file_dialog(multiple: bool, title: String) -> Vec<String> {
 
 #[tauri::command]
 fn save_file_dialog(suggested_name: String, title: String) -> Option<String> {
-    dialog_with_title(&title)
+    dialog_with_title(&title, "")
         .set_file_name(&suggested_name)
         .save_file()
         .map(|path| path.to_string_lossy().into_owned())

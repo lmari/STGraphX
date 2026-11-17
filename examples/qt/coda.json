@@ -1,0 +1,345 @@
+{
+  "version": 1,
+  "modelTitle": "coda",
+  "localFunctions": [],
+  "view": {
+    "zoom": 1,
+    "showGrid": true,
+    "highlightNodeEdges": false,
+    "showNodeValues": true,
+    "checkUnits": true,
+    "gridSize": 20,
+    "tooltipDelayMs": 300,
+    "scrollLeft": 0,
+    "scrollTop": 0
+  },
+  "debug": {
+    "watches": [],
+    "breakpointEnabled": false,
+    "breakpointExpression": "",
+    "breakpointMessage": ""
+  },
+  "modelProperties": [],
+  "unitDefinitions": [],
+  "scenarios": [],
+  "nodeCounter": 12,
+  "edgeCounter": 13,
+  "widgetCounter": 4,
+  "textItemCounter": 5,
+  "presentationGroupCounter": 3,
+  "presentationGroups": [],
+  "dashboard": null,
+  "execution": {
+    "t0": 0,
+    "dt": 1,
+    "timeUnit": "s",
+    "t1": 10,
+    "delayMs": 100,
+    "renderEverySteps": 1,
+    "decimals": 3,
+    "integrator": "euler",
+    "strictDefinitions": false,
+    "stopOnRuntimeError": false,
+    "checkRanges": false,
+    "randomSeed": null
+  },
+  "nodes": [
+    {
+      "id": 1,
+      "name": "coda",
+      "output": true,
+      "global": false,
+      "type": "state",
+      "x": 430,
+      "y": 150,
+      "width": 75,
+      "height": 45,
+      "fillColor": "#ffffff",
+      "strokeColor": "#000000",
+      "unit": "",
+      "properties": [
+        {
+          "key": "note formula",
+          "value": ""
+        },
+        {
+          "key": "descrizione",
+          "value": "Numero di entità in coda."
+        }
+      ],
+      "stateTransition": "pos(this+evIn-evOut)",
+      "initialState": "0"
+    },
+    {
+      "id": 2,
+      "name": "evIn",
+      "output": false,
+      "global": false,
+      "type": "parameter",
+      "x": 330,
+      "y": 100,
+      "width": 75,
+      "height": 45,
+      "fillColor": "#ffffff",
+      "strokeColor": "#00ff00",
+      "unit": "",
+      "properties": [
+        {
+          "key": "note formula",
+          "value": ""
+        },
+        {
+          "key": "descrizione",
+          "value": "Numero di nuove entità da introdurre nella coda\n[default: intero casuale tra 0 e 2]."
+        }
+      ],
+      "valueExpression": "randInt(3)"
+    },
+    {
+      "id": 3,
+      "name": "lungMax",
+      "output": true,
+      "global": false,
+      "type": "algebraic",
+      "x": 540,
+      "y": 100,
+      "width": 75,
+      "height": 45,
+      "fillColor": "#ffffff",
+      "strokeColor": "#000000",
+      "unit": "",
+      "properties": [
+        {
+          "key": "descrizione",
+          "value": "Numero massimo di entità che nel corso del tempo sono state contemporaneamente in coda."
+        },
+        {
+          "key": "note formula",
+          "value": ""
+        }
+      ],
+      "input": false,
+      "valueExpression": "max(lungMaxMem,coda)"
+    },
+    {
+      "id": 4,
+      "name": "evOut",
+      "output": false,
+      "global": false,
+      "type": "parameter",
+      "x": 330,
+      "y": 210,
+      "width": 75,
+      "height": 45,
+      "fillColor": "#ffffff",
+      "strokeColor": "#00ff00",
+      "unit": "",
+      "properties": [
+        {
+          "key": "note formula",
+          "value": ""
+        },
+        {
+          "key": "descrizione",
+          "value": "Numero di entità che da rimuovere dalla coda\n[default: 0]."
+        }
+      ],
+      "valueExpression": "randInt(2)"
+    },
+    {
+      "id": 5,
+      "name": "tempiInCoda",
+      "output": true,
+      "global": false,
+      "type": "state",
+      "x": 210,
+      "y": 150,
+      "width": 121,
+      "height": 45,
+      "fillColor": "#ffffff",
+      "strokeColor": "#000000",
+      "unit": "",
+      "properties": [
+        {
+          "key": "note formula",
+          "value": ""
+        },
+        {
+          "key": "descrizione",
+          "value": "Vettore che mantiene il numero di istanti di tempo in cui ogni entità è in coda."
+        }
+      ],
+      "stateTransition": "remove(append(array(evIn,0),(this+1)),evOut)",
+      "initialState": "[]"
+    },
+    {
+      "id": 6,
+      "name": "tempoMax",
+      "output": true,
+      "global": false,
+      "type": "state",
+      "x": 120,
+      "y": 70,
+      "width": 75,
+      "height": 45,
+      "fillColor": "#ffffff",
+      "strokeColor": "#000000",
+      "unit": "",
+      "properties": [
+        {
+          "key": "note formula",
+          "value": ""
+        },
+        {
+          "key": "descrizione",
+          "value": "Durata massima della permanenza in coda di un'entità nel corso del tempo."
+        }
+      ],
+      "stateTransition": "max(this,\n  if(size(tempiInCoda)==0,\n    0,\n    tempiInCoda[size(tempiInCoda)-1]\n  )\n)",
+      "initialState": "0"
+    },
+    {
+      "id": 7,
+      "name": "tempoMed",
+      "output": true,
+      "global": false,
+      "type": "algebraic",
+      "x": 120,
+      "y": 240,
+      "width": 75,
+      "height": 45,
+      "fillColor": "#ffffff",
+      "strokeColor": "#000000",
+      "unit": "",
+      "properties": [
+        {
+          "key": "note formula",
+          "value": ""
+        },
+        {
+          "key": "descrizione",
+          "value": "Durata media della permanenza in coda delle entità attualmente in coda."
+        }
+      ],
+      "input": false,
+      "valueExpression": "if(size(tempiInCoda)==0,0,average(tempiInCoda))"
+    },
+    {
+      "id": 11,
+      "name": "lungMaxMem",
+      "output": false,
+      "global": false,
+      "type": "state",
+      "x": 540,
+      "y": 180,
+      "width": 75,
+      "height": 45,
+      "fillColor": "#ffffff",
+      "strokeColor": "#000000",
+      "unit": "",
+      "properties": [
+        {
+          "key": "descrizione",
+          "value": ""
+        },
+        {
+          "key": "note formula",
+          "value": ""
+        }
+      ],
+      "stateTransition": "max(this,coda)",
+      "initialState": "0"
+    }
+  ],
+  "edges": [
+    {
+      "id": 1,
+      "from": 2,
+      "to": 1,
+      "color": "",
+      "influence": "none",
+      "controlPoints": []
+    },
+    {
+      "id": 2,
+      "from": 4,
+      "to": 1,
+      "color": "",
+      "influence": "none",
+      "controlPoints": []
+    },
+    {
+      "id": 3,
+      "from": 4,
+      "to": 5,
+      "color": "",
+      "influence": "none",
+      "controlPoints": []
+    },
+    {
+      "id": 4,
+      "from": 2,
+      "to": 5,
+      "color": "",
+      "influence": "none",
+      "controlPoints": []
+    },
+    {
+      "id": 5,
+      "from": 5,
+      "to": 7,
+      "color": "",
+      "influence": "none",
+      "controlPoints": []
+    },
+    {
+      "id": 6,
+      "from": 5,
+      "to": 6,
+      "color": "",
+      "influence": "none",
+      "controlPoints": []
+    },
+    {
+      "id": 7,
+      "from": 1,
+      "to": 3,
+      "color": "",
+      "influence": "none",
+      "controlPoints": []
+    },
+    {
+      "id": 11,
+      "from": 1,
+      "to": 11,
+      "color": "",
+      "influence": "none",
+      "controlPoints": []
+    },
+    {
+      "id": 12,
+      "from": 11,
+      "to": 3,
+      "color": "",
+      "influence": "none",
+      "controlPoints": []
+    }
+  ],
+  "notes": {
+    "markdown": ""
+  },
+  "textItems": [
+    {
+      "id": 1,
+      "x": 40,
+      "y": 300,
+      "width": 680,
+      "height": 120,
+      "fillColor": "",
+      "strokeColor": "",
+      "dashboardPageId": null,
+      "markdown": "Implementazione del vettore dei tempi in coda basata su questa logica:      \n- le entità sono introdotte alla sinistra della coda (funzione append()) e sono eliminate dalla sua destra (funzione remove());\n- le entità presenti \"invecchiano\" in ogni istante di un istante (this+1)."
+    }
+  ],
+  "widgets": []
+}

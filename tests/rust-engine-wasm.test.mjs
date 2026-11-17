@@ -20,6 +20,7 @@ assert.ok(info.capabilities.includes("numeric-range"));
 assert.ok(info.capabilities.includes("seeded-random"));
 assert.ok(info.capabilities.includes("array-set-at"));
 assert.ok(info.capabilities.includes("tensor-append"));
+assert.ok(info.capabilities.includes("tensor-remove"));
 assert.ok(info.capabilities.includes("array-iterations"));
 assert.ok(info.capabilities.includes("global-parameters"));
 
@@ -41,6 +42,10 @@ assert.deepEqual(generatedArraysResult.snapshots[0].values.indices, [0, 1, 2]);
 assert.deepEqual(generatedArraysResult.snapshots[0].values.generatedGrid, [[2, 5], [4, 7]]);
 assert.deepEqual(generatedArraysResult.snapshots[0].values.joined, [-1, 0, 1, 2, 3]);
 assert.deepEqual(generatedArraysResult.snapshots[0].values.columns, [[1, 2, 5], [3, 4, 6]]);
+assert.deepEqual(generatedArraysResult.snapshots[0].values.tailRemoved, [0, 1]);
+assert.deepEqual(generatedArraysResult.snapshots[0].values.headRemoved, [1, 2]);
+assert.deepEqual(generatedArraysResult.snapshots[0].values.tailRowsRemoved, [[1, 2], [3, 4]]);
+assert.deepEqual(generatedArraysResult.snapshots[0].values.headRowsRemoved, [[5, 6]]);
 
 const rangeFixture = fs.readFileSync(
   new URL("../rust/stgraphx-engine/tests/fixtures/range-sequences.json", import.meta.url),

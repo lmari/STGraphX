@@ -1,0 +1,23 @@
+{
+  "version": 1,
+  "execution": { "t0": 0, "dt": 1, "t1": 2, "integrator": "euler" },
+  "nodes": [
+    {
+      "id": 1,
+      "name": "fromB",
+      "type": "parameter",
+      "valueExpression": "0"
+    },
+    {
+      "id": 2,
+      "name": "stateA",
+      "type": "state",
+      "output": true,
+      "initialState": "0",
+      "stateTransition": "this + fromB"
+    }
+  ],
+  "edges": [
+    { "id": 1, "from": 1, "to": 2 }
+  ]
+}

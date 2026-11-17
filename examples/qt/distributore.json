@@ -1,0 +1,333 @@
+{
+  "version": 1,
+  "modelTitle": "distributore",
+  "localFunctions": [],
+  "view": {
+    "zoom": 1,
+    "showGrid": true,
+    "highlightNodeEdges": false,
+    "showNodeValues": true,
+    "checkUnits": true,
+    "gridSize": 20,
+    "tooltipDelayMs": 300,
+    "scrollLeft": 0,
+    "scrollTop": 0
+  },
+  "debug": {
+    "watches": [],
+    "breakpointEnabled": false,
+    "breakpointExpression": "",
+    "breakpointMessage": ""
+  },
+  "modelProperties": [],
+  "unitDefinitions": [],
+  "scenarios": [],
+  "nodeCounter": 9,
+  "edgeCounter": 13,
+  "widgetCounter": 2,
+  "textItemCounter": 3,
+  "presentationGroupCounter": 1,
+  "presentationGroups": [],
+  "dashboard": null,
+  "execution": {
+    "t0": 0,
+    "dt": 1,
+    "timeUnit": "s",
+    "t1": 10,
+    "delayMs": 100,
+    "renderEverySteps": 1,
+    "decimals": 3,
+    "integrator": "euler",
+    "strictDefinitions": false,
+    "stopOnRuntimeError": false,
+    "checkRanges": false,
+    "randomSeed": null
+  },
+  "nodes": [
+    {
+      "id": 1,
+      "name": "codaIn",
+      "output": false,
+      "global": false,
+      "type": "parameter",
+      "x": 50,
+      "y": 132,
+      "width": 75,
+      "height": 45,
+      "fillColor": "",
+      "strokeColor": "",
+      "unit": "",
+      "properties": [
+        {
+          "key": "note formula",
+          "value": ""
+        },
+        {
+          "key": "descrizione",
+          "value": "Numero di entità in coda\n[default: 0]."
+        }
+      ],
+      "valueExpression": "0"
+    },
+    {
+      "id": 2,
+      "name": "disp1",
+      "output": false,
+      "global": false,
+      "type": "parameter",
+      "x": 330,
+      "y": 50,
+      "width": 75,
+      "height": 45,
+      "fillColor": "",
+      "strokeColor": "",
+      "unit": "",
+      "properties": [
+        {
+          "key": "note formula",
+          "value": ""
+        },
+        {
+          "key": "descrizione",
+          "value": "true / 1 se il primo server è disponibile a gestire una nuova entità\n[default: 1]."
+        }
+      ],
+      "valueExpression": "1"
+    },
+    {
+      "id": 3,
+      "name": "disp2",
+      "output": false,
+      "global": false,
+      "type": "parameter",
+      "x": 330,
+      "y": 220,
+      "width": 75,
+      "height": 45,
+      "fillColor": "",
+      "strokeColor": "",
+      "unit": "",
+      "properties": [
+        {
+          "key": "note formula",
+          "value": ""
+        },
+        {
+          "key": "descrizione",
+          "value": "true / 1 se il secondo server è disponibile a gestire una nuova entità\n[default: 1]."
+        }
+      ],
+      "valueExpression": "1"
+    },
+    {
+      "id": 4,
+      "name": "out1",
+      "output": true,
+      "global": false,
+      "type": "algebraic",
+      "x": 440,
+      "y": 50,
+      "width": 75,
+      "height": 45,
+      "fillColor": "",
+      "strokeColor": "",
+      "unit": "",
+      "properties": [
+        {
+          "key": "note formula",
+          "value": ""
+        },
+        {
+          "key": "descrizione",
+          "value": "true / 1 se è inviata un'entità al primo server."
+        }
+      ],
+      "input": false,
+      "valueExpression": "(disp1==1) and  ((preleva>=2)\n  or\n((preleva==1) and (disp2==0))\n  or \n((preleva==1) and (scelta==0)))"
+    },
+    {
+      "id": 5,
+      "name": "out2",
+      "output": true,
+      "global": false,
+      "type": "algebraic",
+      "x": 440,
+      "y": 220,
+      "width": 75,
+      "height": 45,
+      "fillColor": "",
+      "strokeColor": "",
+      "unit": "",
+      "properties": [
+        {
+          "key": "note formula",
+          "value": ""
+        },
+        {
+          "key": "descrizione",
+          "value": "true / 1 se è inviata un'entità al secondo server."
+        }
+      ],
+      "input": false,
+      "valueExpression": "(disp2==1) and ((preleva>=2)\n  or\n((preleva==1) and (disp1==0))\n  or\n((preleva==1) and (scelta==1)))"
+    },
+    {
+      "id": 6,
+      "name": "preleva",
+      "output": true,
+      "global": false,
+      "type": "algebraic",
+      "x": 170,
+      "y": 132,
+      "width": 75,
+      "height": 45,
+      "fillColor": "",
+      "strokeColor": "",
+      "unit": "",
+      "properties": [
+        {
+          "key": "note formula",
+          "value": ""
+        },
+        {
+          "key": "descrizione",
+          "value": "Numero di entità che sono prelevate dalla coda per essere gestite da server."
+        }
+      ],
+      "input": false,
+      "valueExpression": "min(codaIn,disp1+disp2)"
+    },
+    {
+      "id": 7,
+      "name": "scelta",
+      "output": false,
+      "global": false,
+      "type": "parameter",
+      "x": 290,
+      "y": 130,
+      "width": 75,
+      "height": 45,
+      "fillColor": "",
+      "strokeColor": "",
+      "unit": "",
+      "properties": [
+        {
+          "key": "note formula",
+          "value": ""
+        },
+        {
+          "key": "descrizione",
+          "value": "Nel caso in cui ci sia una sola entità da gestire ed entrambi i server siano disponibili, scelta del server da impegnare: il primo (0) o il secondo (1)\n[default: casuale]."
+        }
+      ],
+      "valueExpression": "randInt(2)"
+    }
+  ],
+  "edges": [
+    {
+      "id": 1,
+      "from": 6,
+      "to": 5,
+      "color": "",
+      "influence": "none",
+      "controlPoints": []
+    },
+    {
+      "id": 2,
+      "from": 2,
+      "to": 5,
+      "color": "",
+      "influence": "none",
+      "controlPoints": []
+    },
+    {
+      "id": 3,
+      "from": 7,
+      "to": 5,
+      "color": "",
+      "influence": "none",
+      "controlPoints": []
+    },
+    {
+      "id": 4,
+      "from": 3,
+      "to": 5,
+      "color": "",
+      "influence": "none",
+      "controlPoints": []
+    },
+    {
+      "id": 5,
+      "from": 6,
+      "to": 4,
+      "color": "",
+      "influence": "none",
+      "controlPoints": []
+    },
+    {
+      "id": 6,
+      "from": 7,
+      "to": 4,
+      "color": "",
+      "influence": "none",
+      "controlPoints": []
+    },
+    {
+      "id": 7,
+      "from": 3,
+      "to": 4,
+      "color": "",
+      "influence": "none",
+      "controlPoints": []
+    },
+    {
+      "id": 8,
+      "from": 2,
+      "to": 4,
+      "color": "",
+      "influence": "none",
+      "controlPoints": []
+    },
+    {
+      "id": 9,
+      "from": 3,
+      "to": 6,
+      "color": "",
+      "influence": "none",
+      "controlPoints": []
+    },
+    {
+      "id": 10,
+      "from": 2,
+      "to": 6,
+      "color": "",
+      "influence": "none",
+      "controlPoints": []
+    },
+    {
+      "id": 11,
+      "from": 1,
+      "to": 6,
+      "color": "",
+      "influence": "none",
+      "controlPoints": []
+    }
+  ],
+  "notes": {
+    "markdown": ""
+  },
+  "textItems": [
+    {
+      "id": 1,
+      "x": 50,
+      "y": 280,
+      "width": 520,
+      "height": 180,
+      "fillColor": "",
+      "strokeColor": "",
+      "dashboardPageId": null,
+      "markdown": "Per ognuna delle due uscite, l'implementazione è basata sulla logica per cui se il server è disponibile e:      \n- ci sono almeno due entità in coda, oppure      \n- c'è un'entità in coda e l'altro server è impegnato, oppure:      \n- c'è un'entità in coda ed è scelta questa uscita,      \nallora si invia un'entità al server."
+    }
+  ],
+  "widgets": []
+}

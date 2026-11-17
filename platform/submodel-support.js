@@ -156,8 +156,12 @@
       }
       try {
         if (supportsOpenFilePicker()) {
+          const currentDirectoryHandle = getCurrentModelDirectoryHandle();
+          const directoryPath = String(currentDirectoryHandle?.path ?? "").replace(/[\\/]+$/u, "");
           const handles = await showOpenFilePickerCompat({
             multiple: true,
+            startIn: currentDirectoryHandle || undefined,
+            defaultPath: directoryPath || undefined,
             types: [{
               description: "JSON",
               accept: { "application/json": [".json"] },

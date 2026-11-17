@@ -59,6 +59,7 @@ pub const fn engine_info() -> EngineInfo {
             "seeded-random",
             "array-set-at",
             "tensor-append",
+            "tensor-remove",
             "array-iterations",
             "global-parameters",
             "model-local-functions",

@@ -85,6 +85,26 @@
     return node?.shape === "submodel";
   }
 
+  function isAlgebraicSubmodelNode(node) {
+    return node?.type === "submodel" && node?.__isAlgebraicSubmodel === true;
+  }
+
+  function isAlgebraicSubmodelTemplate(template, templates, visitedTemplates = new Set()) {
+    if (!template || !Array.isArray(template.nodes) || visitedTemplates.has(template)) {
+      return false;
+    }
+    visitedTemplates.add(template);
+    const isAlgebraic = !template.nodes.some((child) => isStateNode(child))
+      && template.nodes
+        .filter((child) => isSubmodelNode(child))
+        .every((child) => {
+          const path = String(child?.modelPath ?? "").trim();
+          return isAlgebraicSubmodelTemplate(templates?.get(path), templates, visitedTemplates);
+        });
+    visitedTemplates.delete(template);
+    return isAlgebraic;
+  }
+
   function isTimeWithinBounds(value, t0, dt, t1) {
     const epsilon = Math.max(1e-12, Math.abs(dt) * 1e-9);
     if (dt > 0) {
@@ -175,7 +195,7 @@
     const halfWidth = (Number(node.width) || 120) / 2;
     const halfHeight = (Number(node.height) || 70) / 2;
     let scale;
-    if (node.type === "algebraic" || node.type === "draft") {
+    if (node.type === "algebraic" || node.type === "draft" || isAlgebraicSubmodelNode(node)) {
       scale = 1 / (Math.sqrt((dx * dx) / (halfWidth * halfWidth) + (dy * dy) / (halfHeight * halfHeight)) || 1);
     } else if (node.type === "parameter") {
       scale = 1 / (Math.abs(dx) / halfWidth + Math.abs(dy) / halfHeight || 1);
@@ -1947,6 +1967,12 @@
             stroke: var(--node-stroke, #2f4a62);
             stroke-width: 2;
           }
+          .node-shape-inner {
+            fill: none;
+            stroke: var(--node-stroke, #2f4a62);
+            stroke-width: 1.5;
+            pointer-events: none;
+          }
           .node.error .node-shape {
             stroke: #c14747;
             stroke-width: 2;
@@ -3264,6 +3290,17 @@
 
     renderGraph() {
       const model = this._state.rawModel;
+      const submodelTemplates = this._state.submodelTemplates;
+      (model?.nodes || []).forEach((node) => {
+        if (node?.type !== "submodel") {
+          return;
+        }
+        const path = String(node.modelPath ?? "").trim();
+        node.__isAlgebraicSubmodel = isAlgebraicSubmodelTemplate(
+          submodelTemplates?.get(path),
+          submodelTemplates,
+        );
+      });
       const visibleNodeIds = this.visibleGraphNodeIds();
       const bounds = this.graphBounds();
       const zoom = this._zoom;
@@ -3440,7 +3477,8 @@
         const g = document.createElementNS(SVG_NS, "g");
         g.dataset.playerNodeId = String(node.id);
         const submodelIcon = node.type === "submodel" ? normalizeSubmodelIcon(node.submodelIcon) : null;
-        g.setAttribute("class", `node ${node.type || "state"}${node.__runtimeError ? " error" : ""}${node.output ? " output" : ""}${submodelIcon ? " submodel-icon-node" : ""}`);
+        const algebraicSubmodel = isAlgebraicSubmodelNode(node);
+        g.setAttribute("class", `node ${node.type || "state"}${node.__runtimeError ? " error" : ""}${node.output ? " output" : ""}${submodelIcon ? " submodel-icon-node" : ""}${algebraicSubmodel ? " algebraic-submodel" : ""}`);
         const tooltipText = nodeTooltipText(node, runtimeNodes.get(node.id), this._state.runtimeModel?.execution, this.t.bind(this));
         if (tooltipText) {
           const title = document.createElementNS(SVG_NS, "title");
@@ -3455,7 +3493,7 @@
           g.style.setProperty("--node-stroke", node.strokeColor);
         }
         let shape;
-        if (node.type === "algebraic" || node.type === "draft") {
+        if (node.type === "algebraic" || node.type === "draft" || algebraicSubmodel) {
           shape = document.createElementNS(SVG_NS, "ellipse");
           shape.setAttribute("cx", node.x);
           shape.setAttribute("cy", node.y);
@@ -3491,6 +3529,15 @@
           : (showRuntimeValues ? node.y - 8 : node.y));
         label.textContent = node.name;
         g.appendChild(shape);
+        if (algebraicSubmodel) {
+          const innerShape = document.createElementNS(SVG_NS, "ellipse");
+          innerShape.setAttribute("class", "node-shape-inner");
+          innerShape.setAttribute("cx", node.x);
+          innerShape.setAttribute("cy", node.y);
+          innerShape.setAttribute("rx", Math.max(4, (node.width || 120) / 2 - 6));
+          innerShape.setAttribute("ry", Math.max(4, (node.height || 70) / 2 - 6));
+          g.appendChild(innerShape);
+        }
         if (submodelIcon?.type === "library") {
           const icon = document.createElementNS(SVG_NS, "text");
           icon.setAttribute("class", "node-submodel-icon-glyph");

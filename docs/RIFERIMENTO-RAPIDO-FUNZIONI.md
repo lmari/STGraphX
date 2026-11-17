@@ -1,6 +1,6 @@
 # STGraphX - Riferimento rapido alle funzioni
 
-Generato automaticamente da `i18n-inline.js` e `graph-functions.js` (release 2026.11.13).
+Generato automaticamente da `i18n-inline.js` e `graph-functions.js` (release 2026.11.15).
 
 Rigenerare con `npm run docs:functions`.
 
@@ -330,6 +330,19 @@ I valori delle celle vicine a quella indicata. Con `diagonals=true` usa il vicin
 
 ---
 
+### `remove`
+
+`remove(array, n) | remove(n, array)`
+
+Copia di un vettore senza gli ultimi n elementi, oppure senza i primi n elementi se n è il primo argomento. Per una matrice rimuove righe. n deve essere un intero non negativo; se supera la dimensione restituisce un array vuoto.
+
+**Esempi**
+- `remove([1,2,3,4], 2) -> [1,2]`
+- `remove(2, [1,2,3,4]) -> [3,4]`
+- `remove([[1,2],[3,4],[5,6]], 1) -> [[1,2],[3,4]]`
+
+---
+
 ### `removeAt`
 
 `removeAt(vector, index) | removeAt(matrix, index[, axis])`
@@ -543,10 +556,10 @@ Distribuzione di probabilità gaussiana (parametri di default: `mu=0`, `sigma=1`
 
 `linearRegression(x, y)`
 
-Regressione lineare ai minimi quadrati con intercetta, equivalente a polynomialRegression(x,y,1). Restituisce il vettore [a0,a1,...,R²]: coefficienti in ordine crescente di potenza (a0+a1*x+...) e infine R². Richiede almeno due coppie numeriche e valori x non tutti uguali.
+Regressione lineare ai minimi quadrati con intercetta, equivalente a polynomialRegression(x,y,1). Restituisce il vettore [a0,a1,...,R²,RMSE]: coefficienti in ordine crescente di potenza (a0+a1*x+...) seguiti da R² e RMSE. RMSE è sqrt(sum((y-yStimata)^2)/n), nelle unità di y, senza correzione per i gradi di libertà. Richiede almeno due coppie numeriche e valori x non tutti uguali.
 
 **Esempi**
-- `linearRegression([0,1,2],[1,3,5]) -> circa [1,2,1]`
+- `linearRegression([0,1,2],[1,3,5]) -> circa [1,2,1,0]`
 
 ---
 
@@ -589,10 +602,10 @@ Distribuzione di Poisson (parametro predefinito: `rate=1`). Se `x` manca, estrae
 
 `polynomialRegression(x, y[, degree])`
 
-Regressione polinomiale ai minimi quadrati, con intercetta. `degree` è un intero non negativo, predefinito 1; occorrono almeno degree+1 osservazioni e valori x distinti sufficienti. Restituisce il vettore [a0,a1,...,R²]: coefficienti in ordine crescente di potenza (a0+a1*x+...) e infine R². Il grado 0 stima la media. Con y costante R² vale 1. Usa QR con dati riscalati; segnala basi numericamente dipendenti o risultati non rappresentabili. Con gradi elevati o x molto traslati, i coefficienti nelle coordinate originali possono perdere precisione.
+Regressione polinomiale ai minimi quadrati, con intercetta. `degree` è un intero non negativo, predefinito 1; occorrono almeno degree+1 osservazioni e valori x distinti sufficienti. Restituisce il vettore [a0,a1,...,R²,RMSE]: coefficienti in ordine crescente di potenza (a0+a1*x+...) seguiti da R² e RMSE. RMSE è sqrt(sum((y-yStimata)^2)/n), nelle unità di y, senza correzione per i gradi di libertà. Il grado 0 stima la media. Con y costante R² vale 1. Usa QR con dati riscalati; segnala basi numericamente dipendenti o risultati non rappresentabili. Con gradi elevati o x molto traslati, i coefficienti nelle coordinate originali possono perdere precisione.
 
 **Esempi**
-- `polynomialRegression([0,1,2],[1,4,9],2) -> circa [1,2,1,1]`
+- `polynomialRegression([0,1,2],[1,4,9],2) -> circa [1,2,1,1,0]`
 
 ---
 

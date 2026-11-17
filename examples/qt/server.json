@@ -1,0 +1,311 @@
+{
+  "version": 1,
+  "modelTitle": "server",
+  "localFunctions": [],
+  "view": {
+    "zoom": 1,
+    "showGrid": true,
+    "highlightNodeEdges": false,
+    "showNodeValues": true,
+    "checkUnits": true,
+    "gridSize": 20,
+    "tooltipDelayMs": 300,
+    "scrollLeft": 18,
+    "scrollTop": 3
+  },
+  "debug": {
+    "watches": [],
+    "breakpointEnabled": false,
+    "breakpointExpression": "",
+    "breakpointMessage": ""
+  },
+  "modelProperties": [],
+  "unitDefinitions": [],
+  "scenarios": [],
+  "nodeCounter": 10,
+  "edgeCounter": 11,
+  "widgetCounter": 3,
+  "textItemCounter": 4,
+  "presentationGroupCounter": 2,
+  "presentationGroups": [],
+  "dashboard": null,
+  "execution": {
+    "t0": 0,
+    "dt": 1,
+    "timeUnit": "s",
+    "t1": 10,
+    "delayMs": 100,
+    "renderEverySteps": 1,
+    "decimals": 3,
+    "integrator": "euler",
+    "strictDefinitions": false,
+    "stopOnRuntimeError": false,
+    "checkRanges": false,
+    "randomSeed": null
+  },
+  "nodes": [
+    {
+      "id": 1,
+      "name": "codaIn",
+      "output": false,
+      "global": false,
+      "type": "parameter",
+      "x": 40,
+      "y": 20,
+      "width": 75,
+      "height": 45,
+      "fillColor": "#ffffff",
+      "strokeColor": "#000000",
+      "unit": "",
+      "properties": [
+        {
+          "key": "note formula",
+          "value": ""
+        },
+        {
+          "key": "descrizione",
+          "value": "Numero di entità in coda\n[default: 0]."
+        }
+      ],
+      "valueExpression": "randInt(2)"
+    },
+    {
+      "id": 2,
+      "name": "disponibile",
+      "output": true,
+      "global": false,
+      "type": "algebraic",
+      "x": 240,
+      "y": 20,
+      "width": 75,
+      "height": 45,
+      "fillColor": "#ffffff",
+      "strokeColor": "#000000",
+      "unit": "",
+      "properties": [
+        {
+          "key": "note formula",
+          "value": ""
+        },
+        {
+          "key": "descrizione",
+          "value": "true / 1 se il server è disponibile a gestire un nuovo evento."
+        }
+      ],
+      "input": false,
+      "valueExpression": "srv==0"
+    },
+    {
+      "id": 3,
+      "name": "nuovoevento",
+      "output": true,
+      "global": false,
+      "type": "algebraic",
+      "x": 140,
+      "y": 180,
+      "width": 75,
+      "height": 45,
+      "fillColor": "#ffffff",
+      "strokeColor": "#000000",
+      "unit": "",
+      "properties": [
+        {
+          "key": "note formula",
+          "value": ""
+        },
+        {
+          "key": "descrizione",
+          "value": "true / 1 se il server ha appena cominciato a gestire un nuovo evento."
+        }
+      ],
+      "input": false,
+      "valueExpression": "srv==periodo"
+    },
+    {
+      "id": 4,
+      "name": "out",
+      "output": true,
+      "global": false,
+      "type": "algebraic",
+      "x": 360,
+      "y": 180,
+      "width": 75,
+      "height": 45,
+      "fillColor": "#ffffff",
+      "strokeColor": "#000000",
+      "unit": "",
+      "properties": [
+        {
+          "key": "note formula",
+          "value": ""
+        },
+        {
+          "key": "descrizione",
+          "value": "Evento in uscita\n(se il server era occupato e ora è libero)."
+        }
+      ],
+      "input": false,
+      "valueExpression": "srv==0 and srv_prec>0"
+    },
+    {
+      "id": 5,
+      "name": "periodo",
+      "output": false,
+      "global": false,
+      "type": "parameter",
+      "x": 20,
+      "y": 100,
+      "width": 75,
+      "height": 45,
+      "fillColor": "#ffff00",
+      "strokeColor": "#ff0000",
+      "unit": "",
+      "properties": [
+        {
+          "key": "note formula",
+          "value": ""
+        },
+        {
+          "key": "descrizione",
+          "value": "Tempo necessario per gestire una singola entità\n[default: 5]."
+        }
+      ],
+      "valueExpression": "5"
+    },
+    {
+      "id": 6,
+      "name": "srv",
+      "output": true,
+      "global": false,
+      "type": "state",
+      "x": 140,
+      "y": 100,
+      "width": 75,
+      "height": 45,
+      "fillColor": "#ffffff",
+      "strokeColor": "#000000",
+      "unit": "",
+      "properties": [
+        {
+          "key": "note formula",
+          "value": ""
+        },
+        {
+          "key": "descrizione",
+          "value": "Tempo ancora necessario a completare la gestione dell'evento\n(0 = server disponibile)."
+        }
+      ],
+      "stateTransition": "if(this==0&&codaIn>0,\n  periodo,\nthis>0,\n  this-1,\n  0\n)",
+      "initialState": "0"
+    },
+    {
+      "id": 7,
+      "name": "srv_prec",
+      "output": false,
+      "global": false,
+      "type": "state",
+      "x": 280,
+      "y": 100,
+      "width": 75,
+      "height": 45,
+      "fillColor": "#ffffff",
+      "strokeColor": "#000000",
+      "unit": "",
+      "properties": [
+        {
+          "key": "note formula",
+          "value": ""
+        },
+        {
+          "key": "descrizione",
+          "value": ""
+        }
+      ],
+      "stateTransition": "srv",
+      "initialState": "0"
+    }
+  ],
+  "edges": [
+    {
+      "id": 1,
+      "from": 6,
+      "to": 4,
+      "color": "",
+      "influence": "none",
+      "controlPoints": []
+    },
+    {
+      "id": 2,
+      "from": 7,
+      "to": 4,
+      "color": "",
+      "influence": "none",
+      "controlPoints": []
+    },
+    {
+      "id": 3,
+      "from": 6,
+      "to": 7,
+      "color": "",
+      "influence": "none",
+      "controlPoints": []
+    },
+    {
+      "id": 4,
+      "from": 5,
+      "to": 6,
+      "color": "",
+      "influence": "none",
+      "controlPoints": []
+    },
+    {
+      "id": 5,
+      "from": 1,
+      "to": 6,
+      "color": "",
+      "influence": "none",
+      "controlPoints": []
+    },
+    {
+      "id": 6,
+      "from": 6,
+      "to": 3,
+      "color": "",
+      "influence": "none",
+      "controlPoints": []
+    },
+    {
+      "id": 7,
+      "from": 5,
+      "to": 3,
+      "color": "",
+      "influence": "none",
+      "controlPoints": []
+    },
+    {
+      "id": 8,
+      "from": 6,
+      "to": 2,
+      "color": "",
+      "influence": "none",
+      "controlPoints": []
+    }
+  ],
+  "notes": {
+    "markdown": ""
+  },
+  "textItems": [
+    {
+      "id": 1,
+      "x": 60,
+      "y": 250,
+      "width": 580,
+      "height": 180,
+      "fillColor": "",
+      "strokeColor": "",
+      "dashboardPageId": null,
+      "html": "<html>   <head>        </head>   <body>     <p style=\"margin-top: 0\">       <small><font size=\"4\">Implementazione basata su questa logica: </font></small>     </p>     <p style=\"margin-top: 0\">       <small><font size=\"4\">- se sei disponibile e c'&#232; qualcuno in coda,        diventa occupato; </font></small>     </p>     <p style=\"margin-top: 0\">       <small><font size=\"4\">- altrimenti se sei impegnato e non avevi finito,        continua; </font></small>     </p>     <p style=\"margin-top: 0\">       <small><font size=\"4\">- altrimenti rimani disponibile. </font></small>     </p>     <p style=\"margin-top: 0\">       <small><font size=\"4\">La variabile di stato opera come un countdown:        ogni volta che il valore arriva a zero si diventa disponibili a gestire        una nuova entit&#224;.</font></small>     </p>   </body> </html> "
+    }
+  ],
+  "widgets": []
+}

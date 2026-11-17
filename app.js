@@ -1164,6 +1164,7 @@ const submodelOrchestrationHelpers = globalThis.STGraphXSubmodelOrchestration?.c
   ui,
   t,
   isSubmodelNode,
+  isAlgebraicSubmodelTemplate,
   normalizeSubmodelPath,
   loadSubmodelTemplateByPath,
   loadSubmodelInterfaceByPath,
@@ -8309,6 +8310,27 @@ function isSubmodelNode(node) {
   return node?.shape === "submodel";
 }
 
+function isAlgebraicSubmodelTemplate(template, visitedTemplates = new Set()) {
+  if (!template || !Array.isArray(template.nodes) || visitedTemplates.has(template)) {
+    return false;
+  }
+  visitedTemplates.add(template);
+  const isAlgebraic = !template.nodes.some((child) => isStateNode(child))
+    && template.nodes
+      .filter((child) => isSubmodelNode(child))
+      .every((child) => {
+        const path = normalizeSubmodelPath(child.modelPath);
+        const nestedTemplate = path ? submodelTemplateCache.get(path) : null;
+        return isAlgebraicSubmodelTemplate(nestedTemplate, visitedTemplates);
+      });
+  visitedTemplates.delete(template);
+  return isAlgebraic;
+}
+
+function isAlgebraicSubmodelNode(node) {
+  return isSubmodelNode(node) && node?.__isAlgebraicSubmodel === true;
+}
+
 function nodeHasIncomingEdges(nodeId) {
   return graph.edges.some((edge) => edge.to === nodeId);
 }
@@ -8419,8 +8441,14 @@ async function chooseSubmodelFileForNode(node) {
   }
   let entry = null;
   if (supportsOpenFilePicker()) {
+    const parentDirectory = currentModelDirectoryHandle || undefined;
+    const parentDirectoryPath = String(parentDirectory?.path ?? "").trim();
+    const parentFilePath = String(currentFileHandle?.path ?? "").trim();
     const handles = await showOpenFilePickerCompat({
       multiple: false,
+      startIn: parentDirectory,
+      // Native dialogs accept a directory path; browser pickers use startIn.
+      defaultPath: parentDirectoryPath || parentFilePath || undefined,
       types: [{
         description: "JSON",
         accept: { "application/json": [".json"] },
@@ -8742,15 +8770,28 @@ function getSubmodelBindingSourceChoices(node) {
   if (!node || !isSubmodelNode(node)) {
     return [];
   }
-  const names = new Set();
+  const choices = new Map();
   incomingEdgesForNode(node.id).forEach((edge) => {
     const fromNode = getNodeById(edge.from);
     const name = String(fromNode?.name ?? "").trim();
-    if (name) {
-      names.add(name);
+    if (!name) {
+      return;
     }
+    if (!isSubmodelNode(fromNode)) {
+      choices.set(name, { value: name, label: name });
+      return;
+    }
+    const outputs = Array.isArray(fromNode.interfaceCache?.outputs)
+      ? fromNode.interfaceCache.outputs.map((value) => String(value).trim()).filter(Boolean)
+      : [];
+    outputs.forEach((outputName) => {
+      const value = `${name}.${outputName}`;
+      choices.set(value, { value, label: value });
+    });
   });
-  return [...names].sort((a, b) => a.localeCompare(b, undefined, { sensitivity: "base" }));
+  return [...choices.values()].sort((a, b) => (
+    a.label.localeCompare(b.label, undefined, { sensitivity: "base" })
+  ));
 }
 
 function renderSubmodelBindingsEditor(node) {
@@ -8801,13 +8842,13 @@ function renderSubmodelBindingsEditor(node) {
     emptyOption.value = "";
     emptyOption.textContent = t("widget.noneOption");
     select.appendChild(emptyOption);
-    sourceChoices.forEach((sourceName) => {
+    sourceChoices.forEach((sourceChoice) => {
       const option = document.createElement("option");
-      option.value = sourceName;
-      option.textContent = sourceName;
+      option.value = sourceChoice.value;
+      option.textContent = sourceChoice.label;
       select.appendChild(option);
     });
-    if (currentValue && !sourceChoices.includes(currentValue)) {
+    if (currentValue && !sourceChoices.some((sourceChoice) => sourceChoice.value === currentValue)) {
       const missingOption = document.createElement("option");
       missingOption.value = currentValue;
       missingOption.textContent = currentValue;
@@ -11041,7 +11082,7 @@ function nodeBoundaryPoint(node, targetX, targetY) {
   const hh = node.height / 2;
   let scale = 1;
 
-  if (node.shape === "ellipse" || isDraftNode(node)) {
+  if (node.shape === "ellipse" || isDraftNode(node) || isAlgebraicSubmodelNode(node)) {
     const denom = Math.sqrt((dx * dx) / (hw * hw) + (dy * dy) / (hh * hh)) || 1;
     scale = 1 / denom;
   } else if (node.shape === "diamond") {
@@ -12623,12 +12664,20 @@ function render(options = {}) {
     let shapeEl;
     let shapeOutlineEl = null;
     let submodelInnerShape = null;
-    if (node.shape === "ellipse" || isDraftNode(node)) {
+    if (node.shape === "ellipse" || isDraftNode(node) || isAlgebraicSubmodelNode(node)) {
       shapeEl = document.createElementNS(SVG_NS, "ellipse");
       shapeEl.setAttribute("cx", node.x);
       shapeEl.setAttribute("cy", node.y);
       shapeEl.setAttribute("rx", node.width / 2);
       shapeEl.setAttribute("ry", node.height / 2);
+      if (isAlgebraicSubmodelNode(node)) {
+        submodelInnerShape = document.createElementNS(SVG_NS, "ellipse");
+        submodelInnerShape.setAttribute("cx", node.x);
+        submodelInnerShape.setAttribute("cy", node.y);
+        submodelInnerShape.setAttribute("rx", Math.max(4, node.width / 2 - 6));
+        submodelInnerShape.setAttribute("ry", Math.max(4, node.height / 2 - 6));
+        submodelInnerShape.classList.add("node-shape", "node-shape-inner");
+      }
     } else if (node.shape === "diamond") {
       shapeEl = document.createElementNS(SVG_NS, "polygon");
       shapeEl.setAttribute("points", diamondPoints(node));

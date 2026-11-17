@@ -1,0 +1,42 @@
+{
+  "version": 1,
+  "execution": { "t0": 0, "dt": 1, "t1": 2, "integrator": "euler" },
+  "nodes": [
+    {
+      "id": 1,
+      "name": "subA",
+      "type": "submodel",
+      "modelPath": "submodel-feedback-a.json",
+      "inputBindings": { "fromB": "subB.stateB" },
+      "interfaceCache": { "inputs": ["fromB"], "outputs": ["stateA"] }
+    },
+    {
+      "id": 2,
+      "name": "subB",
+      "type": "submodel",
+      "modelPath": "submodel-feedback-b.json",
+      "inputBindings": { "fromA": "subA.stateA" },
+      "interfaceCache": { "inputs": ["fromA"], "outputs": ["stateB"] }
+    },
+    {
+      "id": 3,
+      "name": "a",
+      "type": "algebraic",
+      "output": true,
+      "valueExpression": "subA.stateA"
+    },
+    {
+      "id": 4,
+      "name": "b",
+      "type": "algebraic",
+      "output": true,
+      "valueExpression": "subB.stateB"
+    }
+  ],
+  "edges": [
+    { "id": 1, "from": 1, "to": 2 },
+    { "id": 2, "from": 2, "to": 1 },
+    { "id": 3, "from": 1, "to": 3 },
+    { "id": 4, "from": 2, "to": 4 }
+  ]
+}

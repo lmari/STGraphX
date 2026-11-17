@@ -1,0 +1,730 @@
+{
+  "version": 1,
+  "modelTitle": "esempio",
+  "localFunctions": [],
+  "view": {
+    "zoom": 1,
+    "showGrid": true,
+    "highlightNodeEdges": false,
+    "showNodeValues": true,
+    "checkUnits": true,
+    "gridSize": 20,
+    "tooltipDelayMs": 300,
+    "scrollLeft": 43,
+    "scrollTop": 165
+  },
+  "debug": {
+    "watches": [],
+    "breakpointEnabled": false,
+    "breakpointExpression": "",
+    "breakpointMessage": ""
+  },
+  "modelProperties": [],
+  "unitDefinitions": [],
+  "scenarios": [],
+  "nodeCounter": 12,
+  "edgeCounter": 15,
+  "widgetCounter": 6,
+  "textItemCounter": 3,
+  "presentationGroupCounter": 1,
+  "presentationGroups": [],
+  "dashboard": null,
+  "execution": {
+    "t0": 0,
+    "dt": 1,
+    "timeUnit": "s",
+    "t1": 100,
+    "delayMs": 100,
+    "renderEverySteps": 1,
+    "decimals": 3,
+    "integrator": "euler",
+    "strictDefinitions": false,
+    "stopOnRuntimeError": false,
+    "checkRanges": false,
+    "randomSeed": null
+  },
+  "nodes": [
+    {
+      "id": 1,
+      "name": "coda",
+      "output": true,
+      "global": false,
+      "type": "state",
+      "x": 100,
+      "y": 200,
+      "width": 75,
+      "height": 55,
+      "fillColor": "#ffffff",
+      "strokeColor": "#ffffff",
+      "unit": "",
+      "properties": [
+        {
+          "key": "note formula",
+          "value": ""
+        },
+        {
+          "key": "descrizione",
+          "value": "Numero di eventi in coda\n(implementazione come accumulatore)."
+        }
+      ],
+      "stateTransition": "pos(this+evIn-(srv==kappa))",
+      "initialState": "0"
+    },
+    {
+      "id": 2,
+      "name": "gen",
+      "output": false,
+      "global": false,
+      "type": "state",
+      "x": 100,
+      "y": 80,
+      "width": 75,
+      "height": 65,
+      "fillColor": "#ffffff",
+      "strokeColor": "#ffffff",
+      "unit": "",
+      "properties": [
+        {
+          "key": "descrizione",
+          "value": "Genera eventi booleani, secondo una distribuzione esponenziale negativa con parametro lambda (nota che il parametro va specificato come frequenza, dunque 1/lambda).\nLa variabile di stato opera come un countdown: ogni volta che il valore arriva a zero si genera un evento, e quindi si rende disponibile un nuovo evento rivalutando la distribuzione."
+        },
+        {
+          "key": "note formula",
+          "value": ""
+        }
+      ],
+      "stateTransition": "if(this==0,round(exponential([1/lambda]),0),this-1)",
+      "initialState": "round(exponential([1/lambda]),0)"
+    },
+    {
+      "id": 3,
+      "name": "kappa",
+      "output": false,
+      "global": false,
+      "type": "parameter",
+      "x": -20,
+      "y": 320,
+      "width": 75,
+      "height": 45,
+      "fillColor": "#ffff00",
+      "strokeColor": "#ff0000",
+      "unit": "",
+      "properties": [
+        {
+          "key": "note formula",
+          "value": ""
+        },
+        {
+          "key": "descrizione",
+          "value": "Parametro del server: tempo (deterministico, in questo caso) necessario per gestire un singolo evento."
+        }
+      ],
+      "valueExpression": "5"
+    },
+    {
+      "id": 4,
+      "name": "lambda",
+      "output": false,
+      "global": false,
+      "type": "parameter",
+      "x": -20,
+      "y": 80,
+      "width": 75,
+      "height": 45,
+      "fillColor": "#ffff00",
+      "strokeColor": "#ff0000",
+      "unit": "",
+      "properties": [
+        {
+          "key": "note formula",
+          "value": ""
+        },
+        {
+          "key": "descrizione",
+          "value": "Parametro del generatore: periodo medio inter-generazione."
+        }
+      ],
+      "valueExpression": "10"
+    },
+    {
+      "id": 5,
+      "name": "evOut",
+      "output": true,
+      "global": false,
+      "type": "algebraic",
+      "x": 220,
+      "y": 320,
+      "width": 75,
+      "height": 45,
+      "fillColor": "#ffffff",
+      "strokeColor": "#000000",
+      "unit": "",
+      "properties": [
+        {
+          "key": "note formula",
+          "value": ""
+        },
+        {
+          "key": "descrizione",
+          "value": "Evento in uscita\n(se il server era occupato e ora è libero)."
+        }
+      ],
+      "input": false,
+      "valueExpression": "srv==0&&srv_prec>0"
+    },
+    {
+      "id": 6,
+      "name": "occSrv",
+      "output": false,
+      "global": false,
+      "type": "state",
+      "x": 200,
+      "y": 220,
+      "width": 60,
+      "height": 60,
+      "fillColor": "",
+      "strokeColor": "transparent",
+      "unit": "",
+      "properties": [
+        {
+          "key": "descrizione",
+          "value": "Numero di periodi in cui il server è occupato."
+        },
+        {
+          "key": "note formula",
+          "value": ""
+        }
+      ],
+      "stateTransition": "if(srv>0,this+1,this)",
+      "initialState": "0"
+    },
+    {
+      "id": 7,
+      "name": "srv",
+      "output": false,
+      "global": false,
+      "type": "state",
+      "x": 100,
+      "y": 320,
+      "width": 75,
+      "height": 65,
+      "fillColor": "#ffffff",
+      "strokeColor": "#ffffff",
+      "unit": "",
+      "properties": [
+        {
+          "key": "note formula",
+          "value": ""
+        },
+        {
+          "key": "descrizione",
+          "value": "Implementazione basata su questa logica: \n- se sei disponibile e c'è qualcuno in coda, diventa occupato; \n- altrimenti se sei impegnato e non avevi finito, continua; \n- altrimenti rimani disponibile. \nLa transizione di stato opera come un countdown: ogni volta che il valore arriva a zero il server diventa disponibile a gestire una nuova entità."
+        }
+      ],
+      "stateTransition": "if(this==0&&coda>0,kappa,this>0,this-1,0)",
+      "initialState": "0"
+    },
+    {
+      "id": 8,
+      "name": "srv_prec",
+      "output": false,
+      "global": false,
+      "type": "state",
+      "x": 100,
+      "y": 420,
+      "width": 75,
+      "height": 45,
+      "fillColor": "#ffffff",
+      "strokeColor": "transparent",
+      "unit": "",
+      "properties": [
+        {
+          "key": "note formula",
+          "value": ""
+        },
+        {
+          "key": "descrizione",
+          "value": "Ritardatore dello stato del server\n(per stabilire se il server ha completato la gestione di un'evento)."
+        }
+      ],
+      "stateTransition": "srv",
+      "initialState": "0"
+    },
+    {
+      "id": 10,
+      "name": "evIn",
+      "output": true,
+      "global": false,
+      "type": "algebraic",
+      "x": 240,
+      "y": 80,
+      "width": 80,
+      "height": 40,
+      "fillColor": "",
+      "strokeColor": "",
+      "unit": "",
+      "properties": [
+        {
+          "key": "note formula",
+          "value": ""
+        },
+        {
+          "key": "descrizione",
+          "value": ""
+        }
+      ],
+      "input": false,
+      "valueExpression": "gen==0"
+    },
+    {
+      "id": 11,
+      "name": "percOcc",
+      "output": true,
+      "global": false,
+      "type": "algebraic",
+      "x": 300,
+      "y": 220,
+      "width": 80,
+      "height": 60,
+      "fillColor": "",
+      "strokeColor": "",
+      "unit": "",
+      "properties": [
+        {
+          "key": "note formula",
+          "value": ""
+        },
+        {
+          "key": "descrizione",
+          "value": "Percentuale di occupazione di tempo del server\n(un possibile KPI del sistema)."
+        }
+      ],
+      "input": false,
+      "valueExpression": "100*occSrv/(time+1)"
+    }
+  ],
+  "edges": [
+    {
+      "id": 1,
+      "from": 7,
+      "to": 6,
+      "color": "",
+      "influence": "none",
+      "controlPoints": []
+    },
+    {
+      "id": 2,
+      "from": 8,
+      "to": 5,
+      "color": "",
+      "influence": "none",
+      "controlPoints": []
+    },
+    {
+      "id": 3,
+      "from": 7,
+      "to": 5,
+      "color": "",
+      "influence": "none",
+      "controlPoints": []
+    },
+    {
+      "id": 5,
+      "from": 1,
+      "to": 7,
+      "color": "",
+      "influence": "none",
+      "controlPoints": []
+    },
+    {
+      "id": 6,
+      "from": 3,
+      "to": 7,
+      "color": "",
+      "influence": "none",
+      "controlPoints": []
+    },
+    {
+      "id": 7,
+      "from": 4,
+      "to": 2,
+      "color": "",
+      "influence": "none",
+      "controlPoints": []
+    },
+    {
+      "id": 8,
+      "from": 7,
+      "to": 8,
+      "color": "",
+      "influence": "none",
+      "controlPoints": []
+    },
+    {
+      "id": 9,
+      "from": 3,
+      "to": 1,
+      "color": "",
+      "influence": "none",
+      "controlPoints": []
+    },
+    {
+      "id": 10,
+      "from": 7,
+      "to": 1,
+      "color": "",
+      "influence": "none",
+      "controlPoints": []
+    },
+    {
+      "id": 12,
+      "from": 2,
+      "to": 10,
+      "color": "",
+      "influence": "none",
+      "controlPoints": []
+    },
+    {
+      "id": 13,
+      "from": 10,
+      "to": 1,
+      "color": "",
+      "influence": "none",
+      "controlPoints": []
+    },
+    {
+      "id": 14,
+      "from": 6,
+      "to": 11,
+      "color": "",
+      "influence": "none",
+      "controlPoints": []
+    }
+  ],
+  "notes": {
+    "markdown": ""
+  },
+  "textItems": [
+    {
+      "id": 1,
+      "x": -60,
+      "y": -60,
+      "width": 420,
+      "height": 80,
+      "fillColor": "",
+      "strokeColor": "",
+      "dashboardPageId": null,
+      "markdown": "## Sistema semplice gen-coda-srv     \n(vedi la documentazione per ogni nodo)"
+    }
+  ],
+  "widgets": [
+    {
+      "id": 2,
+      "type": "xychart",
+      "customTitle": "eventi in ingresso",
+      "x": 360,
+      "y": -80,
+      "width": 580,
+      "height": 200,
+      "dashboardPageId": null,
+      "minimized": false,
+      "showTitleBar": true,
+      "fontSize": 13,
+      "outputOnly": false,
+      "showHistory": false,
+      "expandNonScalarValues": false,
+      "tableTextAlign": "left",
+      "tableDecimalDigits": 0,
+      "tableColumnFormats": {},
+      "xMin": "auto",
+      "xMax": "auto",
+      "yMin": "auto",
+      "yMax": "auto",
+      "xGridStep": null,
+      "yGridStep": null,
+      "xAxisLabel": "",
+      "yAxisLabel": "",
+      "showGrid": true,
+      "showAxes": true,
+      "equalScale": true,
+      "legendPosition": "none",
+      "objects": [],
+      "source": "",
+      "showNumericValues": true,
+      "showIndices": true,
+      "autoFitCells": true,
+      "cellSize": 28,
+      "valueMin": "auto",
+      "valueMax": "auto",
+      "displayRows": null,
+      "displayCols": null,
+      "colorScheme": "blue",
+      "viewMode": "grid",
+      "surfaceStyle": "solid",
+      "surfaceAzimuth": 45,
+      "surfaceElevation": 32,
+      "surfaceHeightScale": 1,
+      "min": 0,
+      "max": 100,
+      "step": 1,
+      "value": 0,
+      "falseLabel": "",
+      "trueLabel": "",
+      "options": [],
+      "mappings": [],
+      "columns": [],
+      "xyPairs": [
+        {
+          "xSource": "time",
+          "ySource": "evIn",
+          "showTimeSeries": true,
+          "showInstantProfile": false,
+          "color": "#0e7ac4",
+          "pointColor": "#0e7ac4",
+          "showLine": false,
+          "lineWidth": 2.2,
+          "lineStyle": "solid",
+          "barMode": "all",
+          "showBars": true,
+          "barColor": "#0e7ac4",
+          "barWidth": 2.2,
+          "showArea": false,
+          "areaColor": "#0e7ac4",
+          "pointMode": "none",
+          "pointSize": 2.4
+        }
+      ]
+    },
+    {
+      "id": 3,
+      "type": "xychart",
+      "customTitle": "lunghezza della coda",
+      "x": 360,
+      "y": 120,
+      "width": 580,
+      "height": 200,
+      "dashboardPageId": null,
+      "minimized": false,
+      "showTitleBar": true,
+      "fontSize": 13,
+      "outputOnly": false,
+      "showHistory": false,
+      "expandNonScalarValues": false,
+      "tableTextAlign": "left",
+      "tableDecimalDigits": 0,
+      "tableColumnFormats": {},
+      "xMin": "auto",
+      "xMax": "auto",
+      "yMin": "auto",
+      "yMax": "auto",
+      "xGridStep": null,
+      "yGridStep": null,
+      "xAxisLabel": "",
+      "yAxisLabel": "",
+      "showGrid": true,
+      "showAxes": true,
+      "equalScale": true,
+      "legendPosition": "none",
+      "objects": [],
+      "source": "",
+      "showNumericValues": true,
+      "showIndices": true,
+      "autoFitCells": true,
+      "cellSize": 28,
+      "valueMin": "auto",
+      "valueMax": "auto",
+      "displayRows": null,
+      "displayCols": null,
+      "colorScheme": "blue",
+      "viewMode": "grid",
+      "surfaceStyle": "solid",
+      "surfaceAzimuth": 45,
+      "surfaceElevation": 32,
+      "surfaceHeightScale": 1,
+      "min": 0,
+      "max": 100,
+      "step": 1,
+      "value": 0,
+      "falseLabel": "",
+      "trueLabel": "",
+      "options": [],
+      "mappings": [],
+      "columns": [],
+      "xyPairs": [
+        {
+          "xSource": "time",
+          "ySource": "coda",
+          "showTimeSeries": true,
+          "showInstantProfile": false,
+          "color": "#0e7ac4",
+          "pointColor": "#0e7ac4",
+          "showLine": true,
+          "lineWidth": 2.2,
+          "lineStyle": "solid",
+          "barMode": "none",
+          "showBars": false,
+          "barColor": "#0e7ac4",
+          "barWidth": 2.2,
+          "showArea": false,
+          "areaColor": "#0e7ac4",
+          "pointMode": "none",
+          "pointSize": 2.4
+        }
+      ]
+    },
+    {
+      "id": 4,
+      "type": "xychart",
+      "customTitle": "",
+      "x": 360,
+      "y": 320,
+      "width": 580,
+      "height": 200,
+      "dashboardPageId": null,
+      "minimized": false,
+      "showTitleBar": true,
+      "fontSize": 13,
+      "outputOnly": false,
+      "showHistory": false,
+      "expandNonScalarValues": false,
+      "tableTextAlign": "left",
+      "tableDecimalDigits": 0,
+      "tableColumnFormats": {},
+      "xMin": "auto",
+      "xMax": "auto",
+      "yMin": "auto",
+      "yMax": "auto",
+      "xGridStep": null,
+      "yGridStep": null,
+      "xAxisLabel": "",
+      "yAxisLabel": "",
+      "showGrid": true,
+      "showAxes": true,
+      "equalScale": true,
+      "legendPosition": "none",
+      "objects": [],
+      "source": "",
+      "showNumericValues": true,
+      "showIndices": true,
+      "autoFitCells": true,
+      "cellSize": 28,
+      "valueMin": "auto",
+      "valueMax": "auto",
+      "displayRows": null,
+      "displayCols": null,
+      "colorScheme": "blue",
+      "viewMode": "grid",
+      "surfaceStyle": "solid",
+      "surfaceAzimuth": 45,
+      "surfaceElevation": 32,
+      "surfaceHeightScale": 1,
+      "min": 0,
+      "max": 100,
+      "step": 1,
+      "value": 0,
+      "falseLabel": "",
+      "trueLabel": "",
+      "options": [],
+      "mappings": [],
+      "columns": [],
+      "xyPairs": [
+        {
+          "xSource": "time",
+          "ySource": "evOut",
+          "showTimeSeries": true,
+          "showInstantProfile": false,
+          "color": "#0e7ac4",
+          "pointColor": "#0e7ac4",
+          "showLine": false,
+          "lineWidth": 2.2,
+          "lineStyle": "solid",
+          "barMode": "all",
+          "showBars": true,
+          "barColor": "#0e7ac4",
+          "barWidth": 2.2,
+          "showArea": false,
+          "areaColor": "#0e7ac4",
+          "pointMode": "none",
+          "pointSize": 2.4
+        }
+      ]
+    },
+    {
+      "id": 5,
+      "type": "xychart",
+      "customTitle": "",
+      "x": 360,
+      "y": 520,
+      "width": 580,
+      "height": 200,
+      "dashboardPageId": null,
+      "minimized": false,
+      "showTitleBar": true,
+      "fontSize": 13,
+      "outputOnly": false,
+      "showHistory": false,
+      "expandNonScalarValues": false,
+      "tableTextAlign": "left",
+      "tableDecimalDigits": 0,
+      "tableColumnFormats": {},
+      "xMin": "auto",
+      "xMax": "auto",
+      "yMin": "auto",
+      "yMax": "auto",
+      "xGridStep": null,
+      "yGridStep": null,
+      "xAxisLabel": "",
+      "yAxisLabel": "",
+      "showGrid": true,
+      "showAxes": true,
+      "equalScale": true,
+      "legendPosition": "none",
+      "objects": [],
+      "source": "",
+      "showNumericValues": true,
+      "showIndices": true,
+      "autoFitCells": true,
+      "cellSize": 28,
+      "valueMin": "auto",
+      "valueMax": "auto",
+      "displayRows": null,
+      "displayCols": null,
+      "colorScheme": "blue",
+      "viewMode": "grid",
+      "surfaceStyle": "solid",
+      "surfaceAzimuth": 45,
+      "surfaceElevation": 32,
+      "surfaceHeightScale": 1,
+      "min": 0,
+      "max": 100,
+      "step": 1,
+      "value": 0,
+      "falseLabel": "",
+      "trueLabel": "",
+      "options": [],
+      "mappings": [],
+      "columns": [],
+      "xyPairs": [
+        {
+          "xSource": "time",
+          "ySource": "percOcc",
+          "showTimeSeries": true,
+          "showInstantProfile": false,
+          "color": "#0e7ac4",
+          "pointColor": "#0e7ac4",
+          "showLine": true,
+          "lineWidth": 2.2,
+          "lineStyle": "solid",
+          "barMode": "none",
+          "showBars": false,
+          "barColor": "#0e7ac4",
+          "barWidth": 2.2,
+          "showArea": false,
+          "areaColor": "#0e7ac4",
+          "pointMode": "none",
+          "pointSize": 2.4
+        }
+      ]
+    }
+  ]
+}

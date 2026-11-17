@@ -1,6 +1,6 @@
 # STGraphX - Quick Function Reference
 
-Generated automatically da `i18n-inline.js` e `graph-functions.js` (release 2026.11.13).
+Generated automatically da `i18n-inline.js` e `graph-functions.js` (release 2026.11.15).
 
 Regenerate with `npm run docs:functions`.
 
@@ -328,6 +328,19 @@ The values of cells neighboring the selected one. With diagonals=true it uses th
 
 ---
 
+### `remove`
+
+`remove(array, n) | remove(n, array)`
+
+A copy of a vector without its last n elements, or without its first n elements when n is the first argument. For a matrix it removes rows. n must be a non-negative integer; if it exceeds the size, the result is an empty array.
+
+**Examples**
+- `remove([1,2,3,4], 2) -> [1,2]`
+- `remove(2, [1,2,3,4]) -> [3,4]`
+- `remove([[1,2],[3,4],[5,6]], 1) -> [[1,2],[3,4]]`
+
+---
+
 ### `removeAt`
 
 `removeAt(vector, index) | removeAt(matrix, index[, axis])`
@@ -541,10 +554,10 @@ Normal distribution; mu defaults to 0 and sigma to 1. If x is omitted it samples
 
 `linearRegression(x, y)`
 
-Linear least-squares regression with an intercept, equivalent to polynomialRegression(x,y,1). Returns the vector [a0,a1,...,R²]: coefficients in ascending power order (a0+a1*x+...), followed by R². Requires at least two numeric pairs and non-constant x values.
+Linear least-squares regression with an intercept, equivalent to polynomialRegression(x,y,1). Returns the vector [a0,a1,...,R²,RMSE]: coefficients in ascending power order (a0+a1*x+...), followed by R² and RMSE. RMSE is sqrt(sum((y-yPredicted)^2)/n), in y units, without a degrees-of-freedom correction. Requires at least two numeric pairs and non-constant x values.
 
 **Examples**
-- `linearRegression([0,1,2],[1,3,5]) -> approximately [1,2,1]`
+- `linearRegression([0,1,2],[1,3,5]) -> approximately [1,2,1,0]`
 
 ---
 
@@ -587,10 +600,10 @@ Poisson distribution with rate; rate defaults to 1. If x is omitted it samples a
 
 `polynomialRegression(x, y[, degree])`
 
-Polynomial least-squares regression with an intercept. `degree` is a non-negative integer, default 1; requires at least degree+1 observations and enough distinct x values. Returns the vector [a0,a1,...,R²]: coefficients in ascending power order (a0+a1*x+...), followed by R². Degree 0 estimates the mean. For constant y, R² is 1. Uses QR with scaled data; reports numerically dependent bases or unrepresentable results. For high degrees or strongly shifted x, original-coordinate coefficients may lose precision.
+Polynomial least-squares regression with an intercept. `degree` is a non-negative integer, default 1; requires at least degree+1 observations and enough distinct x values. Returns the vector [a0,a1,...,R²,RMSE]: coefficients in ascending power order (a0+a1*x+...), followed by R² and RMSE. RMSE is sqrt(sum((y-yPredicted)^2)/n), in y units, without a degrees-of-freedom correction. Degree 0 estimates the mean. For constant y, R² is 1. Uses QR with scaled data; reports numerically dependent bases or unrepresentable results. For high degrees or strongly shifted x, original-coordinate coefficients may lose precision.
 
 **Examples**
-- `polynomialRegression([0,1,2],[1,4,9],2) -> approximately [1,2,1,1]`
+- `polynomialRegression([0,1,2],[1,4,9],2) -> approximately [1,2,1,1,0]`
 
 ---
 

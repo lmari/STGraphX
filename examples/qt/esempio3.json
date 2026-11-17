@@ -1,0 +1,984 @@
+{
+  "version": 1,
+  "modelTitle": "esempio3",
+  "localFunctions": [],
+  "view": {
+    "zoom": 1,
+    "showGrid": true,
+    "highlightNodeEdges": false,
+    "showNodeValues": true,
+    "checkUnits": true,
+    "gridSize": 20,
+    "tooltipDelayMs": 300,
+    "scrollLeft": 83,
+    "scrollTop": 108
+  },
+  "debug": {
+    "watches": [],
+    "breakpointEnabled": false,
+    "breakpointExpression": "",
+    "breakpointMessage": ""
+  },
+  "modelProperties": [],
+  "unitDefinitions": [],
+  "scenarios": [],
+  "nodeCounter": 15,
+  "edgeCounter": 17,
+  "widgetCounter": 7,
+  "textItemCounter": 4,
+  "presentationGroupCounter": 2,
+  "presentationGroups": [],
+  "dashboard": null,
+  "execution": {
+    "t0": 0,
+    "dt": 1,
+    "timeUnit": "s",
+    "t1": 100,
+    "delayMs": 100,
+    "renderEverySteps": 1,
+    "decimals": 3,
+    "integrator": "euler",
+    "strictDefinitions": false,
+    "stopOnRuntimeError": false,
+    "checkRanges": false,
+    "randomSeed": null
+  },
+  "nodes": [
+    {
+      "id": 1,
+      "name": "eventiIn",
+      "output": true,
+      "global": false,
+      "type": "algebraic",
+      "x": 20,
+      "y": 50,
+      "width": 75,
+      "height": 45,
+      "fillColor": "",
+      "strokeColor": "",
+      "unit": "",
+      "properties": [
+        {
+          "key": "note formula",
+          "value": ""
+        },
+        {
+          "key": "descrizione",
+          "value": ""
+        }
+      ],
+      "input": false,
+      "valueExpression": "sub_generatore.evGen"
+    },
+    {
+      "id": 2,
+      "name": "eventiOut1",
+      "output": true,
+      "global": false,
+      "type": "algebraic",
+      "x": 380,
+      "y": 10,
+      "width": 75,
+      "height": 45,
+      "fillColor": "",
+      "strokeColor": "",
+      "unit": "",
+      "properties": [
+        {
+          "key": "note formula",
+          "value": ""
+        },
+        {
+          "key": "descrizione",
+          "value": ""
+        }
+      ],
+      "input": false,
+      "valueExpression": "sub_server1.srv"
+    },
+    {
+      "id": 3,
+      "name": "eventiOut2",
+      "output": true,
+      "global": false,
+      "type": "algebraic",
+      "x": 380,
+      "y": 260,
+      "width": 75,
+      "height": 45,
+      "fillColor": "",
+      "strokeColor": "",
+      "unit": "",
+      "properties": [
+        {
+          "key": "note formula",
+          "value": ""
+        },
+        {
+          "key": "descrizione",
+          "value": ""
+        }
+      ],
+      "input": false,
+      "valueExpression": "sub_server2.srv"
+    },
+    {
+      "id": 4,
+      "name": "luncoda",
+      "output": true,
+      "global": false,
+      "type": "algebraic",
+      "x": 130,
+      "y": 50,
+      "width": 75,
+      "height": 45,
+      "fillColor": "",
+      "strokeColor": "",
+      "unit": "",
+      "properties": [
+        {
+          "key": "note formula",
+          "value": ""
+        },
+        {
+          "key": "descrizione",
+          "value": ""
+        }
+      ],
+      "input": false,
+      "valueExpression": "sub_coda.coda"
+    },
+    {
+      "id": 5,
+      "name": "per",
+      "output": false,
+      "global": false,
+      "type": "parameter",
+      "x": 20,
+      "y": 210,
+      "width": 75,
+      "height": 45,
+      "fillColor": "",
+      "strokeColor": "",
+      "unit": "",
+      "properties": [
+        {
+          "key": "note formula",
+          "value": ""
+        },
+        {
+          "key": "descrizione",
+          "value": "parametro del generatore: periodo medio inter-generazione"
+        }
+      ],
+      "valueExpression": "20"
+    },
+    {
+      "id": 6,
+      "name": "per1",
+      "output": false,
+      "global": false,
+      "type": "parameter",
+      "x": 290,
+      "y": 70,
+      "width": 75,
+      "height": 45,
+      "fillColor": "",
+      "strokeColor": "",
+      "unit": "",
+      "properties": [
+        {
+          "key": "note formula",
+          "value": ""
+        },
+        {
+          "key": "descrizione",
+          "value": "parametro del server: tempo (deterministico) necessario per gestire un singolo evento"
+        }
+      ],
+      "valueExpression": "10"
+    },
+    {
+      "id": 7,
+      "name": "per2",
+      "output": false,
+      "global": false,
+      "type": "parameter",
+      "x": 290,
+      "y": 200,
+      "width": 75,
+      "height": 45,
+      "fillColor": "",
+      "strokeColor": "",
+      "unit": "",
+      "properties": [
+        {
+          "key": "note formula",
+          "value": ""
+        },
+        {
+          "key": "descrizione",
+          "value": "parametro del server: tempo (deterministico) necessario per gestire un singolo evento"
+        }
+      ],
+      "valueExpression": "15"
+    },
+    {
+      "id": 8,
+      "name": "sub_coda",
+      "output": false,
+      "global": false,
+      "type": "submodel",
+      "x": 130,
+      "y": 130,
+      "width": 75,
+      "height": 45,
+      "fillColor": "",
+      "strokeColor": "",
+      "unit": "",
+      "properties": [
+        {
+          "key": "note formula",
+          "value": ""
+        },
+        {
+          "key": "descrizione",
+          "value": ""
+        }
+      ],
+      "modelPath": "coda.json",
+      "submodelIcon": null,
+      "inputBindings": {
+        "evIn": "sub_generatore.evGen",
+        "evOut": "sub_distrib.preleva"
+      },
+      "interfaceCache": {
+        "modelTitle": "coda",
+        "inputs": [
+          "evIn",
+          "evOut"
+        ],
+        "outputs": [
+          "coda",
+          "lungMax",
+          "tempiInCoda",
+          "tempoMax",
+          "tempoMed"
+        ],
+        "inputDetails": {
+          "evIn": {
+            "description": "Numero di nuove entità da introdurre nella coda\n[default: intero casuale tra 0 e 2]."
+          },
+          "evOut": {
+            "description": "Numero di entità che da rimuovere dalla coda\n[default: 0]."
+          }
+        },
+        "outputDetails": {
+          "coda": {
+            "description": "Numero di entità in coda."
+          },
+          "lungMax": {
+            "description": "Numero massimo di entità che nel corso del tempo sono state contemporaneamente in coda."
+          },
+          "tempiInCoda": {
+            "description": "Vettore che mantiene il numero di istanti di tempo in cui ogni entità è in coda."
+          },
+          "tempoMax": {
+            "description": "Durata massima della permanenza in coda di un'entità nel corso del tempo."
+          },
+          "tempoMed": {
+            "description": "Durata media della permanenza in coda delle entità attualmente in coda."
+          }
+        }
+      }
+    },
+    {
+      "id": 9,
+      "name": "sub_distrib",
+      "output": false,
+      "global": false,
+      "type": "submodel",
+      "x": 260,
+      "y": 130,
+      "width": 75,
+      "height": 45,
+      "fillColor": "",
+      "strokeColor": "",
+      "unit": "",
+      "properties": [
+        {
+          "key": "note formula",
+          "value": ""
+        },
+        {
+          "key": "descrizione",
+          "value": ""
+        }
+      ],
+      "modelPath": "distributore.json",
+      "submodelIcon": null,
+      "inputBindings": {
+        "codaIn": "sub_coda.coda",
+        "disp1": "sub_server1.disponibile",
+        "disp2": "sub_server2.disponibile"
+      },
+      "interfaceCache": {
+        "modelTitle": "distributore",
+        "inputs": [
+          "codaIn",
+          "disp1",
+          "disp2",
+          "scelta"
+        ],
+        "outputs": [
+          "out1",
+          "out2",
+          "preleva"
+        ],
+        "inputDetails": {
+          "codaIn": {
+            "description": "Numero di entità in coda\n[default: 0]."
+          },
+          "disp1": {
+            "description": "true / 1 se il primo server è disponibile a gestire una nuova entità\n[default: 1]."
+          },
+          "disp2": {
+            "description": "true / 1 se il secondo server è disponibile a gestire una nuova entità\n[default: 1]."
+          },
+          "scelta": {
+            "description": "Nel caso in cui ci sia una sola entità da gestire ed entrambi i server siano disponibili, scelta del server da impegnare: il primo (0) o il secondo (1)\n[default: casuale]."
+          }
+        },
+        "outputDetails": {
+          "out1": {
+            "description": "true / 1 se è inviata un'entità al primo server."
+          },
+          "out2": {
+            "description": "true / 1 se è inviata un'entità al secondo server."
+          },
+          "preleva": {
+            "description": "Numero di entità che sono prelevate dalla coda per essere gestite da server."
+          }
+        }
+      }
+    },
+    {
+      "id": 10,
+      "name": "sub_generatore",
+      "output": false,
+      "global": false,
+      "type": "submodel",
+      "x": 20,
+      "y": 130,
+      "width": 75,
+      "height": 45,
+      "fillColor": "",
+      "strokeColor": "",
+      "unit": "",
+      "properties": [
+        {
+          "key": "note formula",
+          "value": ""
+        },
+        {
+          "key": "descrizione",
+          "value": ""
+        }
+      ],
+      "modelPath": "generatore.json",
+      "submodelIcon": null,
+      "inputBindings": {
+        "periodo": "per"
+      },
+      "interfaceCache": {
+        "modelTitle": "generatore",
+        "inputs": [
+          "periodo"
+        ],
+        "outputs": [
+          "evGen"
+        ],
+        "inputDetails": {
+          "periodo": {
+            "description": "Parametro della distribuzione esponenziale: periodo medio inter-generazione di eventi (1/lambda)\n[default: 2]."
+          }
+        },
+        "outputDetails": {
+          "evGen": {
+            "description": "Genera eventi booleani, secondo una distribuzione statistica esponenziale con parametro periodo medio inter-generazione di eventi dato.\nLa variabile di stato opera come un countdown: ogni volta che il valore arriva a zero si genera un evento, e quindi si rende disponibile una nuova entità, e si rivaluta la distribuzione."
+          }
+        }
+      }
+    },
+    {
+      "id": 11,
+      "name": "sub_server1",
+      "output": false,
+      "global": false,
+      "type": "submodel",
+      "x": 380,
+      "y": 70,
+      "width": 75,
+      "height": 45,
+      "fillColor": "",
+      "strokeColor": "",
+      "unit": "",
+      "properties": [
+        {
+          "key": "note formula",
+          "value": ""
+        },
+        {
+          "key": "descrizione",
+          "value": ""
+        }
+      ],
+      "modelPath": "server.json",
+      "submodelIcon": null,
+      "inputBindings": {
+        "codaIn": "sub_distrib.out1",
+        "periodo": "per1"
+      },
+      "interfaceCache": {
+        "modelTitle": "server",
+        "inputs": [
+          "codaIn",
+          "periodo"
+        ],
+        "outputs": [
+          "disponibile",
+          "nuovoevento",
+          "out",
+          "srv"
+        ],
+        "inputDetails": {
+          "codaIn": {
+            "description": "Numero di entità in coda\n[default: 0]."
+          },
+          "periodo": {
+            "description": "Tempo necessario per gestire una singola entità\n[default: 5]."
+          }
+        },
+        "outputDetails": {
+          "disponibile": {
+            "description": "true / 1 se il server è disponibile a gestire un nuovo evento."
+          },
+          "nuovoevento": {
+            "description": "true / 1 se il server ha appena cominciato a gestire un nuovo evento."
+          },
+          "out": {
+            "description": "Evento in uscita\n(se il server era occupato e ora è libero)."
+          },
+          "srv": {
+            "description": "Tempo ancora necessario a completare la gestione dell'evento\n(0 = server disponibile)."
+          }
+        }
+      }
+    },
+    {
+      "id": 12,
+      "name": "sub_server2",
+      "output": false,
+      "global": false,
+      "type": "submodel",
+      "x": 380,
+      "y": 200,
+      "width": 75,
+      "height": 45,
+      "fillColor": "",
+      "strokeColor": "",
+      "unit": "",
+      "properties": [
+        {
+          "key": "note formula",
+          "value": ""
+        },
+        {
+          "key": "descrizione",
+          "value": ""
+        }
+      ],
+      "modelPath": "server.json",
+      "submodelIcon": null,
+      "inputBindings": {
+        "codaIn": "sub_distrib.out2",
+        "periodo": "per2"
+      },
+      "interfaceCache": {
+        "modelTitle": "server",
+        "inputs": [
+          "codaIn",
+          "periodo"
+        ],
+        "outputs": [
+          "disponibile",
+          "nuovoevento",
+          "out",
+          "srv"
+        ],
+        "inputDetails": {
+          "codaIn": {
+            "description": "Numero di entità in coda\n[default: 0]."
+          },
+          "periodo": {
+            "description": "Tempo necessario per gestire una singola entità\n[default: 5]."
+          }
+        },
+        "outputDetails": {
+          "disponibile": {
+            "description": "true / 1 se il server è disponibile a gestire un nuovo evento."
+          },
+          "nuovoevento": {
+            "description": "true / 1 se il server ha appena cominciato a gestire un nuovo evento."
+          },
+          "out": {
+            "description": "Evento in uscita\n(se il server era occupato e ora è libero)."
+          },
+          "srv": {
+            "description": "Tempo ancora necessario a completare la gestione dell'evento\n(0 = server disponibile)."
+          }
+        }
+      }
+    }
+  ],
+  "edges": [
+    {
+      "id": 1,
+      "from": 6,
+      "to": 11,
+      "color": "",
+      "influence": "none",
+      "controlPoints": []
+    },
+    {
+      "id": 2,
+      "from": 10,
+      "to": 1,
+      "color": "",
+      "influence": "none",
+      "controlPoints": []
+    },
+    {
+      "id": 3,
+      "from": 11,
+      "to": 2,
+      "color": "",
+      "influence": "none",
+      "controlPoints": []
+    },
+    {
+      "id": 4,
+      "from": 5,
+      "to": 10,
+      "color": "",
+      "influence": "none",
+      "controlPoints": []
+    },
+    {
+      "id": 5,
+      "from": 8,
+      "to": 4,
+      "color": "",
+      "influence": "none",
+      "controlPoints": []
+    },
+    {
+      "id": 6,
+      "from": 10,
+      "to": 8,
+      "color": "",
+      "influence": "none",
+      "controlPoints": []
+    },
+    {
+      "id": 7,
+      "from": 8,
+      "to": 9,
+      "color": "",
+      "influence": "none",
+      "controlPoints": []
+    },
+    {
+      "id": 8,
+      "from": 9,
+      "to": 11,
+      "color": "",
+      "influence": "none",
+      "controlPoints": []
+    },
+    {
+      "id": 9,
+      "from": 9,
+      "to": 8,
+      "color": "",
+      "influence": "none",
+      "controlPoints": []
+    },
+    {
+      "id": 10,
+      "from": 9,
+      "to": 12,
+      "color": "",
+      "influence": "none",
+      "controlPoints": []
+    },
+    {
+      "id": 11,
+      "from": 7,
+      "to": 12,
+      "color": "",
+      "influence": "none",
+      "controlPoints": []
+    },
+    {
+      "id": 12,
+      "from": 12,
+      "to": 3,
+      "color": "",
+      "influence": "none",
+      "controlPoints": []
+    },
+    {
+      "id": 13,
+      "from": 11,
+      "to": 9,
+      "color": "",
+      "influence": "none",
+      "controlPoints": []
+    },
+    {
+      "id": 14,
+      "from": 12,
+      "to": 9,
+      "color": "",
+      "influence": "none",
+      "controlPoints": []
+    }
+  ],
+  "notes": {
+    "markdown": ""
+  },
+  "textItems": [
+    {
+      "id": 1,
+      "x": -80,
+      "y": -100,
+      "width": 440,
+      "height": 60,
+      "fillColor": "",
+      "strokeColor": "",
+      "dashboardPageId": null,
+      "markdown": "Sistema più sofisticato gen-coda-distrib-2 srv (paralleli)     \n(vedi la documentazione per ogni sottomodello)"
+    }
+  ],
+  "widgets": [
+    {
+      "id": 3,
+      "type": "xychart",
+      "customTitle": "",
+      "x": 480,
+      "y": -120,
+      "width": 500,
+      "height": 200,
+      "dashboardPageId": null,
+      "minimized": false,
+      "showTitleBar": true,
+      "fontSize": 13,
+      "outputOnly": false,
+      "showHistory": false,
+      "expandNonScalarValues": false,
+      "tableTextAlign": "left",
+      "tableDecimalDigits": null,
+      "tableColumnFormats": {},
+      "xMin": "auto",
+      "xMax": "auto",
+      "yMin": "auto",
+      "yMax": "auto",
+      "xGridStep": null,
+      "yGridStep": null,
+      "xAxisLabel": "",
+      "yAxisLabel": "",
+      "showGrid": true,
+      "showAxes": true,
+      "equalScale": true,
+      "legendPosition": "none",
+      "objects": [],
+      "source": "",
+      "showNumericValues": true,
+      "showIndices": true,
+      "autoFitCells": true,
+      "cellSize": 28,
+      "valueMin": "auto",
+      "valueMax": "auto",
+      "displayRows": null,
+      "displayCols": null,
+      "colorScheme": "blue",
+      "viewMode": "grid",
+      "surfaceStyle": "solid",
+      "surfaceAzimuth": 45,
+      "surfaceElevation": 32,
+      "surfaceHeightScale": 1,
+      "min": 0,
+      "max": 100,
+      "step": 1,
+      "value": 0,
+      "falseLabel": "",
+      "trueLabel": "",
+      "options": [],
+      "mappings": [],
+      "columns": [],
+      "xyPairs": [
+        {
+          "xSource": "time",
+          "ySource": "eventiIn",
+          "showTimeSeries": true,
+          "showInstantProfile": false,
+          "color": "#0e7ac4",
+          "pointColor": "#0e7ac4",
+          "showLine": false,
+          "lineWidth": 2.2,
+          "lineStyle": "solid",
+          "barMode": "all",
+          "showBars": true,
+          "barColor": "#0e7ac4",
+          "barWidth": 2.2,
+          "showArea": false,
+          "areaColor": "#0e7ac4",
+          "pointMode": "none",
+          "pointSize": 2.4
+        }
+      ]
+    },
+    {
+      "id": 4,
+      "type": "xychart",
+      "customTitle": "",
+      "x": 480,
+      "y": 80,
+      "width": 500,
+      "height": 200,
+      "dashboardPageId": null,
+      "minimized": false,
+      "showTitleBar": true,
+      "fontSize": 13,
+      "outputOnly": false,
+      "showHistory": false,
+      "expandNonScalarValues": false,
+      "tableTextAlign": "left",
+      "tableDecimalDigits": null,
+      "tableColumnFormats": {},
+      "xMin": "auto",
+      "xMax": "auto",
+      "yMin": "auto",
+      "yMax": "auto",
+      "xGridStep": null,
+      "yGridStep": null,
+      "xAxisLabel": "",
+      "yAxisLabel": "",
+      "showGrid": true,
+      "showAxes": true,
+      "equalScale": true,
+      "legendPosition": "none",
+      "objects": [],
+      "source": "",
+      "showNumericValues": true,
+      "showIndices": true,
+      "autoFitCells": true,
+      "cellSize": 28,
+      "valueMin": "auto",
+      "valueMax": "auto",
+      "displayRows": null,
+      "displayCols": null,
+      "colorScheme": "blue",
+      "viewMode": "grid",
+      "surfaceStyle": "solid",
+      "surfaceAzimuth": 45,
+      "surfaceElevation": 32,
+      "surfaceHeightScale": 1,
+      "min": 0,
+      "max": 100,
+      "step": 1,
+      "value": 0,
+      "falseLabel": "",
+      "trueLabel": "",
+      "options": [],
+      "mappings": [],
+      "columns": [],
+      "xyPairs": [
+        {
+          "xSource": "time",
+          "ySource": "luncoda",
+          "showTimeSeries": true,
+          "showInstantProfile": false,
+          "color": "#0e7ac4",
+          "pointColor": "#0e7ac4",
+          "showLine": true,
+          "lineWidth": 2.2,
+          "lineStyle": "solid",
+          "barMode": "none",
+          "showBars": false,
+          "barColor": "#0e7ac4",
+          "barWidth": 2.2,
+          "showArea": false,
+          "areaColor": "#0e7ac4",
+          "pointMode": "none",
+          "pointSize": 2.4
+        }
+      ]
+    },
+    {
+      "id": 5,
+      "type": "xychart",
+      "customTitle": "",
+      "x": -100,
+      "y": 300,
+      "width": 320,
+      "height": 210,
+      "dashboardPageId": null,
+      "minimized": false,
+      "showTitleBar": true,
+      "fontSize": 13,
+      "outputOnly": false,
+      "showHistory": false,
+      "expandNonScalarValues": false,
+      "tableTextAlign": "left",
+      "tableDecimalDigits": null,
+      "tableColumnFormats": {},
+      "xMin": "auto",
+      "xMax": "auto",
+      "yMin": "auto",
+      "yMax": "auto",
+      "xGridStep": null,
+      "yGridStep": null,
+      "xAxisLabel": "",
+      "yAxisLabel": "",
+      "showGrid": true,
+      "showAxes": true,
+      "equalScale": true,
+      "legendPosition": "none",
+      "objects": [],
+      "source": "",
+      "showNumericValues": true,
+      "showIndices": true,
+      "autoFitCells": true,
+      "cellSize": 28,
+      "valueMin": "auto",
+      "valueMax": "auto",
+      "displayRows": null,
+      "displayCols": null,
+      "colorScheme": "blue",
+      "viewMode": "grid",
+      "surfaceStyle": "solid",
+      "surfaceAzimuth": 45,
+      "surfaceElevation": 32,
+      "surfaceHeightScale": 1,
+      "min": 0,
+      "max": 100,
+      "step": 1,
+      "value": 0,
+      "falseLabel": "",
+      "trueLabel": "",
+      "options": [],
+      "mappings": [],
+      "columns": [],
+      "xyPairs": [
+        {
+          "xSource": "time",
+          "ySource": "eventiOut1",
+          "showTimeSeries": true,
+          "showInstantProfile": false,
+          "color": "#0e7ac4",
+          "pointColor": "#0e7ac4",
+          "showLine": true,
+          "lineWidth": 2.2,
+          "lineStyle": "solid",
+          "barMode": "none",
+          "showBars": false,
+          "barColor": "#0e7ac4",
+          "barWidth": 2.2,
+          "showArea": false,
+          "areaColor": "#0e7ac4",
+          "pointMode": "none",
+          "pointSize": 2.4
+        }
+      ]
+    },
+    {
+      "id": 6,
+      "type": "xychart",
+      "customTitle": "",
+      "x": 220,
+      "y": 300,
+      "width": 320,
+      "height": 210,
+      "dashboardPageId": null,
+      "minimized": false,
+      "showTitleBar": true,
+      "fontSize": 13,
+      "outputOnly": false,
+      "showHistory": false,
+      "expandNonScalarValues": false,
+      "tableTextAlign": "left",
+      "tableDecimalDigits": null,
+      "tableColumnFormats": {},
+      "xMin": "auto",
+      "xMax": "auto",
+      "yMin": "auto",
+      "yMax": "auto",
+      "xGridStep": null,
+      "yGridStep": null,
+      "xAxisLabel": "",
+      "yAxisLabel": "",
+      "showGrid": true,
+      "showAxes": true,
+      "equalScale": true,
+      "legendPosition": "none",
+      "objects": [],
+      "source": "",
+      "showNumericValues": true,
+      "showIndices": true,
+      "autoFitCells": true,
+      "cellSize": 28,
+      "valueMin": "auto",
+      "valueMax": "auto",
+      "displayRows": null,
+      "displayCols": null,
+      "colorScheme": "blue",
+      "viewMode": "grid",
+      "surfaceStyle": "solid",
+      "surfaceAzimuth": 45,
+      "surfaceElevation": 32,
+      "surfaceHeightScale": 1,
+      "min": 0,
+      "max": 100,
+      "step": 1,
+      "value": 0,
+      "falseLabel": "",
+      "trueLabel": "",
+      "options": [],
+      "mappings": [],
+      "columns": [],
+      "xyPairs": [
+        {
+          "xSource": "time",
+          "ySource": "eventiOut2",
+          "showTimeSeries": true,
+          "showInstantProfile": false,
+          "color": "#0e7ac4",
+          "pointColor": "#0e7ac4",
+          "showLine": true,
+          "lineWidth": 2.2,
+          "lineStyle": "solid",
+          "barMode": "none",
+          "showBars": false,
+          "barColor": "#0e7ac4",
+          "barWidth": 2.2,
+          "showArea": false,
+          "areaColor": "#0e7ac4",
+          "pointMode": "none",
+          "pointSize": 2.4
+        }
+      ]
+    }
+  ]
+}

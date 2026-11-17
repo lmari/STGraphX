@@ -37,7 +37,7 @@ fn assert_evaluation_tensor(
 }
 
 #[test]
-fn evaluates_generated_arrays_append_and_global_parameters() {
+fn evaluates_generated_arrays_append_remove_and_global_parameters() {
     let model = compile_json(FIXTURE).expect("fixture should compile");
     let evaluation = model.evaluate().expect("fixture should evaluate");
 
@@ -57,6 +57,15 @@ fn evaluates_generated_arrays_append_and_global_parameters() {
         &[2, 3],
         &[1.0, 2.0, 5.0, 3.0, 4.0, 6.0],
     );
+    assert_evaluation_tensor(&evaluation, "tailRemoved", &[2], &[0.0, 1.0]);
+    assert_evaluation_tensor(&evaluation, "headRemoved", &[2], &[1.0, 2.0]);
+    assert_evaluation_tensor(
+        &evaluation,
+        "tailRowsRemoved",
+        &[2, 2],
+        &[1.0, 2.0, 3.0, 4.0],
+    );
+    assert_evaluation_tensor(&evaluation, "headRowsRemoved", &[1, 2], &[5.0, 6.0]);
     assert_evaluation_tensor(&evaluation, "position", &[3], &[0.0, 0.0, 0.0]);
 
     let simulation = model.simulate().expect("fixture should simulate");

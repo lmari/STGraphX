@@ -1,0 +1,23 @@
+{
+  "version": 1,
+  "execution": { "t0": 0, "dt": 1, "t1": 1, "integrator": "euler" },
+  "nodes": [
+    {
+      "id": 1,
+      "name": "input",
+      "type": "algebraic",
+      "input": true,
+      "valueExpression": ""
+    },
+    {
+      "id": 2,
+      "name": "output",
+      "type": "algebraic",
+      "output": true,
+      "valueExpression": "input * 2"
+    }
+  ],
+  "edges": [
+    { "id": 1, "from": 1, "to": 2 }
+  ]
+}

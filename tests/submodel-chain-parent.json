@@ -1,0 +1,25 @@
+{
+  "version": 1,
+  "execution": { "t0": 0, "dt": 1, "t1": 1, "integrator": "euler" },
+  "nodes": [
+    {
+      "id": 1,
+      "name": "sourceModel",
+      "type": "submodel",
+      "modelPath": "submodel-chain-source.json",
+      "interfaceCache": { "inputs": [], "outputs": ["output"] }
+    },
+    {
+      "id": 2,
+      "name": "targetModel",
+      "type": "submodel",
+      "output": true,
+      "modelPath": "submodel-chain-target.json",
+      "inputBindings": { "input": "sourceModel.output" },
+      "interfaceCache": { "inputs": ["input"], "outputs": ["output"] }
+    }
+  ],
+  "edges": [
+    { "id": 1, "from": 1, "to": 2 }
+  ]
+}

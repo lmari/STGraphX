@@ -65,6 +65,10 @@
     throw new Error("append is a special expression form");
   }
 
+  function unavailableRemoveOperator() {
+    throw new Error("remove is a special expression form");
+  }
+
   function buildPredicateMask(target, predicateAst, scope, hooks, localIndices = []) {
     if (!Array.isArray(target)) {
       const localScope = { ...scope, $value: target };
@@ -100,6 +104,7 @@
     filter: unavailableFilterOperator,
     reduce: unavailableReduceOperator,
     append: unavailableAppendOperator,
+    remove: unavailableRemoveOperator,
     getProperty: unavailablePropertyGetter,
     setProperty: unavailablePropertySetter,
     getModelProperty: unavailableModelPropertyGetter,
@@ -1257,6 +1262,24 @@
     return appendMatrixVector(target, value, axis);
   }
 
+  function removeArrayValues(target, count, fromStart = false) {
+    if (!Array.isArray(target)) {
+      throw new Error("remove expects a vector or matrix");
+    }
+    if (!Number.isInteger(count) || count < 0) {
+      throw new Error("remove must be a non-negative integer");
+    }
+    const splitIndex = fromStart
+      ? Math.min(count, target.length)
+      : Math.max(0, target.length - count);
+    const out = fromStart ? target.slice(splitIndex) : target.slice(0, splitIndex);
+    const fieldNames = getAgentFieldNames(target);
+    if (fieldNames) {
+      attachAgentSchema(out, fieldNames);
+    }
+    return out;
+  }
+
   function tokenizeExpression(source) {
     const tokens = [];
     let i = 0;
@@ -2009,6 +2032,20 @@
             values[0],
           );
         }
+        if (node.name === "remove") {
+          if (node.args.length !== 2) {
+            throw new Error("remove expects exactly 2 arguments");
+          }
+          const first = evaluateAstNode(node.args[0], scope, hooks);
+          const second = evaluateAstNode(node.args[1], scope, hooks);
+          if (Array.isArray(first)) {
+            return removeArrayValues(first, second);
+          }
+          if (Array.isArray(second)) {
+            return removeArrayValues(second, first, true);
+          }
+          throw new Error("remove expects a vector or matrix");
+        }
         if (node.name === "count") {
           if (node.args.length < 1 || node.args.length > 3) {
             throw new Error("count expects 1 to 3 arguments");
@@ -2729,6 +2766,9 @@
     const customNodeEvaluator = typeof options?.customNodeEvaluator === "function"
       ? options.customNodeEvaluator
       : null;
+    const provisionalValues = options?.provisionalValues instanceof Map
+      ? options.provisionalValues
+      : null;
     const globalParameterNodes = Array.isArray(runtimePlan.globalParameterNodes)
       ? runtimePlan.globalParameterNodes
       : [];
@@ -2864,7 +2904,7 @@
 
     const pending = new Set(algebraicNodes.map((node) => node.id));
     const hasFixedAlgebraicNode = fixedNodes.some((node) => !isParameterNode(node));
-    const algebraicEvaluationOrder = !hasFixedAlgebraicNode && Array.isArray(runtimePlan.algebraicEvaluationOrder)
+    const algebraicEvaluationOrder = !hasFixedAlgebraicNode && !provisionalValues && Array.isArray(runtimePlan.algebraicEvaluationOrder)
       ? runtimePlan.algebraicEvaluationOrder
       : null;
     let progressed = true;
@@ -2917,11 +2957,21 @@
             return;
           }
           const depResult = algebraicResults.get(fromId);
+          if (depResult?.ok) {
+            context[fromNode.name] = depResult.value;
+            return;
+          }
+          // Runtime submodels can expose values derived from their current
+          // internal state before their ordinary evaluation is scheduled.
+          // This breaks only state-mediated feedback between containers.
+          if (node?.shape === "submodel" && fromNode?.shape === "submodel" && provisionalValues?.has(fromId)) {
+            context[fromNode.name] = provisionalValues.get(fromId);
+            return;
+          }
           if (!depResult || !depResult.ok) {
             dependenciesReady = false;
             return;
           }
-          context[fromNode.name] = depResult.value;
         });
 
         if (!dependenciesReady) {

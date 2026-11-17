@@ -17,6 +17,9 @@
     const ui = options.ui;
     const t = typeof options.t === "function" ? options.t : (key) => key;
     const isSubmodelNode = typeof options.isSubmodelNode === "function" ? options.isSubmodelNode : () => false;
+    const isAlgebraicSubmodelTemplate = typeof options.isAlgebraicSubmodelTemplate === "function"
+      ? options.isAlgebraicSubmodelTemplate
+      : () => false;
     const normalizeSubmodelPath = typeof options.normalizeSubmodelPath === "function"
       ? options.normalizeSubmodelPath
       : (value) => String(value || "");
@@ -107,6 +110,7 @@
                 .map((child) => [child.name, { description: getNodeDescription(child) }]),
             ),
           };
+          node.__isAlgebraicSubmodel = isAlgebraicSubmodelTemplate(template);
           node.submodelError = "";
           sanitizeSubmodelBindings(node);
           sanitizeAllEdgesForNode(node.id);
@@ -132,6 +136,7 @@
       const modelPath = String(node.modelPath ?? "").trim();
       if (!modelPath) {
         node.interfaceCache = emptySubmodelInterfaceCache();
+        node.__isAlgebraicSubmodel = false;
         node.submodelError = t("error.nodeDefinition.missingSubmodelPath");
         ui.submodelsPrepared = false;
         if (updateStatus) {
@@ -147,7 +152,9 @@
         });
         const data = JSON.parse(text);
         const iface = await loadSubmodelInterfaceByPath(normalizedPath);
+        const template = await loadSubmodelTemplateByPath(normalizedPath, new Set(), orchestrationOptions);
         node.interfaceCache = normalizeSubmodelInterfaceCache(iface);
+        node.__isAlgebraicSubmodel = isAlgebraicSubmodelTemplate(template);
         sanitizeSubmodelBindings(node);
         sanitizeAllEdgesForNode(node.id);
         node.submodelError = "";
@@ -164,6 +171,7 @@
           return false;
         }
         node.interfaceCache = emptySubmodelInterfaceCache();
+        node.__isAlgebraicSubmodel = false;
         node.submodelError = String(err?.message || t("error.load"));
         ui.submodelsPrepared = false;
         sanitizeAllEdgesForNode(node.id);

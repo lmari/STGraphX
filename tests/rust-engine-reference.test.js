@@ -161,6 +161,10 @@ async function checkGeneratedArrays(rootDir) {
       "joined",
       "rows",
       "columns",
+      "tailRemoved",
+      "headRemoved",
+      "tailRowsRemoved",
+      "headRowsRemoved",
       "position",
     ]),
     {
@@ -170,6 +174,10 @@ async function checkGeneratedArrays(rootDir) {
       joined: [-1, 0, 1, 2, 3],
       rows: [[1, 2], [3, 4], [5, 6]],
       columns: [[1, 2, 5], [3, 4, 6]],
+      tailRemoved: [0, 1],
+      headRemoved: [1, 2],
+      tailRowsRemoved: [[1, 2], [3, 4]],
+      headRowsRemoved: [[5, 6]],
       position: [0, 0, 0],
     },
   );

@@ -695,9 +695,10 @@
       return node.__runtimeSubmodel;
     }
 
-    function buildSubmodelInputOverrides(model, node, parentContext) {
+    function buildSubmodelInputOverrides(model, node, parentContext, options = {}) {
       const overrides = new Map();
       let hasUndefinedValue = false;
+      const allowUnresolved = options.allowUnresolved === true;
 
       Object.entries(node.inputBindings || {}).forEach(([inputName, expr]) => {
         const name = String(inputName || "").trim();
@@ -718,6 +719,9 @@
           random: randomSourceForModel(model),
         });
         if (!result.ok) {
+          if (allowUnresolved) {
+            return;
+          }
           throw new Error(result.message || result.reason || "runtime");
         }
         if (result.value === null || result.value === undefined) {
@@ -728,6 +732,57 @@
       });
 
       return { overrides, hasUndefinedValue };
+    }
+
+    function outputValuesForModel(model) {
+      const outputs = {};
+      (model?.nodes || []).forEach((node) => {
+        if (node?.output) {
+          outputs[node.name] = node.computedValue;
+        }
+      });
+      return outputs;
+    }
+
+    function provisionalSubmodelValuesForModel(model, timeValue, env) {
+      const provisionalValues = new Map();
+      const parentContext = buildExecutionGlobalsForModel(model, env.rootExecution, timeValue);
+      (model?.nodes || []).forEach((node) => {
+        if (!node?.computedError && node?.computedValue !== null && node?.computedValue !== undefined) {
+          parentContext[node.name] = node.computedValue;
+        }
+      });
+
+      (model?.nodes || []).forEach((runtimeNode) => {
+        if (!isSubmodelNode(runtimeNode)) {
+          return;
+        }
+        const normalizedPath = normalizeSubmodelPath(runtimeNode.modelPath);
+        if (!normalizedPath || env.stack.includes(normalizedPath)) {
+          return;
+        }
+        const runtimeChildModel = ensureSubmodelRuntimeModel(runtimeNode);
+        if (!runtimeChildModel) {
+          return;
+        }
+        const probeModel = cloneRuntimeModel(runtimeChildModel);
+        const overrides = buildSubmodelInputOverrides(model, runtimeNode, parentContext, { allowUnresolved: true });
+        applyRuntimeModelInputOverrides(probeModel, overrides.overrides);
+        if (probeModel.execution.currentTime == null) {
+          initializeStateNodesForModel(probeModel, timeValue, env.rootExecution);
+        } else if (probeModel.execution.currentTime !== timeValue) {
+          promotePendingStateNodesForModel(probeModel);
+        }
+        evaluateModelAtTimeRecursive(
+          probeModel,
+          timeValue,
+          { rootExecution: env.rootExecution, stack: [...env.stack, normalizedPath] },
+          { applyResults: false, skipProvisionalSubmodels: true },
+        );
+        provisionalValues.set(runtimeNode.id, outputValuesForModel(probeModel));
+        parentContext[runtimeNode.name] = provisionalValues.get(runtimeNode.id);
+      });
+      return provisionalValues;
     }
 
     function submodelHasUnboundEmptyInput(model) {
@@ -814,13 +869,7 @@
               message: childMessage ? `${childNodeName}: ${childMessage}` : childNodeName,
             };
           }
-          const outputs = {};
-          childModel.nodes.forEach((childNode) => {
-            if (childNode.output) {
-              outputs[childNode.name] = childNode.computedValue;
-            }
-          });
-          return { ok: true, kind: "object", value: outputs };
+          return { ok: true, kind: "object", value: outputValuesForModel(childModel) };
         } catch (err) {
           return { ok: false, reason: "runtime", message: String(err?.message || "runtime") };
         }
@@ -950,6 +999,9 @@
       const integralStateNodeIds = usesRk4
         ? (planEntry.rk4StateNodeIds || (planEntry.rk4StateNodeIds = new Set(rk4Analyses.keys())))
         : EMPTY_NODE_ID_SET;
+      const provisionalValues = options.skipProvisionalSubmodels
+        ? null
+        : provisionalSubmodelValuesForModel(model, timeValue, env);
       const evalResults = semantics.evaluateStatefulGraphStep(
         model.nodes,
         model.edges,
@@ -960,6 +1012,7 @@
           localFunctions: localFunctionsForRuntimeModel(model),
           random: randomSourceForModel(model),
           derivativeStateNodeIds: integralStateNodeIds.size > 0 ? integralStateNodeIds : undefined,
+          provisionalValues: provisionalValues?.size ? provisionalValues : undefined,
           customNodeEvaluator: createSubmodelNodeEvaluator(model, timeValue, env, {
             applyResults: options.applyResults !== false,
           }),

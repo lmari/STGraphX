@@ -143,6 +143,7 @@
       const paths = await invoke("open_file_dialog", {
         multiple: Boolean(options.multiple),
         title: String(options.title ?? ""),
+        defaultPath: String(options.defaultPath ?? options.startIn?.path ?? ""),
       });
       return Array.isArray(paths) ? paths.map((path) => createFileHandle(String(path))) : [];
     },

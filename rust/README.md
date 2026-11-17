@@ -69,6 +69,7 @@ Sono supportati:
   configurato da `execution.randomSeed`, e funzioni `rand(...)` e
   `randInt(...)`;
 - concatenazione di vettori e matrici con `append(...)`;
+- rimozione di elementi in testa o in coda di vettori e righe di matrici con `remove(...)`;
 - sostituzione immutabile di elementi, celle e righe con `setAt(...)`, inclusi
   indici negativi;
 - trasformazioni elemento per elemento con `map(...)` e `filter(...)`, usando

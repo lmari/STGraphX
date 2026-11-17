@@ -25,9 +25,10 @@ async function run() {
   const x = [0, 1, 2, 3];
   const y = [1, 2, 2, 4];
   const result = linear(x, y);
-  vectorNear(result.slice(0, -1), [0.9, 0.9]);
-  vectorNear(x.map((value) => predict(result.slice(0, -1), value)), [0.9, 1.8, 2.7, 3.6]);
-  near(result.at(-1), 1 - 0.7 / 4.75);
+  vectorNear(result.slice(0, -2), [0.9, 0.9]);
+  vectorNear(x.map((value) => predict(result.slice(0, -2), value)), [0.9, 1.8, 2.7, 3.6]);
+  near(result.at(-2), 1 - 0.7 / 4.75);
+  near(result.at(-1), Math.sqrt(0.7 / 4));
   assert.deepEqual(fit(x, y), result, "default degree must equal linear regression");
   assert.deepEqual(x, [0, 1, 2, 3]);
   assert.deepEqual(y, [1, 2, 2, 4]);
@@ -36,40 +37,49 @@ async function run() {
     const xs = Array.from({ length: 20 }, (_, i) => (i - 10) / 5);
     const ys = xs.map((value) => predict(coefficients, value));
     const fitted = fit(xs, ys, coefficients.length - 1);
-    vectorNear(fitted.slice(0, -1), coefficients);
-    vectorNear(xs.map((value) => predict(fitted.slice(0, -1), value)), ys);
-    near(fitted.at(-1), 1);
+    vectorNear(fitted.slice(0, -2), coefficients);
+    vectorNear(xs.map((value) => predict(fitted.slice(0, -2), value)), ys);
+    near(fitted.at(-2), 1);
+    near(fitted.at(-1), 0);
   }
-  vectorNear(fit([7, 7, 7], [1, 2, 6], 0).slice(0, -1), [3]);
-  near(fit([7, 7, 7], [1, 2, 6], 0).at(-1), 0);
-  vectorNear(fit([7], [3], 0).slice(0, -1), [3]);
+  vectorNear(fit([7, 7, 7], [1, 2, 6], 0).slice(0, -2), [3]);
+  near(fit([7, 7, 7], [1, 2, 6], 0).at(-2), 0);
+  vectorNear(fit([7], [3], 0).slice(0, -2), [3]);
+  near(fit([7, 7, 7], [1, 2, 6], 0).at(-1), Math.sqrt(14 / 3));
+  near(fit([7], [3], 0).at(-1), 0);
+  // Response scaling must preserve RMSE units without overflow or underflow.
+  for (const scale of [1e300, 1e-300]) {
+    near(linear(x, y.map((value) => value * scale)).at(-1) / scale, Math.sqrt(0.7 / 4));
+  }
   const interpolated = fit([0, 1, 2], [1, 4, 9], 2);
-  vectorNear(interpolated.slice(0, -1), [1, 2, 1]);
+  vectorNear(interpolated.slice(0, -2), [1, 2, 1]);
   const repeated = fit([0, 0, 1, 1], [1, 3, 3, 5], 1);
-  vectorNear(repeated.slice(0, -1), [2, 2]);
+  vectorNear(repeated.slice(0, -2), [2, 2]);
   for (const constant of [0, 5, -2]) {
     const fitted = fit(x, x.map(() => constant), 2);
-    vectorNear(x.map((value) => predict(fitted.slice(0, -1), value)), x.map(() => constant));
-    near(fitted.at(-1), 1);
+    vectorNear(x.map((value) => predict(fitted.slice(0, -2), value)), x.map(() => constant));
+    near(fitted.at(-2), 1);
+    near(fitted.at(-1), 0);
   }
   // A noisy quadratic must satisfy least-squares residual orthogonality.
   const xs = [-3, -2, -1, 0, 1, 2, 3];
   const ys = [11, 8, 1, 2, 3, 6, 13];
   const noisy = fit(xs, ys, 2);
   for (let power = 0; power <= 2; power += 1) {
-    near(xs.reduce((sum, value, i) => sum + value ** power * (ys[i] - predict(noisy.slice(0, -1), value)), 0), 0);
+    near(xs.reduce((sum, value, i) => sum + value ** power * (ys[i] - predict(noisy.slice(0, -2), value)), 0), 0);
   }
+  near(noisy.at(-1), Math.sqrt(xs.reduce((sum, value, i) => sum + (ys[i] - predict(noisy.slice(0, -2), value)) ** 2, 0) / xs.length));
   const shifted = xs.map((value) => 1e9 + value);
   const shiftedFit = fit(shifted, ys, 2);
-  vectorNear(shiftedFit, [noisy[0] - noisy[1] * 1e9 + noisy[2] * 1e18, noisy[1] - 2 * noisy[2] * 1e9, noisy[2], noisy.at(-1)], 1e-7);
+  vectorNear(shiftedFit, [noisy[0] - noisy[1] * 1e9 + noisy[2] * 1e18, noisy[1] - 2 * noisy[2] * 1e9, noisy[2], noisy.at(-2), noisy.at(-1)], 1e-7);
   for (const scale of [1e150, 1e-100]) {
     const scaled = fit(xs.map((value) => value * scale), ys, 2);
-    vectorNear([scaled[0], scaled[1] * scale, scaled[2] * scale * scale, scaled[3]], noisy);
+    vectorNear([scaled[0], scaled[1] * scale, scaled[2] * scale * scale, scaled[3], scaled[4]], noisy);
   }
   near(fit([0, 1e-310], [0, 1e-310])[1], 1);
   const huge = fit([0, 1, 2], [1e300, 2e300, 3e300]);
-  vectorNear(huge.slice(0, -1), [1e300, 1e300]);
-  near(huge.at(-1), 1);
+  vectorNear(huge.slice(0, -2), [1e300, 1e300]);
+  near(huge.at(-2), 1);
 
   for (const [badX, badY] of [[[], []], [[1], [1, 2]], [1, [1]], [[[1]], [1]], [[NaN], [1]], [[1], [Infinity]], [["1"], [1]]]) {
     assert.throws(() => fit(badX, badY), /two non-empty numeric vectors/);
@@ -82,7 +92,7 @@ async function run() {
   assert.throws(() => fit([0, 0, 1], [1, 2, 3], 2), /distinct x/);
   assert.throws(() => fit([0, 1e-310], [0, 1]), /numeric precision or range/);
   const evaluate = context.window.GraphSemantics.evaluateValueExpression;
-  vectorNear(evaluate("polynomialRegression([0,1,2],[1,4,9],2)").value, [1, 2, 1, 1]);
+  vectorNear(evaluate("polynomialRegression([0,1,2],[1,4,9],2)").value, [1, 2, 1, 1, 0]);
   near(evaluate("linearRegression([0,1,2],[1,3,5])[2]").value, 1);
   near(evaluate("linearRegression([0,1,2],[1,3,5])[1]").value, 2);
   assert.equal(evaluate("polynomialRegression([0,0,1],[1,2,3],2)").ok, false);
@@ -102,6 +112,7 @@ async function run() {
   await runtime.run();
   near(runtime.getOutputs().quadratic, 1);
   near(runtime.getOutputs().fit[3], 1);
+  near(runtime.getOutputs().fit[4], 0);
   console.log("regression.test.js: ok");
 }
 run().catch((error) => { console.error(error); process.exitCode = 1; });

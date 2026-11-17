@@ -1,0 +1,14 @@
+{
+  "version": 1,
+  "execution": { "t0": 0, "dt": 1, "t1": 1, "integrator": "euler" },
+  "nodes": [
+    {
+      "id": 1,
+      "name": "output",
+      "type": "algebraic",
+      "output": true,
+      "valueExpression": "7"
+    }
+  ],
+  "edges": []
+}

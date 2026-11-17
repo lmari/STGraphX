@@ -1,6 +1,6 @@
 /*!
  * STGraphX Embedded Player Bundle
- * Generated: 2026-11-15T14:14:21.085Z
+ * Generated: 2026-11-17T14:28:28.740Z
  */
 
 /* --- i18n-inline.js --- */
@@ -13,7 +13,7 @@
 
 window.STGraphXAppMeta = {
   author: "Luca Mari",
-  releaseDate: "2026.11.14",
+  releaseDate: "2026.11.15",
   license: "MPL-2.0",
   copyright: "Copyright (c) 2026 Luca Mari",
 };
@@ -380,8 +380,8 @@ window.STGraphXI18nBundles = {
     "expr.help.atan2": "Arcotangente con due argomenti `(y, x)`. Esempio: `atan2(0, 1) -> 0`.",
     "expr.help.median": "Mediana di un vettore o di una matrice numerici non vuoti. Con un numero pari di valori restituisce la media dei due centrali. Per una matrice, senza `axis` usa tutti i valori; con `axis=0` opera per colonna, con `axis=1` per riga. Esempi: median([3,1,2]) -> 2 ; median([1,4]) -> 2.5.",
     "expr.help.mode": "Moda di un vettore o di una matrice numerici non vuoti. Restituisce il valore più frequente; in caso di parità sceglie il più piccolo, anche quando tutti i valori sono distinti. Per una matrice, senza `axis` usa tutti i valori; con `axis=0` opera per colonna, con `axis=1` per riga. Esempi: mode([3,1,3,1]) -> 1.",
-    "expr.help.polynomialRegression": "Regressione polinomiale ai minimi quadrati, con intercetta. `degree` è un intero non negativo, predefinito 1; occorrono almeno degree+1 osservazioni e valori x distinti sufficienti. Restituisce il vettore [a0,a1,...,R²]: coefficienti in ordine crescente di potenza (a0+a1*x+...) e infine R². Il grado 0 stima la media. Con y costante R² vale 1. Usa QR con dati riscalati; segnala basi numericamente dipendenti o risultati non rappresentabili. Con gradi elevati o x molto traslati, i coefficienti nelle coordinate originali possono perdere precisione. Esempi: polynomialRegression([0,1,2],[1,4,9],2) -> circa [1,2,1,1].",
-    "expr.help.linearRegression": "Regressione lineare ai minimi quadrati con intercetta, equivalente a polynomialRegression(x,y,1). Restituisce il vettore [a0,a1,...,R²]: coefficienti in ordine crescente di potenza (a0+a1*x+...) e infine R². Richiede almeno due coppie numeriche e valori x non tutti uguali. Esempi: linearRegression([0,1,2],[1,3,5]) -> circa [1,2,1].",
+    "expr.help.polynomialRegression": "Regressione polinomiale ai minimi quadrati, con intercetta. `degree` è un intero non negativo, predefinito 1; occorrono almeno degree+1 osservazioni e valori x distinti sufficienti. Restituisce il vettore [a0,a1,...,R²,RMSE]: coefficienti in ordine crescente di potenza (a0+a1*x+...) seguiti da R² e RMSE. RMSE è sqrt(sum((y-yStimata)^2)/n), nelle unità di y, senza correzione per i gradi di libertà. Il grado 0 stima la media. Con y costante R² vale 1. Usa QR con dati riscalati; segnala basi numericamente dipendenti o risultati non rappresentabili. Con gradi elevati o x molto traslati, i coefficienti nelle coordinate originali possono perdere precisione. Esempi: polynomialRegression([0,1,2],[1,4,9],2) -> circa [1,2,1,1,0].",
+    "expr.help.linearRegression": "Regressione lineare ai minimi quadrati con intercetta, equivalente a polynomialRegression(x,y,1). Restituisce il vettore [a0,a1,...,R²,RMSE]: coefficienti in ordine crescente di potenza (a0+a1*x+...) seguiti da R² e RMSE. RMSE è sqrt(sum((y-yStimata)^2)/n), nelle unità di y, senza correzione per i gradi di libertà. Richiede almeno due coppie numeriche e valori x non tutti uguali. Esempi: linearRegression([0,1,2],[1,3,5]) -> circa [1,2,1,0].",
     "expr.error.regressionVectors": "La regressione richiede due vettori numerici non vuoti della stessa lunghezza",
     "expr.error.regressionDegree": "Il grado della regressione deve essere un intero non negativo minore del numero di osservazioni",
     "expr.error.regressionRank": "La regressione richiede valori x distinti sufficienti e una base polinomiale numericamente indipendente",
@@ -453,6 +453,7 @@ window.STGraphXI18nBundles = {
     "expr.help.range": "Una successione numerica con estremo finale escluso. Esempio: `range(4) -> [0,1,2,3]`.",
     "expr.help.readData": "Legge valori da un file XLSX relativo alla cartella del modello. Con quattro argomenti restituisce una cella; con sei argomenti legge un intervallo con estremi inclusi, restituendo uno scalare, un vettore o una matrice. Righe e colonne iniziano da 1 e possono essere espressioni che producono interi positivi. Esempi:\n`readData(\"data/values.xlsx\", \"Dati\", time+1, 3)`\n`readData(\"data/values.xlsx\", \"Dati\", 2, 1, 10, 4)`.",
     "expr.help.reduce": "Riduzione progressiva di un vettore o di una matrice mediante un operatore o una funzione. Per le matrici axis=0 riduce per colonne, axis=1 per righe. Esempi: reduce(+, [1,2,3]) ; reduce(max, [3,7,2]) ; reduce(+, [[1,2],[3,4]], 0).",
+    "expr.help.remove": "Copia di un vettore senza gli ultimi n elementi, oppure senza i primi n elementi se n è il primo argomento. Per una matrice rimuove righe. n deve essere un intero non negativo; se supera la dimensione restituisce un array vuoto. Esempi: remove([1,2,3,4], 2) -> [1,2] ; remove(2, [1,2,3,4]) -> [3,4] ; remove([[1,2],[3,4],[5,6]], 1) -> [[1,2],[3,4]].",
     "expr.help.removeAt": "Una copia senza l'elemento indicato del vettore oppure senza la riga o la colonna indicate della matrice. Per le matrici axis=0 rimuove una riga, axis=1 una colonna. Esempi: removeAt([1,2,3], 1) -> [1,3] ; removeAt([[1,2],[3,4]], 0) -> [[3,4]] ; removeAt([[1,2],[3,4]], 1, 1) -> [[1],[3]].",
     "expr.help.removeRow": "Una copia della matrice senza la riga i. Per matrici agents elimina l'agente i. Esempio: `removeRow(agents, 2)`.",
     "expr.help.resize": "Copia di un vettore o di una matrice con dimensioni diverse. Mantiene le posizioni esistenti, elimina quelle eccedenti e riempie con zeri quelle nuove. Le matrici agents non sono supportate. Esempi: resize([1,2], 4) -> [1,2,0,0] ; resize([[1,2],[3,4]], 3, 4) -> [[1,2,0,0],[3,4,0,0],[0,0,0,0]].",
@@ -1356,7 +1357,7 @@ window.STGraphXI18nBundles = {
     "analysis.checks.invalidTimeConfig": "Segnala una configurazione del tempo non eseguibile, per esempio dt nullo o intervallo incoerente rispetto a t0 e t1.",
     "analysis.checks.missingIncomingEdge": "Segnala espressioni che usano un'altra variabile senza la corrispondente freccia entrante.",
     "analysis.checks.selfLoop": "Segnala self-loop che possono essere voluti, ma spesso indicano una connessione sospetta.",
-    "analysis.checks.stateShapeMismatch": "Segnala variabili di stato in cui stato iniziale e stato successivo sembrano avere dimensioni incompatibili.",
+    "analysis.checks.stateShapeMismatch": "Segnala variabili di stato in cui stato iniziale e stato successivo sembrano avere un diverso numero di dimensioni, per esempio scalare, vettore o matrice.",
     "analysis.checks.unitExpressionMismatch": "Segnala formule che combinano valori con unità incompatibili, per esempio una somma tra € e €/anno.",
     "analysis.checks.unitMismatch": "Segnala una formula il cui risultato ha un'unità incompatibile con l'unità dichiarata per la variabile.",
     "analysis.checks.tableColumnNotOutput": "Segnala colonne di tabelle collegate a variabili non marcate come output.",
@@ -1388,7 +1389,7 @@ window.STGraphXI18nBundles = {
     "analysis.issue.invalidTimeConfig": "Configurazione temporale non valida: {reason}",
     "analysis.issue.missingIncomingEdge": "L'espressione di {target} usa {source}, ma manca la freccia {source} -> {target}.",
     "analysis.issue.selfLoop": "La freccia {name} crea un self-loop potenzialmente sospetto.",
-    "analysis.issue.stateShapeMismatch": "Nella variabile di stato {name}, stato iniziale e stato successivo sembrano avere forme diverse ({current} vs {next}).",
+    "analysis.issue.stateShapeMismatch": "Nella variabile di stato {name}, stato iniziale e stato successivo sembrano avere un diverso numero di dimensioni ({current} vs {next}).",
     "analysis.issue.invalidUnit": "Unità non valida per {name}: {unit}.",
     "analysis.issue.invalidUnitDefinition": "Definizione dell'unità {symbol} non valida ({expression}): {reason}.",
     "analysis.unitDefinitionReason.cycle": "riferimento ricorsivo",
@@ -1926,8 +1927,8 @@ window.STGraphXI18nBundles = {
     "expr.help.atan2": "Two-argument arc tangent (y, x). Example: `atan2(0, 1) -> 0`.",
     "expr.help.median": "Median of a non-empty numeric vector or matrix. With an even number of values it returns the mean of the two middle values. For a matrix, omit `axis` to use all values, use `axis=0` for columns or `axis=1` for rows. Examples: median([3,1,2]) -> 2 ; median([1,4]) -> 2.5.",
     "expr.help.mode": "Mode of a non-empty numeric vector or matrix. Returns the most frequent value; ties select the smallest value, including when all values are distinct. For a matrix, omit `axis` to use all values, use `axis=0` for columns or `axis=1` for rows. Examples: mode([3,1,3,1]) -> 1.",
-    "expr.help.polynomialRegression": "Polynomial least-squares regression with an intercept. `degree` is a non-negative integer, default 1; requires at least degree+1 observations and enough distinct x values. Returns the vector [a0,a1,...,R²]: coefficients in ascending power order (a0+a1*x+...), followed by R². Degree 0 estimates the mean. For constant y, R² is 1. Uses QR with scaled data; reports numerically dependent bases or unrepresentable results. For high degrees or strongly shifted x, original-coordinate coefficients may lose precision. Examples: polynomialRegression([0,1,2],[1,4,9],2) -> approximately [1,2,1,1].",
-    "expr.help.linearRegression": "Linear least-squares regression with an intercept, equivalent to polynomialRegression(x,y,1). Returns the vector [a0,a1,...,R²]: coefficients in ascending power order (a0+a1*x+...), followed by R². Requires at least two numeric pairs and non-constant x values. Examples: linearRegression([0,1,2],[1,3,5]) -> approximately [1,2,1].",
+    "expr.help.polynomialRegression": "Polynomial least-squares regression with an intercept. `degree` is a non-negative integer, default 1; requires at least degree+1 observations and enough distinct x values. Returns the vector [a0,a1,...,R²,RMSE]: coefficients in ascending power order (a0+a1*x+...), followed by R² and RMSE. RMSE is sqrt(sum((y-yPredicted)^2)/n), in y units, without a degrees-of-freedom correction. Degree 0 estimates the mean. For constant y, R² is 1. Uses QR with scaled data; reports numerically dependent bases or unrepresentable results. For high degrees or strongly shifted x, original-coordinate coefficients may lose precision. Examples: polynomialRegression([0,1,2],[1,4,9],2) -> approximately [1,2,1,1,0].",
+    "expr.help.linearRegression": "Linear least-squares regression with an intercept, equivalent to polynomialRegression(x,y,1). Returns the vector [a0,a1,...,R²,RMSE]: coefficients in ascending power order (a0+a1*x+...), followed by R² and RMSE. RMSE is sqrt(sum((y-yPredicted)^2)/n), in y units, without a degrees-of-freedom correction. Requires at least two numeric pairs and non-constant x values. Examples: linearRegression([0,1,2],[1,3,5]) -> approximately [1,2,1,0].",
     "expr.error.regressionVectors": "Regression expects two non-empty numeric vectors of equal length",
     "expr.error.regressionDegree": "Regression degree must be a non-negative integer smaller than the number of observations",
     "expr.error.regressionRank": "Regression requires enough distinct x values and a numerically independent polynomial basis",
@@ -1999,6 +2000,7 @@ window.STGraphXI18nBundles = {
     "expr.help.range": "A numeric sequence with exclusive end value. Example: `range(4) -> [0,1,2,3]`.",
     "expr.help.readData": "Reads values from an XLSX file relative to the model folder. With four arguments it returns a cell; with six arguments it reads an inclusive range, returning a scalar, vector, or matrix. Rows and columns start at 1 and can be expressions that evaluate to positive integers. Examples:\n`readData(\"data/values.xlsx\", \"Data\", time+1, 3)`\n`readData(\"data/values.xlsx\", \"Data\", 2, 1, 10, 4)`.",
     "expr.help.reduce": "Progressive reduction of a vector or matrix. For matrices axis=0 reduces columns, axis=1 reduces rows. Examples: reduce(+, [1,2,3]) ; reduce(max, [3,7,2]) ; reduce(+, [[1,2],[3,4]], 0).",
+    "expr.help.remove": "A copy of a vector without its last n elements, or without its first n elements when n is the first argument. For a matrix it removes rows. n must be a non-negative integer; if it exceeds the size, the result is an empty array. Examples: remove([1,2,3,4], 2) -> [1,2] ; remove(2, [1,2,3,4]) -> [3,4] ; remove([[1,2],[3,4],[5,6]], 1) -> [[1,2],[3,4]].",
     "expr.help.removeAt": "A copy without the selected vector element or without the selected matrix row or column. For matrices axis=0 removes a row, axis=1 a column. Examples: removeAt([1,2,3], 1) -> [1,3] ; removeAt([[1,2],[3,4]], 0) -> [[3,4]] ; removeAt([[1,2],[3,4]], 1, 1) -> [[1],[3]].",
     "expr.help.removeRow": "A copy of the matrix without row i. For agent matrices it removes agent i. Example: `removeRow(agents, 2)`.",
     "expr.help.resize": "A copy of a vector or matrix with different dimensions. It keeps existing positions, drops excess values, and fills new positions with zeros. Agent matrices are not supported. Examples: resize([1,2], 4) -> [1,2,0,0] ; resize([[1,2],[3,4]], 3, 4) -> [[1,2,0,0],[3,4,0,0],[0,0,0,0]].",
@@ -2902,7 +2904,7 @@ window.STGraphXI18nBundles = {
     "analysis.checks.invalidTimeConfig": "Reports a time configuration that cannot be executed, for example a zero dt or an interval inconsistent with t0 and t1.",
     "analysis.checks.missingIncomingEdge": "Reports expressions that use another variable without the corresponding incoming edge.",
     "analysis.checks.selfLoop": "Reports self-loops that may be intentional, but often indicate a suspicious connection.",
-    "analysis.checks.stateShapeMismatch": "Reports state variables whose initial state and next state appear to have incompatible shapes.",
+    "analysis.checks.stateShapeMismatch": "Reports state variables whose initial and next state appear to have different ranks, for example scalar, vector, or matrix.",
     "analysis.checks.unitExpressionMismatch": "Reports formulas that combine values with incompatible units, for example a sum of € and €/year.",
     "analysis.checks.unitMismatch": "Reports a formula whose result has a unit incompatible with the unit declared for the variable.",
     "analysis.checks.tableColumnNotOutput": "Reports table columns connected to variables not marked as output.",
@@ -2934,7 +2936,7 @@ window.STGraphXI18nBundles = {
     "analysis.issue.invalidTimeConfig": "Invalid time configuration: {reason}",
     "analysis.issue.missingIncomingEdge": "The expression of {target} uses {source}, but the edge {source} -> {target} is missing.",
     "analysis.issue.selfLoop": "Edge {name} creates a potentially suspicious self-loop.",
-    "analysis.issue.stateShapeMismatch": "In state variable {name}, initial state and next state appear to have different shapes ({current} vs {next}).",
+    "analysis.issue.stateShapeMismatch": "In state variable {name}, initial and next state appear to have different ranks ({current} vs {next}).",
     "analysis.issue.invalidUnit": "Invalid unit for {name}: {unit}.",
     "analysis.issue.invalidUnitDefinition": "Invalid definition for unit {symbol} ({expression}): {reason}.",
     "analysis.unitDefinitionReason.cycle": "recursive reference",
@@ -4623,7 +4625,9 @@ window.STGraphXI18nBundles = {
     if (!Array.isArray(value)) {
       throw new Error("size expects a vector or matrix");
     }
-    const isMatrix = value.every((row) => Array.isArray(row));
+    // Array.prototype.every() is vacuously true for [], but an empty literal
+    // is the empty vector, not an ambiguous 0-by-0 matrix.
+    const isMatrix = value.length > 0 && value.every((row) => Array.isArray(row));
     if (!isMatrix) {
       if (axis == null) {
         return value.length;
@@ -4879,7 +4883,10 @@ window.STGraphXI18nBundles = {
     const constantY = y.every((item) => item === y[0]);
     const rSquared = constantY ? 1 : Math.max(0, Math.min(1, 1 - residual / total));
     if (!Number.isFinite(rSquared)) throw new Error("regression result exceeds numeric precision or range");
-    return [...coefficients, rSquared];
+    // Restore response units after taking the root to avoid squaring yScale.
+    const rmse = Math.sqrt(residual / count) * yScale;
+    if (!Number.isFinite(rmse)) throw new Error("regression result exceeds numeric precision or range");
+    return [...coefficients, rSquared, rmse];
   }
 
   function normalizeGridDimensions(sizeValue) {
@@ -5368,6 +5375,7 @@ window.STGraphXI18nBundles = {
       map: options.map || unavailable("map", "map is a special expression form"),
       mapAgents: options.mapAgents || unavailable("mapAgents", "mapAgents is a special expression form"),
       reduce: options.reduce || unavailable("reduce", "reduce is a special expression form"),
+      remove: options.remove || unavailable("remove", "remove is a special expression form"),
 
       // Array and matrix utilities.
       argmax: (value) => extremumIndex(value, true, "argmax"),
@@ -5484,6 +5492,7 @@ window.STGraphXI18nBundles = {
       indicesWhere: { kind: "array", signature: "indicesWhere(array) | indicesWhere(cond, array)", descriptionKey: "expr.help.indicesWhere", insertText: "indicesWhere()", cursorOffset: 13 },
       intersection: { kind: "array", signature: "intersection(vectorA, vectorB)", descriptionKey: "expr.help.intersection", insertText: "intersection()", cursorOffset: 13 },
       neighbors: { kind: "array", signature: "neighbors(matrix, row, col[, diagonals[, toroidal]])", descriptionKey: "expr.help.neighbors", insertText: "neighbors()", cursorOffset: 10 },
+      remove: { kind: "array", signature: "remove(array, n) | remove(n, array)", descriptionKey: "expr.help.remove", insertText: "remove()", cursorOffset: 7 },
       removeAt: { kind: "array", signature: "removeAt(vector, index) | removeAt(matrix, index[, axis])", descriptionKey: "expr.help.removeAt", insertText: "removeAt()", cursorOffset: 9 },
       resize: { kind: "array", signature: "resize(vector, length) | resize(matrix, rows, cols)", descriptionKey: "expr.help.resize", insertText: "resize()", cursorOffset: 7 },
       set: { kind: "array", signature: "set(vector)", descriptionKey: "expr.help.set", insertText: "set()", cursorOffset: 4 },
@@ -5637,6 +5646,10 @@ window.STGraphXI18nBundles = {
     throw new Error("append is a special expression form");
   }
 
+  function unavailableRemoveOperator() {
+    throw new Error("remove is a special expression form");
+  }
+
   function buildPredicateMask(target, predicateAst, scope, hooks, localIndices = []) {
     if (!Array.isArray(target)) {
       const localScope = { ...scope, $value: target };
@@ -5672,6 +5685,7 @@ window.STGraphXI18nBundles = {
     filter: unavailableFilterOperator,
     reduce: unavailableReduceOperator,
     append: unavailableAppendOperator,
+    remove: unavailableRemoveOperator,
     getProperty: unavailablePropertyGetter,
     setProperty: unavailablePropertySetter,
     getModelProperty: unavailableModelPropertyGetter,
@@ -6829,6 +6843,24 @@ window.STGraphXI18nBundles = {
     return appendMatrixVector(target, value, axis);
   }
 
+  function removeArrayValues(target, count, fromStart = false) {
+    if (!Array.isArray(target)) {
+      throw new Error("remove expects a vector or matrix");
+    }
+    if (!Number.isInteger(count) || count < 0) {
+      throw new Error("remove must be a non-negative integer");
+    }
+    const splitIndex = fromStart
+      ? Math.min(count, target.length)
+      : Math.max(0, target.length - count);
+    const out = fromStart ? target.slice(splitIndex) : target.slice(0, splitIndex);
+    const fieldNames = getAgentFieldNames(target);
+    if (fieldNames) {
+      attachAgentSchema(out, fieldNames);
+    }
+    return out;
+  }
+
   function tokenizeExpression(source) {
     const tokens = [];
     let i = 0;
@@ -7581,6 +7613,20 @@ window.STGraphXI18nBundles = {
             values[0],
           );
         }
+        if (node.name === "remove") {
+          if (node.args.length !== 2) {
+            throw new Error("remove expects exactly 2 arguments");
+          }
+          const first = evaluateAstNode(node.args[0], scope, hooks);
+          const second = evaluateAstNode(node.args[1], scope, hooks);
+          if (Array.isArray(first)) {
+            return removeArrayValues(first, second);
+          }
+          if (Array.isArray(second)) {
+            return removeArrayValues(second, first, true);
+          }
+          throw new Error("remove expects a vector or matrix");
+        }
         if (node.name === "count") {
           if (node.args.length < 1 || node.args.length > 3) {
             throw new Error("count expects 1 to 3 arguments");
@@ -8301,6 +8347,9 @@ window.STGraphXI18nBundles = {
     const customNodeEvaluator = typeof options?.customNodeEvaluator === "function"
       ? options.customNodeEvaluator
       : null;
+    const provisionalValues = options?.provisionalValues instanceof Map
+      ? options.provisionalValues
+      : null;
     const globalParameterNodes = Array.isArray(runtimePlan.globalParameterNodes)
       ? runtimePlan.globalParameterNodes
       : [];
@@ -8436,7 +8485,7 @@ window.STGraphXI18nBundles = {
 
     const pending = new Set(algebraicNodes.map((node) => node.id));
     const hasFixedAlgebraicNode = fixedNodes.some((node) => !isParameterNode(node));
-    const algebraicEvaluationOrder = !hasFixedAlgebraicNode && Array.isArray(runtimePlan.algebraicEvaluationOrder)
+    const algebraicEvaluationOrder = !hasFixedAlgebraicNode && !provisionalValues && Array.isArray(runtimePlan.algebraicEvaluationOrder)
       ? runtimePlan.algebraicEvaluationOrder
       : null;
     let progressed = true;
@@ -8489,11 +8538,21 @@ window.STGraphXI18nBundles = {
             return;
           }
           const depResult = algebraicResults.get(fromId);
+          if (depResult?.ok) {
+            context[fromNode.name] = depResult.value;
+            return;
+          }
+          // Runtime submodels can expose values derived from their current
+          // internal state before their ordinary evaluation is scheduled.
+          // This breaks only state-mediated feedback between containers.
+          if (node?.shape === "submodel" && fromNode?.shape === "submodel" && provisionalValues?.has(fromId)) {
+            context[fromNode.name] = provisionalValues.get(fromId);
+            return;
+          }
           if (!depResult || !depResult.ok) {
             dependenciesReady = false;
             return;
           }
-          context[fromNode.name] = depResult.value;
         });
 
         if (!dependenciesReady) {
@@ -9679,9 +9738,10 @@ window.STGraphXI18nBundles = {
       return node.__runtimeSubmodel;
     }
 
-    function buildSubmodelInputOverrides(model, node, parentContext) {
+    function buildSubmodelInputOverrides(model, node, parentContext, options = {}) {
       const overrides = new Map();
       let hasUndefinedValue = false;
+      const allowUnresolved = options.allowUnresolved === true;
 
       Object.entries(node.inputBindings || {}).forEach(([inputName, expr]) => {
         const name = String(inputName || "").trim();
@@ -9702,6 +9762,9 @@ window.STGraphXI18nBundles = {
           random: randomSourceForModel(model),
         });
         if (!result.ok) {
+          if (allowUnresolved) {
+            return;
+          }
           throw new Error(result.message || result.reason || "runtime");
         }
         if (result.value === null || result.value === undefined) {
@@ -9712,6 +9775,57 @@ window.STGraphXI18nBundles = {
       });
 
       return { overrides, hasUndefinedValue };
+    }
+
+    function outputValuesForModel(model) {
+      const outputs = {};
+      (model?.nodes || []).forEach((node) => {
+        if (node?.output) {
+          outputs[node.name] = node.computedValue;
+        }
+      });
+      return outputs;
+    }
+
+    function provisionalSubmodelValuesForModel(model, timeValue, env) {
+      const provisionalValues = new Map();
+      const parentContext = buildExecutionGlobalsForModel(model, env.rootExecution, timeValue);
+      (model?.nodes || []).forEach((node) => {
+        if (!node?.computedError && node?.computedValue !== null && node?.computedValue !== undefined) {
+          parentContext[node.name] = node.computedValue;
+        }
+      });
+
+      (model?.nodes || []).forEach((runtimeNode) => {
+        if (!isSubmodelNode(runtimeNode)) {
+          return;
+        }
+        const normalizedPath = normalizeSubmodelPath(runtimeNode.modelPath);
+        if (!normalizedPath || env.stack.includes(normalizedPath)) {
+          return;
+        }
+        const runtimeChildModel = ensureSubmodelRuntimeModel(runtimeNode);
+        if (!runtimeChildModel) {
+          return;
+        }
+        const probeModel = cloneRuntimeModel(runtimeChildModel);
+        const overrides = buildSubmodelInputOverrides(model, runtimeNode, parentContext, { allowUnresolved: true });
+        applyRuntimeModelInputOverrides(probeModel, overrides.overrides);
+        if (probeModel.execution.currentTime == null) {
+          initializeStateNodesForModel(probeModel, timeValue, env.rootExecution);
+        } else if (probeModel.execution.currentTime !== timeValue) {
+          promotePendingStateNodesForModel(probeModel);
+        }
+        evaluateModelAtTimeRecursive(
+          probeModel,
+          timeValue,
+          { rootExecution: env.rootExecution, stack: [...env.stack, normalizedPath] },
+          { applyResults: false, skipProvisionalSubmodels: true },
+        );
+        provisionalValues.set(runtimeNode.id, outputValuesForModel(probeModel));
+        parentContext[runtimeNode.name] = provisionalValues.get(runtimeNode.id);
+      });
+      return provisionalValues;
     }
 
     function submodelHasUnboundEmptyInput(model) {
@@ -9798,13 +9912,7 @@ window.STGraphXI18nBundles = {
               message: childMessage ? `${childNodeName}: ${childMessage}` : childNodeName,
             };
           }
-          const outputs = {};
-          childModel.nodes.forEach((childNode) => {
-            if (childNode.output) {
-              outputs[childNode.name] = childNode.computedValue;
-            }
-          });
-          return { ok: true, kind: "object", value: outputs };
+          return { ok: true, kind: "object", value: outputValuesForModel(childModel) };
         } catch (err) {
           return { ok: false, reason: "runtime", message: String(err?.message || "runtime") };
         }
@@ -9934,6 +10042,9 @@ window.STGraphXI18nBundles = {
       const integralStateNodeIds = usesRk4
         ? (planEntry.rk4StateNodeIds || (planEntry.rk4StateNodeIds = new Set(rk4Analyses.keys())))
         : EMPTY_NODE_ID_SET;
+      const provisionalValues = options.skipProvisionalSubmodels
+        ? null
+        : provisionalSubmodelValuesForModel(model, timeValue, env);
       const evalResults = semantics.evaluateStatefulGraphStep(
         model.nodes,
         model.edges,
@@ -9944,6 +10055,7 @@ window.STGraphXI18nBundles = {
           localFunctions: localFunctionsForRuntimeModel(model),
           random: randomSourceForModel(model),
           derivativeStateNodeIds: integralStateNodeIds.size > 0 ? integralStateNodeIds : undefined,
+          provisionalValues: provisionalValues?.size ? provisionalValues : undefined,
           customNodeEvaluator: createSubmodelNodeEvaluator(model, timeValue, env, {
             applyResults: options.applyResults !== false,
           }),
@@ -12845,6 +12957,26 @@ window.STGraphXI18nBundles = {
     return node?.shape === "submodel";
   }
 
+  function isAlgebraicSubmodelNode(node) {
+    return node?.type === "submodel" && node?.__isAlgebraicSubmodel === true;
+  }
+
+  function isAlgebraicSubmodelTemplate(template, templates, visitedTemplates = new Set()) {
+    if (!template || !Array.isArray(template.nodes) || visitedTemplates.has(template)) {
+      return false;
+    }
+    visitedTemplates.add(template);
+    const isAlgebraic = !template.nodes.some((child) => isStateNode(child))
+      && template.nodes
+        .filter((child) => isSubmodelNode(child))
+        .every((child) => {
+          const path = String(child?.modelPath ?? "").trim();
+          return isAlgebraicSubmodelTemplate(templates?.get(path), templates, visitedTemplates);
+        });
+    visitedTemplates.delete(template);
+    return isAlgebraic;
+  }
+
   function isTimeWithinBounds(value, t0, dt, t1) {
     const epsilon = Math.max(1e-12, Math.abs(dt) * 1e-9);
     if (dt > 0) {
@@ -12935,7 +13067,7 @@ window.STGraphXI18nBundles = {
     const halfWidth = (Number(node.width) || 120) / 2;
     const halfHeight = (Number(node.height) || 70) / 2;
     let scale;
-    if (node.type === "algebraic" || node.type === "draft") {
+    if (node.type === "algebraic" || node.type === "draft" || isAlgebraicSubmodelNode(node)) {
       scale = 1 / (Math.sqrt((dx * dx) / (halfWidth * halfWidth) + (dy * dy) / (halfHeight * halfHeight)) || 1);
     } else if (node.type === "parameter") {
       scale = 1 / (Math.abs(dx) / halfWidth + Math.abs(dy) / halfHeight || 1);
@@ -14707,6 +14839,12 @@ window.STGraphXI18nBundles = {
             stroke: var(--node-stroke, #2f4a62);
             stroke-width: 2;
           }
+          .node-shape-inner {
+            fill: none;
+            stroke: var(--node-stroke, #2f4a62);
+            stroke-width: 1.5;
+            pointer-events: none;
+          }
           .node.error .node-shape {
             stroke: #c14747;
             stroke-width: 2;
@@ -16024,6 +16162,17 @@ window.STGraphXI18nBundles = {
 
     renderGraph() {
       const model = this._state.rawModel;
+      const submodelTemplates = this._state.submodelTemplates;
+      (model?.nodes || []).forEach((node) => {
+        if (node?.type !== "submodel") {
+          return;
+        }
+        const path = String(node.modelPath ?? "").trim();
+        node.__isAlgebraicSubmodel = isAlgebraicSubmodelTemplate(
+          submodelTemplates?.get(path),
+          submodelTemplates,
+        );
+      });
       const visibleNodeIds = this.visibleGraphNodeIds();
       const bounds = this.graphBounds();
       const zoom = this._zoom;
@@ -16200,7 +16349,8 @@ window.STGraphXI18nBundles = {
         const g = document.createElementNS(SVG_NS, "g");
         g.dataset.playerNodeId = String(node.id);
         const submodelIcon = node.type === "submodel" ? normalizeSubmodelIcon(node.submodelIcon) : null;
-        g.setAttribute("class", `node ${node.type || "state"}${node.__runtimeError ? " error" : ""}${node.output ? " output" : ""}${submodelIcon ? " submodel-icon-node" : ""}`);
+        const algebraicSubmodel = isAlgebraicSubmodelNode(node);
+        g.setAttribute("class", `node ${node.type || "state"}${node.__runtimeError ? " error" : ""}${node.output ? " output" : ""}${submodelIcon ? " submodel-icon-node" : ""}${algebraicSubmodel ? " algebraic-submodel" : ""}`);
         const tooltipText = nodeTooltipText(node, runtimeNodes.get(node.id), this._state.runtimeModel?.execution, this.t.bind(this));
         if (tooltipText) {
           const title = document.createElementNS(SVG_NS, "title");
@@ -16215,7 +16365,7 @@ window.STGraphXI18nBundles = {
           g.style.setProperty("--node-stroke", node.strokeColor);
         }
         let shape;
-        if (node.type === "algebraic" || node.type === "draft") {
+        if (node.type === "algebraic" || node.type === "draft" || algebraicSubmodel) {
           shape = document.createElementNS(SVG_NS, "ellipse");
           shape.setAttribute("cx", node.x);
           shape.setAttribute("cy", node.y);
@@ -16251,6 +16401,15 @@ window.STGraphXI18nBundles = {
           : (showRuntimeValues ? node.y - 8 : node.y));
         label.textContent = node.name;
         g.appendChild(shape);
+        if (algebraicSubmodel) {
+          const innerShape = document.createElementNS(SVG_NS, "ellipse");
+          innerShape.setAttribute("class", "node-shape-inner");
+          innerShape.setAttribute("cx", node.x);
+          innerShape.setAttribute("cy", node.y);
+          innerShape.setAttribute("rx", Math.max(4, (node.width || 120) / 2 - 6));
+          innerShape.setAttribute("ry", Math.max(4, (node.height || 70) / 2 - 6));
+          g.appendChild(innerShape);
+        }
         if (submodelIcon?.type === "library") {
           const icon = document.createElementNS(SVG_NS, "text");
           icon.setAttribute("class", "node-submodel-icon-glyph");
