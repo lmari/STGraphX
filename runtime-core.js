@@ -10,6 +10,7 @@
     const {
       t,
       semantics,
+      unitAnalysis = null,
       normalizeExecutionConfig,
       normalizeRandomSeed,
       deserializeNodeType,
@@ -132,6 +133,72 @@
 
     function randomEvaluationOptions(model, extra = {}) {
       return { ...extra, random: randomSourceForModel(model) };
+    }
+
+    function unitContextForRuntimeModel(model) {
+      if (!unitAnalysis || typeof semantics.parseExpressionAst !== "function" || !model) return null;
+      const entry = executionPlanForModel(model);
+      if (entry.unitContext) return entry.unitContext;
+      const prepared = unitAnalysis.prepareDefinitions(model.unitDefinitions);
+      const declarations = new Map();
+      const units = new Map();
+      (model.nodes || []).forEach((node) => {
+        const source = String(node?.unit || "").trim();
+        if (!source) return;
+        const parsed = unitAnalysis.parseUnit(source, { definitions: prepared.definitions });
+        if (parsed.ok) {
+          declarations.set(node.name, parsed.value);
+          units.set(node.name, parsed.value);
+        }
+      });
+      const timeUnit = unitAnalysis.parseUnit(model.execution?.timeUnit || "s", { definitions: prepared.definitions }).value;
+      const infer = (node, expression, expected = null) => {
+        if (!String(expression || "").trim()) return;
+        try {
+          const inferred = unitAnalysis.inferAst(semantics.parseExpressionAst(expression), {
+            timeUnit,
+            resolve: (name) => name === "time" || name === "dt" || name === "t0" || name === "t1"
+              ? timeUnit
+              : (name === "this" ? expected || unitAnalysis.unknown() : (units.get(name) || unitAnalysis.unknown())),
+          });
+          const effective = expected && unitAnalysis.isKnown(inferred) && unitAnalysis.same(inferred, unitAnalysis.dimensionless())
+            ? expected
+            : inferred;
+          if (unitAnalysis.isKnown(effective) && effective.kind === "unit") units.set(node.name, expected || effective);
+        } catch (_error) { /* Formula diagnostics belong to the semantic evaluator. */ }
+      };
+      for (let pass = 0; pass < (model.nodes || []).length; pass += 1) {
+        (model.nodes || []).forEach((node) => {
+          const expected = declarations.get(node.name) || null;
+          if (isStateNode(node)) {
+            infer(node, node.initialStateExpression, expected);
+            infer(node, node.valueExpression, units.get(node.name) || expected);
+          } else infer(node, node.valueExpression, expected);
+        });
+      }
+      entry.unitContext = { declarations, definitions: prepared.definitions, timeUnit, units };
+      return entry.unitContext;
+    }
+
+    function unitEvaluationOptionsForNode(model, node, expression) {
+      const context = unitContextForRuntimeModel(model);
+      if (!context || !String(expression || "").trim()) return {};
+      try {
+        const expressionAst = semantics.parseExpressionAst(expression);
+        const targetUnit = context.declarations.get(node.name) || context.units.get(node.name) || unitAnalysis.unknown();
+        return {
+          hooks: unitAnalysis.createEvaluationHooks({
+            expressionAst,
+            targetUnit,
+            timeUnit: context.timeUnit,
+            resolve: (name) => name === "time" || name === "dt" || name === "t0" || name === "t1"
+              ? context.timeUnit
+              : (name === "this" ? targetUnit : (context.units.get(name) || unitAnalysis.unknown())),
+          }),
+        };
+      } catch (_error) {
+        return {};
+      }
     }
 
     function buildRuntimeModelFromData(data, options = {}) {
@@ -391,6 +458,7 @@
           const result = semantics.evaluateValueExpression(expr, context, {
             localFunctions: localFunctionsForRuntimeModel(model),
             random: randomSourceForModel(model),
+            ...unitEvaluationOptionsForNode(model, node, expr),
           });
           if (result.ok) {
             node.computedValue = result.value;
@@ -503,7 +571,10 @@
             const result = semantics.evaluateValueExpression(
               expression,
               buildInitialStateContextForModel(model, node, timeValue, rootExecution, references),
-              randomEvaluationOptions(model, { localFunctions: localFunctionsForRuntimeModel(model) }),
+              randomEvaluationOptions(model, {
+                localFunctions: localFunctionsForRuntimeModel(model),
+                ...unitEvaluationOptionsForNode(model, node, expression),
+              }),
             );
             node.computedValue = result.ok ? result.value : null;
             node.computedError = result.ok ? "" : result.reason || "runtime";
@@ -717,6 +788,7 @@
         const result = semantics.evaluateValueExpression(expression, parentContext, {
           localFunctions: localFunctionsForRuntimeModel(model),
           random: randomSourceForModel(model),
+          ...unitEvaluationOptionsForNode(model, node, expression),
         });
         if (!result.ok) {
           if (allowUnresolved) {
@@ -991,6 +1063,7 @@
       const executionGlobals = buildExecutionGlobalsForModel(model, env.rootExecution, timeValue);
       const planEntry = executionPlanForModel(model);
       const executionPlan = planEntry.plan;
+      const unitEvaluationOptions = (node) => unitEvaluationOptionsForNode(model, node, node?.valueExpression);
       const stateValueOverrides = options.stateValueOverrides instanceof Map ? options.stateValueOverrides : null;
       const usesRk4 = String(env.rootExecution?.integrator ?? "euler") === "rk4";
       const rk4Analyses = usesRk4
@@ -1016,6 +1089,7 @@
           customNodeEvaluator: createSubmodelNodeEvaluator(model, timeValue, env, {
             applyResults: options.applyResults !== false,
           }),
+          unitEvaluationOptions,
         },
       );
       const algebraicValueMap = extractSuccessfulAlgebraicValueMap(evalResults.algebraic);
@@ -1051,6 +1125,7 @@
               localFunctions: localFunctionsForRuntimeModel(model),
               random: randomSourceForModel(model),
               customNodeEvaluator: createSubmodelNodeEvaluator(model, timeValue + dt / 2, env, { applyResults: false }),
+              unitEvaluationOptions,
             },
           );
           const stage2Failure = firstFailedEntry(stage2.stateTransitions, integralStateNodeIds);
@@ -1081,6 +1156,7 @@
                 localFunctions: localFunctionsForRuntimeModel(model),
                 random: randomSourceForModel(model),
                 customNodeEvaluator: createSubmodelNodeEvaluator(model, timeValue + dt / 2, env, { applyResults: false }),
+                unitEvaluationOptions,
               },
             );
             const stage3Failure = firstFailedEntry(stage3.stateTransitions, integralStateNodeIds);
@@ -1111,6 +1187,7 @@
                   localFunctions: localFunctionsForRuntimeModel(model),
                   random: randomSourceForModel(model),
                   customNodeEvaluator: createSubmodelNodeEvaluator(model, timeValue + dt, env, { applyResults: false }),
+                  unitEvaluationOptions,
                 },
               );
               const stage4Failure = firstFailedEntry(stage4.stateTransitions, integralStateNodeIds);
@@ -1245,6 +1322,7 @@
       readDataFromModelCache,
       rk4IntegratedValue,
       scaleTensorValue,
+      unitEvaluationOptionsForNode,
     };
   }
 

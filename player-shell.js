@@ -2424,6 +2424,7 @@
       const runtimeCore = runtimeCoreApi.createRuntimeCore({
         t: this.t.bind(this),
         semantics: semanticsApi,
+        unitAnalysis: global.STGraphXUnitAnalysisCore || globalThis.STGraphXUnitAnalysisCore || null,
         normalizeExecutionConfig: runtimeShared.normalizeExecutionConfig,
         deserializeNodeType: runtimeShared.deserializeNodeType,
         normalizeNodeDescriptionProperty: runtimeShared.normalizeNodeDescriptionProperty,

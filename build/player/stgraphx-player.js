@@ -1,6 +1,6 @@
 /*!
  * STGraphX Embedded Player Bundle
- * Generated: 2026-11-17T15:58:14.547Z
+ * Generated: 2026-11-17T20:57:19.734Z
  */
 
 /* --- i18n-inline.js --- */
@@ -408,7 +408,6 @@ window.STGraphXI18nBundles = {
     "expr.help.filter": "Selezione da un vettore o una matrice. Con modo omesso o 'elements' mantiene gli elementi per cui la condizione è vera. Con modo='rows' filtra le righe di una matrice, dove $value è la riga corrente e $0 il suo indice. Con modo='cols' filtra le colonne, dove $value è la colonna corrente e $0 il suo indice. Esempi: filter($value>0, [-2,0,3]) ; filter($0===$1, [[1,2],[3,4]]) ; filter(griglia[$value]==1, coordinate, 'rows').",
     "expr.help.filterAgents": "La sotto-popolazione degli agenti che soddisfano la condizione. Nella condizione self è la riga dell'agente corrente e $i il suo indice. Esempio: `filterAgents(self[ENERGY] > 0, agents)`.",
     "expr.help.flatten": "Matrice trasformata in vettore concatenando le righe. Esempio: flatten([[1,2],[3,4]]) -> [1,2,3,4].",
-    "expr.help.transpose": "Matrice con righe e colonne scambiate. Un vettore diventa una matrice colonna. Le matrici agents non sono supportate. Esempi: transpose([1,2,3]) -> [[1],[2],[3]] ; transpose([[1,2,3],[4,5,6]]) -> [[1,4],[2,5],[3,6]].",
     "expr.help.frequency": "Matrice a due colonne `[centro, frequenza]` calcolata da un vettore numerico. Senza altri argomenti usa come categorie i valori distinti, in ordine crescente. Con `n` intero costruisce n bin uniformi fra minimo e massimo. Con `mode='categories'` il vettore indica le categorie; con `mode='edges'` indica i limiti crescenti degli intervalli, chiusi a sinistra e aperti a destra salvo l'ultimo. Esempi: `frequency([1,2,2,3])` ; `frequency([1,2,2,3], 2)` ; `frequency([0,10,10,20], [0,10,20], \"categories\")` ; `frequency([0.2,0.8,1.1], [0,1,2], \"edges\")`.",
     "expr.help.floor": "Arrotondamento per difetto di `x`. Esempio: `floor(1.8) -> 1`.",
     "expr.help.gaussian": "Distribuzione di probabilità gaussiana (parametri di default: `mu=0`, `sigma=1`). Se `x` manca, estrae un campione. Con `mode=0` calcola la pdf, con `mode=1` la cdf, con `mode=2` la icdf. Esempi: gaussian() ; gaussian([0,1]) ; gaussian([0,1], 0, 0) ; gaussian([0,1], 0.95, 2).",
@@ -478,6 +477,7 @@ window.STGraphXI18nBundles = {
     "expr.help.sqrt": "Radice quadrata di `x`. Esempio: `sqrt(9) -> 3`.",
     "expr.help.stdev": "Deviazione standard di un vettore o di una matrice. Per una matrice, senza `axis` restituisce la deviazione standard complessiva; con `axis=0` per colonna, con `axis=1` per riga. Esempi: stdev([1,2,3]) ; stdev([[1,2],[3,4]], 0).",
     "expr.help.sum": "Somma degli elementi di un vettore o di una matrice. Per una matrice, senza axis restituisce la somma complessiva; con axis=0 restituisce le somme per colonna, con axis=1 le somme per riga. Esempi: sum([1,2,3]) -> 6 ; sum([[1,2],[3,4]]) -> 10 ; sum([[1,2],[3,4]], 0) -> [4,6].",
+    "expr.help.transpose": "Matrice con righe e colonne scambiate. Un vettore diventa una matrice colonna. Le matrici agents non sono supportate. Esempi: transpose([1,2,3]) -> [[1],[2],[3]] ; transpose([[1,2,3],[4,5,6]]) -> [[1,4],[2,5],[3,6]].",
     "expr.help.t0": "Istante iniziale dell'esecuzione.",
     "expr.help.t1": "Istante finale dell'esecuzione.",
     "expr.help.tan": "Tangente di `x`. Esempio: `tan(0) -> 0`.",
@@ -1098,6 +1098,7 @@ window.STGraphXI18nBundles = {
     "units.radian": "radiante",
     "units.custom": "Unità definite dal modello",
     "units.intro": "Le unità SI derivate sono disponibili automaticamente. Aggiungi simboli del modello con una definizione dimensionale, per esempio N = kg*m/s^2 oppure personaAnno = persona*anno.",
+    "units.prefixes": "Prefissi gestiti: da, Y, Z, E, P, T, G, M, k, h, d, c, m, u/µ, n e p. Si applicano alle unità fondamentali m, g, s, A, K, mol, cd e rad, alle unità SI derivate e alle unità definite dal modello. Non si applicano a valute né alle temperature °C e °F.",
     "units.si": "Unità del Sistema Internazionale",
     "units.title": "Unità di misura",
     "modelNotes.title": "Appunti del modello",
@@ -1956,7 +1957,6 @@ window.STGraphXI18nBundles = {
     "expr.help.filter": "Selection from a vector or matrix. With omitted mode or 'elements' it keeps the elements for which the condition is true. With mode='rows' it filters matrix rows, where $value is the current row and $0 its index. With mode='cols' it filters matrix columns, where $value is the current column and $0 its index. Examples: filter($value>0, [-2,0,3]) ; filter($0===$1, [[1,2],[3,4]]) ; filter(grid[$value]==1, coordinates, 'rows').",
     "expr.help.filterAgents": "The sub-population of agents satisfying the condition. Inside the condition self is the current agent row and $i its index. Example: `filterAgents(self[ENERGY] > 0, agents)`.",
     "expr.help.flatten": "Turns a matrix into a vector by concatenating its rows. Example: flatten([[1,2],[3,4]]) -> [1,2,3,4].",
-    "expr.help.transpose": "Swaps the rows and columns of a matrix. A vector becomes a column matrix. Agent matrices are not supported. Examples: transpose([1,2,3]) -> [[1],[2],[3]] ; transpose([[1,2,3],[4,5,6]]) -> [[1,4],[2,5],[3,6]].",
     "expr.help.frequency": "A two-column `[center, frequency]` matrix computed from a numeric vector. Without further arguments it uses distinct values as categories, in increasing order. With integer `n`, it builds n uniform bins from the minimum to the maximum. With `mode='categories'`, the vector supplies categories; with `mode='edges'`, it supplies increasing interval boundaries, left-closed and right-open except for the last interval. Examples: `frequency([1,2,2,3])` ; `frequency([1,2,2,3], 2)` ; `frequency([0,10,10,20], [0,10,20], \"categories\")` ; `frequency([0.2,0.8,1.1], [0,1,2], \"edges\")`.",
     "expr.help.floor": "Round down. Example: `floor(1.8) -> 1`.",
     "expr.help.gaussian": "Normal distribution; mu defaults to 0 and sigma to 1. If x is omitted it samples a value. With mode=0 it computes the pdf, with mode=1 the cdf, with mode=2 the icdf. Examples: gaussian() ; gaussian([0,1]) ; gaussian([0,1], 0, 0) ; gaussian([0,1], 0.95, 2).",
@@ -2026,6 +2026,7 @@ window.STGraphXI18nBundles = {
     "expr.help.sqrt": "Square root. Example: `sqrt(9) -> 3`.",
     "expr.help.stdev": "Standard deviation of a vector or matrix. For a matrix without axis it returns the overall standard deviation; with axis=0 it returns column standard deviations, with axis=1 row standard deviations. Example: `stdev([1,2,3])`.",
     "expr.help.sum": "Sum of the elements of a vector or matrix. For a matrix without axis it returns the overall sum; with axis=0 it returns column sums, with axis=1 row sums. Examples: sum([1,2,3]) -> 6 ; sum([[1,2],[3,4]]) -> 10 ; sum([[1,2],[3,4]], 0) -> [4,6].",
+    "expr.help.transpose": "Swaps the rows and columns of a matrix. A vector becomes a column matrix. Agent matrices are not supported. Examples: transpose([1,2,3]) -> [[1],[2],[3]] ; transpose([[1,2,3],[4,5,6]]) -> [[1,4],[2,5],[3,6]].",
     "expr.help.t0": "Execution start time.",
     "expr.help.t1": "Execution end time.",
     "expr.help.tan": "Trigonometric tangent. Example: `tan(0) -> 0`.",
@@ -2646,6 +2647,7 @@ window.STGraphXI18nBundles = {
     "units.radian": "radian",
     "units.custom": "Model-defined units",
     "units.intro": "Derived SI units are available automatically. Add model symbols with a dimensional definition, for example N = kg*m/s^2 or personYear = person*year.",
+    "units.prefixes": "Supported prefixes: da, Y, Z, E, P, T, G, M, k, h, d, c, m, u/µ, n, and p. They apply to the base units m, g, s, A, K, mol, cd, and rad, to derived SI units, and to model-defined units. They do not apply to currencies or to the temperatures °C and °F.",
     "units.si": "International System of Units",
     "units.title": "Measurement units",
     "modelNotes.title": "Model notes",
@@ -3246,6 +3248,357 @@ window.STGraphXI18nBundles = {
   }
   globalThis.STGraphXMarkdown = { renderMarkdownToHtml, legacyHtmlToMarkdown };
 })();
+
+
+/* --- unit-analysis-core.js --- */
+/*
+ * This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at https://mozilla.org/MPL/2.0/.
+ */
+(function initUnitAnalysisCore(globalScope, factory) {
+  if (typeof module === "object" && module.exports) { module.exports = factory(); return; }
+  globalScope.STGraphXUnitAnalysisCore = factory();
+})(typeof globalThis !== "undefined" ? globalThis : this, function createUnitAnalysisCore() {
+  const EPSILON = 1e-10;
+  const SI_UNIT_DEFINITIONS = Object.freeze([
+    { symbol: "Hz", expression: "1/s" },
+    { symbol: "N", expression: "kg*m/s^2" },
+    { symbol: "Pa", expression: "N/m^2" },
+    { symbol: "J", expression: "N*m" },
+    { symbol: "W", expression: "J/s" },
+    { symbol: "C", expression: "A*s" },
+    { symbol: "V", expression: "W/A" },
+    { symbol: "ohm", expression: "V/A" },
+    { symbol: "S", expression: "1/ohm" },
+    { symbol: "Wb", expression: "V*s" },
+    { symbol: "T", expression: "Wb/m^2" },
+    { symbol: "H", expression: "Wb/A" },
+    { symbol: "lm", expression: "cd" },
+    { symbol: "lx", expression: "lm/m^2" },
+  ]);
+  const SI_DERIVED_DIMENSIONS = Object.freeze([
+    ["Hz", [["s", -1]]],
+    ["N", [["kg", 1], ["m", 1], ["s", -2]]],
+    ["Pa", [["kg", 1], ["m", -1], ["s", -2]]],
+    ["J", [["kg", 1], ["m", 2], ["s", -2]]],
+    ["W", [["kg", 1], ["m", 2], ["s", -3]]],
+    ["C", [["A", 1], ["s", 1]]],
+    ["V", [["kg", 1], ["m", 2], ["s", -3], ["A", -1]]],
+    ["ohm", [["kg", 1], ["m", 2], ["s", -3], ["A", -2]]],
+    ["S", [["kg", -1], ["m", -2], ["s", 3], ["A", 2]]],
+    ["Wb", [["kg", 1], ["m", 2], ["s", -2], ["A", -1]]],
+    ["T", [["kg", 1], ["s", -2], ["A", -1]]],
+    ["H", [["kg", 1], ["m", 2], ["s", -2], ["A", -2]]],
+  ]);
+  const unknown = () => ({ kind: "unknown" });
+  const zero = () => ({ kind: "zero" });
+  const dimensionless = () => ({ kind: "unit", factors: new Map(), labels: new Map(), scale: 1, affine: false });
+  const clean = (factors) => {
+    const out = new Map();
+    factors.forEach((power, name) => { if (Math.abs(power) > EPSILON) out.set(name, power); });
+    return out;
+  };
+  const unit = (factors, labels = new Map(), scale = 1, affine = false) => {
+    const normalizedFactors = clean(factors instanceof Map ? factors : new Map(factors));
+    const normalizedLabels = new Map();
+    normalizedFactors.forEach((_power, name) => {
+      if (labels.has(name)) normalizedLabels.set(name, labels.get(name));
+    });
+    return {
+      kind: "unit",
+      factors: normalizedFactors,
+      labels: normalizedLabels,
+      scale: Number.isFinite(Number(scale)) ? Number(scale) : 1,
+      affine: Boolean(affine),
+    };
+  };
+  const isKnown = (value) => value?.kind === "unit" || value?.kind === "zero";
+  const same = (a, b) => {
+    if (!isKnown(a) || !isKnown(b) || a.kind === "zero" || b.kind === "zero") return true;
+    // Radians retain an angular marker for display and state propagation, but
+    // remain dimensionally compatible with scalar ratios (the SI convention).
+    const comparableFactors = (value) => new Map(
+      [...value.factors].filter(([name]) => name !== "rad"),
+    );
+    const left = comparableFactors(a);
+    const right = comparableFactors(b);
+    if (left.size !== right.size) return false;
+    return [...left].every(([name, power]) => Math.abs(power - (right.get(name) || 0)) < EPSILON);
+  };
+  const combine = (a, b, sign) => {
+    if (!isKnown(a) || !isKnown(b)) return unknown();
+    const out = new Map(a.kind === "unit" ? a.factors : []);
+    const labels = new Map(a.kind === "unit" ? (a.labels || []) : []);
+    if (b.kind === "unit") {
+      b.factors.forEach((power, name) => out.set(name, (out.get(name) || 0) + sign * power));
+      (b.labels || new Map()).forEach((label, name) => { if (!labels.has(name)) labels.set(name, label); });
+    }
+    const aScale = a.kind === "unit" ? a.scale : 1;
+    const bScale = b.kind === "unit" ? b.scale : 1;
+    return unit(out, labels, aScale * (bScale ** sign), Boolean(a.affine || b.affine));
+  };
+
+  const conversionFactor = (from, to) => {
+    if (!same(from, to) || from?.kind === "zero" || to?.kind === "zero") return null;
+    if (from?.affine || to?.affine) return null;
+    const fromScale = Number(from?.scale);
+    const toScale = Number(to?.scale);
+    if (!Number.isFinite(fromScale) || !Number.isFinite(toScale) || toScale === 0) return null;
+    return fromScale / toScale;
+  };
+
+  const scaleValue = (value, factor) => Array.isArray(value)
+    ? value.map((item) => scaleValue(item, factor))
+    : Number(value) * factor;
+  const display = (value) => {
+    if (value?.kind === "unknown") return "";
+    if (value?.kind === "zero") return "1";
+    if (value?.symbol) return value.symbol;
+    const derived = SI_DERIVED_DIMENSIONS.find(([, factors]) => {
+      const expected = new Map(factors);
+      return value.factors.size === expected.size
+        && [...expected].every(([name, power]) => Math.abs((value.factors.get(name) || 0) - power) < EPSILON);
+    });
+    if (derived) return derived[0];
+    const positive = [], negative = [];
+    value.factors.forEach((power, name) => {
+      const label = value.labels?.get(name) || name;
+      (power > 0 ? positive : negative).push(`${label}${Math.abs(power) === 1 ? "" : `^${Math.abs(power)}`}`);
+    });
+    return `${positive.length ? positive.join("*") : "1"}${negative.length ? `/${negative.map((item) => item.replace(/\^-/, "^")).join("*")}` : ""}`;
+  };
+  const UNIT_SYMBOL_RE = /^(?:[A-Za-z_µ][A-Za-z0-9_µ]*|°[CF]|[€$£¥₹₽₩])$/;
+  const SI_PREFIXES = Object.freeze([
+    ["da", 1e1], ["Y", 1e24], ["Z", 1e21], ["E", 1e18], ["P", 1e15], ["T", 1e12],
+    ["G", 1e9], ["M", 1e6], ["k", 1e3], ["h", 1e2], ["d", 1e-1], ["c", 1e-2],
+    ["m", 1e-3], ["u", 1e-6], ["µ", 1e-6], ["n", 1e-9], ["p", 1e-12],
+  ]);
+  const SI_BASE_UNITS = Object.freeze({
+    m: ["m", 1], kg: ["kg", 1], g: ["kg", 1e-3], s: ["s", 1],
+    A: ["A", 1], K: ["K", 1], mol: ["mol", 1], cd: ["cd", 1], rad: ["rad", 1],
+  });
+
+  function normalizedDefinitionMap(definitions) {
+    if (definitions instanceof Map) return definitions;
+    const out = new Map(SI_UNIT_DEFINITIONS.map(({ symbol, expression }) => [symbol, expression]));
+    (Array.isArray(definitions) ? definitions : []).forEach((entry) => {
+      const symbol = String(entry?.symbol ?? entry?.name ?? "").trim();
+      const expression = String(entry?.expression ?? entry?.value ?? "").trim();
+      if (symbol && expression && !out.has(symbol)) out.set(symbol, expression);
+    });
+    return out;
+  }
+
+  function parseUnit(source, options = {}) {
+    const text = String(source || "").trim();
+    if (!text || text === "1") return { ok: true, value: dimensionless() };
+    const tokens = text.match(/[A-Za-z_µ][A-Za-z0-9_µ]*|°[CF]|[€$£¥₹₽₩]|(?:\d+(?:\.\d*)?|\.\d+)(?:[eE][+-]?\d+)?|\*|\/|\^|-?\d+/g);
+    if (!tokens || tokens.join("") !== text.replace(/\s+/g, "")) return { ok: false, reason: "syntax" };
+    const definitions = normalizedDefinitionMap(options.definitions);
+    const resolving = options.resolving instanceof Set ? options.resolving : new Set();
+    const factors = new Map(); const labels = new Map(); let sign = 1; let scale = 1; let affine = false;
+    for (let i = 0; i < tokens.length;) {
+      if (tokens[i] === "*" || tokens[i] === "/") { sign = tokens[i++] === "/" ? -1 : 1; continue; }
+      const name = tokens[i++];
+      let power = 1;
+      if (tokens[i] === "^") { power = Number(tokens[i + 1]); i += 2; if (!Number.isInteger(power)) return { ok: false, reason: "syntax" }; }
+      const numeric = Number(name);
+      if (Number.isFinite(numeric) && name !== "") {
+        if (numeric <= 0) return { ok: false, reason: "syntax" };
+        scale *= numeric ** (sign * power);
+        sign = 1;
+        continue;
+      }
+      if (!UNIT_SYMBOL_RE.test(name)) return { ok: false, reason: "syntax" };
+      // Keep radians as an explicit angular marker even if a legacy model
+      // contains the formerly suggested definition `rad = m/m`.
+      if (name === "rad") {
+        if (!labels.has(name)) labels.set(name, name);
+        factors.set(name, (factors.get(name) || 0) + sign * power);
+        sign = 1;
+        continue;
+      }
+      if (definitions.has(name)) {
+        if (resolving.has(name)) return { ok: false, reason: "cycle", symbol: name };
+        const nextResolving = new Set(resolving);
+        nextResolving.add(name);
+        const resolved = parseUnit(definitions.get(name), { definitions, resolving: nextResolving });
+        if (!resolved.ok) return resolved;
+        resolved.value.factors.forEach((resolvedPower, resolvedName) => {
+          factors.set(resolvedName, (factors.get(resolvedName) || 0) + sign * power * resolvedPower);
+        });
+        (resolved.value.labels || new Map()).forEach((label, resolvedName) => {
+          if (!labels.has(resolvedName)) labels.set(resolvedName, label);
+        });
+        scale *= resolved.value.scale ** (sign * power);
+        affine = affine || Boolean(resolved.value.affine);
+        sign = 1;
+        continue;
+      }
+      if (SI_BASE_UNITS[name]) {
+        const [canonicalName, baseScale] = SI_BASE_UNITS[name];
+        if (!labels.has(canonicalName)) labels.set(canonicalName, name);
+        factors.set(canonicalName, (factors.get(canonicalName) || 0) + sign * power);
+        scale *= baseScale ** (sign * power);
+        sign = 1;
+        continue;
+      }
+      const prefix = SI_PREFIXES.find(([prefixText]) => name.startsWith(prefixText) && name.length > prefixText.length);
+      if (prefix) {
+        const [prefixText, prefixScale] = prefix;
+        const baseName = name.slice(prefixText.length);
+        if (definitions.has(baseName) || SI_BASE_UNITS[baseName]) {
+          const resolved = parseUnit(baseName, { definitions, resolving });
+          if (!resolved.ok) return resolved;
+          resolved.value.factors.forEach((resolvedPower, resolvedName) => {
+            factors.set(resolvedName, (factors.get(resolvedName) || 0) + sign * power * resolvedPower);
+            if (!labels.has(resolvedName)) labels.set(resolvedName, name);
+          });
+          scale *= (resolved.value.scale * prefixScale) ** (sign * power);
+          affine = affine || Boolean(resolved.value.affine);
+          sign = 1;
+          continue;
+        }
+      }
+      // Textual and symbolic currency aliases compare as the same unit, while
+      // the first declared spelling is retained for inferred-unit display.
+      const currencyAliases = {
+        euro: ["EUR", "€"], eur: ["EUR", "€"], "€": ["EUR", "€"],
+        dollar: ["USD", "$"], usd: ["USD", "$"], "$":["USD", "$"],
+        pound: ["GBP", "£"], gbp: ["GBP", "£"], "£": ["GBP", "£"],
+        yen: ["JPY", "¥"], jpy: ["JPY", "¥"], "¥": ["JPY", "¥"],
+        rupee: ["INR", "₹"], inr: ["INR", "₹"], "₹": ["INR", "₹"],
+        ruble: ["RUB", "₽"], rub: ["RUB", "₽"], "₽": ["RUB", "₽"],
+        won: ["KRW", "₩"], krw: ["KRW", "₩"], "₩": ["KRW", "₩"],
+      };
+      const temperatureAliases = {
+        celsius: ["CELSIUS", "°C"], "°c": ["CELSIUS", "°C"],
+        fahrenheit: ["FAHRENHEIT", "°F"], "°f": ["FAHRENHEIT", "°F"],
+      };
+      const alias = currencyAliases[String(name).toLowerCase()] || temperatureAliases[String(name).toLowerCase()];
+      const canonicalName = alias ? alias[0] : name;
+      if (!labels.has(canonicalName)) labels.set(canonicalName, name);
+      factors.set(canonicalName, (factors.get(canonicalName) || 0) + sign * power);
+      affine = affine || Boolean(temperatureAliases[String(name).toLowerCase()]);
+      sign = 1;
+    }
+    const value = unit(factors, labels, scale, affine);
+    if (tokens.length === 1 && UNIT_SYMBOL_RE.test(tokens[0])) value.symbol = text;
+    return { ok: true, value };
+  }
+
+  function prepareDefinitions(entries) {
+    const definitions = new Map(SI_UNIT_DEFINITIONS.map(({ symbol, expression }) => [symbol, expression]));
+    const definedSymbols = new Set();
+    const errors = [];
+    (Array.isArray(entries) ? entries : []).forEach((entry, index) => {
+      const symbol = String(entry?.symbol ?? entry?.name ?? "").trim();
+      const expression = String(entry?.expression ?? entry?.value ?? "").trim();
+      if (!symbol && !expression) return;
+      if (!UNIT_SYMBOL_RE.test(symbol)) {
+        errors.push({ index, symbol, expression, reason: "symbol" });
+        return;
+      }
+      if (!expression) {
+        errors.push({ index, symbol, expression, reason: "expression" });
+        return;
+      }
+      if (definedSymbols.has(symbol)) {
+        errors.push({ index, symbol, expression, reason: "duplicate" });
+        return;
+      }
+      definedSymbols.add(symbol);
+      definitions.set(symbol, expression);
+    });
+    definitions.forEach((expression, symbol) => {
+      const parsed = parseUnit(expression, { definitions, resolving: new Set([symbol]) });
+      if (!parsed.ok) errors.push({ symbol, expression, reason: parsed.reason || "syntax" });
+    });
+    return { definitions, errors };
+  }
+
+  function createEvaluationHooks(options = {}) {
+    const resolve = typeof options.resolve === "function" ? options.resolve : () => unknown();
+    const timeUnit = options.timeUnit || unknown();
+    const expressionAst = options.expressionAst || null;
+    const targetUnit = options.targetUnit || unknown();
+    const infer = (ast) => inferAst(ast, { resolve, timeUnit });
+    const additiveOperators = new Set(["+", "-", "<", ">", "<=", ">=", "==", "!=", "===", "!=="]);
+    const expressionUnit = expressionAst ? infer(expressionAst) : unknown();
+    return {
+      normalizeBinaryOperands(node, left, right) {
+        if (!additiveOperators.has(node?.op)) return null;
+        const factor = conversionFactor(infer(node.right), infer(node.left));
+        if (factor == null || Math.abs(factor - 1) < EPSILON) return null;
+        return { left, right: scaleValue(right, factor) };
+      },
+      onFinalValue(value) {
+        // With no explicit unit on the target node, express a product or
+        // quotient in the unit selected for display (for example cm^2).
+        // Its scale can differ from the physical scale accumulated by the
+        // operands (cm * mm = 0.1 cm^2).
+        const displayUnit = isKnown(expressionUnit)
+          ? parseUnit(display(expressionUnit)).value
+          : unknown();
+        const outputUnit = isKnown(targetUnit) ? targetUnit : displayUnit;
+        const factor = conversionFactor(expressionUnit, outputUnit);
+        return factor == null || Math.abs(factor - 1) < EPSILON ? value : scaleValue(value, factor);
+      },
+    };
+  }
+  function inferAst(ast, context = {}) {
+    const resolve = context.resolve || (() => unknown());
+    const fail = (reason, details = {}) => ({ kind: "unknown", reason, ...details });
+    const visit = (node) => {
+      if (!node) return unknown();
+      if (node.type === "literal") return typeof node.value === "number" && node.value === 0 ? zero() : dimensionless();
+      if (node.type === "identifier") return resolve(node.name);
+      if (node.type === "unary") return visit(node.argument);
+      if (node.type === "array") { const values = node.elements.map(visit); const known = values.filter(isKnown); return known.every((item) => same(item, known[0])) ? (known[0] || unknown()) : fail("array"); }
+      if (node.type === "index" || node.type === "slice" || node.type === "multi-access" || node.type === "member") return visit(node.target);
+      if (node.type === "binary") {
+        const left = visit(node.left), right = visit(node.right);
+        if (node.op === "*" || node.op === "/") return combine(left, right, node.op === "*" ? 1 : -1);
+        if (node.op === "**" && node.right?.type === "literal" && Number.isFinite(Number(node.right.value)) && left.kind === "unit") {
+          const exponent = Number(node.right.value);
+          return unit(new Map([...left.factors].map(([name, power]) => [name, power * exponent])), left.labels, left.scale ** exponent, left.affine);
+        }
+        if (["+", "-", "%"].includes(node.op)) return same(left, right) ? (left.kind === "zero" ? right : left) : fail("add", { left, right });
+        if (["<", ">", "<=", ">=", "==", "!=", "===", "!=="].includes(node.op)) return same(left, right) ? dimensionless() : fail("compare", { left, right });
+        return dimensionless();
+      }
+      if (node.type === "call") {
+        const args = node.args.map(visit); const first = args[0] || unknown();
+        if (["sin", "cos", "tan"].includes(node.name)) {
+          const radians = parseUnit("rad").value;
+          // Preserve rad as a semantic marker, while `same()` keeps it
+          // compatible with dimensionless quantities for SI consistency.
+          return same(first, dimensionless()) || same(first, radians)
+            ? (same(first, radians) && first.kind === "unit" && first.factors.has("rad") ? first : dimensionless())
+            : fail("dimensionless");
+        }
+        if (["exp", "log", "log10", "log2"].includes(node.name)) return same(first, dimensionless()) ? dimensionless() : fail("dimensionless");
+        if (node.name === "sqrt") {
+          if (!isKnown(first)) return unknown();
+          if (first.kind === "zero") return zero();
+          return unit(new Map([...first.factors].map(([name, power]) => [name, power / 2])), first.labels, Math.sqrt(first.scale), first.affine);
+        }
+        if (["size", "rows", "cols", "count", "argmin", "argmax", "indicesWhere", "rand", "randInt", "correlation"].includes(node.name)) return dimensionless();
+        if (["sum", "mean", "median", "mode", "min", "max", "abs", "pos", "neg", "floor", "ceil", "round", "int", "flatten", "resize", "col", "row", "append", "appendRow", "appendCol"].includes(node.name)) return first;
+        if (node.name === "integral") {
+          const timeUnit = isKnown(context.timeUnit) ? context.timeUnit : parseUnit("s").value;
+          return combine(first, timeUnit, 1);
+        }
+        if (node.name === "if") { const values = args.filter((_v, i) => i % 2 === 1).concat(args.length % 2 ? [args.at(-1)] : []).filter(isKnown); return values.every((item) => same(item, values[0])) ? (values[0] || unknown()) : fail("if"); }
+        return unknown();
+      }
+      return unknown();
+    };
+    return visit(ast);
+  }
+  return { conversionFactor, createEvaluationHooks, dimensionless, display, inferAst, isKnown, parseUnit, prepareDefinitions, scaleValue, siUnitDefinitions: SI_UNIT_DEFINITIONS, same, unknown };
+});
 
 
 /* --- graph-functions.js --- */
@@ -7811,8 +8164,16 @@ window.STGraphXI18nBundles = {
         throw new Error(`Unsupported operator ${node.op}`);
       }
       case "binary": {
-        const left = evaluateAstNode(node.left, scope, hooks);
-        const right = evaluateAstNode(node.right, scope, hooks);
+        let left = evaluateAstNode(node.left, scope, hooks);
+        let right = evaluateAstNode(node.right, scope, hooks);
+        const normalizedOperands = typeof hooks?.normalizeBinaryOperands === "function"
+          ? hooks.normalizeBinaryOperands(node, left, right, scope)
+          : null;
+        if (normalizedOperands && Object.prototype.hasOwnProperty.call(normalizedOperands, "left")
+          && Object.prototype.hasOwnProperty.call(normalizedOperands, "right")) {
+          left = normalizedOperands.left;
+          right = normalizedOperands.right;
+        }
         switch (node.op) {
           case "+":
             return vectorizedBinaryOperation(left, right, (a, b) => a + b);
@@ -7872,17 +8233,21 @@ window.STGraphXI18nBundles = {
     }
 
     let raw;
+    const evaluationHooks = {
+      ...(options?.hooks && typeof options.hooks === "object" ? options.hooks : {}),
+      agentFieldAliases: normalizeAgentFieldAliasMap(options, context),
+      localFunctions: normalizeLocalFunctionDefinitions(options?.localFunctions || []),
+      localFunctionStack: [],
+    };
     try {
       raw = evaluateAstWithLocalSelf(
         compiled,
         createEvaluationScope(options, context),
-        {
-          ...(options?.hooks && typeof options.hooks === "object" ? options.hooks : {}),
-          agentFieldAliases: normalizeAgentFieldAliasMap(options, context),
-          localFunctions: normalizeLocalFunctionDefinitions(options?.localFunctions || []),
-          localFunctionStack: [],
-        },
+        evaluationHooks,
       );
+      if (typeof evaluationHooks.onFinalValue === "function") {
+        raw = evaluationHooks.onFinalValue(raw);
+      }
     } catch (err) {
       if (err && err.name === "ReferenceError") {
         return { ok: false, reason: "reference", message: String(err.message || "") };
@@ -8374,6 +8739,13 @@ window.STGraphXI18nBundles = {
     const customNodeEvaluator = typeof options?.customNodeEvaluator === "function"
       ? options.customNodeEvaluator
       : null;
+    const unitEvaluationOptions = typeof options?.unitEvaluationOptions === "function"
+      ? options.unitEvaluationOptions
+      : null;
+    const evaluationOptionsForNode = (node, base = {}) => ({
+      ...base,
+      ...(unitEvaluationOptions ? unitEvaluationOptions(node) : {}),
+    });
     const provisionalValues = options?.provisionalValues instanceof Map
       ? options.provisionalValues
       : null;
@@ -8482,10 +8854,10 @@ window.STGraphXI18nBundles = {
         if (!dependenciesReady) {
           continue;
         }
-        parameterResults.set(node.id, evaluateValueExpression(node.valueExpression, context, {
+        parameterResults.set(node.id, evaluateValueExpression(node.valueExpression, context, evaluationOptionsForNode(node, {
           localFunctions: options?.localFunctions || [],
           random: options?.random,
-        }));
+        })));
         pendingParameters.delete(nodeId);
         parameterProgressed = true;
       }
@@ -8589,10 +8961,10 @@ window.STGraphXI18nBundles = {
         const customResult = customNodeEvaluator
           ? customNodeEvaluator(node, context, { globals, runtimePlan, predecessors })
           : null;
-        const result = customResult || evaluateValueExpression(node.valueExpression, context, {
+        const result = customResult || evaluateValueExpression(node.valueExpression, context, evaluationOptionsForNode(node, {
           localFunctions: options?.localFunctions || [],
           random: options?.random,
-        });
+        }));
         algebraicResults.set(nodeId, result);
         pending.delete(nodeId);
         progressed = true;
@@ -8661,19 +9033,19 @@ window.STGraphXI18nBundles = {
         return;
       }
       if (derivativeStateNodeIds && derivativeStateNodeIds.has(node.id)) {
-        stateTransitionResults.set(node.id, evaluateIntegralDerivativeList(node.valueExpression, context, {
+        stateTransitionResults.set(node.id, evaluateIntegralDerivativeList(node.valueExpression, context, evaluationOptionsForNode(node, {
           allowThisAlias: true,
           localFunctions: options?.localFunctions || [],
           random: options?.random,
-        }));
+        })));
         return;
       }
-      stateTransitionResults.set(node.id, evaluateValueExpression(node.valueExpression, context, {
+      stateTransitionResults.set(node.id, evaluateValueExpression(node.valueExpression, context, evaluationOptionsForNode(node, {
         allowThisAlias: true,
         allowIntegral: true,
         localFunctions: options?.localFunctions || [],
         random: options?.random,
-      }));
+      })));
     });
 
     return {
@@ -9080,6 +9452,7 @@ window.STGraphXI18nBundles = {
     const {
       t,
       semantics,
+      unitAnalysis = null,
       normalizeExecutionConfig,
       normalizeRandomSeed,
       deserializeNodeType,
@@ -9202,6 +9575,72 @@ window.STGraphXI18nBundles = {
 
     function randomEvaluationOptions(model, extra = {}) {
       return { ...extra, random: randomSourceForModel(model) };
+    }
+
+    function unitContextForRuntimeModel(model) {
+      if (!unitAnalysis || typeof semantics.parseExpressionAst !== "function" || !model) return null;
+      const entry = executionPlanForModel(model);
+      if (entry.unitContext) return entry.unitContext;
+      const prepared = unitAnalysis.prepareDefinitions(model.unitDefinitions);
+      const declarations = new Map();
+      const units = new Map();
+      (model.nodes || []).forEach((node) => {
+        const source = String(node?.unit || "").trim();
+        if (!source) return;
+        const parsed = unitAnalysis.parseUnit(source, { definitions: prepared.definitions });
+        if (parsed.ok) {
+          declarations.set(node.name, parsed.value);
+          units.set(node.name, parsed.value);
+        }
+      });
+      const timeUnit = unitAnalysis.parseUnit(model.execution?.timeUnit || "s", { definitions: prepared.definitions }).value;
+      const infer = (node, expression, expected = null) => {
+        if (!String(expression || "").trim()) return;
+        try {
+          const inferred = unitAnalysis.inferAst(semantics.parseExpressionAst(expression), {
+            timeUnit,
+            resolve: (name) => name === "time" || name === "dt" || name === "t0" || name === "t1"
+              ? timeUnit
+              : (name === "this" ? expected || unitAnalysis.unknown() : (units.get(name) || unitAnalysis.unknown())),
+          });
+          const effective = expected && unitAnalysis.isKnown(inferred) && unitAnalysis.same(inferred, unitAnalysis.dimensionless())
+            ? expected
+            : inferred;
+          if (unitAnalysis.isKnown(effective) && effective.kind === "unit") units.set(node.name, expected || effective);
+        } catch (_error) { /* Formula diagnostics belong to the semantic evaluator. */ }
+      };
+      for (let pass = 0; pass < (model.nodes || []).length; pass += 1) {
+        (model.nodes || []).forEach((node) => {
+          const expected = declarations.get(node.name) || null;
+          if (isStateNode(node)) {
+            infer(node, node.initialStateExpression, expected);
+            infer(node, node.valueExpression, units.get(node.name) || expected);
+          } else infer(node, node.valueExpression, expected);
+        });
+      }
+      entry.unitContext = { declarations, definitions: prepared.definitions, timeUnit, units };
+      return entry.unitContext;
+    }
+
+    function unitEvaluationOptionsForNode(model, node, expression) {
+      const context = unitContextForRuntimeModel(model);
+      if (!context || !String(expression || "").trim()) return {};
+      try {
+        const expressionAst = semantics.parseExpressionAst(expression);
+        const targetUnit = context.declarations.get(node.name) || context.units.get(node.name) || unitAnalysis.unknown();
+        return {
+          hooks: unitAnalysis.createEvaluationHooks({
+            expressionAst,
+            targetUnit,
+            timeUnit: context.timeUnit,
+            resolve: (name) => name === "time" || name === "dt" || name === "t0" || name === "t1"
+              ? context.timeUnit
+              : (name === "this" ? targetUnit : (context.units.get(name) || unitAnalysis.unknown())),
+          }),
+        };
+      } catch (_error) {
+        return {};
+      }
     }
 
     function buildRuntimeModelFromData(data, options = {}) {
@@ -9461,6 +9900,7 @@ window.STGraphXI18nBundles = {
           const result = semantics.evaluateValueExpression(expr, context, {
             localFunctions: localFunctionsForRuntimeModel(model),
             random: randomSourceForModel(model),
+            ...unitEvaluationOptionsForNode(model, node, expr),
           });
           if (result.ok) {
             node.computedValue = result.value;
@@ -9573,7 +10013,10 @@ window.STGraphXI18nBundles = {
             const result = semantics.evaluateValueExpression(
               expression,
               buildInitialStateContextForModel(model, node, timeValue, rootExecution, references),
-              randomEvaluationOptions(model, { localFunctions: localFunctionsForRuntimeModel(model) }),
+              randomEvaluationOptions(model, {
+                localFunctions: localFunctionsForRuntimeModel(model),
+                ...unitEvaluationOptionsForNode(model, node, expression),
+              }),
             );
             node.computedValue = result.ok ? result.value : null;
             node.computedError = result.ok ? "" : result.reason || "runtime";
@@ -9787,6 +10230,7 @@ window.STGraphXI18nBundles = {
         const result = semantics.evaluateValueExpression(expression, parentContext, {
           localFunctions: localFunctionsForRuntimeModel(model),
           random: randomSourceForModel(model),
+          ...unitEvaluationOptionsForNode(model, node, expression),
         });
         if (!result.ok) {
           if (allowUnresolved) {
@@ -10061,6 +10505,7 @@ window.STGraphXI18nBundles = {
       const executionGlobals = buildExecutionGlobalsForModel(model, env.rootExecution, timeValue);
       const planEntry = executionPlanForModel(model);
       const executionPlan = planEntry.plan;
+      const unitEvaluationOptions = (node) => unitEvaluationOptionsForNode(model, node, node?.valueExpression);
       const stateValueOverrides = options.stateValueOverrides instanceof Map ? options.stateValueOverrides : null;
       const usesRk4 = String(env.rootExecution?.integrator ?? "euler") === "rk4";
       const rk4Analyses = usesRk4
@@ -10086,6 +10531,7 @@ window.STGraphXI18nBundles = {
           customNodeEvaluator: createSubmodelNodeEvaluator(model, timeValue, env, {
             applyResults: options.applyResults !== false,
           }),
+          unitEvaluationOptions,
         },
       );
       const algebraicValueMap = extractSuccessfulAlgebraicValueMap(evalResults.algebraic);
@@ -10121,6 +10567,7 @@ window.STGraphXI18nBundles = {
               localFunctions: localFunctionsForRuntimeModel(model),
               random: randomSourceForModel(model),
               customNodeEvaluator: createSubmodelNodeEvaluator(model, timeValue + dt / 2, env, { applyResults: false }),
+              unitEvaluationOptions,
             },
           );
           const stage2Failure = firstFailedEntry(stage2.stateTransitions, integralStateNodeIds);
@@ -10151,6 +10598,7 @@ window.STGraphXI18nBundles = {
                 localFunctions: localFunctionsForRuntimeModel(model),
                 random: randomSourceForModel(model),
                 customNodeEvaluator: createSubmodelNodeEvaluator(model, timeValue + dt / 2, env, { applyResults: false }),
+                unitEvaluationOptions,
               },
             );
             const stage3Failure = firstFailedEntry(stage3.stateTransitions, integralStateNodeIds);
@@ -10181,6 +10629,7 @@ window.STGraphXI18nBundles = {
                   localFunctions: localFunctionsForRuntimeModel(model),
                   random: randomSourceForModel(model),
                   customNodeEvaluator: createSubmodelNodeEvaluator(model, timeValue + dt, env, { applyResults: false }),
+                  unitEvaluationOptions,
                 },
               );
               const stage4Failure = firstFailedEntry(stage4.stateTransitions, integralStateNodeIds);
@@ -10315,6 +10764,7 @@ window.STGraphXI18nBundles = {
       readDataFromModelCache,
       rk4IntegratedValue,
       scaleTensorValue,
+      unitEvaluationOptionsForNode,
     };
   }
 
@@ -15323,6 +15773,7 @@ window.STGraphXI18nBundles = {
       const runtimeCore = runtimeCoreApi.createRuntimeCore({
         t: this.t.bind(this),
         semantics: semanticsApi,
+        unitAnalysis: global.STGraphXUnitAnalysisCore || globalThis.STGraphXUnitAnalysisCore || null,
         normalizeExecutionConfig: runtimeShared.normalizeExecutionConfig,
         deserializeNodeType: runtimeShared.deserializeNodeType,
         normalizeNodeDescriptionProperty: runtimeShared.normalizeNodeDescriptionProperty,

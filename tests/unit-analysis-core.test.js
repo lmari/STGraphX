@@ -47,6 +47,38 @@ assert(unitAnalysis.same(unitAnalysis.parseUnit("euro").value, unitAnalysis.pars
 assert.equal(unitAnalysis.display(unitAnalysis.parseUnit("$/anno").value), "$/anno");
 assert.equal(unitAnalysis.display(unitAnalysis.parseUnit("°C/s").value), "°C/s");
 assert(unitAnalysis.same(unitAnalysis.parseUnit("celsius").value, unitAnalysis.parseUnit("°C").value));
+const metres = unitAnalysis.parseUnit("m").value;
+const centimetres = unitAnalysis.parseUnit("cm").value;
+const millimetres = unitAnalysis.parseUnit("mm").value;
+const kilometres = unitAnalysis.parseUnit("km").value;
+assert(unitAnalysis.same(metres, centimetres));
+assert.equal(unitAnalysis.display(centimetres), "cm");
+assert.equal(unitAnalysis.conversionFactor(centimetres, metres), 0.01);
+assert.equal(unitAnalysis.conversionFactor(kilometres, metres), 1000);
+assert.deepEqual(unitAnalysis.scaleValue([100, [25]], unitAnalysis.conversionFactor(centimetres, metres)), [1, [0.25]]);
+assert.equal(unitAnalysis.conversionFactor(unitAnalysis.parseUnit("°C").value, unitAnalysis.parseUnit("°C").value), null);
+const scaledDefinitions = unitAnalysis.prepareDefinitions([{ symbol: "ha", expression: "10000*m^2" }]);
+assert.equal(scaledDefinitions.errors.length, 0);
+assert.equal(unitAnalysis.conversionFactor(unitAnalysis.parseUnit("ha", { definitions: scaledDefinitions.definitions }).value, unitAnalysis.parseUnit("m^2").value), 10000);
+const unitByName = { n1: metres, n2: centimetres, n3: millimetres };
+const evaluateWithUnits = (expression, contextValues, targetUnit = unitAnalysis.unknown()) => {
+  const expressionAst = context.window.GraphSemantics.parseExpressionAst(expression);
+  return context.window.GraphSemantics.evaluateValueExpression(expression, contextValues, {
+    hooks: unitAnalysis.createEvaluationHooks({
+      expressionAst,
+      targetUnit,
+      resolve: (name) => unitByName[name] || unitAnalysis.unknown(),
+    }),
+  });
+};
+assert.equal(evaluateWithUnits("n1+n2", { n1: 10, n2: 10 }).value, 10.1);
+assert.equal(evaluateWithUnits("n1+n2", { n1: 10, n2: 100 }).value, 11);
+assert.equal(evaluateWithUnits("n2+n1", { n1: 10, n2: 100 }).value, 1100);
+assert.equal(evaluateWithUnits("n1+n2", { n1: 10, n2: 100 }, centimetres).value, 1100);
+assert.equal(evaluateWithUnits("n1==n2", { n1: 1, n2: 100 }).value, 1);
+assert.deepEqual(evaluateWithUnits("n1+n2", { n1: [1, 2], n2: [100, 50] }).value, [2, 2.5]);
+assert.equal(evaluateWithUnits("n2*n3", { n2: 1, n3: 1 }).value, 0.1);
+assert.equal(evaluateWithUnits("n1/n2", { n1: 1, n2: 1 }).value, 100);
 const mechanicalUnits = unitAnalysis.prepareDefinitions([]);
 assert.equal(mechanicalUnits.errors.length, 0);
 assert.equal(unitAnalysis.display(unitAnalysis.parseUnit("N/kg", { definitions: mechanicalUnits.definitions }).value), "m/s^2");

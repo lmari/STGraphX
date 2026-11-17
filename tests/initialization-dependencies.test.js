@@ -5,6 +5,7 @@ const fs = require("fs");
 const path = require("path");
 const vm = require("vm");
 const { createModelAnalysisCoreHelpers } = require("../model-analysis-core.js");
+const unitAnalysis = require("../unit-analysis-core.js");
 
 const context = { window: {} };
 vm.runInNewContext(fs.readFileSync(path.join(__dirname, "..", "graph-functions.js"), "utf8"), context, { filename: "graph-functions.js" });
@@ -16,11 +17,13 @@ const nodeById = (model, id) => model.nodes.find((node) => node.id === id) || nu
 const runtimeCore = context.STGraphXRuntimeCore.createRuntimeCore({
   t: (key) => key,
   semantics,
+  unitAnalysis,
   deepClone: (value) => JSON.parse(JSON.stringify(value)),
   localFunctionsForSemantics: () => [],
   globalParameterNodesForModel: () => [],
   referencedGlobalParameterNodesForTarget: () => [],
   isStateNode: (node) => node?.shape === "rect",
+  isSubmodelNode: () => false,
   getModelNodeById: nodeById,
   normalizeReadDataPath: (value) => String(value || ""),
   parseModelPropertyStoredValue: (value) => value,
@@ -54,6 +57,27 @@ runtimeCore.initializeStateNodesForModel(model, 0, execution);
 assert.equal(nodeById(model, 2).computedValue, 3);
 assert.equal(nodeById(model, 3).computedValue, 6);
 assert.equal(nodeById(model, 4).computedValue, 9);
+
+const scaledUnitModel = {
+  properties: [], localFunctions: [], unitDefinitions: [], __readDataCache: {},
+  execution: { timeUnit: "s" },
+  nodes: [
+    { ...makeNode(11, "metres", "diamond", "10"), unit: "m" },
+    { ...makeNode(12, "centimetres", "diamond", "100"), unit: "cm" },
+    { ...makeNode(13, "total", "ellipse", "metres+centimetres"), unit: "m" },
+  ],
+  edges: [{ from: 11, to: 13 }, { from: 12, to: 13 }],
+};
+runtimeCore.initializeStateNodesForModel(scaledUnitModel, 0, execution);
+assert.equal(nodeById(scaledUnitModel, 13).computedValue, 11);
+const previewOptions = runtimeCore.unitEvaluationOptionsForNode(
+  scaledUnitModel,
+  nodeById(scaledUnitModel, 13),
+  "metres+centimetres",
+);
+assert.equal(semantics.evaluateValueExpression("metres+centimetres", { metres: 10, centimetres: 100 }, previewOptions).value, 11);
+runtimeCore.evaluateModelAtTimeRecursive(scaledUnitModel, 0, { rootExecution: execution });
+assert.equal(nodeById(scaledUnitModel, 13).computedValue, 11);
 
 const parameterDependencyNodes = [
   makeNode(1, "base", "diamond", "2"),

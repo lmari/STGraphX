@@ -2203,8 +2203,16 @@
         throw new Error(`Unsupported operator ${node.op}`);
       }
       case "binary": {
-        const left = evaluateAstNode(node.left, scope, hooks);
-        const right = evaluateAstNode(node.right, scope, hooks);
+        let left = evaluateAstNode(node.left, scope, hooks);
+        let right = evaluateAstNode(node.right, scope, hooks);
+        const normalizedOperands = typeof hooks?.normalizeBinaryOperands === "function"
+          ? hooks.normalizeBinaryOperands(node, left, right, scope)
+          : null;
+        if (normalizedOperands && Object.prototype.hasOwnProperty.call(normalizedOperands, "left")
+          && Object.prototype.hasOwnProperty.call(normalizedOperands, "right")) {
+          left = normalizedOperands.left;
+          right = normalizedOperands.right;
+        }
         switch (node.op) {
           case "+":
             return vectorizedBinaryOperation(left, right, (a, b) => a + b);
@@ -2264,17 +2272,21 @@
     }
 
     let raw;
+    const evaluationHooks = {
+      ...(options?.hooks && typeof options.hooks === "object" ? options.hooks : {}),
+      agentFieldAliases: normalizeAgentFieldAliasMap(options, context),
+      localFunctions: normalizeLocalFunctionDefinitions(options?.localFunctions || []),
+      localFunctionStack: [],
+    };
     try {
       raw = evaluateAstWithLocalSelf(
         compiled,
         createEvaluationScope(options, context),
-        {
-          ...(options?.hooks && typeof options.hooks === "object" ? options.hooks : {}),
-          agentFieldAliases: normalizeAgentFieldAliasMap(options, context),
-          localFunctions: normalizeLocalFunctionDefinitions(options?.localFunctions || []),
-          localFunctionStack: [],
-        },
+        evaluationHooks,
       );
+      if (typeof evaluationHooks.onFinalValue === "function") {
+        raw = evaluationHooks.onFinalValue(raw);
+      }
     } catch (err) {
       if (err && err.name === "ReferenceError") {
         return { ok: false, reason: "reference", message: String(err.message || "") };
@@ -2766,6 +2778,13 @@
     const customNodeEvaluator = typeof options?.customNodeEvaluator === "function"
       ? options.customNodeEvaluator
       : null;
+    const unitEvaluationOptions = typeof options?.unitEvaluationOptions === "function"
+      ? options.unitEvaluationOptions
+      : null;
+    const evaluationOptionsForNode = (node, base = {}) => ({
+      ...base,
+      ...(unitEvaluationOptions ? unitEvaluationOptions(node) : {}),
+    });
     const provisionalValues = options?.provisionalValues instanceof Map
       ? options.provisionalValues
       : null;
@@ -2874,10 +2893,10 @@
         if (!dependenciesReady) {
           continue;
         }
-        parameterResults.set(node.id, evaluateValueExpression(node.valueExpression, context, {
+        parameterResults.set(node.id, evaluateValueExpression(node.valueExpression, context, evaluationOptionsForNode(node, {
           localFunctions: options?.localFunctions || [],
           random: options?.random,
-        }));
+        })));
         pendingParameters.delete(nodeId);
         parameterProgressed = true;
       }
@@ -2981,10 +3000,10 @@
         const customResult = customNodeEvaluator
           ? customNodeEvaluator(node, context, { globals, runtimePlan, predecessors })
           : null;
-        const result = customResult || evaluateValueExpression(node.valueExpression, context, {
+        const result = customResult || evaluateValueExpression(node.valueExpression, context, evaluationOptionsForNode(node, {
           localFunctions: options?.localFunctions || [],
           random: options?.random,
-        });
+        }));
         algebraicResults.set(nodeId, result);
         pending.delete(nodeId);
         progressed = true;
@@ -3053,19 +3072,19 @@
         return;
       }
       if (derivativeStateNodeIds && derivativeStateNodeIds.has(node.id)) {
-        stateTransitionResults.set(node.id, evaluateIntegralDerivativeList(node.valueExpression, context, {
+        stateTransitionResults.set(node.id, evaluateIntegralDerivativeList(node.valueExpression, context, evaluationOptionsForNode(node, {
           allowThisAlias: true,
           localFunctions: options?.localFunctions || [],
           random: options?.random,
-        }));
+        })));
         return;
       }
-      stateTransitionResults.set(node.id, evaluateValueExpression(node.valueExpression, context, {
+      stateTransitionResults.set(node.id, evaluateValueExpression(node.valueExpression, context, evaluationOptionsForNode(node, {
         allowThisAlias: true,
         allowIntegral: true,
         localFunctions: options?.localFunctions || [],
         random: options?.random,
-      }));
+      })));
     });
 
     return {

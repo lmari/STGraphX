@@ -5783,14 +5783,15 @@ function setExpressionEntryTooltip(entry = null) {
   );
   const preview = expressionValuePreviewForEntry(entry);
   const lines = [];
-  if (entry?.name) {
-    lines.push(entry.name);
-  }
-  if (preview?.text) {
-    lines.push(`${t("expr.preview.title")}: ${preview.text}`);
-  }
-  if (preview?.typeLabel) {
-    lines.push(`${t("expr.preview.type")}: ${preview.typeLabel}`);
+  if (entry?.name && preview?.text) {
+    const unit = preview.unit ? ` ${preview.unit}` : "";
+    const type = preview.typeLabel ? ` (${preview.typeLabel})` : "";
+    lines.push(`${entry.name} = ${preview.text}${unit}${type}`);
+  } else {
+    if (entry?.name) lines.push(entry.name);
+    if (preview?.text) lines.push(`${t("expr.preview.title")}: ${preview.text}`);
+    if (preview?.typeLabel) lines.push(`${t("expr.preview.type")}: ${preview.typeLabel}`);
+    if (preview?.unit) lines.push(`${t("label.unit")}: ${preview.unit}`);
   }
   const tooltipText = lines.join("\n") || fallback;
   const activeInput = activeExpressionEditorInput();
@@ -5965,12 +5966,22 @@ function expressionValuePreviewForEntry(entry) {
   }
   const previewState = getExpressionPreviewInitializationState();
   const { context: baseContext, node } = buildExpressionPreviewBaseContext(previewState);
+  const nodeUnit = (sourceNode) => {
+    const unit = String(sourceNode?.unit || sourceNode?.inferredUnit || "").trim();
+    return unit && unit !== "1" ? unit : "";
+  };
+  const sourceNodeForName = (name) => {
+    if (name === "this" || name === "self") return getNodeById(ui.expressionEditor?.nodeId);
+    return graph.nodes.find((candidate) => candidate?.name === name) || null;
+  };
+  const unit = nodeUnit(sourceNodeForName(entry.name));
 
   if (entry.kind === "variable") {
     if (entry.name === "$i" || entry.name === "$j") {
       return {
         text: "0",
         typeLabel: t("expr.preview.type.scalar"),
+        unit: "",
         error: false,
       };
     }
@@ -5982,6 +5993,7 @@ function expressionValuePreviewForEntry(entry) {
       return {
         text: summarizeExpressionPreviewValue(currentValueResult.value),
         typeLabel: describeExpressionPreviewShape(currentValueResult.value),
+        unit,
         error: false,
       };
     }
@@ -6001,12 +6013,14 @@ function expressionValuePreviewForEntry(entry) {
         return {
           text: summarizeExpressionPreviewValue(localSelfValue),
           typeLabel: describeExpressionPreviewShape(localSelfValue),
+          unit,
           error: false,
         };
       }
       return {
         text: summarizeExpressionPreviewValue(selfValue),
         typeLabel: describeExpressionPreviewShape(selfValue),
+        unit,
         error: false,
       };
     }
@@ -6014,6 +6028,7 @@ function expressionValuePreviewForEntry(entry) {
       return {
         text: summarizeExpressionPreviewValue(baseContext[entry.name]),
         typeLabel: describeExpressionPreviewShape(baseContext[entry.name]),
+        unit,
         error: false,
       };
     }
@@ -6351,6 +6366,13 @@ function buildExpressionPreviewBaseContext(previewState, meta = null) {
   return { context, node };
 }
 
+function expressionPreviewUnitOptions(model, node, expression) {
+  if (typeof runtimeCore?.unitEvaluationOptionsForNode !== "function") {
+    return {};
+  }
+  return runtimeCore.unitEvaluationOptionsForNode(model, node, expression);
+}
+
 function evaluateInitialStatePreviewValue(node, globals, model = graph) {
   if (!node || !isStateNode(node)) {
     return { ok: false };
@@ -6383,6 +6405,7 @@ function evaluateInitialStatePreviewValue(node, globals, model = graph) {
     : String(node.initialStateExpression ?? "");
   return semantics.evaluateValueExpression(source, context, {
     localFunctions: localFunctionsForSemantics(model),
+    ...expressionPreviewUnitOptions(model, node, source),
   });
 }
 
@@ -6466,6 +6489,7 @@ function buildExpressionPreviewEvaluation() {
       allowThisAlias: true,
       allowIntegral: true,
       localFunctions: localFunctionsForSemantics(graph),
+      ...expressionPreviewUnitOptions(previewState.model, node, source),
     });
     return {
       ...nextValueResult,
@@ -6476,6 +6500,7 @@ function buildExpressionPreviewEvaluation() {
   }
   return semantics.evaluateValueExpression(source, context, {
     localFunctions: localFunctionsForSemantics(graph),
+    ...expressionPreviewUnitOptions(previewState.model, node, source),
   });
 }
 
@@ -14459,6 +14484,7 @@ function serializeNodePropertyStoredValue(value) {
 const runtimeCore = globalThis.STGraphXRuntimeCore?.createRuntimeCore({
   t,
   semantics,
+  unitAnalysis: globalThis.STGraphXUnitAnalysisCore,
   normalizeExecutionConfig,
   deserializeNodeType,
   normalizeNodeDescriptionProperty: runtimeShared.normalizeNodeDescriptionProperty,
