@@ -716,6 +716,29 @@
     return value.flat();
   }
 
+  function transposeArrayValues(value) {
+    if (!Array.isArray(value)) {
+      throw new Error("transpose expects a vector or matrix");
+    }
+    if (getAgentFieldNames(value)) {
+      throw new Error("transpose does not support agent matrices");
+    }
+    if (!value.some((item) => Array.isArray(item))) {
+      return value.map((item) => [item]);
+    }
+    if (!value.every((row) => Array.isArray(row))) {
+      throw new Error("transpose expects a rectangular matrix");
+    }
+    const { rowCount, colCount } = ensureRectangularMatrix(value, "transpose");
+    return Array.from(
+      { length: colCount },
+      (_, colIndex) => Array.from(
+        { length: rowCount },
+        (_, rowIndex) => value[rowIndex][colIndex],
+      ),
+    );
+  }
+
   function normalizeResizeDimension(value) {
     const dimension = Number(value);
     if (!Number.isInteger(dimension) || dimension < 0) {
@@ -2146,6 +2169,7 @@
       size: sizeOfValue,
       sort: sortVectorValues,
       sum: sumArrayValues,
+      transpose: transposeArrayValues,
       union: unionArrayValues,
 
       // Agent-population utilities.
@@ -2252,6 +2276,7 @@
       size: { kind: "array", signature: "size(array[, axis])", descriptionKey: "expr.help.size", insertText: "size()", cursorOffset: 5 },
       sort: { kind: "array", signature: "sort(vector)", descriptionKey: "expr.help.sort", insertText: "sort()", cursorOffset: 5 },
       sum: { kind: "array", signature: "sum(array[, axis])", descriptionKey: "expr.help.sum", insertText: "sum()", cursorOffset: 4 },
+      transpose: { kind: "array", signature: "transpose(vector|matrix)", descriptionKey: "expr.help.transpose", insertText: "transpose()", cursorOffset: 10 },
       union: { kind: "array", signature: "union(vectorA, vectorB)", descriptionKey: "expr.help.union", insertText: "union()", cursorOffset: 6 },
 
       // Statistical and probabilistic functions

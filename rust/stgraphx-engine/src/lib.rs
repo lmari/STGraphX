@@ -60,6 +60,7 @@ pub const fn engine_info() -> EngineInfo {
             "array-set-at",
             "tensor-append",
             "tensor-remove",
+            "tensor-transpose",
             "array-iterations",
             "global-parameters",
             "model-local-functions",

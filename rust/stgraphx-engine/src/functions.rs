@@ -14,6 +14,7 @@ pub(crate) fn is_supported(name: &str) -> bool {
             | "remove"
             | "filter"
             | "flatten"
+            | "transpose"
             | "indicesWhere"
             | "map"
             | "abs"
@@ -56,6 +57,7 @@ pub(crate) fn evaluate(
         "append" => append(arguments),
         "remove" => remove(arguments),
         "flatten" => flatten(arguments),
+        "transpose" => transpose(arguments),
         "indicesWhere" => indices_where(arguments),
         "abs" => unary(name, arguments, f64::abs),
         "ceil" => unary(name, arguments, f64::ceil),
@@ -210,6 +212,28 @@ fn flatten(arguments: &[Value]) -> Result<Value, String> {
         .filter(|value| value.rank() == 2)
         .ok_or_else(|| "flatten expects a matrix".to_string())?;
     Value::tensor(vec![matrix.elements().len()], matrix.elements().to_vec())
+}
+
+fn transpose(arguments: &[Value]) -> Result<Value, String> {
+    if arguments.len() != 1 {
+        return Err("transpose expects exactly 1 argument".to_string());
+    }
+    let tensor = arguments[0]
+        .as_tensor()
+        .ok_or_else(|| "transpose expects a vector or matrix".to_string())?;
+    match tensor.shape() {
+        [length] => Value::tensor(vec![*length, 1], tensor.elements().to_vec()),
+        [rows, columns] => {
+            let mut elements = Vec::with_capacity(tensor.elements().len());
+            for column in 0..*columns {
+                for row in 0..*rows {
+                    elements.push(tensor.elements()[row * *columns + column]);
+                }
+            }
+            Value::tensor(vec![*columns, *rows], elements)
+        }
+        _ => Err("transpose expects a vector or matrix".to_string()),
+    }
 }
 
 fn indices_where(arguments: &[Value]) -> Result<Value, String> {

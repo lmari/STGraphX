@@ -74,7 +74,8 @@ Sono supportati:
   indici negativi;
 - trasformazioni elemento per elemento con `map(...)` e `filter(...)`, usando
   `$value` per il valore corrente e `$0`, `$1`, ... per gli indici degli assi;
-- appiattimento di matrici con `flatten(...)`, conteggio condizionale con
+- appiattimento con `flatten(...)` e trasposizione di vettori/matrici con
+  `transpose(...)`, conteggio condizionale con
   `count(predicato, array[, asse])` e ricerca con `indicesWhere(...)`;
 - parametri globali utilizzabili senza una freccia di dipendenza esplicita;
 - funzioni locali definite dal modello, componibili e non ricorsive, con

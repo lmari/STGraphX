@@ -1,4 +1,22 @@
 {
-  "private": true,
-  "type": "module"
+  "name": "stgraphx-wasm",
+  "type": "module",
+  "collaborators": [
+    "Luca Mari"
+  ],
+  "description": "WebAssembly bridge for the STGraphX Rust engine",
+  "version": "0.1.0",
+  "license": "MPL-2.0",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/lmari/STGraphX"
+  },
+  "files": [
+    "stgraphx_wasm_bg.wasm",
+    "stgraphx_wasm.js"
+  ],
+  "main": "stgraphx_wasm.js",
+  "sideEffects": [
+    "./snippets/*"
+  ]
 }

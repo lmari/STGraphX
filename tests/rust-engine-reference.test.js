@@ -165,6 +165,8 @@ async function checkGeneratedArrays(rootDir) {
       "headRemoved",
       "tailRowsRemoved",
       "headRowsRemoved",
+      "transposedMatrix",
+      "transposedVector",
       "position",
     ]),
     {
@@ -178,6 +180,8 @@ async function checkGeneratedArrays(rootDir) {
       headRemoved: [1, 2],
       tailRowsRemoved: [[1, 2], [3, 4]],
       headRowsRemoved: [[5, 6]],
+      transposedMatrix: [[1, 4], [2, 5], [3, 6]],
+      transposedVector: [[1], [2], [3]],
       position: [0, 0, 0],
     },
   );

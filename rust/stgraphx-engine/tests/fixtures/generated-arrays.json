@@ -97,6 +97,20 @@
       "type": "algebraic",
       "output": true,
       "valueExpression": "remove(2,[[1,2],[3,4],[5,6]])"
+    },
+    {
+      "id": 14,
+      "name": "transposedMatrix",
+      "type": "algebraic",
+      "output": true,
+      "valueExpression": "transpose([[1,2,3],[4,5,6]])"
+    },
+    {
+      "id": 15,
+      "name": "transposedVector",
+      "type": "algebraic",
+      "output": true,
+      "valueExpression": "transpose([1,2,3])"
     }
   ],
   "edges": [

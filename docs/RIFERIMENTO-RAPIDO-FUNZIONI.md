@@ -1,6 +1,6 @@
 # STGraphX - Riferimento rapido alle funzioni
 
-Generato automaticamente da `i18n-inline.js` e `graph-functions.js` (release 2026.11.15).
+Generato automaticamente da `i18n-inline.js` e `graph-functions.js` (release 2026.11.17).
 
 Rigenerare con `npm run docs:functions`.
 
@@ -437,6 +437,18 @@ Somma degli elementi di un vettore o di una matrice. Per una matrice, senza axis
 - `sum([1,2,3]) -> 6`
 - `sum([[1,2],[3,4]]) -> 10`
 - `sum([[1,2],[3,4]], 0) -> [4,6]`
+
+---
+
+### `transpose`
+
+`transpose(vector|matrix)`
+
+Matrice con righe e colonne scambiate. Un vettore diventa una matrice colonna. Le matrici agents non sono supportate.
+
+**Esempi**
+- `transpose([1,2,3]) -> [[1],[2],[3]]`
+- `transpose([[1,2,3],[4,5,6]]) -> [[1,4],[2,5],[3,6]]`
 
 ---
 

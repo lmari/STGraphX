@@ -1,6 +1,6 @@
 # STGraphX - Quick Function Reference
 
-Generated automatically da `i18n-inline.js` e `graph-functions.js` (release 2026.11.15).
+Generated automatically da `i18n-inline.js` e `graph-functions.js` (release 2026.11.17).
 
 Regenerate with `npm run docs:functions`.
 
@@ -435,6 +435,18 @@ Sum of the elements of a vector or matrix. For a matrix without axis it returns 
 - `sum([1,2,3]) -> 6`
 - `sum([[1,2],[3,4]]) -> 10`
 - `sum([[1,2],[3,4]], 0) -> [4,6]`
+
+---
+
+### `transpose`
+
+`transpose(vector|matrix)`
+
+Swaps the rows and columns of a matrix. A vector becomes a column matrix. Agent matrices are not supported.
+
+**Examples**
+- `transpose([1,2,3]) -> [[1],[2],[3]]`
+- `transpose([[1,2,3],[4,5,6]]) -> [[1,4],[2,5],[3,6]]`
 
 ---
 

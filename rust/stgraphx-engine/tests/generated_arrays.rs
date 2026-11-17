@@ -66,6 +66,13 @@ fn evaluates_generated_arrays_append_remove_and_global_parameters() {
         &[1.0, 2.0, 3.0, 4.0],
     );
     assert_evaluation_tensor(&evaluation, "headRowsRemoved", &[1, 2], &[5.0, 6.0]);
+    assert_evaluation_tensor(
+        &evaluation,
+        "transposedMatrix",
+        &[3, 2],
+        &[1.0, 4.0, 2.0, 5.0, 3.0, 6.0],
+    );
+    assert_evaluation_tensor(&evaluation, "transposedVector", &[3, 1], &[1.0, 2.0, 3.0]);
     assert_evaluation_tensor(&evaluation, "position", &[3], &[0.0, 0.0, 0.0]);
 
     let simulation = model.simulate().expect("fixture should simulate");

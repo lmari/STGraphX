@@ -1,6 +1,6 @@
 /*!
  * STGraphX Embedded Player Bundle
- * Generated: 2026-11-17T14:28:28.740Z
+ * Generated: 2026-11-17T15:58:14.547Z
  */
 
 /* --- i18n-inline.js --- */
@@ -13,7 +13,7 @@
 
 window.STGraphXAppMeta = {
   author: "Luca Mari",
-  releaseDate: "2026.11.15",
+  releaseDate: "2026.11.17",
   license: "MPL-2.0",
   copyright: "Copyright (c) 2026 Luca Mari",
 };
@@ -408,6 +408,7 @@ window.STGraphXI18nBundles = {
     "expr.help.filter": "Selezione da un vettore o una matrice. Con modo omesso o 'elements' mantiene gli elementi per cui la condizione è vera. Con modo='rows' filtra le righe di una matrice, dove $value è la riga corrente e $0 il suo indice. Con modo='cols' filtra le colonne, dove $value è la colonna corrente e $0 il suo indice. Esempi: filter($value>0, [-2,0,3]) ; filter($0===$1, [[1,2],[3,4]]) ; filter(griglia[$value]==1, coordinate, 'rows').",
     "expr.help.filterAgents": "La sotto-popolazione degli agenti che soddisfano la condizione. Nella condizione self è la riga dell'agente corrente e $i il suo indice. Esempio: `filterAgents(self[ENERGY] > 0, agents)`.",
     "expr.help.flatten": "Matrice trasformata in vettore concatenando le righe. Esempio: flatten([[1,2],[3,4]]) -> [1,2,3,4].",
+    "expr.help.transpose": "Matrice con righe e colonne scambiate. Un vettore diventa una matrice colonna. Le matrici agents non sono supportate. Esempi: transpose([1,2,3]) -> [[1],[2],[3]] ; transpose([[1,2,3],[4,5,6]]) -> [[1,4],[2,5],[3,6]].",
     "expr.help.frequency": "Matrice a due colonne `[centro, frequenza]` calcolata da un vettore numerico. Senza altri argomenti usa come categorie i valori distinti, in ordine crescente. Con `n` intero costruisce n bin uniformi fra minimo e massimo. Con `mode='categories'` il vettore indica le categorie; con `mode='edges'` indica i limiti crescenti degli intervalli, chiusi a sinistra e aperti a destra salvo l'ultimo. Esempi: `frequency([1,2,2,3])` ; `frequency([1,2,2,3], 2)` ; `frequency([0,10,10,20], [0,10,20], \"categories\")` ; `frequency([0.2,0.8,1.1], [0,1,2], \"edges\")`.",
     "expr.help.floor": "Arrotondamento per difetto di `x`. Esempio: `floor(1.8) -> 1`.",
     "expr.help.gaussian": "Distribuzione di probabilità gaussiana (parametri di default: `mu=0`, `sigma=1`). Se `x` manca, estrae un campione. Con `mode=0` calcola la pdf, con `mode=1` la cdf, con `mode=2` la icdf. Esempi: gaussian() ; gaussian([0,1]) ; gaussian([0,1], 0, 0) ; gaussian([0,1], 0.95, 2).",
@@ -1955,6 +1956,7 @@ window.STGraphXI18nBundles = {
     "expr.help.filter": "Selection from a vector or matrix. With omitted mode or 'elements' it keeps the elements for which the condition is true. With mode='rows' it filters matrix rows, where $value is the current row and $0 its index. With mode='cols' it filters matrix columns, where $value is the current column and $0 its index. Examples: filter($value>0, [-2,0,3]) ; filter($0===$1, [[1,2],[3,4]]) ; filter(grid[$value]==1, coordinates, 'rows').",
     "expr.help.filterAgents": "The sub-population of agents satisfying the condition. Inside the condition self is the current agent row and $i its index. Example: `filterAgents(self[ENERGY] > 0, agents)`.",
     "expr.help.flatten": "Turns a matrix into a vector by concatenating its rows. Example: flatten([[1,2],[3,4]]) -> [1,2,3,4].",
+    "expr.help.transpose": "Swaps the rows and columns of a matrix. A vector becomes a column matrix. Agent matrices are not supported. Examples: transpose([1,2,3]) -> [[1],[2],[3]] ; transpose([[1,2,3],[4,5,6]]) -> [[1,4],[2,5],[3,6]].",
     "expr.help.frequency": "A two-column `[center, frequency]` matrix computed from a numeric vector. Without further arguments it uses distinct values as categories, in increasing order. With integer `n`, it builds n uniform bins from the minimum to the maximum. With `mode='categories'`, the vector supplies categories; with `mode='edges'`, it supplies increasing interval boundaries, left-closed and right-open except for the last interval. Examples: `frequency([1,2,2,3])` ; `frequency([1,2,2,3], 2)` ; `frequency([0,10,10,20], [0,10,20], \"categories\")` ; `frequency([0.2,0.8,1.1], [0,1,2], \"edges\")`.",
     "expr.help.floor": "Round down. Example: `floor(1.8) -> 1`.",
     "expr.help.gaussian": "Normal distribution; mu defaults to 0 and sigma to 1. If x is omitted it samples a value. With mode=0 it computes the pdf, with mode=1 the cdf, with mode=2 the icdf. Examples: gaussian() ; gaussian([0,1]) ; gaussian([0,1], 0, 0) ; gaussian([0,1], 0.95, 2).",
@@ -3965,6 +3967,29 @@ window.STGraphXI18nBundles = {
     return value.flat();
   }
 
+  function transposeArrayValues(value) {
+    if (!Array.isArray(value)) {
+      throw new Error("transpose expects a vector or matrix");
+    }
+    if (getAgentFieldNames(value)) {
+      throw new Error("transpose does not support agent matrices");
+    }
+    if (!value.some((item) => Array.isArray(item))) {
+      return value.map((item) => [item]);
+    }
+    if (!value.every((row) => Array.isArray(row))) {
+      throw new Error("transpose expects a rectangular matrix");
+    }
+    const { rowCount, colCount } = ensureRectangularMatrix(value, "transpose");
+    return Array.from(
+      { length: colCount },
+      (_, colIndex) => Array.from(
+        { length: rowCount },
+        (_, rowIndex) => value[rowIndex][colIndex],
+      ),
+    );
+  }
+
   function normalizeResizeDimension(value) {
     const dimension = Number(value);
     if (!Number.isInteger(dimension) || dimension < 0) {
@@ -5395,6 +5420,7 @@ window.STGraphXI18nBundles = {
       size: sizeOfValue,
       sort: sortVectorValues,
       sum: sumArrayValues,
+      transpose: transposeArrayValues,
       union: unionArrayValues,
 
       // Agent-population utilities.
@@ -5501,6 +5527,7 @@ window.STGraphXI18nBundles = {
       size: { kind: "array", signature: "size(array[, axis])", descriptionKey: "expr.help.size", insertText: "size()", cursorOffset: 5 },
       sort: { kind: "array", signature: "sort(vector)", descriptionKey: "expr.help.sort", insertText: "sort()", cursorOffset: 5 },
       sum: { kind: "array", signature: "sum(array[, axis])", descriptionKey: "expr.help.sum", insertText: "sum()", cursorOffset: 4 },
+      transpose: { kind: "array", signature: "transpose(vector|matrix)", descriptionKey: "expr.help.transpose", insertText: "transpose()", cursorOffset: 10 },
       union: { kind: "array", signature: "union(vectorA, vectorB)", descriptionKey: "expr.help.union", insertText: "union()", cursorOffset: 6 },
 
       // Statistical and probabilistic functions
