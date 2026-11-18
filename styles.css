@@ -1651,6 +1651,7 @@ input.inferred-unit[readonly] { color: #6d7782; background: #f4f6f8; }
 .unit-definitions-card { width: min(620px, calc(100vw - 32px)); max-height: min(720px, calc(100vh - 32px)); overflow: auto; }
 .unit-definitions-card h4 { margin: 0 0 5px; font-size: 0.84rem; color: #4e6072; }
 .unit-definitions-intro { margin: 0 0 12px; color: #536779; line-height: 1.4; }
+.unit-definitions-prefixes { margin: -4px 0 12px; color: #62778a; font-size: 0.84rem; line-height: 1.35; }
 .unit-definitions-builtins,
 .unit-definitions-custom { padding: 9px; border: 1px solid #dbe4ec; border-radius: 8px; background: #fff; }
 .unit-definitions-custom { margin-top: 10px; }

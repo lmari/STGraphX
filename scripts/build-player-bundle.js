@@ -16,6 +16,7 @@ const bundleFiles = [
   "i18n-inline.js",
   "vendor/katex/katex.min.js",
   "markdown-rendering.js",
+  "unit-analysis-core.js",
   "graph-functions.js",
   "semantic.js",
   "runtime-shared.js",
