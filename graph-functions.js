@@ -2206,6 +2206,9 @@
 
   const expressionDocs = Object.freeze({
     variables: {
+      // Pipeline placeholder
+      _: { kind: "variable", signature: "_", descriptionKey: "expr.help.pipelinePlaceholder" },
+
       // Array axes
       $0: { kind: "variable", signature: "$0, $1, ...", descriptionKey: "expr.help.arrayAxisValue" },
       $i0: { kind: "variable", signature: "$i0, $i1, ...", descriptionKey: "expr.help.arrayAxisIndex" },
@@ -2317,6 +2320,7 @@
       max: { kind: "math", signature: "max(x1, x2, ...)", descriptionKey: "expr.help.max", insertText: "max()", cursorOffset: 4 },
       min: { kind: "math", signature: "min(x1, x2, ...)", descriptionKey: "expr.help.min", insertText: "min()", cursorOffset: 4 },
       "%": { kind: "math", signature: "a % b", descriptionKey: "expr.help.modulo", insertText: " % ", cursorOffset: 3 },
+      "|>": { kind: "math", signature: "value |> expression", descriptionKey: "expr.help.pipeline", insertText: " |> _", cursorOffset: 4 },
       not: { kind: "math", signature: "not x", descriptionKey: "expr.help.not", insertText: "not ", cursorOffset: 4 },
       or: { kind: "math", signature: "a or b", descriptionKey: "expr.help.or", insertText: " or ", cursorOffset: 4 },
       piecewise: { kind: "math", signature: "piecewise(cx, cy, x)", descriptionKey: "expr.help.piecewise", insertText: "piecewise()", cursorOffset: 10 },

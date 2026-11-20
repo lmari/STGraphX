@@ -8,6 +8,7 @@
   globalScope.STGraphXUnitAnalysisCore = factory();
 })(typeof globalThis !== "undefined" ? globalThis : this, function createUnitAnalysisCore() {
   const EPSILON = 1e-10;
+  const PIPELINE_UNIT_SCOPE_KEY = "__stgraphxPipelineUnit";
   const SI_UNIT_DEFINITIONS = Object.freeze([
     { symbol: "Hz", expression: "1/s" },
     { symbol: "N", expression: "kg*m/s^2" },
@@ -271,14 +272,26 @@
     const expressionAst = options.expressionAst || null;
     const targetUnit = options.targetUnit || unknown();
     const infer = (ast) => inferAst(ast, { resolve, timeUnit });
+    const inferWithScope = (ast, scope = null) => inferAst(ast, {
+      resolve: (name) => name === "_" && scope?.[PIPELINE_UNIT_SCOPE_KEY]
+        ? scope[PIPELINE_UNIT_SCOPE_KEY]
+        : resolve(name),
+      timeUnit,
+    });
     const additiveOperators = new Set(["+", "-", "<", ">", "<=", ">=", "==", "!=", "===", "!=="]);
     const expressionUnit = expressionAst ? infer(expressionAst) : unknown();
     return {
-      normalizeBinaryOperands(node, left, right) {
+      normalizeBinaryOperands(node, left, right, scope) {
         if (!additiveOperators.has(node?.op)) return null;
-        const factor = conversionFactor(infer(node.right), infer(node.left));
+        const factor = conversionFactor(inferWithScope(node.right, scope), inferWithScope(node.left, scope));
         if (factor == null || Math.abs(factor - 1) < EPSILON) return null;
         return { left, right: scaleValue(right, factor) };
+      },
+      inferPipelineValueUnit(ast, scope) {
+        return inferWithScope(ast, scope);
+      },
+      withPipelineValueUnit(scope, value) {
+        return { ...(scope || {}), [PIPELINE_UNIT_SCOPE_KEY]: value };
       },
       onFinalValue(value) {
         // With no explicit unit on the target node, express a product or
@@ -314,6 +327,16 @@
         if (["+", "-", "%"].includes(node.op)) return same(left, right) ? (left.kind === "zero" ? right : left) : fail("add", { left, right });
         if (["<", ">", "<=", ">=", "==", "!=", "===", "!=="].includes(node.op)) return same(left, right) ? dimensionless() : fail("compare", { left, right });
         return dimensionless();
+      }
+      if (node.type === "pipeline") {
+        const left = visit(node.left);
+        // The right hand side gets a lexical `_` binding. Re-entering the
+        // inference function preserves outer bindings for nested left sides
+        // while letting nested pipeline right sides shadow them.
+        return inferAst(node.right, {
+          ...context,
+          resolve: (name) => name === "_" ? left : resolve(name),
+        });
       }
       if (node.type === "call") {
         const args = node.args.map(visit); const first = args[0] || unknown();

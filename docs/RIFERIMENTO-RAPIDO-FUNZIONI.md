@@ -8,6 +8,19 @@ Elenco delle funzioni, delle variabili di sistema e delle utility disponibili ne
 
 ## Variabili disponibili
 
+### `_`
+
+`_`
+
+Segnaposto della pipeline `|>`. Nella parte destra rappresenta il valore, calcolato una sola volta, della parte sinistra. `|>` ha la precedenza più bassa ed è associativo a sinistra.
+
+**Esempi**
+- `x |> _ + 1 |> _ * 2`
+- `[1,2,3] |> _[0]`
+- `sin(time) |> if(_ > 0, 2*_, -_)`
+
+---
+
 ### `$0`
 
 `$0, $1, ...`
@@ -681,6 +694,19 @@ Resto euclideo della divisione di `a` per `b`. Con un divisore positivo il risul
 - `7 % 3 -> 1`
 - `-1 % 3 -> 2`
 - `[1,2,3] % 2 -> [1,0,1]`
+
+---
+
+### `|>`
+
+`value |> expression`
+
+Applica l'espressione a destra al valore prodotto a sinistra. Nella parte destra `_` indica quel valore, calcolato una sola volta. `|>` ha la precedenza più bassa ed è associativo a sinistra; `_` è valido solo a destra di una pipeline.
+
+**Esempi**
+- `x |> _ + 1 |> _ * 2`
+- `[1,2,3] |> _[0]`
+- `sin(time) |> if(_ > 0, 2*_, -_)`
 
 ---
 

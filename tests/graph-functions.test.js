@@ -70,6 +70,25 @@ for (const [x, y] of [[[1, 1], [1, 2]], [[1, 2], [0, 0]], [[0, 0], [1, 2]]]) {
   assert.throws(() => scope.correlation(x, y), /non-constant/);
 }
 const evaluate = context.window.GraphSemantics.evaluateValueExpression;
+const validate = context.window.GraphSemantics.validateExpressionSyntax;
+assert.equal(evaluate("3 |> _ + 1").value, 4);
+assert.equal(evaluate("3 |> _ + 1 |> _ * 2").value, 8);
+assert.equal(evaluate("1 || 0 |> _ + 1").value, 2);
+assert.equal(evaluate("[1,2,3] |> _[0]").value, 1);
+assert.equal(evaluate("[1,2,3] |> _[0] + _[2]").value, 4);
+assert.equal(evaluate("[1,2,3] |> sum(_)").value, 6);
+assert.deepEqual(evaluate("[1,2,3] |> _ * 2").value, [2, 4, 6]);
+assert.deepEqual(evaluate("[-2,1,3] |> if(_ > 0, _, 0)").value, [0, 1, 3]);
+assert.equal(evaluate("3 |> _ + (5 |> _ * 2)").value, 13);
+assert.equal(evaluate("rand() |> _ - _", {}, { random: () => 0.25 }).value, 0);
+assert.deepEqual(evaluate("[1,2,3] |> map($value * 2, _)").value, [2, 4, 6]);
+assert.equal(evaluate("if(1, 4 |> _ + 1, missingValue)").value, 5);
+assert.equal(evaluate("_ + 1").ok, false);
+assert.equal(validate("3 |> _ + 1").ok, true);
+assert.equal(validate("_ + 1").ok, false);
+assert.equal(evaluate("3 |>").ok, false);
+assert.equal(evaluate("3 |> 4").ok, false);
+assert.equal(evaluate("3 |> (5 |> _)").ok, false);
 near(evaluate("median([1,4])").value, 2.5);
 assert.equal(evaluate("mode([4,2,4,2])").value, 2);
 near(evaluate("correlation([1,2,3],[1,3,2])").value, 0.5);

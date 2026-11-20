@@ -1,6 +1,6 @@
 # STGraphX: Readme
 
-versione 17 novembre 2026
+versione 20 novembre 2026
 
 Copyright (c) 2026 Luca Mari
 
@@ -83,9 +83,10 @@ Ha un'interfaccia utente responsive, che lo rende utilizzabile anche su tablet.
 
 #### Funzionalità del linguaggio
 
-* Varie funzioni definite; mapping da valori booleani a valori numerici e funzione `if`
-* Funzione `integral`, con scelta dell'algoritmo di integrazione, se Eulero o RK4;
-* Alcune funzioni per distribuzioni di probabilità
+* Linguggio funzionale, con gestione di composizione di funzioni per nesting (g(f(x))) e pipeline (f(x) |> g(_)) (*)
+* Varie funzioni definite; mapping da valori booleani a valori numerici e funzione `if` (*)
+* Funzione `integral`, con scelta dell'algoritmo di integrazione, se Eulero o RK4 (*)
+* Alcune funzioni per distribuzioni di probabilità (*)
 * Generazione di vettori con la sintassi `range(inizio, fine, [passo])`; indicizzazione/slicing di vettori e matrici con la sintassi di NumPy, `[inizio:fine]` oppure `[inizio:fine:passo]`, anche con indici opzionali e negativi; gestione di funzioni a valori non scalari, per esempio `sin([1,2,3])`; gestione di operatori con argomenti non scalari (*)
 * Funzioni "special form" per operare su vettori e matrici: `array`, `reduce`, `map`, `filter` (*)
 * Una funzione per leggere celle e intervalli da file dati in formato xlsx

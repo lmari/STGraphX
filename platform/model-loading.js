@@ -76,6 +76,9 @@
     const onOpenPreparedFailure = typeof options.onOpenPreparedFailure === "function"
       ? options.onOpenPreparedFailure
       : () => {};
+    const onOpenPreparedComplete = typeof options.onOpenPreparedComplete === "function"
+      ? options.onOpenPreparedComplete
+      : () => {};
 
     function isWritableFileHandle(entry) {
       return Boolean(
@@ -85,10 +88,13 @@
       );
     }
 
-    async function openPreparedJsonEntry(rootEntry) {
+    async function openPreparedJsonEntry(rootEntry, lifecycle = {}) {
       if (!rootEntry) {
         return false;
       }
+      const onGraphLoaded = typeof lifecycle.onGraphLoaded === "function"
+        ? lifecycle.onGraphLoaded
+        : () => {};
       onOpenPreparedStart();
       const handle = rootEntry.fileHandle;
       const file = rootEntry.file;
@@ -106,21 +112,28 @@
         directoryHandle,
         true,
       );
-      await rememberRecentModel(
-        rootEntry.name || (handle && handle.name) || (file && file.name) || "graph.json",
-        recentFileReference,
-        directoryHandle,
-        text,
-      );
-      await preloadSubmodelsAfterLoad();
-      const selectedDirectoryHandle = await maybeSelectModelDirectoryForSubmodels(rootData);
-      await rememberRecentModel(
-        rootEntry.name || (handle && handle.name) || (file && file.name) || "graph.json",
-        recentFileReference,
-        selectedDirectoryHandle || directoryHandle,
-        text,
-      );
-      await preloadSubmodelsAfterLoad();
+      // The parent model must become a workspace document before asking for
+      // access to its folder. In browsers the legacy directory picker is
+      // asynchronous and can be cancelled; it must never discard the model
+      // that was already parsed successfully.
+      onGraphLoaded();
+      const modelName = rootEntry.name || (handle && handle.name) || (file && file.name) || "graph.json";
+      try {
+        await rememberRecentModel(modelName, recentFileReference, directoryHandle, text);
+        await preloadSubmodelsAfterLoad();
+        const selectedDirectoryHandle = await maybeSelectModelDirectoryForSubmodels(rootData);
+        await rememberRecentModel(
+          modelName,
+          recentFileReference,
+          selectedDirectoryHandle || directoryHandle,
+          text,
+        );
+        await preloadSubmodelsAfterLoad();
+      } catch (_err) {
+        // Submodel discovery is best-effort at load time. The model remains
+        // usable and the missing folder can be selected later for execution.
+      }
+      onOpenPreparedComplete();
       return true;
     }
 
@@ -129,12 +142,19 @@
         return false;
       }
       const checkpoint = beforeOpenInNewTab() || {};
-      const opened = await openPreparedJsonEntry(rootEntry);
+      let graphOpened = false;
+      const opened = await openPreparedJsonEntry(rootEntry, {
+        onGraphLoaded() {
+          afterOpenInNewTab(checkpoint);
+          graphOpened = true;
+        },
+      });
       if (!opened) {
-        onOpenPreparedFailure(checkpoint);
+        if (!graphOpened) {
+          onOpenPreparedFailure(checkpoint);
+        }
         return false;
       }
-      afterOpenInNewTab(checkpoint);
       return true;
     }
 

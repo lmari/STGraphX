@@ -54,6 +54,8 @@ Sono supportati:
 - letterali come `[1,2]` e `[[1,2],[3,4]]`;
 - aritmetica elemento per elemento, con diffusione di uno scalare su un tensore;
 - confronti e operatori logici, anche elemento per elemento;
+- operatore di pipeline `|>` con segnaposto lessicale `_`, valutato una sola
+  volta a ogni passaggio;
 - espressioni condizionali `if(...)` scalari o tensoriali;
 - prime funzioni matematiche vettorializzate, tra cui `abs`, `sqrt`,
   `min`, `max` e le principali funzioni trigonometriche;
@@ -82,7 +84,7 @@ Sono supportati:
   parametri e risultati scalari o tensoriali;
 - integrazione RK4 di stati scalari o tensoriali con transizione
   `integral(derivata)`, inclusi sistemi accoppiati e derivate algebriche;
-- operatori `+`, `-`, `*`, `/`, `%`, `^` e `**`;
+- operatori `+`, `-`, `*`, `/`, `%`, `^`, `**` e `|>`;
 - variabili di esecuzione `time`, `t0`, `t1` e `dt`;
 - alias `this` nelle transizioni di stato;
 - transizioni discrete e `integral(...)` scalare o tensoriale con metodo di

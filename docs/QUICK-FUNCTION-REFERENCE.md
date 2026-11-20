@@ -8,6 +8,19 @@ List of functions, system variables, and utilities available in expressions.
 
 ## Available variables
 
+### `_`
+
+`_`
+
+Pipeline placeholder for `|>`. In the right-hand expression it represents the value, evaluated once, from the left-hand expression. `|>` has the lowest precedence and is left-associative.
+
+**Examples**
+- `x |> _ + 1 |> _ * 2`
+- `[1,2,3] |> _[0]`
+- `sin(time) |> if(_ > 0, 2*_, -_)`
+
+---
+
 ### `$0`
 
 `$0, $1, ...`
@@ -678,6 +691,19 @@ Euclidean remainder of `a` divided by `b`. With a positive divisor, the result i
 - `7 % 3 -> 1`
 - `-1 % 3 -> 2`
 - `[1,2,3] % 2 -> [1,0,1]`
+
+---
+
+### `|>`
+
+`value |> expression`
+
+Applies the expression on the right to the value produced on the left. In the right-hand expression, `_` denotes that value, evaluated once. `|>` has the lowest precedence and is left-associative; `_` is valid only on the right side of a pipeline.
+
+**Examples**
+- `x |> _ + 1 |> _ * 2`
+- `[1,2,3] |> _[0]`
+- `sin(time) |> if(_ > 0, 2*_, -_)`
 
 ---
 

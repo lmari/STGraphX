@@ -111,6 +111,24 @@ async function checkConditionalFunctions(rootDir) {
   );
 }
 
+async function checkPipelines(rootDir) {
+  const runtime = await loadFixture(rootDir, "pipelines.json");
+
+  await runtime.evaluate();
+  assert.deepStrictEqual(
+    runtime.getValues(["chained", "selected", "total", "doubled", "clipped", "nested", "singleRandom"]),
+    {
+      chained: 8,
+      selected: 4,
+      total: 6,
+      doubled: [2, 4, 6],
+      clipped: [0, 1, 3],
+      nested: 13,
+      singleRandom: 0,
+    },
+  );
+}
+
 async function checkTensorIndexing(rootDir) {
   const runtime = await loadFixture(rootDir, "tensor-indexing.json");
 
@@ -403,6 +421,7 @@ async function main() {
   await checkScalarStateEuler(rootDir);
   await checkTensorStateEuler(rootDir);
   await checkConditionalFunctions(rootDir);
+  await checkPipelines(rootDir);
   await checkTensorIndexing(rootDir);
   await checkGeneratedArrays(rootDir);
   await checkRangeSequences(rootDir);

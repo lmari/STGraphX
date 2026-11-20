@@ -13,7 +13,7 @@
     "instanceof", "let", "new", "return", "super", "switch", "this", "throw", "try", "typeof",
     "var", "void", "while", "with", "yield", "enum", "await", "implements", "interface",
     "package", "private", "protected", "public", "static", "null", "true", "false", "time",
-    "t0", "t1", "dt", "and", "or", "not",
+    "t0", "t1", "dt", "and", "or", "not", "_",
   ]);
   const graphFunctions = global.GraphFunctions || {};
   const sameArrayShape = graphFunctions.helpers?.sameArrayShape || ((left, right) => JSON.stringify(left) === JSON.stringify(right));
@@ -23,6 +23,8 @@
   const getAgentFieldNames = graphFunctions.helpers?.getAgentFieldNames || (() => null);
   const collectAgentFieldAliasesFromContext = graphFunctions.helpers?.collectAgentFieldAliasesFromContext || (() => ({}));
   const EXPRESSION_CACHE_LIMIT = 1000;
+  const PIPELINE_PLACEHOLDER_SCOPE_KEY = "__stgraphxPipelinePlaceholder";
+  const PIPELINE_UNIT_SCOPE_KEY = "__stgraphxPipelineUnit";
   const expressionCache = new Map();
 
   function unavailablePropertyGetter() {
@@ -375,7 +377,7 @@
   function collectIdentifierReferences(expression) {
     const src = String(expression ?? "");
     const refs = new Set();
-    const skipped = new Set(["true", "false", "null", "this", "self", "__self", "$i", "$j", "$value", "time", "t0", "t1", "dt"]);
+    const skipped = new Set(["true", "false", "null", "_", "this", "self", "__self", "$i", "$j", "$value", "time", "t0", "t1", "dt"]);
     let i = 0;
     let mode = "code";
     while (i < src.length) {
@@ -715,7 +717,7 @@
     );
   }
 
-  function validateAstReferences(node, knownNames) {
+  function validateAstReferences(node, knownNames, placeholderDepth = 0) {
     if (!node || typeof node !== "object") {
       return;
     }
@@ -723,47 +725,53 @@
       case "literal":
         return;
       case "array":
-        node.elements.forEach((item) => validateAstReferences(item, knownNames));
+        node.elements.forEach((item) => validateAstReferences(item, knownNames, placeholderDepth));
         return;
       case "identifier":
+        if (node.name === "_") {
+          if (placeholderDepth > 0) {
+            return;
+          }
+          throw new ReferenceError("_ is only available in a pipeline right-hand expression");
+        }
         if (!knownNames.has(node.name) && !isImplicitExpressionIdentifier(node.name)) {
           throw new ReferenceError(`${node.name} is not defined`);
         }
         return;
       case "member":
-        validateAstReferences(node.target, knownNames);
+        validateAstReferences(node.target, knownNames, placeholderDepth);
         return;
       case "index":
-        validateAstReferences(node.target, knownNames);
-        validateAstReferences(node.index, knownNames);
+        validateAstReferences(node.target, knownNames, placeholderDepth);
+        validateAstReferences(node.index, knownNames, placeholderDepth);
         return;
       case "slice":
-        validateAstReferences(node.target, knownNames);
+        validateAstReferences(node.target, knownNames, placeholderDepth);
         if (node.start) {
-          validateAstReferences(node.start, knownNames);
+          validateAstReferences(node.start, knownNames, placeholderDepth);
         }
         if (node.end) {
-          validateAstReferences(node.end, knownNames);
+          validateAstReferences(node.end, knownNames, placeholderDepth);
         }
         if (node.step) {
-          validateAstReferences(node.step, knownNames);
+          validateAstReferences(node.step, knownNames, placeholderDepth);
         }
         return;
       case "multi-access":
-        validateAstReferences(node.target, knownNames);
+        validateAstReferences(node.target, knownNames, placeholderDepth);
         (node.accessors || []).forEach((accessor) => {
           if (accessor.kind === "index") {
-            validateAstReferences(accessor.index, knownNames);
+            validateAstReferences(accessor.index, knownNames, placeholderDepth);
             return;
           }
           if (accessor.start) {
-            validateAstReferences(accessor.start, knownNames);
+            validateAstReferences(accessor.start, knownNames, placeholderDepth);
           }
           if (accessor.end) {
-            validateAstReferences(accessor.end, knownNames);
+            validateAstReferences(accessor.end, knownNames, placeholderDepth);
           }
           if (accessor.step) {
-            validateAstReferences(accessor.step, knownNames);
+            validateAstReferences(accessor.step, knownNames, placeholderDepth);
           }
         });
         return;
@@ -772,16 +780,16 @@
           throw new ReferenceError(`${node.name} is not defined`);
         }
         if (node.name === "array" && node.args.length >= 2) {
-          node.args.slice(0, -1).forEach((arg) => validateAstReferences(arg, knownNames));
+          node.args.slice(0, -1).forEach((arg) => validateAstReferences(arg, knownNames, placeholderDepth));
           const localKnownNames = new Set(knownNames);
           node.args.slice(0, -1).forEach((_, index) => {
             localKnownNames.add(`$${index}`);
             localKnownNames.add(`$i${index}`);
           });
-          validateAstReferences(node.args[node.args.length - 1], localKnownNames);
+          validateAstReferences(node.args[node.args.length - 1], localKnownNames, placeholderDepth);
           return;
         }
-        (node.args || []).forEach((arg) => validateAstReferences(arg, knownNames));
+        (node.args || []).forEach((arg) => validateAstReferences(arg, knownNames, placeholderDepth));
         return;
       case "callable-ref":
         if (node.refKind === "function" && !knownNames.has(node.name)) {
@@ -789,11 +797,15 @@
         }
         return;
       case "unary":
-        validateAstReferences(node.argument, knownNames);
+        validateAstReferences(node.argument, knownNames, placeholderDepth);
         return;
       case "binary":
-        validateAstReferences(node.left, knownNames);
-        validateAstReferences(node.right, knownNames);
+        validateAstReferences(node.left, knownNames, placeholderDepth);
+        validateAstReferences(node.right, knownNames, placeholderDepth);
+        return;
+      case "pipeline":
+        validateAstReferences(node.left, knownNames, placeholderDepth);
+        validateAstReferences(node.right, knownNames, placeholderDepth + 1);
         return;
       default:
         return;
@@ -1296,7 +1308,7 @@
         i += 3;
         continue;
       }
-      if (["&&", "||", "==", "!=", "<=", ">=", "**"].includes(two)) {
+      if (["&&", "||", "==", "!=", "<=", ">=", "**", "|>"].includes(two)) {
         tokens.push({ type: "op", value: two });
         i += 2;
         continue;
@@ -1403,6 +1415,26 @@
       return token;
     };
 
+    // A placeholder in the right side of a nested pipeline belongs to that
+    // nested pipeline. Its left side, instead, still sees the outer value.
+    function referencesCurrentPipelinePlaceholder(node) {
+      if (!node || typeof node !== "object") {
+        return false;
+      }
+      if (node.type === "identifier") {
+        return node.name === "_";
+      }
+      if (node.type === "pipeline") {
+        return referencesCurrentPipelinePlaceholder(node.left);
+      }
+      return Object.values(node).some((value) => {
+        if (Array.isArray(value)) {
+          return value.some((item) => referencesCurrentPipelinePlaceholder(item));
+        }
+        return referencesCurrentPipelinePlaceholder(value);
+      });
+    }
+
     function parseReduceReference() {
       const token = peek();
       if (!token) {
@@ -1432,22 +1464,22 @@
           return { kind: "slice", start, end, step };
         }
         if (!match(":")) {
-          end = parseLogicalOr();
+          end = parsePipeline();
           if (match(":")) {
             if (!peek() || (peek().type === "op" && [",", "]"].includes(peek().value))) {
               return { kind: "slice", start, end, step };
             }
-            step = parseLogicalOr();
+            step = parsePipeline();
           }
         } else if (!peek() || (peek().type === "op" && [",", "]"].includes(peek().value))) {
           return { kind: "slice", start, end, step };
         } else {
-          step = parseLogicalOr();
+          step = parsePipeline();
         }
         return { kind: "slice", start, end, step };
       }
 
-      const first = parseLogicalOr();
+      const first = parsePipeline();
       if (!match(":")) {
         return { kind: "index", index: first };
       }
@@ -1457,17 +1489,17 @@
         return { kind: "slice", start, end, step };
       }
       if (!match(":")) {
-        end = parseLogicalOr();
+        end = parsePipeline();
         if (match(":")) {
           if (!peek() || (peek().type === "op" && [",", "]"].includes(peek().value))) {
             return { kind: "slice", start, end, step };
           }
-          step = parseLogicalOr();
+          step = parsePipeline();
         }
       } else if (!peek() || (peek().type === "op" && [",", "]"].includes(peek().value))) {
         return { kind: "slice", start, end, step };
       } else {
-        step = parseLogicalOr();
+        step = parsePipeline();
       }
       return { kind: "slice", start, end, step };
     }
@@ -1502,7 +1534,7 @@
         throw new SyntaxError("Unexpected end of input");
       }
       if (match("(")) {
-        const expr = parseLogicalOr();
+        const expr = parsePipeline();
         expect(")");
         return expr;
       }
@@ -1510,9 +1542,9 @@
         if (match("]")) {
           return { type: "array", elements: [] };
         }
-        const elements = [parseLogicalOr()];
+        const elements = [parsePipeline()];
         while (match(",")) {
-          elements.push(parseLogicalOr());
+          elements.push(parsePipeline());
         }
         expect("]");
         return { type: "array", elements };
@@ -1534,13 +1566,13 @@
             if (!match(")")) {
               args.push(parseReduceReference());
               while (match(",")) {
-                args.push(parseLogicalOr());
+                args.push(parsePipeline());
               }
               expect(")");
             }
           } else if (!match(")")) {
             do {
-              args.push(parseLogicalOr());
+              args.push(parsePipeline());
             } while (match(","));
             expect(")");
           }
@@ -1658,7 +1690,19 @@
       return left;
     }
 
-    const ast = parseLogicalOr();
+    function parsePipeline() {
+      let left = parseLogicalOr();
+      while (match("|>")) {
+        const right = parseLogicalOr();
+        if (!referencesCurrentPipelinePlaceholder(right)) {
+          throw new SyntaxError("Pipeline right-hand expression must reference '_'");
+        }
+        left = { type: "pipeline", left, right };
+      }
+      return left;
+    }
+
+    const ast = parsePipeline();
     if (peek().type !== "eof") {
       throw new SyntaxError(`Unexpected token ${peek().value}`);
     }
@@ -1813,6 +1857,9 @@
         return node.elements.map((item) => evaluateAstNode(item, scope, hooks));
       case "identifier":
         {
+          if (node.name === "_" && scope?.[PIPELINE_PLACEHOLDER_SCOPE_KEY] !== true) {
+            throw new ReferenceError("_ is only available in a pipeline right-hand expression");
+          }
           const resolved = lookupEvaluationScopeValue(scope, node.name);
           if (resolved.found) {
             return resolved.value;
@@ -2249,6 +2296,16 @@
           default:
             throw new Error(`Unsupported operator ${node.op}`);
         }
+      }
+      case "pipeline": {
+        const value = evaluateAstNode(node.left, scope, hooks);
+        // `_` is an AST-local binding, so the left expression is evaluated
+        // once even if the right expression refers to it repeatedly.
+        let rightScope = { ...(scope || {}), _: value, [PIPELINE_PLACEHOLDER_SCOPE_KEY]: true };
+        if (typeof hooks?.inferPipelineValueUnit === "function" && typeof hooks?.withPipelineValueUnit === "function") {
+          rightScope = hooks.withPipelineValueUnit(rightScope, hooks.inferPipelineValueUnit(node.left, scope));
+        }
+        return evaluateAstNode(node.right, rightScope, hooks);
       }
       default:
         throw new Error(`Unsupported AST node ${node.type}`);

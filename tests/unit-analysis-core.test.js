@@ -73,6 +73,7 @@ const evaluateWithUnits = (expression, contextValues, targetUnit = unitAnalysis.
 };
 assert.equal(evaluateWithUnits("n1+n2", { n1: 10, n2: 10 }).value, 10.1);
 assert.equal(evaluateWithUnits("n1+n2", { n1: 10, n2: 100 }).value, 11);
+assert.equal(evaluateWithUnits("n1 |> _ + n2", { n1: 10, n2: 100 }).value, 11);
 assert.equal(evaluateWithUnits("n2+n1", { n1: 10, n2: 100 }).value, 1100);
 assert.equal(evaluateWithUnits("n1+n2", { n1: 10, n2: 100 }, centimetres).value, 1100);
 assert.equal(evaluateWithUnits("n1==n2", { n1: 1, n2: 100 }).value, 1);
@@ -98,6 +99,18 @@ assert.equal(unitAnalysis.display(unitAnalysis.inferAst(context.window.GraphSema
   })[name] || unitAnalysis.unknown(),
 })), "rad/s^2");
 const speed = unitAnalysis.parseUnit("m/s").value;
+assert.equal(unitAnalysis.display(unitAnalysis.inferAst(context.window.GraphSemantics.parseExpressionAst("distance |> _ + displacement"), {
+  resolve: (name) => ({
+    distance: unitAnalysis.parseUnit("m").value,
+    displacement: unitAnalysis.parseUnit("m").value,
+  })[name] || unitAnalysis.unknown(),
+})), "m");
+assert.equal(unitAnalysis.display(unitAnalysis.inferAst(context.window.GraphSemantics.parseExpressionAst("distance |> _ / duration"), {
+  resolve: (name) => ({
+    distance: unitAnalysis.parseUnit("m").value,
+    duration: unitAnalysis.parseUnit("s").value,
+  })[name] || unitAnalysis.unknown(),
+})), "m/s");
 assert.equal(unitAnalysis.display(unitAnalysis.inferAst(context.window.GraphSemantics.parseExpressionAst("sqrt(area)"), {
   resolve: (name) => name === "area" ? unitAnalysis.parseUnit("m^2").value : unitAnalysis.unknown(),
 })), "m");

@@ -50,6 +50,7 @@ pub const fn engine_info() -> EngineInfo {
             "numeric-tensors",
             "vector-matrix-arithmetic",
             "comparisons-and-logic",
+            "expression-pipelines",
             "vectorized-conditionals",
             "built-in-numeric-functions",
             "tensor-reducers",
@@ -86,6 +87,7 @@ mod tests {
         assert!(info.capabilities.contains(&"seeded-random"));
         assert!(info.capabilities.contains(&"array-set-at"));
         assert!(info.capabilities.contains(&"array-iterations"));
+        assert!(info.capabilities.contains(&"expression-pipelines"));
         assert!(info.capabilities.contains(&"global-parameters"));
     }
 }

@@ -53,6 +53,17 @@ Esempi:
 - `a > 0 and b > 0`
 - `occupied or toroidal`
 
+### Pipeline
+
+L'operatore `|>` applica l'espressione alla sua destra al valore prodotto a
+sinistra. Nella parte destra, il segnaposto `_` indica il valore precedente,
+calcolato una sola volta. L'operatore ha la precedenza piu bassa ed e'
+associativo a sinistra; `_` e' valido solo nella parte destra di una pipeline.
+
+- `x |> _ + 1 |> _ * 2`
+- `[1,2,3] |> _[0]`
+- `sin(time) |> if(_ > 0, 2*_, -_)`
+
 ### Costruzione
 
 - `range(stop)`

@@ -32,6 +32,10 @@ pub(crate) enum Expression {
         left: Box<Expression>,
         right: Box<Expression>,
     },
+    Pipeline {
+        left: Box<Expression>,
+        right: Box<Expression>,
+    },
 }
 
 #[derive(Debug, Clone, PartialEq)]
@@ -139,6 +143,13 @@ impl Expression {
                 left.collect_references(references);
                 right.collect_references(references);
             }
+            Self::Pipeline { left, right } => {
+                left.collect_references(references);
+                let mut right_references = BTreeSet::new();
+                right.collect_references(&mut right_references);
+                right_references.remove("_");
+                references.extend(right_references);
+            }
         }
     }
 
@@ -174,6 +185,10 @@ impl Expression {
                 left.collect_calls(calls);
                 right.collect_calls(calls);
             }
+            Self::Pipeline { left, right } => {
+                left.collect_calls(calls);
+                right.collect_calls(calls);
+            }
             Self::Number(_) | Self::Identifier(_) => {}
         }
     }
@@ -188,6 +203,7 @@ impl Expression {
             }
             Self::Unary { argument, .. } => argument.uses_integral(),
             Self::Binary { left, right, .. } => left.uses_integral() || right.uses_integral(),
+            Self::Pipeline { left, right } => left.uses_integral() || right.uses_integral(),
             Self::Number(_) | Self::Identifier(_) => false,
         }
     }
@@ -220,7 +236,78 @@ impl Expression {
             Self::Binary { left, right, .. } => {
                 left.uses_identifier(expected) || right.uses_identifier(expected)
             }
+            Self::Pipeline { left, right } => {
+                left.uses_identifier(expected) || right.uses_identifier(expected)
+            }
             Self::Number(_) => false,
+        }
+    }
+
+    // A nested pipeline owns the placeholder in its right-hand expression,
+    // but its left-hand expression is still evaluated in the outer scope.
+    fn references_current_pipeline_placeholder(&self) -> bool {
+        match self {
+            Self::Identifier(name) => name == "_",
+            Self::Array(elements) => elements
+                .iter()
+                .any(Self::references_current_pipeline_placeholder),
+            Self::Integral(argument) | Self::Unary { argument, .. } => {
+                argument.references_current_pipeline_placeholder()
+            }
+            Self::Call { arguments, .. } => arguments
+                .iter()
+                .any(Self::references_current_pipeline_placeholder),
+            Self::Access { target, accessors } => {
+                target.references_current_pipeline_placeholder()
+                    || accessors
+                        .iter()
+                        .flat_map(Accessor::expressions)
+                        .any(Self::references_current_pipeline_placeholder)
+            }
+            Self::Binary { left, right, .. } => {
+                left.references_current_pipeline_placeholder()
+                    || right.references_current_pipeline_placeholder()
+            }
+            Self::Pipeline { left, .. } => left.references_current_pipeline_placeholder(),
+            Self::Number(_) => false,
+        }
+    }
+
+    fn validate_pipeline_placeholders(&self, placeholder_available: bool) -> Result<(), String> {
+        match self {
+            Self::Identifier(name) if name == "_" && !placeholder_available => {
+                Err("'_' is only available in a pipeline right-hand expression".to_string())
+            }
+            Self::Number(_) | Self::Identifier(_) => Ok(()),
+            Self::Array(elements) => elements.iter().try_for_each(|element| {
+                element.validate_pipeline_placeholders(placeholder_available)
+            }),
+            Self::Integral(argument) | Self::Unary { argument, .. } => {
+                argument.validate_pipeline_placeholders(placeholder_available)
+            }
+            Self::Call { arguments, .. } => arguments.iter().try_for_each(|argument| {
+                argument.validate_pipeline_placeholders(placeholder_available)
+            }),
+            Self::Access { target, accessors } => {
+                target.validate_pipeline_placeholders(placeholder_available)?;
+                accessors
+                    .iter()
+                    .flat_map(Accessor::expressions)
+                    .try_for_each(|expression| {
+                        expression.validate_pipeline_placeholders(placeholder_available)
+                    })
+            }
+            Self::Binary { left, right, .. } => {
+                left.validate_pipeline_placeholders(placeholder_available)?;
+                right.validate_pipeline_placeholders(placeholder_available)
+            }
+            Self::Pipeline { left, right } => {
+                left.validate_pipeline_placeholders(placeholder_available)?;
+                if !right.references_current_pipeline_placeholder() {
+                    return Err("pipeline right-hand expression must reference '_'".to_string());
+                }
+                right.validate_pipeline_placeholders(true)
+            }
         }
     }
 
@@ -375,6 +462,12 @@ impl Expression {
                         left.binary(&right, |left, right| if left != 0.0 { left } else { right })
                     }
                 }
+            }
+            Self::Pipeline { left, right } => {
+                let value = left.evaluate(context)?;
+                let mut local_values = context.local_values.cloned().unwrap_or_default();
+                local_values.insert("_".to_string(), value);
+                evaluate_with_locals(right, context, &local_values)
             }
         }
     }
@@ -825,6 +918,7 @@ enum TokenKind {
     NotEqual,
     LogicalAnd,
     LogicalOr,
+    Pipeline,
     Bang,
     End,
 }
@@ -875,6 +969,8 @@ fn tokenize(source: &str) -> Result<Vec<Token>, String> {
             Some(TokenKind::LogicalAnd)
         } else if remaining.starts_with("||") {
             Some(TokenKind::LogicalOr)
+        } else if remaining.starts_with("|>") {
+            Some(TokenKind::Pipeline)
         } else {
             None
         };
@@ -1033,13 +1129,14 @@ impl Parser {
     }
 
     fn parse(mut self) -> Result<Expression, String> {
-        let expression = self.parse_logical_or()?;
+        let expression = self.parse_pipeline()?;
         if !matches!(&self.peek().kind, TokenKind::End) {
             return Err(format!(
                 "unexpected token at position {}",
                 self.peek().position
             ));
         }
+        expression.validate_pipeline_placeholders(false)?;
         Ok(expression)
     }
 
@@ -1156,6 +1253,21 @@ impl Parser {
         Ok(left)
     }
 
+    fn parse_pipeline(&mut self) -> Result<Expression, String> {
+        let mut left = self.parse_logical_or()?;
+        while self.consume(&TokenKind::Pipeline) {
+            let right = self.parse_logical_or()?;
+            if !right.references_current_pipeline_placeholder() {
+                return Err("pipeline right-hand expression must reference '_'".to_string());
+            }
+            left = Expression::Pipeline {
+                left: Box::new(left),
+                right: Box::new(right),
+            };
+        }
+        Ok(left)
+    }
+
     fn parse_multiplicative(&mut self) -> Result<Expression, String> {
         let mut left = self.parse_unary()?;
         loop {
@@ -1248,7 +1360,7 @@ impl Parser {
         if self.consume(&TokenKind::Colon) {
             return self.parse_slice_tail(None);
         }
-        let first = self.parse_logical_or()?;
+        let first = self.parse_pipeline()?;
         if !self.consume(&TokenKind::Colon) {
             return Ok(Accessor::Index(Box::new(first)));
         }
@@ -1261,7 +1373,7 @@ impl Parser {
         } else if self.at_accessor_end() {
             (None, None)
         } else {
-            let end = Some(Box::new(self.parse_logical_or()?));
+            let end = Some(Box::new(self.parse_pipeline()?));
             let step = if self.consume(&TokenKind::Colon) {
                 self.parse_optional_slice_component()?
             } else {
@@ -1276,7 +1388,7 @@ impl Parser {
         if self.at_accessor_end() {
             Ok(None)
         } else {
-            self.parse_logical_or().map(Box::new).map(Some)
+            self.parse_pipeline().map(Box::new).map(Some)
         }
     }
 
@@ -1303,9 +1415,9 @@ impl Parser {
                 }
                 let mut arguments = Vec::new();
                 if !self.consume(&TokenKind::RightParen) {
-                    arguments.push(self.parse_logical_or()?);
+                    arguments.push(self.parse_pipeline()?);
                     while self.consume(&TokenKind::Comma) {
-                        arguments.push(self.parse_logical_or()?);
+                        arguments.push(self.parse_pipeline()?);
                     }
                     if !self.consume(&TokenKind::RightParen) {
                         return Err(format!("expected ')' at position {}", self.peek().position));
@@ -1325,9 +1437,9 @@ impl Parser {
                 if self.consume(&TokenKind::RightBracket) {
                     return Ok(Expression::Array(Vec::new()));
                 }
-                let mut elements = vec![self.parse_logical_or()?];
+                let mut elements = vec![self.parse_pipeline()?];
                 while self.consume(&TokenKind::Comma) {
-                    elements.push(self.parse_logical_or()?);
+                    elements.push(self.parse_pipeline()?);
                 }
                 if !self.consume(&TokenKind::RightBracket) {
                     return Err(format!("expected ']' at position {}", self.peek().position));
@@ -1335,7 +1447,7 @@ impl Parser {
                 Ok(Expression::Array(elements))
             }
             TokenKind::LeftParen => {
-                let expression = self.parse_logical_or()?;
+                let expression = self.parse_pipeline()?;
                 if !self.consume(&TokenKind::RightParen) {
                     return Err(format!("expected ')' at position {}", self.peek().position));
                 }
@@ -1391,6 +1503,59 @@ mod tests {
         assert_eq!(evaluate("3 == 4 or 5 >= 5"), 1.0);
         assert_eq!(evaluate("if(1,42,unsupported())"), 42.0);
         assert_eq!(evaluate("-3 % 2"), 1.0);
+    }
+
+    #[test]
+    fn pipelines_evaluate_once_with_lexical_placeholders() {
+        let values = HashMap::new();
+        let local_functions = HashMap::new();
+        let context = EvaluationContext {
+            values: &values,
+            time: 0.0,
+            t0: 0.0,
+            t1: 10.0,
+            dt: 1.0,
+            self_value: None,
+            allow_integral: false,
+            local_values: None,
+            local_functions: &local_functions,
+            local_function_stack: &[],
+            random: None,
+        };
+        let evaluate_value = |source: &str| {
+            parse(source)
+                .expect("pipeline should parse")
+                .evaluate(&context)
+                .expect("pipeline should evaluate")
+        };
+
+        assert_eq!(evaluate_value("3 |> _ + 1"), Value::scalar(4.0));
+        assert_eq!(evaluate_value("3 |> _ + 1 |> _ * 2"), Value::scalar(8.0));
+        assert_eq!(evaluate_value("[1,2,3] |> _[0] + _[2]"), Value::scalar(4.0));
+        assert_eq!(evaluate_value("[1,2,3] |> sum(_)"), Value::scalar(6.0));
+        assert_eq!(
+            evaluate_value("[-2,1,3] |> if(_ > 0, _, 0)"),
+            Value::tensor(vec![3], vec![0.0, 1.0, 3.0]).expect("tensor should be valid"),
+        );
+        assert_eq!(evaluate_value("3 |> _ + (5 |> _ * 2)"), Value::scalar(13.0));
+        assert_eq!(
+            evaluate_value("[1,2,3] |> map($value * 2, _)"),
+            Value::tensor(vec![3], vec![2.0, 4.0, 6.0]).expect("tensor should be valid"),
+        );
+
+        let random = RandomGenerator::new(Some(123));
+        let random_result = parse("rand() |> _ - _")
+            .expect("random pipeline should parse")
+            .evaluate(&EvaluationContext {
+                random: Some(&random),
+                ..context
+            })
+            .expect("random pipeline should evaluate");
+        assert_eq!(random_result, Value::scalar(0.0));
+        assert!(parse("_ + 1").is_err());
+        assert!(parse("3 |>").is_err());
+        assert!(parse("3 |> 4").is_err());
+        assert!(parse("3 |> (5 |> _)").is_err());
     }
 
     #[test]

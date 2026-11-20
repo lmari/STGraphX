@@ -24,6 +24,7 @@ assert.ok(info.capabilities.includes("tensor-remove"));
 assert.ok(info.capabilities.includes("tensor-transpose"));
 assert.ok(info.capabilities.includes("array-iterations"));
 assert.ok(info.capabilities.includes("global-parameters"));
+assert.ok(info.capabilities.includes("expression-pipelines"));
 
 const fixture = fs.readFileSync(
   new URL("../rust/stgraphx-engine/tests/fixtures/rk4-state.json", import.meta.url),
@@ -101,5 +102,23 @@ assert.deepEqual(arrayIterationsResult.snapshots[0].values.flattened, [1, 2, 3, 
 assert.equal(arrayIterationsResult.snapshots[0].values.positiveCount, 2);
 assert.deepEqual(arrayIterationsResult.snapshots[0].values.matrixIndices, [[1, 0], [1, 1]]);
 assert.deepEqual(arrayIterationsResult.snapshots[2].values.mappedState, [3, 6, 9]);
+
+const pipelinesFixture = fs.readFileSync(
+  new URL("../rust/stgraphx-engine/tests/fixtures/pipelines.json", import.meta.url),
+  "utf8",
+);
+const pipelinesResult = JSON.parse(executeModelJson(pipelinesFixture));
+assert.deepEqual(pipelinesResult.snapshots[0].values, {
+  base: 3,
+  values: [1, 2, 3],
+  negative: [-2, 1, 3],
+  chained: 8,
+  selected: 4,
+  total: 6,
+  doubled: [2, 4, 6],
+  clipped: [0, 1, 3],
+  nested: 13,
+  singleRandom: 0,
+});
 
 process.stdout.write("rust-engine-wasm.test.mjs: ok\n");

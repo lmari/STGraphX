@@ -84,6 +84,39 @@ async function run() {
   assert.equal(await cancelledRelinkHelpers.openRecentModelEntry({ name: "legacy.json" }), true);
   assert.equal(fallbackLoaded, true, "cancelling relink keeps the readable recent model available");
 
+  const lifecycle = [];
+  const submodelLoadHelpers = createModelLoadingHelpers({
+    loadGraphFromJsonText: () => lifecycle.push("model-loaded"),
+    rememberRecentModel: async () => lifecycle.push("recent-saved"),
+    preloadSubmodelsAfterLoad: async () => lifecycle.push("submodels-preloaded"),
+    maybeSelectModelDirectoryForSubmodels: async () => {
+      lifecycle.push("folder-requested");
+      throw new Error("The folder selection was cancelled");
+    },
+    beforeOpenInNewTab: () => {
+      lifecycle.push("checkpoint");
+      return {};
+    },
+    afterOpenInNewTab: () => lifecycle.push("tab-created"),
+    onOpenPreparedFailure: () => lifecycle.push("load-failed"),
+    onOpenPreparedComplete: () => lifecycle.push("load-complete"),
+  });
+  const submodelOpened = await submodelLoadHelpers.openPreparedJsonEntryInNewTab({
+    name: "parent.json",
+    text: "{\"nodes\":[{\"type\":\"submodel\"}]}",
+    data: { nodes: [{ type: "submodel" }] },
+  });
+  assert.equal(submodelOpened, true, "a cancelled submodel folder selection does not cancel the parent model");
+  assert.deepEqual(lifecycle, [
+    "checkpoint",
+    "model-loaded",
+    "tab-created",
+    "recent-saved",
+    "submodels-preloaded",
+    "folder-requested",
+    "load-complete",
+  ]);
+
   console.log("model-loading.test.js: ok");
 }
 

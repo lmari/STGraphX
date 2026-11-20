@@ -717,6 +717,11 @@ const modelLoadingHelpers = globalThis.STGraphXModelLoading?.createModelLoadingH
     workspace.activeTabId = checkpoint?.previousActiveTabId ?? workspace.activeTabId ?? null;
     refreshWorkspaceTabBar();
   },
+  onOpenPreparedComplete() {
+    // Submodel folder authorization may update the active model context after
+    // its tab was created. Persist that context before another tab is opened.
+    saveActiveWorkspaceTabState();
+  },
 });
 
 if (!modelLoadingHelpers) {
