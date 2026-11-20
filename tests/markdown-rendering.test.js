@@ -51,4 +51,34 @@ assert.doesNotMatch(dynamicFormula, /data-stgraphx-variable/, "dynamic formula v
 const heading4 = renderMarkdownToHtml("#### Fourth-level heading");
 assert.match(heading4, /<h4>Fourth-level heading<\/h4>/, "fourth-level headings must be rendered");
 
+const table = renderMarkdownToHtml("| Funzione | Valore |\n| :--- | ---: |\n| `pow(2, 3)` | **8** |\n\nDopo la tabella.");
+assert.match(table, /<thead><tr><th style="text-align:left">Funzione/);
+assert.match(table, /<td style="text-align:right"><strong>8<\/strong><\/td>/);
+assert.match(table, /<p>Dopo la tabella\.<\/p>/);
+const pipes = renderMarkdownToHtml("| Espressione | Testo |\n| --- | --- |\n| `x |> abs(_)` | a\\|b |");
+assert.match(pipes, /<code>x \|&gt; abs\(_\)<\/code>/);
+assert.match(pipes, />a\|b<\/td>/);
+assert.equal((pipes.match(/<td /g) || []).length, 2);
+assert.doesNotMatch(renderMarkdownToHtml("```text\n| A | B |\n| --- | --- |\n```"), /<table>/);
+assert.doesNotMatch(renderMarkdownToHtml("a | b\nnot a table"), /<table>/);
+
+const picture = renderMarkdownToHtml('![A "diagram"](figures/example.svg)', { imageBasePath: "docs/" });
+assert.match(picture, /src="docs\/figures\/example.svg"/);
+assert.match(picture, /alt="A &quot;diagram&quot;"/);
+assert.doesNotMatch(renderMarkdownToHtml('![unsafe](javascript:alert)'), /<img/);
+assert.doesNotMatch(renderMarkdownToHtml('![unsafe](data:image\/svg+xml,test)'), /<img/);
+assert.doesNotMatch(renderMarkdownToHtml('`![example](image.svg)`'), /<img/);
+
+const fs = require("fs");
+const path = require("path");
+const introduction = fs.readFileSync(path.join(__dirname, "../docs/introduzione-pensiero-funzionale.md"), "utf8");
+const introductionHtml = renderMarkdownToHtml(introduction, { mermaid: true });
+assert.equal((introductionHtml.match(/<table>/g) || []).length, 1);
+assert.equal((introductionHtml.match(/data-mermaid="true"/g) || []).length, 4);
+assert.doesNotMatch(introductionHtml, /<img /);
+const diagramSource = '```mermaid\nflowchart LR\n A["<script>alert(1)</script>"] --> B\n```';
+assert.doesNotMatch(renderMarkdownToHtml(diagramSource), /data-mermaid/);
+assert.match(renderMarkdownToHtml(diagramSource, { mermaid: true }), /&lt;script&gt;/);
+assert.doesNotMatch(renderMarkdownToHtml(diagramSource, { mermaid: true }), /<script>/);
+assert.doesNotMatch(renderMarkdownToHtml('```text\nflowchart LR\n```', { mermaid: true }), /data-mermaid/);
 console.log("markdown-rendering.test.js: ok");

@@ -27,6 +27,7 @@
     "README-CONVERSION.md",
     "docs/QUICK-FUNCTION-REFERENCE.md",
     "docs/RIFERIMENTO-RAPIDO-FUNZIONI.md",
+    "docs/introduzione-pensiero-funzionale.md",
   ]);
   const EXAMPLE_LAYOUT_VARIANTS = new Set(["list", "compact", "stack"]);
   const EXAMPLES_HELP_STYLE_TAG_ID = "examples-help-external-style";
@@ -488,6 +489,7 @@
     }
 
     function documentationTitleForPath(path) {
+      if (path === "docs/introduzione-pensiero-funzionale.md") return t("functionalThinking.title");
       const name = String(path || "").split("/").pop() || "";
       return name.replace(/\.md$/iu, "") || t("documentation.title");
     }
@@ -579,7 +581,7 @@
         if (requestId !== documentationRequestId) return false;
         const renderer = globalThis.STGraphXMarkdown?.renderMarkdownToHtml;
         documentationHelpContent.innerHTML = typeof renderer === "function"
-          ? renderer(markdownForDocumentation(text))
+          ? renderer(markdownForDocumentation(text), { mermaid: true, imageBasePath: normalized.slice(0, normalized.lastIndexOf("/") + 1) })
           : "";
         // URLs in fenced examples deliberately remain code in the generic
         // Markdown renderer. In the application guide they are instructions
@@ -587,6 +589,15 @@
         linkifyDocumentationUrls();
         bindDocumentationLinks();
         documentationHelpContent.scrollTop = 0;
+        await globalThis.STGraphXMarkdown?.renderMermaidDiagrams?.(documentationHelpContent, {
+          isCurrent: () => requestId === documentationRequestId,
+          onError: (block) => {
+            const message = document.createElement("p");
+            message.className = "markdown-diagram-error";
+            message.textContent = t("documentation.diagramError");
+            block.before(message);
+          },
+        });
         return true;
       } catch (error) {
         if (requestId !== documentationRequestId) return false;
@@ -649,10 +660,12 @@
       });
     }
 
-    function openDocumentationHelp() {
+    function openDocumentationHelp(path) {
       if (!documentationHelpModal) return;
       documentationHelpModal.classList.remove("hidden");
-      if (documentationHistoryIndex < 0) {
+      if (path) {
+        void renderDocumentationPath(path);
+      } else if (documentationHistoryIndex < 0) {
         void renderDocumentationPath(DOCUMENTATION_ENTRY_PATH);
       } else {
         updateDocumentationNavigation();

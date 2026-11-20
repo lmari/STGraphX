@@ -42,7 +42,7 @@ Ha un'interfaccia utente responsive, che lo rende utilizzabile anche su tablet.
 (*): funzionalità già presente in STGraph ma migliorata in modo significativo  
 (**): funzionalità assente in STGraph e introdotta qui
 
-(a differenza di STGraph che è basato su varie librerie open source, le uniche librerie esterne usate in STGraphX sono KaTeX, https://katex.org, e fflate, https://www.npmjs.com/package/fflate)
+(a differenza di STGraph che è basato su varie librerie open source, le uniche librerie esterne usate in STGraphX sono KaTeX, https://katex.org, fflate, https://www.npmjs.com/package/fflate, e Mermaid, https://mermaid.js.org, per i diagrammi della guida)
 
 #### Funzionalità generali
 
@@ -135,6 +135,8 @@ Sei disponibile ad anticipare la call con i signori di RSE a mercoledì alle 14,
 * ...
 
 ## Documentazione aggiuntiva
+
+Per un’introduzione al pensiero funzionale rivolta a chi sta imparando a costruire modelli, si veda [Pensare per funzioni con STGraphX](docs/introduzione-pensiero-funzionale.md) (in italiano / in Italian), accessibile anche dal menu **Help → Pensare per funzioni...**.
 
 Per l'architettura tecnica e per le istruzioni su come sviluppare il progetto, si veda `README-ARCHITECTURE.md`.
 

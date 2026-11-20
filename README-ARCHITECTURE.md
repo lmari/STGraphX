@@ -98,6 +98,20 @@ Il renderer legge i testi tramite:
 
 Questo evita dipendenze da `fetch(...)` e riduce i problemi in esecuzione locale o in ambienti con policy diverse sui file.
 
+La guida integrata usa `markdown-rendering.js`, che supporta anche tabelle e
+immagini Markdown. `help-content.js` risolve le immagini rispetto alla cartella
+del documento; gli asset in `docs/` sono inclusi nelle build desktop.
+I blocchi Mermaid della guida restano nel Markdown e vengono disegnati dopo
+il rendering del testo. `markdown-rendering.js` carica su richiesta la
+versione locale Mermaid 12.3.0 (`vendor/mermaid/mermaid.min.js`, distribuzione
+ufficiale npm, con licenza MIT allegata), inclusa anche nelle build desktop.
+Il rendering usa la modalità `strict`, senza etichette HTML, e scarta i
+risultati se nel frattempo è cambiato il documento. In caso di errore resta
+visibile il sorgente, accompagnato da un messaggio localizzato.
+Il supporto Mermaid è attivato dalla guida; gli altri usi del renderer
+Markdown mantengono i blocchi come codice. Non occorrono servizi esterni
+né immagini generate da mantenere accanto ai documenti.
+
 ## Separazione delle responsabilità
 
 ### Renderer condiviso

@@ -45,6 +45,13 @@
     const resolveVariable = typeof options.resolveVariable === "function" ? options.resolveVariable : null;
     // Protect code spans before looking for inline math delimiters.
     source = source.replace(/`([^`]+)`/g, (_m, code) => stash(`<code>${escapeHtml(code)}</code>`));
+    source = source.replace(/!\[([^\]\n]*)\]\(([^)\s]+)\)/g, (_match, alt, href) => {
+      const safe = safeHref(href);
+      if (!safe || /^(?:mailto:|#)/iu.test(safe)) return alt;
+      const src = options.imageBasePath && !/^(?:[a-z][a-z0-9+.-]*:|\/)/iu.test(safe)
+        ? `${options.imageBasePath}${safe}` : safe;
+      return stash(`<img src="${escapeHtml(src)}" alt="${escapeHtml(alt)}" loading="lazy">`);
+    });
     // Resolve only the contents of formulas before passing them to KaTeX.
     // Outside formulas the same syntax becomes a styled live-value element.
     if (resolveVariable) {
@@ -91,16 +98,60 @@
     html = html.replace(/\*\*([^*]+)\*\*/g, "<strong>$1</strong>").replace(/__([^_]+)__/g, "<strong>$1</strong>").replace(/~~([^~]+)~~/g, "<s>$1</s>").replace(/\*([^*]+)\*/g, "<em>$1</em>").replace(/_([^_]+)_/g, "<em>$1</em>");
     return html.replace(/\u0000M(\d+)\u0000/g, (_m, index) => fragments[Number(index)] || "");
   }
+  function tableCells(line) {
+    let source = String(line).trim();
+    if (source.startsWith("|")) source = source.slice(1);
+    if (source.endsWith("|") && !source.endsWith("\\|")) source = source.slice(0, -1);
+    const cells = []; let cell = ""; let ticks = 0;
+    for (let i = 0; i < source.length; i += 1) {
+      if (source[i] === "\\" && source[i + 1] === "|") { cell += "|"; i += 1; }
+      else if (source[i] === "`") {
+        const run = source.slice(i).match(/^`+/u)[0];
+        ticks = ticks === run.length ? 0 : ticks || run.length;
+        cell += run; i += run.length - 1;
+      } else if (source[i] === "|" && !ticks) { cells.push(cell.trim()); cell = ""; }
+      else cell += source[i];
+    }
+    cells.push(cell.trim());
+    return cells;
+  }
   function renderMarkdownToHtml(markdown, options = {}) {
-    const lines = String(markdown ?? "").replace(/\r\n?/g, "\n").split("\n"); const output = []; let paragraph = []; let list = null; let inCode = false; let codeLines = []; let inMath = false; let mathLines = [];
+    const lines = String(markdown ?? "").replace(/\r\n?/g, "\n").split("\n"); const output = []; let paragraph = []; let list = null; let inCode = false; let codeLines = []; let codeLanguage = ""; let inMath = false; let mathLines = [];
     const flushParagraph = () => { if (paragraph.length) { output.push(`<p>${paragraph.map((item) => renderInlineMarkdown(item, options)).join("<br>")}</p>`); paragraph = []; } };
     const flushList = () => { if (list) { output.push(`<${list.type}>${list.items.map((item) => `<li>${renderInlineMarkdown(item, options)}</li>`).join("")}</${list.type}>`); list = null; } };
-    const flushCode = () => { if (inCode) { output.push(`<pre><code>${escapeHtml(codeLines.join("\n"))}</code></pre>`); inCode = false; codeLines = []; } };
+    const flushCode = () => {
+      if (!inCode) return;
+      const diagram = options.mermaid && codeLanguage === "mermaid" ? ' data-mermaid="true"' : "";
+      output.push(`<pre${diagram}><code>${escapeHtml(codeLines.join("\n"))}</code></pre>`);
+      inCode = false; codeLines = []; codeLanguage = "";
+    };
     const flushMath = () => { if (inMath) { output.push(`<div class="latex-block">${renderLatex(resolveDynamicValueText(mathLines.join("\n"), options.resolveVariable), true, options.latexOutput)}</div>`); inMath = false; mathLines = []; } };
-    lines.forEach((line) => {
+    let skipThrough = -1;
+    lines.forEach((line, index) => {
+      if (index <= skipThrough) return;
       if (inMath) { if (/^\s*\$\$\s*$/.test(line)) flushMath(); else mathLines.push(line); return; }
-      if (/^```/.test(line)) { if (inCode) flushCode(); else { flushParagraph(); flushList(); inCode = true; } return; }
+      if (/^```/.test(line)) { if (inCode) flushCode(); else { flushParagraph(); flushList(); inCode = true; codeLanguage = line.slice(3).trim().toLowerCase(); } return; }
       if (inCode) { codeLines.push(line); return; }
+      if (line.includes("|") && index + 1 < lines.length) {
+        const headers = tableCells(line);
+        const separators = tableCells(lines[index + 1]);
+        if (headers.length === separators.length && separators.every((cell) => /^:?-{3,}:?$/u.test(cell))) {
+          flushParagraph(); flushList();
+          const cellHtml = (cell, col, tag) => {
+            const separator = separators[col];
+            const align = separator.endsWith(":") ? (separator.startsWith(":") ? "center" : "right") : "left";
+            return `<${tag} style="text-align:${align}">${renderInlineMarkdown(cell, options)}</${tag}>`;
+          };
+          const rows = [];
+          skipThrough = index + 1;
+          while (skipThrough + 1 < lines.length && lines[skipThrough + 1].includes("|") && !/^\s*```/u.test(lines[skipThrough + 1])) {
+            const cells = tableCells(lines[++skipThrough]);
+            rows.push(`<tr>${headers.map((_header, col) => cellHtml(cells[col] || "", col, "td")).join("")}</tr>`);
+          }
+          output.push(`<div class="markdown-table-scroll"><table><thead><tr>${headers.map((cell, col) => cellHtml(cell, col, "th")).join("")}</tr></thead><tbody>${rows.join("")}</tbody></table></div>`);
+          return;
+        }
+      }
       const oneLineMath = /^\s*\$\$\s*(.*?)\s*\$\$\s*$/.exec(line);
       if (oneLineMath) { flushParagraph(); flushList(); output.push(`<div class="latex-block">${renderLatex(resolveDynamicValueText(oneLineMath[1], options.resolveVariable), true, options.latexOutput)}</div>`); return; }
       if (/^\s*\$\$\s*$/.test(line)) { flushParagraph(); flushList(); inMath = true; mathLines = []; return; }
@@ -119,5 +170,53 @@
     function convert(node) { if (node.nodeType === Node.TEXT_NODE) return node.nodeValue || ""; if (node.nodeType !== Node.ELEMENT_NODE) return ""; const content = Array.from(node.childNodes).map(convert).join(""); switch (node.tagName) { case "H1": return `# ${content}\n\n`; case "H2": return `## ${content}\n\n`; case "H3": return `### ${content}\n\n`; case "P": case "DIV": return `${content}\n\n`; case "BR": return "\n"; case "STRONG": case "B": return `**${content}**`; case "EM": case "I": return `*${content}*`; case "LI": return `- ${content}\n`; case "HR": return "\n---\n\n"; default: return content; } }
     return Array.from(template.content.childNodes).map(convert).join("").replace(/\n{3,}/g, "\n\n").trim();
   }
-  globalThis.STGraphXMarkdown = { renderMarkdownToHtml, legacyHtmlToMarkdown };
+  // A classic, locally bundled script also works in file:// desktop shells.
+  const scriptUrl = typeof document !== "undefined" ? document.currentScript?.src || document.baseURI : "";
+  let mermaidReady = null;
+  let diagramId = 0;
+  function loadMermaid() {
+    if (!mermaidReady) {
+      mermaidReady = new Promise((resolve, reject) => {
+        const initialize = () => {
+          try {
+            const api = globalThis.mermaid;
+            api.initialize({
+              startOnLoad: false, securityLevel: "strict", suppressErrorRendering: true,
+              htmlLabels: false, theme: "neutral",
+              secure: ["securityLevel", "startOnLoad", "suppressErrorRendering", "maxTextSize", "htmlLabels", "secure"],
+            });
+            resolve(api);
+          } catch (error) { reject(error); }
+        };
+        if (globalThis.mermaid) { initialize(); return; }
+        const script = document.createElement("script");
+        script.src = new URL("vendor/mermaid/mermaid.min.js", scriptUrl).href;
+        script.onload = initialize;
+        script.onerror = () => { script.remove(); reject(new Error("Unable to load Mermaid")); };
+        document.head.appendChild(script);
+      }).catch((error) => { mermaidReady = null; throw error; });
+    }
+    return mermaidReady;
+  }
+  async function renderMermaidDiagrams(container, options = {}) {
+    const blocks = Array.from(container.querySelectorAll("pre[data-mermaid]"));
+    if (!blocks.length) return;
+    const current = (block) => container.contains(block) && (!options.isCurrent || options.isCurrent());
+    for (const block of blocks) {
+      if (!current(block)) return;
+      try {
+        const api = await loadMermaid();
+        if (!current(block)) return;
+        const { svg } = await api.render(`stgraphx-mermaid-${++diagramId}`, block.textContent);
+        if (!current(block)) return;
+        const diagram = document.createElement("div");
+        diagram.className = "markdown-mermaid";
+        diagram.innerHTML = svg;
+        block.replaceWith(diagram);
+      } catch (error) {
+        if (current(block)) options.onError?.(block, error);
+      }
+    }
+  }
+  globalThis.STGraphXMarkdown = { renderMarkdownToHtml, legacyHtmlToMarkdown, renderMermaidDiagrams };
 })();

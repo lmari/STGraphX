@@ -278,6 +278,7 @@ const expressionNodeRangeRow = document.getElementById("expressionNodeRangeRow")
 const expressionNodeRangeMinInput = document.getElementById("expressionNodeRangeMinInput");
 const expressionNodeRangeMaxInput = document.getElementById("expressionNodeRangeMaxInput");
 const documentationHelpBtn = document.getElementById("documentationHelpBtn");
+const functionalThinkingHelpBtn = document.getElementById("functionalThinkingHelpBtn");
 const functionsHelpBtn = document.getElementById("functionsHelpBtn");
 const eightTupleBtn = document.getElementById("eightTupleBtn");
 const examplesHelpBtn = document.getElementById("examplesHelpBtn");
@@ -4448,8 +4449,8 @@ function closeExamplesHelp() {
   helpContentHelpers.closeExamplesHelp();
 }
 
-function openDocumentationHelp() {
-  helpContentHelpers.openDocumentationHelp();
+function openDocumentationHelp(path) {
+  helpContentHelpers.openDocumentationHelp(path);
 }
 
 function closeDocumentationHelp() {
@@ -17700,6 +17701,12 @@ if (functionsHelpBtn) {
   functionsHelpBtn.addEventListener("click", () => {
     closeTopMenus();
     openFunctionsHelp();
+  });
+}
+if (functionalThinkingHelpBtn) {
+  functionalThinkingHelpBtn.addEventListener("click", () => {
+    closeTopMenus();
+    openDocumentationHelp("docs/introduzione-pensiero-funzionale.md");
   });
 }
 if (documentationHelpBtn) {
