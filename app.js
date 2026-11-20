@@ -59,6 +59,7 @@ const toggleWidgetsItem = document.getElementById("toggleWidgetsItem");
 const modelNotesItem = document.getElementById("modelNotesItem");
 const unitDefinitionsItem = document.getElementById("unitDefinitionsItem");
 const viewOptionsItem = document.getElementById("viewOptionsItem");
+const findNodeItem = document.getElementById("findNodeItem");
 const toggleGraphBtn = document.getElementById("toggleGraphBtn");
 const toggleWidgetsBtn = document.getElementById("toggleWidgetsBtn");
 const runEvalBtn = document.getElementById("runEvalBtn");
@@ -352,6 +353,12 @@ const feedbackLoopsItem = document.getElementById("feedbackLoopsItem");
 const feedbackLoopsModal = document.getElementById("feedbackLoopsModal");
 const feedbackLoopsCloseBtn = document.getElementById("feedbackLoopsCloseBtn");
 const feedbackLoopsDismissBtn = document.getElementById("feedbackLoopsDismissBtn");
+const nodeFinderModal = document.getElementById("nodeFinderModal");
+const nodeFinderCloseBtn = document.getElementById("nodeFinderCloseBtn");
+const nodeFinderDismissBtn = document.getElementById("nodeFinderDismissBtn");
+const nodeFinderFilter = document.getElementById("nodeFinderFilter");
+const nodeFinderList = document.getElementById("nodeFinderList");
+const nodeFinderEmpty = document.getElementById("nodeFinderEmpty");
 const feedbackLoopsShowFocusBtn = document.getElementById("feedbackLoopsShowFocusBtn");
 const feedbackLoopsClearFocusBtn = document.getElementById("feedbackLoopsClearFocusBtn");
 const feedbackLoopsSummary = document.getElementById("feedbackLoopsSummary");
@@ -9740,12 +9747,70 @@ function openModelNotes(editing = false) {
 
 function closeModelNotes() { modelNotesModal?.classList.add("hidden"); }
 
+function nodeFinderEntries() {
+  const filter = String(nodeFinderFilter?.value || "").trim().toLocaleLowerCase();
+  return graph.nodes
+    .filter((node) => String(node.name || "").toLocaleLowerCase().includes(filter))
+    .slice()
+    .sort((left, right) => String(left.name || "").localeCompare(String(right.name || ""), undefined, { sensitivity: "base", numeric: true }));
+}
+
+function centerNodeInViewport(node) {
+  if (!node || !graphViewport) return;
+  const centerX = Number(node.x) * ui.zoom;
+  const centerY = Number(node.y) * ui.zoom;
+  graphViewport.scrollLeft = Math.max(0, centerX - graphViewport.clientWidth / 2);
+  graphViewport.scrollTop = Math.max(0, centerY - graphViewport.clientHeight / 2);
+}
+
+function selectNodeFromFinder(node) {
+  if (!node) return;
+  selectSingleNode(node.id);
+  centerNodeInViewport(node);
+  setAnalysisFocus({ type: "node", id: node.id });
+  render();
+  const activeEntry = [...(nodeFinderList?.querySelectorAll("[data-node-finder-id]") || [])]
+    .find((entry) => entry.dataset.nodeFinderId === String(node.id));
+  activeEntry?.focus({ preventScroll: true });
+}
+
+function renderNodeFinder() {
+  if (!nodeFinderList || !nodeFinderEmpty) return;
+  const entries = nodeFinderEntries();
+  nodeFinderList.replaceChildren();
+  nodeFinderEmpty.classList.toggle("hidden", entries.length > 0);
+  entries.forEach((node) => {
+    const entry = document.createElement("button");
+    entry.type = "button";
+    entry.className = "node-finder-entry";
+    entry.dataset.nodeFinderId = String(node.id);
+    entry.setAttribute("role", "option");
+    entry.setAttribute("aria-selected", String(ui.selectedNodes.has(node.id)));
+    entry.textContent = node.name || t("nodeFinder.unnamed");
+    setTooltipText(entry, getNodeDescription(node));
+    entry.addEventListener("click", () => selectNodeFromFinder(node));
+    nodeFinderList.appendChild(entry);
+  });
+}
+
+function openNodeFinder() {
+  if (!nodeFinderModal) return;
+  closeTopMenus();
+  if (nodeFinderFilter) nodeFinderFilter.value = "";
+  renderNodeFinder();
+  nodeFinderModal.classList.remove("hidden");
+  window.requestAnimationFrame(() => nodeFinderFilter?.focus());
+}
+
+function closeNodeFinder() {
+  nodeFinderModal?.classList.add("hidden");
+}
+
 function revealNodeFromModelNotes(nodeName) {
   const node = graph.nodes.find((entry) => String(entry.name) === String(nodeName).trim());
   if (!node) return;
   selectSingleNode(node.id);
-  graphViewport.scrollLeft = Math.max(0, node.x * ui.zoom - graphViewport.clientWidth / 2);
-  graphViewport.scrollTop = Math.max(0, node.y * ui.zoom - graphViewport.clientHeight / 2);
+  centerNodeInViewport(node);
   render();
 }
 
@@ -16041,6 +16106,9 @@ if (feedbackLoopsItem) {
     openFeedbackLoops();
   });
 }
+if (findNodeItem) {
+  findNodeItem.addEventListener("click", openNodeFinder);
+}
 if (viewOptionsItem) {
   viewOptionsItem.addEventListener("click", openViewOptions);
 }
@@ -17599,6 +17667,7 @@ bindModalDragHandle(examplesHelpModal, ".examples-help-card");
 bindModalDragHandle(aboutAppModal, ".about-app-card");
 bindModalDragHandle(modelAnalysisModal, ".model-analysis-card");
 bindModalDragHandle(feedbackLoopsModal, ".feedback-loops-card");
+bindModalDragHandle(nodeFinderModal, ".node-finder-card");
 bindModalDragHandle(sensitivityAnalysisModal, ".sensitivity-analysis-card");
 bindModalDragHandle(eightTupleModal, ".eight-tuple-card");
 bindModalDragHandle(unitDefinitionsModal, ".unit-definitions-card", { allowCompactTouch: true });
@@ -17609,6 +17678,15 @@ bindModalDragHandle(textEditorModal, ".text-editor-card");
 bindModalDragHandle(modelNotesModal, ".model-notes-card");
 bindModalDragHandle(viewOptionsModal, ".view-options-card", { allowCompactTouch: true });
 bindModalDragHandle(configHelpModal, ".config-help-card", { allowCompactTouch: true });
+if (nodeFinderFilter) {
+  nodeFinderFilter.addEventListener("input", renderNodeFinder);
+}
+if (nodeFinderCloseBtn) {
+  nodeFinderCloseBtn.addEventListener("click", closeNodeFinder);
+}
+if (nodeFinderDismissBtn) {
+  nodeFinderDismissBtn.addEventListener("click", closeNodeFinder);
+}
 document.querySelectorAll("[data-config-help]").forEach((button) => {
   button.addEventListener("click", () => openConfigurationHelp(button.getAttribute("data-config-help")));
 });

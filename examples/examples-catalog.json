@@ -176,6 +176,22 @@
           }
         },
         {
+          "file": "mlp.json",
+          "label": { "it": "Multi-layer perceptron", "en": "Multi-layer perceptron" },
+          "summary": {
+            "it": "Rete 1–4–1 per regressione non lineare, con strato nascosto tanh, backpropagation esplicita e separazione training/testing. Appunti con link ai nodi.",
+            "en": "A 1–4–1 network for nonlinear regression, with a tanh hidden layer, explicit backpropagation and separate training/test data. Model notes in Italian with node links."
+          }
+        },
+        {
+          "file": "sgd.json",
+          "label": { "it": "Regressione lineare con SGD", "en": "Linear regression with SGD" },
+          "summary": {
+            "it": "Dati personalizzabili, split training/testing riproducibile, mini-batch e confronto degli errori con pesi finali congelati. Istruzioni nelle note del modello.",
+            "en": "Customizable data, reproducible training/test split, mini-batches and error comparison with frozen final weights. Instructions in the model notes (Italian)."
+          }
+        },
+        {
           "file": "read_data_demo.json",
           "label": { "it": "Lettura dati XLSX", "en": "XLSX data import" },
           "summary": {

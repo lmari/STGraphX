@@ -1,0 +1,1890 @@
+{
+  "version": 1,
+  "modelTitle": "Multi-layer perceptron: regressione non lineare",
+  "localFunctions": [
+    {
+      "name": "mlpPredict",
+      "params": [
+        "x",
+        "w",
+        "b",
+        "v",
+        "c"
+      ],
+      "expression": "sum(v*tanh(w*x+b))+c",
+      "description": "Predizione scalare della rete con uno strato nascosto tanh e uscita lineare."
+    }
+  ],
+  "view": {
+    "zoom": 1,
+    "showGrid": true,
+    "highlightNodeEdges": true,
+    "showNodeValues": true,
+    "checkUnits": true,
+    "gridSize": 20,
+    "tooltipDelayMs": 300,
+    "scrollLeft": 180,
+    "scrollTop": 202
+  },
+  "debug": {
+    "watches": [],
+    "breakpointEnabled": false,
+    "breakpointExpression": "",
+    "breakpointMessage": ""
+  },
+  "modelProperties": [],
+  "unitDefinitions": [],
+  "scenarios": [],
+  "nodeCounter": 38,
+  "edgeCounter": 87,
+  "widgetCounter": 8,
+  "textItemCounter": 3,
+  "presentationGroupCounter": 5,
+  "presentationGroups": [],
+  "dashboard": null,
+  "execution": {
+    "t0": 0,
+    "dt": 1,
+    "timeUnit": "s",
+    "t1": 1550,
+    "delayMs": 1,
+    "renderEverySteps": 10,
+    "decimals": 3,
+    "integrator": "euler",
+    "strictDefinitions": false,
+    "stopOnRuntimeError": true,
+    "checkRanges": false,
+    "randomSeed": null
+  },
+  "nodes": [
+    {
+      "id": 1,
+      "name": "X",
+      "output": false,
+      "global": false,
+      "type": "parameter",
+      "x": 100,
+      "y": 120,
+      "width": 64,
+      "height": 54,
+      "fillColor": "",
+      "strokeColor": "",
+      "unit": "",
+      "properties": [
+        {
+          "key": "note formula",
+          "value": ""
+        },
+        {
+          "key": "descrizione",
+          "value": ""
+        }
+      ],
+      "valueExpression": "range(31)/15-1"
+    },
+    {
+      "id": 2,
+      "name": "Y",
+      "output": false,
+      "global": false,
+      "type": "parameter",
+      "x": 100,
+      "y": 220,
+      "width": 64,
+      "height": 54,
+      "fillColor": "",
+      "strokeColor": "",
+      "unit": "",
+      "properties": [
+        {
+          "key": "note formula",
+          "value": ""
+        },
+        {
+          "key": "descrizione",
+          "value": ""
+        }
+      ],
+      "valueExpression": "X^2"
+    },
+    {
+      "id": 3,
+      "name": "n",
+      "output": false,
+      "global": false,
+      "type": "parameter",
+      "x": 100,
+      "y": 320,
+      "width": 64,
+      "height": 54,
+      "fillColor": "",
+      "strokeColor": "",
+      "unit": "",
+      "properties": [
+        {
+          "key": "note formula",
+          "value": ""
+        },
+        {
+          "key": "descrizione",
+          "value": ""
+        }
+      ],
+      "valueExpression": "size(X)"
+    },
+    {
+      "id": 4,
+      "name": "trainFraction",
+      "output": false,
+      "global": false,
+      "type": "parameter",
+      "x": 100,
+      "y": 420,
+      "width": 64,
+      "height": 54,
+      "fillColor": "",
+      "strokeColor": "",
+      "unit": "",
+      "properties": [
+        {
+          "key": "note formula",
+          "value": ""
+        },
+        {
+          "key": "descrizione",
+          "value": ""
+        }
+      ],
+      "valueExpression": "0.7"
+    },
+    {
+      "id": 5,
+      "name": "split",
+      "output": false,
+      "global": false,
+      "type": "parameter",
+      "x": 280,
+      "y": 120,
+      "width": 64,
+      "height": 54,
+      "fillColor": "",
+      "strokeColor": "",
+      "unit": "",
+      "properties": [
+        {
+          "key": "note formula",
+          "value": ""
+        },
+        {
+          "key": "descrizione",
+          "value": ""
+        }
+      ],
+      "valueExpression": "shuffle(range(n))"
+    },
+    {
+      "id": 6,
+      "name": "nTrain",
+      "output": false,
+      "global": false,
+      "type": "parameter",
+      "x": 280,
+      "y": 220,
+      "width": 64,
+      "height": 54,
+      "fillColor": "",
+      "strokeColor": "",
+      "unit": "",
+      "properties": [
+        {
+          "key": "note formula",
+          "value": ""
+        },
+        {
+          "key": "descrizione",
+          "value": ""
+        }
+      ],
+      "valueExpression": "min(n-1,max(2,floor(n*trainFraction)))"
+    },
+    {
+      "id": 7,
+      "name": "trainIndices",
+      "output": false,
+      "global": false,
+      "type": "parameter",
+      "x": 460,
+      "y": 120,
+      "width": 64,
+      "height": 54,
+      "fillColor": "",
+      "strokeColor": "",
+      "unit": "",
+      "properties": [
+        {
+          "key": "note formula",
+          "value": ""
+        },
+        {
+          "key": "descrizione",
+          "value": ""
+        }
+      ],
+      "valueExpression": "sort(split[:nTrain])"
+    },
+    {
+      "id": 8,
+      "name": "testIndices",
+      "output": false,
+      "global": false,
+      "type": "parameter",
+      "x": 460,
+      "y": 320,
+      "width": 64,
+      "height": 54,
+      "fillColor": "",
+      "strokeColor": "",
+      "unit": "",
+      "properties": [
+        {
+          "key": "note formula",
+          "value": ""
+        },
+        {
+          "key": "descrizione",
+          "value": ""
+        }
+      ],
+      "valueExpression": "sort(split[nTrain:])"
+    },
+    {
+      "id": 9,
+      "name": "trainX",
+      "output": true,
+      "global": false,
+      "type": "parameter",
+      "x": 640,
+      "y": 120,
+      "width": 64,
+      "height": 54,
+      "fillColor": "",
+      "strokeColor": "",
+      "unit": "",
+      "properties": [
+        {
+          "key": "note formula",
+          "value": ""
+        },
+        {
+          "key": "descrizione",
+          "value": ""
+        }
+      ],
+      "valueExpression": "X[trainIndices]"
+    },
+    {
+      "id": 10,
+      "name": "trainY",
+      "output": true,
+      "global": false,
+      "type": "parameter",
+      "x": 640,
+      "y": 220,
+      "width": 64,
+      "height": 54,
+      "fillColor": "",
+      "strokeColor": "",
+      "unit": "",
+      "properties": [
+        {
+          "key": "note formula",
+          "value": ""
+        },
+        {
+          "key": "descrizione",
+          "value": ""
+        }
+      ],
+      "valueExpression": "Y[trainIndices]"
+    },
+    {
+      "id": 11,
+      "name": "testX",
+      "output": true,
+      "global": false,
+      "type": "parameter",
+      "x": 640,
+      "y": 320,
+      "width": 64,
+      "height": 54,
+      "fillColor": "",
+      "strokeColor": "",
+      "unit": "",
+      "properties": [
+        {
+          "key": "note formula",
+          "value": ""
+        },
+        {
+          "key": "descrizione",
+          "value": ""
+        }
+      ],
+      "valueExpression": "X[testIndices]"
+    },
+    {
+      "id": 12,
+      "name": "testY",
+      "output": true,
+      "global": false,
+      "type": "parameter",
+      "x": 640,
+      "y": 420,
+      "width": 64,
+      "height": 54,
+      "fillColor": "",
+      "strokeColor": "",
+      "unit": "",
+      "properties": [
+        {
+          "key": "note formula",
+          "value": ""
+        },
+        {
+          "key": "descrizione",
+          "value": ""
+        }
+      ],
+      "valueExpression": "Y[testIndices]"
+    },
+    {
+      "id": 13,
+      "name": "bSize",
+      "output": false,
+      "global": false,
+      "type": "parameter",
+      "x": 100,
+      "y": 520,
+      "width": 64,
+      "height": 54,
+      "fillColor": "",
+      "strokeColor": "",
+      "unit": "",
+      "properties": [
+        {
+          "key": "note formula",
+          "value": ""
+        },
+        {
+          "key": "descrizione",
+          "value": ""
+        }
+      ],
+      "valueExpression": "nTrain"
+    },
+    {
+      "id": 14,
+      "name": "batchSize",
+      "output": false,
+      "global": false,
+      "type": "parameter",
+      "x": 280,
+      "y": 520,
+      "width": 64,
+      "height": 54,
+      "fillColor": "",
+      "strokeColor": "",
+      "unit": "",
+      "properties": [
+        {
+          "key": "note formula",
+          "value": ""
+        },
+        {
+          "key": "descrizione",
+          "value": ""
+        }
+      ],
+      "valueExpression": "min(nTrain,max(1,floor(bSize)))"
+    },
+    {
+      "id": 15,
+      "name": "batch",
+      "output": false,
+      "global": false,
+      "type": "algebraic",
+      "x": 460,
+      "y": 520,
+      "width": 64,
+      "height": 54,
+      "fillColor": "",
+      "strokeColor": "",
+      "unit": "",
+      "properties": [
+        {
+          "key": "note formula",
+          "value": ""
+        },
+        {
+          "key": "descrizione",
+          "value": ""
+        }
+      ],
+      "input": false,
+      "valueExpression": "shuffle(range(nTrain))[:batchSize]"
+    },
+    {
+      "id": 16,
+      "name": "hiddenSize",
+      "output": false,
+      "global": false,
+      "type": "parameter",
+      "x": 820,
+      "y": 520,
+      "width": 64,
+      "height": 54,
+      "fillColor": "",
+      "strokeColor": "",
+      "unit": "",
+      "properties": [
+        {
+          "key": "note formula",
+          "value": ""
+        },
+        {
+          "key": "descrizione",
+          "value": "Numero di neuroni nascosti: intero positivo. Modificare prima di reinizializzare."
+        }
+      ],
+      "valueExpression": "4"
+    },
+    {
+      "id": 17,
+      "name": "lr",
+      "output": false,
+      "global": false,
+      "type": "parameter",
+      "x": 1180,
+      "y": 520,
+      "width": 64,
+      "height": 54,
+      "fillColor": "",
+      "strokeColor": "",
+      "unit": "",
+      "properties": [
+        {
+          "key": "note formula",
+          "value": ""
+        },
+        {
+          "key": "descrizione",
+          "value": "Learning rate costante; ridurlo se l’apprendimento diverge."
+        }
+      ],
+      "valueExpression": "0.1"
+    },
+    {
+      "id": 18,
+      "name": "trainSteps",
+      "output": false,
+      "global": false,
+      "type": "parameter",
+      "x": 1360,
+      "y": 520,
+      "width": 64,
+      "height": 54,
+      "fillColor": "",
+      "strokeColor": "",
+      "unit": "",
+      "properties": [
+        {
+          "key": "note formula",
+          "value": ""
+        },
+        {
+          "key": "descrizione",
+          "value": "Numero di aggiornamenti; mantenere t0=0 e dt=1. Poi i pesi restano congelati."
+        }
+      ],
+      "valueExpression": "1500"
+    },
+    {
+      "id": 19,
+      "name": "W1",
+      "output": true,
+      "global": false,
+      "type": "state",
+      "x": 1180,
+      "y": 120,
+      "width": 64,
+      "height": 54,
+      "fillColor": "",
+      "strokeColor": "",
+      "unit": "",
+      "properties": [
+        {
+          "key": "note formula",
+          "value": ""
+        },
+        {
+          "key": "descrizione",
+          "value": "Pesi ingresso → nascosto."
+        }
+      ],
+      "stateTransition": "if(time<trainSteps,this-lr*dW1,this)",
+      "initialState": "array(hiddenSize,2*rand()-1)"
+    },
+    {
+      "id": 20,
+      "name": "b1",
+      "output": true,
+      "global": false,
+      "type": "state",
+      "x": 1180,
+      "y": 220,
+      "width": 64,
+      "height": 54,
+      "fillColor": "",
+      "strokeColor": "",
+      "unit": "",
+      "properties": [
+        {
+          "key": "note formula",
+          "value": ""
+        },
+        {
+          "key": "descrizione",
+          "value": "Bias dello strato nascosto."
+        }
+      ],
+      "stateTransition": "if(time<trainSteps,this-lr*db1,this)",
+      "initialState": "array(hiddenSize,0)"
+    },
+    {
+      "id": 21,
+      "name": "W2",
+      "output": true,
+      "global": false,
+      "type": "state",
+      "x": 1180,
+      "y": 320,
+      "width": 64,
+      "height": 54,
+      "fillColor": "",
+      "strokeColor": "",
+      "unit": "",
+      "properties": [
+        {
+          "key": "note formula",
+          "value": ""
+        },
+        {
+          "key": "descrizione",
+          "value": "Pesi nascosto → uscita."
+        }
+      ],
+      "stateTransition": "if(time<trainSteps,this-lr*dW2,this)",
+      "initialState": "array(hiddenSize,(2*rand()-1)/sqrt(hiddenSize))"
+    },
+    {
+      "id": 22,
+      "name": "b2",
+      "output": true,
+      "global": false,
+      "type": "state",
+      "x": 1180,
+      "y": 420,
+      "width": 64,
+      "height": 54,
+      "fillColor": "",
+      "strokeColor": "",
+      "unit": "",
+      "properties": [
+        {
+          "key": "note formula",
+          "value": ""
+        },
+        {
+          "key": "descrizione",
+          "value": "Bias scalare di uscita."
+        }
+      ],
+      "stateTransition": "if(time<trainSteps,this-lr*db2,this)",
+      "initialState": "0"
+    },
+    {
+      "id": 23,
+      "name": "batchX",
+      "output": false,
+      "global": false,
+      "type": "algebraic",
+      "x": 820,
+      "y": 120,
+      "width": 64,
+      "height": 54,
+      "fillColor": "",
+      "strokeColor": "",
+      "unit": "",
+      "properties": [
+        {
+          "key": "note formula",
+          "value": ""
+        },
+        {
+          "key": "descrizione",
+          "value": "Ingressi del mini-batch, estratti esclusivamente dal training."
+        }
+      ],
+      "input": false,
+      "valueExpression": "trainX[batch]"
+    },
+    {
+      "id": 24,
+      "name": "batchY",
+      "output": false,
+      "global": false,
+      "type": "algebraic",
+      "x": 820,
+      "y": 220,
+      "width": 64,
+      "height": 54,
+      "fillColor": "",
+      "strokeColor": "",
+      "unit": "",
+      "properties": [
+        {
+          "key": "note formula",
+          "value": ""
+        },
+        {
+          "key": "descrizione",
+          "value": "Target del medesimo mini-batch."
+        }
+      ],
+      "input": false,
+      "valueExpression": "trainY[batch]"
+    },
+    {
+      "id": 25,
+      "name": "hidden",
+      "output": false,
+      "global": false,
+      "type": "algebraic",
+      "x": 1000,
+      "y": 120,
+      "width": 64,
+      "height": 54,
+      "fillColor": "",
+      "strokeColor": "",
+      "unit": "",
+      "properties": [
+        {
+          "key": "note formula",
+          "value": ""
+        },
+        {
+          "key": "descrizione",
+          "value": "Attivazioni nascoste: matrice batchSize × hiddenSize. Una riga per osservazione."
+        }
+      ],
+      "input": false,
+      "valueExpression": "array(batchSize,hiddenSize,tanh(batchX[$i0]*W1[$i1]+b1[$i1]))"
+    },
+    {
+      "id": 26,
+      "name": "batchPred",
+      "output": false,
+      "global": false,
+      "type": "algebraic",
+      "x": 1000,
+      "y": 220,
+      "width": 64,
+      "height": 54,
+      "fillColor": "",
+      "strokeColor": "",
+      "unit": "",
+      "properties": [
+        {
+          "key": "note formula",
+          "value": ""
+        },
+        {
+          "key": "descrizione",
+          "value": "Forward pass: somma pesata delle attivazioni più bias di uscita."
+        }
+      ],
+      "input": false,
+      "valueExpression": "array(batchSize,sum(hidden[$0]*W2)+b2)"
+    },
+    {
+      "id": 27,
+      "name": "error",
+      "output": false,
+      "global": false,
+      "type": "algebraic",
+      "x": 1000,
+      "y": 320,
+      "width": 64,
+      "height": 54,
+      "fillColor": "",
+      "strokeColor": "",
+      "unit": "",
+      "properties": [
+        {
+          "key": "note formula",
+          "value": ""
+        },
+        {
+          "key": "descrizione",
+          "value": "Errore di predizione sul mini-batch."
+        }
+      ],
+      "input": false,
+      "valueExpression": "batchPred-batchY"
+    },
+    {
+      "id": 28,
+      "name": "hiddenDelta",
+      "output": false,
+      "global": false,
+      "type": "algebraic",
+      "x": 1000,
+      "y": 420,
+      "width": 64,
+      "height": 54,
+      "fillColor": "",
+      "strokeColor": "",
+      "unit": "",
+      "properties": [
+        {
+          "key": "note formula",
+          "value": ""
+        },
+        {
+          "key": "descrizione",
+          "value": "Backpropagation: errore × peso di uscita × derivata tanh. Usa i pesi correnti."
+        }
+      ],
+      "input": false,
+      "valueExpression": "array(batchSize,hiddenSize,error[$i0]*W2[$i1]*(1-hidden[$i0,$i1]^2))"
+    },
+    {
+      "id": 29,
+      "name": "dW1",
+      "output": false,
+      "global": false,
+      "type": "algebraic",
+      "x": 1360,
+      "y": 120,
+      "width": 64,
+      "height": 54,
+      "fillColor": "",
+      "strokeColor": "",
+      "unit": "",
+      "properties": [
+        {
+          "key": "note formula",
+          "value": ""
+        },
+        {
+          "key": "descrizione",
+          "value": "Gradiente dei pesi di ingresso, mediato sulle osservazioni del mini-batch."
+        }
+      ],
+      "input": false,
+      "valueExpression": "array(hiddenSize,average(col(hiddenDelta,$0)*batchX))"
+    },
+    {
+      "id": 30,
+      "name": "db1",
+      "output": false,
+      "global": false,
+      "type": "algebraic",
+      "x": 1360,
+      "y": 220,
+      "width": 64,
+      "height": 54,
+      "fillColor": "",
+      "strokeColor": "",
+      "unit": "",
+      "properties": [
+        {
+          "key": "note formula",
+          "value": ""
+        },
+        {
+          "key": "descrizione",
+          "value": "Gradiente dei bias nascosti: media per colonna."
+        }
+      ],
+      "input": false,
+      "valueExpression": "average(hiddenDelta,0)"
+    },
+    {
+      "id": 31,
+      "name": "dW2",
+      "output": false,
+      "global": false,
+      "type": "algebraic",
+      "x": 1360,
+      "y": 320,
+      "width": 64,
+      "height": 54,
+      "fillColor": "",
+      "strokeColor": "",
+      "unit": "",
+      "properties": [
+        {
+          "key": "note formula",
+          "value": ""
+        },
+        {
+          "key": "descrizione",
+          "value": "Gradiente dei pesi di uscita: media di attivazione × errore."
+        }
+      ],
+      "input": false,
+      "valueExpression": "array(hiddenSize,average(col(hidden,$0)*error))"
+    },
+    {
+      "id": 32,
+      "name": "db2",
+      "output": false,
+      "global": false,
+      "type": "algebraic",
+      "x": 1360,
+      "y": 420,
+      "width": 64,
+      "height": 54,
+      "fillColor": "",
+      "strokeColor": "",
+      "unit": "",
+      "properties": [
+        {
+          "key": "note formula",
+          "value": ""
+        },
+        {
+          "key": "descrizione",
+          "value": "Gradiente del bias scalare di uscita."
+        }
+      ],
+      "input": false,
+      "valueExpression": "average(error)"
+    },
+    {
+      "id": 33,
+      "name": "plotX",
+      "output": true,
+      "global": false,
+      "type": "parameter",
+      "x": 460,
+      "y": 620,
+      "width": 64,
+      "height": 54,
+      "fillColor": "",
+      "strokeColor": "",
+      "unit": "",
+      "properties": [
+        {
+          "key": "note formula",
+          "value": ""
+        },
+        {
+          "key": "descrizione",
+          "value": "Griglia ordinata di visualizzazione. Adattarla al dominio dei dati personalizzati."
+        }
+      ],
+      "valueExpression": "range(101)/50-1"
+    },
+    {
+      "id": 34,
+      "name": "inferY",
+      "output": true,
+      "global": false,
+      "type": "algebraic",
+      "x": 640,
+      "y": 620,
+      "width": 64,
+      "height": 54,
+      "fillColor": "",
+      "strokeColor": "",
+      "unit": "",
+      "properties": [
+        {
+          "key": "note formula",
+          "value": ""
+        },
+        {
+          "key": "descrizione",
+          "value": "Predizioni sulla griglia plotX, senza usare target."
+        }
+      ],
+      "input": false,
+      "valueExpression": "array(size(plotX),mlpPredict(plotX[$0],W1,b1,W2,b2))"
+    },
+    {
+      "id": 35,
+      "name": "trainRMSE",
+      "output": true,
+      "global": false,
+      "type": "algebraic",
+      "x": 1540,
+      "y": 220,
+      "width": 64,
+      "height": 54,
+      "fillColor": "",
+      "strokeColor": "",
+      "unit": "",
+      "properties": [
+        {
+          "key": "note formula",
+          "value": ""
+        },
+        {
+          "key": "descrizione",
+          "value": "RMSE su tutto il training fino all’ultimo aggiornamento incluso; poi null."
+        }
+      ],
+      "input": false,
+      "valueExpression": "if(time<=trainSteps,sqrt(average((array(nTrain,mlpPredict(trainX[$0],W1,b1,W2,b2))-trainY)^2)),null)"
+    },
+    {
+      "id": 36,
+      "name": "testRMSE",
+      "output": true,
+      "global": false,
+      "type": "algebraic",
+      "x": 1540,
+      "y": 420,
+      "width": 64,
+      "height": 54,
+      "fillColor": "",
+      "strokeColor": "",
+      "unit": "",
+      "properties": [
+        {
+          "key": "note formula",
+          "value": ""
+        },
+        {
+          "key": "descrizione",
+          "value": "RMSE sul testing solo a pesi congelati; null durante il training."
+        }
+      ],
+      "input": false,
+      "valueExpression": "if(time>=trainSteps,sqrt(average((array(size(testX),mlpPredict(testX[$0],W1,b1,W2,b2))-testY)^2)),null)"
+    }
+  ],
+  "edges": [
+    {
+      "id": 1,
+      "from": 1,
+      "to": 2,
+      "color": "",
+      "influence": "none",
+      "controlPoints": []
+    },
+    {
+      "id": 2,
+      "from": 1,
+      "to": 3,
+      "color": "",
+      "influence": "none",
+      "controlPoints": []
+    },
+    {
+      "id": 3,
+      "from": 3,
+      "to": 5,
+      "color": "",
+      "influence": "none",
+      "controlPoints": []
+    },
+    {
+      "id": 4,
+      "from": 3,
+      "to": 6,
+      "color": "",
+      "influence": "none",
+      "controlPoints": []
+    },
+    {
+      "id": 5,
+      "from": 4,
+      "to": 6,
+      "color": "",
+      "influence": "none",
+      "controlPoints": []
+    },
+    {
+      "id": 6,
+      "from": 5,
+      "to": 7,
+      "color": "",
+      "influence": "none",
+      "controlPoints": []
+    },
+    {
+      "id": 7,
+      "from": 6,
+      "to": 7,
+      "color": "",
+      "influence": "none",
+      "controlPoints": []
+    },
+    {
+      "id": 8,
+      "from": 5,
+      "to": 8,
+      "color": "",
+      "influence": "none",
+      "controlPoints": []
+    },
+    {
+      "id": 9,
+      "from": 6,
+      "to": 8,
+      "color": "",
+      "influence": "none",
+      "controlPoints": []
+    },
+    {
+      "id": 10,
+      "from": 1,
+      "to": 9,
+      "color": "",
+      "influence": "none",
+      "controlPoints": []
+    },
+    {
+      "id": 11,
+      "from": 7,
+      "to": 9,
+      "color": "",
+      "influence": "none",
+      "controlPoints": []
+    },
+    {
+      "id": 12,
+      "from": 2,
+      "to": 10,
+      "color": "",
+      "influence": "none",
+      "controlPoints": []
+    },
+    {
+      "id": 13,
+      "from": 7,
+      "to": 10,
+      "color": "",
+      "influence": "none",
+      "controlPoints": []
+    },
+    {
+      "id": 14,
+      "from": 1,
+      "to": 11,
+      "color": "",
+      "influence": "none",
+      "controlPoints": []
+    },
+    {
+      "id": 15,
+      "from": 8,
+      "to": 11,
+      "color": "",
+      "influence": "none",
+      "controlPoints": []
+    },
+    {
+      "id": 16,
+      "from": 2,
+      "to": 12,
+      "color": "",
+      "influence": "none",
+      "controlPoints": []
+    },
+    {
+      "id": 17,
+      "from": 8,
+      "to": 12,
+      "color": "",
+      "influence": "none",
+      "controlPoints": []
+    },
+    {
+      "id": 18,
+      "from": 6,
+      "to": 13,
+      "color": "",
+      "influence": "none",
+      "controlPoints": []
+    },
+    {
+      "id": 19,
+      "from": 6,
+      "to": 14,
+      "color": "",
+      "influence": "none",
+      "controlPoints": []
+    },
+    {
+      "id": 20,
+      "from": 13,
+      "to": 14,
+      "color": "",
+      "influence": "none",
+      "controlPoints": []
+    },
+    {
+      "id": 21,
+      "from": 6,
+      "to": 15,
+      "color": "",
+      "influence": "none",
+      "controlPoints": []
+    },
+    {
+      "id": 22,
+      "from": 14,
+      "to": 15,
+      "color": "",
+      "influence": "none",
+      "controlPoints": []
+    },
+    {
+      "id": 23,
+      "from": 16,
+      "to": 19,
+      "color": "",
+      "influence": "none",
+      "controlPoints": []
+    },
+    {
+      "id": 24,
+      "from": 17,
+      "to": 19,
+      "color": "",
+      "influence": "none",
+      "controlPoints": []
+    },
+    {
+      "id": 25,
+      "from": 18,
+      "to": 19,
+      "color": "",
+      "influence": "none",
+      "controlPoints": []
+    },
+    {
+      "id": 26,
+      "from": 29,
+      "to": 19,
+      "color": "",
+      "influence": "none",
+      "controlPoints": []
+    },
+    {
+      "id": 27,
+      "from": 16,
+      "to": 20,
+      "color": "",
+      "influence": "none",
+      "controlPoints": []
+    },
+    {
+      "id": 28,
+      "from": 17,
+      "to": 20,
+      "color": "",
+      "influence": "none",
+      "controlPoints": []
+    },
+    {
+      "id": 29,
+      "from": 18,
+      "to": 20,
+      "color": "",
+      "influence": "none",
+      "controlPoints": []
+    },
+    {
+      "id": 30,
+      "from": 30,
+      "to": 20,
+      "color": "",
+      "influence": "none",
+      "controlPoints": []
+    },
+    {
+      "id": 31,
+      "from": 16,
+      "to": 21,
+      "color": "",
+      "influence": "none",
+      "controlPoints": []
+    },
+    {
+      "id": 32,
+      "from": 17,
+      "to": 21,
+      "color": "",
+      "influence": "none",
+      "controlPoints": []
+    },
+    {
+      "id": 33,
+      "from": 18,
+      "to": 21,
+      "color": "",
+      "influence": "none",
+      "controlPoints": []
+    },
+    {
+      "id": 34,
+      "from": 31,
+      "to": 21,
+      "color": "",
+      "influence": "none",
+      "controlPoints": []
+    },
+    {
+      "id": 35,
+      "from": 17,
+      "to": 22,
+      "color": "",
+      "influence": "none",
+      "controlPoints": []
+    },
+    {
+      "id": 36,
+      "from": 18,
+      "to": 22,
+      "color": "",
+      "influence": "none",
+      "controlPoints": []
+    },
+    {
+      "id": 37,
+      "from": 32,
+      "to": 22,
+      "color": "",
+      "influence": "none",
+      "controlPoints": []
+    },
+    {
+      "id": 38,
+      "from": 9,
+      "to": 23,
+      "color": "",
+      "influence": "none",
+      "controlPoints": []
+    },
+    {
+      "id": 39,
+      "from": 15,
+      "to": 23,
+      "color": "",
+      "influence": "none",
+      "controlPoints": []
+    },
+    {
+      "id": 40,
+      "from": 10,
+      "to": 24,
+      "color": "",
+      "influence": "none",
+      "controlPoints": []
+    },
+    {
+      "id": 41,
+      "from": 15,
+      "to": 24,
+      "color": "",
+      "influence": "none",
+      "controlPoints": []
+    },
+    {
+      "id": 42,
+      "from": 14,
+      "to": 25,
+      "color": "",
+      "influence": "none",
+      "controlPoints": []
+    },
+    {
+      "id": 43,
+      "from": 16,
+      "to": 25,
+      "color": "",
+      "influence": "none",
+      "controlPoints": []
+    },
+    {
+      "id": 44,
+      "from": 19,
+      "to": 25,
+      "color": "",
+      "influence": "none",
+      "controlPoints": []
+    },
+    {
+      "id": 45,
+      "from": 20,
+      "to": 25,
+      "color": "",
+      "influence": "none",
+      "controlPoints": []
+    },
+    {
+      "id": 46,
+      "from": 23,
+      "to": 25,
+      "color": "",
+      "influence": "none",
+      "controlPoints": []
+    },
+    {
+      "id": 47,
+      "from": 14,
+      "to": 26,
+      "color": "",
+      "influence": "none",
+      "controlPoints": []
+    },
+    {
+      "id": 48,
+      "from": 21,
+      "to": 26,
+      "color": "",
+      "influence": "none",
+      "controlPoints": []
+    },
+    {
+      "id": 49,
+      "from": 22,
+      "to": 26,
+      "color": "",
+      "influence": "none",
+      "controlPoints": []
+    },
+    {
+      "id": 50,
+      "from": 25,
+      "to": 26,
+      "color": "",
+      "influence": "none",
+      "controlPoints": []
+    },
+    {
+      "id": 51,
+      "from": 24,
+      "to": 27,
+      "color": "",
+      "influence": "none",
+      "controlPoints": []
+    },
+    {
+      "id": 52,
+      "from": 26,
+      "to": 27,
+      "color": "",
+      "influence": "none",
+      "controlPoints": []
+    },
+    {
+      "id": 53,
+      "from": 14,
+      "to": 28,
+      "color": "",
+      "influence": "none",
+      "controlPoints": []
+    },
+    {
+      "id": 54,
+      "from": 16,
+      "to": 28,
+      "color": "",
+      "influence": "none",
+      "controlPoints": []
+    },
+    {
+      "id": 55,
+      "from": 21,
+      "to": 28,
+      "color": "",
+      "influence": "none",
+      "controlPoints": []
+    },
+    {
+      "id": 56,
+      "from": 25,
+      "to": 28,
+      "color": "",
+      "influence": "none",
+      "controlPoints": []
+    },
+    {
+      "id": 57,
+      "from": 27,
+      "to": 28,
+      "color": "",
+      "influence": "none",
+      "controlPoints": []
+    },
+    {
+      "id": 58,
+      "from": 16,
+      "to": 29,
+      "color": "",
+      "influence": "none",
+      "controlPoints": []
+    },
+    {
+      "id": 59,
+      "from": 23,
+      "to": 29,
+      "color": "",
+      "influence": "none",
+      "controlPoints": []
+    },
+    {
+      "id": 60,
+      "from": 28,
+      "to": 29,
+      "color": "",
+      "influence": "none",
+      "controlPoints": []
+    },
+    {
+      "id": 61,
+      "from": 28,
+      "to": 30,
+      "color": "",
+      "influence": "none",
+      "controlPoints": []
+    },
+    {
+      "id": 62,
+      "from": 16,
+      "to": 31,
+      "color": "",
+      "influence": "none",
+      "controlPoints": []
+    },
+    {
+      "id": 63,
+      "from": 25,
+      "to": 31,
+      "color": "",
+      "influence": "none",
+      "controlPoints": []
+    },
+    {
+      "id": 64,
+      "from": 27,
+      "to": 31,
+      "color": "",
+      "influence": "none",
+      "controlPoints": []
+    },
+    {
+      "id": 65,
+      "from": 27,
+      "to": 32,
+      "color": "",
+      "influence": "none",
+      "controlPoints": []
+    },
+    {
+      "id": 66,
+      "from": 19,
+      "to": 34,
+      "color": "",
+      "influence": "none",
+      "controlPoints": []
+    },
+    {
+      "id": 67,
+      "from": 20,
+      "to": 34,
+      "color": "",
+      "influence": "none",
+      "controlPoints": []
+    },
+    {
+      "id": 68,
+      "from": 21,
+      "to": 34,
+      "color": "",
+      "influence": "none",
+      "controlPoints": []
+    },
+    {
+      "id": 69,
+      "from": 22,
+      "to": 34,
+      "color": "",
+      "influence": "none",
+      "controlPoints": []
+    },
+    {
+      "id": 70,
+      "from": 33,
+      "to": 34,
+      "color": "",
+      "influence": "none",
+      "controlPoints": []
+    },
+    {
+      "id": 71,
+      "from": 6,
+      "to": 35,
+      "color": "",
+      "influence": "none",
+      "controlPoints": []
+    },
+    {
+      "id": 72,
+      "from": 9,
+      "to": 35,
+      "color": "",
+      "influence": "none",
+      "controlPoints": []
+    },
+    {
+      "id": 73,
+      "from": 10,
+      "to": 35,
+      "color": "",
+      "influence": "none",
+      "controlPoints": []
+    },
+    {
+      "id": 74,
+      "from": 18,
+      "to": 35,
+      "color": "",
+      "influence": "none",
+      "controlPoints": []
+    },
+    {
+      "id": 75,
+      "from": 19,
+      "to": 35,
+      "color": "",
+      "influence": "none",
+      "controlPoints": []
+    },
+    {
+      "id": 76,
+      "from": 20,
+      "to": 35,
+      "color": "",
+      "influence": "none",
+      "controlPoints": []
+    },
+    {
+      "id": 77,
+      "from": 21,
+      "to": 35,
+      "color": "",
+      "influence": "none",
+      "controlPoints": []
+    },
+    {
+      "id": 78,
+      "from": 22,
+      "to": 35,
+      "color": "",
+      "influence": "none",
+      "controlPoints": []
+    },
+    {
+      "id": 79,
+      "from": 11,
+      "to": 36,
+      "color": "",
+      "influence": "none",
+      "controlPoints": []
+    },
+    {
+      "id": 80,
+      "from": 12,
+      "to": 36,
+      "color": "",
+      "influence": "none",
+      "controlPoints": []
+    },
+    {
+      "id": 81,
+      "from": 18,
+      "to": 36,
+      "color": "",
+      "influence": "none",
+      "controlPoints": []
+    },
+    {
+      "id": 82,
+      "from": 19,
+      "to": 36,
+      "color": "",
+      "influence": "none",
+      "controlPoints": []
+    },
+    {
+      "id": 83,
+      "from": 20,
+      "to": 36,
+      "color": "",
+      "influence": "none",
+      "controlPoints": []
+    },
+    {
+      "id": 84,
+      "from": 21,
+      "to": 36,
+      "color": "",
+      "influence": "none",
+      "controlPoints": []
+    },
+    {
+      "id": 85,
+      "from": 22,
+      "to": 36,
+      "color": "",
+      "influence": "none",
+      "controlPoints": []
+    }
+  ],
+  "notes": {
+    "markdown": "# Multi-layer perceptron: regressione non lineare\n\nQuesto modello estende l’idea di SGD a una rete neurale con un ingresso, uno strato nascosto di [[hiddenSize]] neuroni (4 per impostazione predefinita) e un’uscita lineare. Il dataset predefinito è `y=x²`, una relazione che una retta non può rappresentare. È un esempio di regressione, non di classificazione.\n\n## Come eseguirlo\n\nAvviare l’esecuzione completa, oppure procedere per passi. Con `t0=0`, `dt=1`, [[trainSteps]] pari a 1500 e `t1=1550`, vengono eseguiti 1500 aggiornamenti simultanei dei pesi e poi una fase a pesi congelati. Il passo zero mostra la rete prima dell’apprendimento. Il tempo conta aggiornamenti, non secondi fisici. Il rendering è aggiornato ogni 10 passi durante l’esecuzione completa.\n\nIl primo grafico mostra training in blu, testing in viola e curva appresa in verde ([[inferY]] sulla griglia [[plotX]]). Il secondo mostra [[trainRMSE]] fino all’ultimo aggiornamento incluso e [[testRMSE]] solo da quel momento in avanti. Al confine entrambe sono disponibili sugli stessi pesi finali. Fuori dalla fase pertinente il valore è `null`: nessun punto artificiale, storico conservato.\n\n## Dati e partizione\n\n[[X]] e [[Y]] sono vettori numerici di uguale lunghezza: almeno tre coppie. L’esempio usa 31 ascisse equispaziate tra -1 e 1 e target `Y=X^2`, senza rumore. [[n]] è ricavato dai dati. Sostituire i vettori o usare `readData(\"data/dataset.xlsx\",\"Dati\",2,1,32,1)` per X e la colonna 2 per Y; il file esterno va fornito dall’utente.\n\n[[trainFraction]] vale 0.7. [[nTrain]] arrotonda per difetto e mantiene almeno due osservazioni di training e una di testing. [[split]] è una permutazione casuale fissata all’inizializzazione: [[trainIndices]] e [[testIndices]] non si sovrappongono. I vettori risultanti sono [[trainX]], [[trainY]], [[testX]] e [[testY]]. Per dati già separati concatenare training e test, impostare `split=range(n)` e nTrain al conteggio di training. Gli indici iniziano da zero. Per serie temporali mantenere l’ordine anziché mescolare i dati.\n\nIl seme 42 rende riproducibili split, inizializzazione e batch a parità di configurazione. Dopo ogni modifica di dati o architettura reinizializzare il modello. Adattare anche [[plotX]] al dominio desiderato. Usare ingressi e target di ampiezza moderata: non è prevista normalizzazione automatica. Qualsiasi normalizzazione appresa dai dati deve essere stimata sul solo training.\n\n## Forward pass\n\nI vettori [[W1]] e [[b1]] contengono i pesi e i bias dei neuroni nascosti; [[W2]] contiene i pesi di uscita e [[b2]] il bias scalare finale. Tutti i vettori hanno lunghezza hiddenSize.\n\nPer una singola osservazione:\n\n- `h[j] = tanh(W1[j]*x + b1[j])`\n- `predizione = sum(W2*h) + b2`\n\nLa funzione locale `mlpPredict(x,w,b,v,c)` implementa questa predizione senza accedere a variabili globali. [[hidden]] e [[batchPred]] espongono separatamente il forward pass sul mini-batch, per rendere ispezionabile l’apprendimento.\n\n[[W1]] e [[W2]] sono inizializzati casualmente per rompere la simmetria tra neuroni; i bias partono da zero. Inizializzare tutti i pesi a zero impedirebbe ai neuroni nascosti di differenziarsi.\n\n## Backpropagation\n\n[[bSize]] vale nTrain: il comportamento predefinito è gradient descent su tutto il training. Impostare 1 per SGD o un valore intermedio per mini-batch; [[batchSize]] arrotonda e limita il valore a [1,nTrain]. [[batch]] estrae indici senza ripetizioni interne, diversi a ogni passo; non è una scansione per epoche. [[batchX]] e [[batchY]] mantengono le coppie del campione.\n\nLa loss è `L=average((predizione-target)^2)/2`. [[error]] contiene l’errore; la derivata dell’uscita lineare è 1 e quella di tanh è `1-h^2`.\n\n- [[dW2]]: media di `error*h` per ogni neurone.\n- [[db2]]: media dell’errore.\n- [[hiddenDelta]]: `error*W2[j]*(1-h[j]^2)` per osservazione e neurone.\n- [[dW1]]: media di `hiddenDelta*x` per ogni neurone.\n- [[db1]]: media di hiddenDelta per colonna.\n\nLe quattro transizioni applicano `parametro <- parametro-lr*gradiente` con [[lr]]=0.1. Tutti i gradienti usano gli stessi pesi correnti; gli aggiornamenti sono simultanei. Nessun dato di testing contribuisce ai gradienti.\n\n## Esperimenti e limiti\n\nProvare un diverso [[hiddenSize]] (intero positivo), un mini-batch più piccolo, rumore nei target o una funzione diversa. Ridurre [[lr]] se l’errore diverge; aumentare [[trainSteps]] e t1 se servono più aggiornamenti. La convergenza non è garantita per ogni scelta di dati, seme e iperparametri.\n\nLe RMSE misurano l’errore su tutta la rispettiva partizione, nella stessa unità dei target. Il test serve alla valutazione finale: per scegliere architettura e iperparametri serve un ulteriore validation set, qui non implementato. L’esempio ha un solo ingresso e una sola uscita, un solo strato nascosto, nessuna regolarizzazione o early stopping; i vincoli dei dati personalizzati non sono verificati automaticamente. È eseguito e verificato con il motore JavaScript.\n"
+  },
+  "textItems": [
+    {
+      "id": 1,
+      "x": 100,
+      "y": 10,
+      "width": 1200,
+      "height": 70,
+      "fillColor": "",
+      "strokeColor": "",
+      "dashboardPageId": null,
+      "html": "<h2>Multi-layer perceptron 1–4–1</h2><p>Regressione non lineare: dati → strato nascosto tanh → uscita lineare → backpropagation. Istruzioni e formule negli appunti del modello.</p>"
+    }
+  ],
+  "widgets": [
+    {
+      "id": 1,
+      "type": "xychart",
+      "customTitle": "MLP: dati e curva appresa",
+      "x": 80,
+      "y": 660,
+      "width": 480,
+      "height": 280,
+      "dashboardPageId": null,
+      "minimized": false,
+      "showTitleBar": true,
+      "fontSize": 13,
+      "outputOnly": false,
+      "showHistory": false,
+      "expandNonScalarValues": false,
+      "tableTextAlign": "left",
+      "tableDecimalDigits": 0,
+      "tableColumnFormats": {},
+      "xMin": "auto",
+      "xMax": "auto",
+      "yMin": "auto",
+      "yMax": "auto",
+      "xGridStep": null,
+      "yGridStep": null,
+      "xAxisLabel": "X",
+      "yAxisLabel": "Y",
+      "showGrid": true,
+      "showAxes": true,
+      "equalScale": false,
+      "legendPosition": "top-left",
+      "objects": [],
+      "source": "",
+      "showNumericValues": true,
+      "showIndices": true,
+      "autoFitCells": true,
+      "cellSize": 28,
+      "valueMin": "auto",
+      "valueMax": "auto",
+      "displayRows": null,
+      "displayCols": null,
+      "colorScheme": "blue",
+      "viewMode": "grid",
+      "surfaceStyle": "solid",
+      "surfaceAzimuth": 45,
+      "surfaceElevation": 32,
+      "surfaceHeightScale": 1,
+      "min": 0,
+      "max": 100,
+      "step": 1,
+      "value": 0,
+      "falseLabel": "",
+      "trueLabel": "",
+      "options": [],
+      "mappings": [],
+      "columns": [],
+      "xyPairs": [
+        {
+          "xSource": "trainX",
+          "ySource": "trainY",
+          "showTimeSeries": false,
+          "showInstantProfile": true,
+          "color": "#0e7ac4",
+          "pointColor": "#0e7ac4",
+          "showLine": false,
+          "lineWidth": 2.2,
+          "lineStyle": "solid",
+          "barMode": "none",
+          "showBars": false,
+          "barColor": "#0e7ac4",
+          "barWidth": 2.2,
+          "showArea": false,
+          "areaColor": "#0e7ac4",
+          "pointMode": "all",
+          "pointSize": 2.4
+        },
+        {
+          "xSource": "testX",
+          "ySource": "testY",
+          "showTimeSeries": false,
+          "showInstantProfile": true,
+          "color": "#9b59b6",
+          "pointColor": "#9b59b6",
+          "showLine": false,
+          "lineWidth": 2.2,
+          "lineStyle": "solid",
+          "barMode": "none",
+          "showBars": false,
+          "barColor": "#0e7ac4",
+          "barWidth": 2.2,
+          "showArea": false,
+          "areaColor": "#0e7ac4",
+          "pointMode": "all",
+          "pointSize": 2.4
+        },
+        {
+          "xSource": "plotX",
+          "ySource": "inferY",
+          "showTimeSeries": false,
+          "showInstantProfile": true,
+          "color": "#27ae60",
+          "pointColor": "#27ae60",
+          "showLine": true,
+          "lineWidth": 2.2,
+          "lineStyle": "solid",
+          "barMode": "none",
+          "showBars": false,
+          "barColor": "#27ae60",
+          "barWidth": 2.2,
+          "showArea": false,
+          "areaColor": "#27ae60",
+          "pointMode": "none",
+          "pointSize": 2.4
+        }
+      ]
+    },
+    {
+      "id": 4,
+      "type": "xychart",
+      "customTitle": "Errore su training e testing",
+      "x": 600,
+      "y": 660,
+      "width": 480,
+      "height": 280,
+      "dashboardPageId": null,
+      "minimized": false,
+      "showTitleBar": true,
+      "fontSize": 13,
+      "outputOnly": false,
+      "showHistory": false,
+      "expandNonScalarValues": false,
+      "tableTextAlign": "left",
+      "tableDecimalDigits": 0,
+      "tableColumnFormats": {},
+      "xMin": "auto",
+      "xMax": "auto",
+      "yMin": "auto",
+      "yMax": "auto",
+      "xGridStep": null,
+      "yGridStep": null,
+      "xAxisLabel": "Passo",
+      "yAxisLabel": "RMSE",
+      "showGrid": true,
+      "showAxes": true,
+      "equalScale": false,
+      "legendPosition": "top-right",
+      "objects": [],
+      "source": "",
+      "showNumericValues": true,
+      "showIndices": true,
+      "autoFitCells": true,
+      "cellSize": 28,
+      "valueMin": "auto",
+      "valueMax": "auto",
+      "displayRows": null,
+      "displayCols": null,
+      "colorScheme": "blue",
+      "viewMode": "grid",
+      "surfaceStyle": "solid",
+      "surfaceAzimuth": 45,
+      "surfaceElevation": 32,
+      "surfaceHeightScale": 1,
+      "min": 0,
+      "max": 100,
+      "step": 1,
+      "value": 0,
+      "falseLabel": "",
+      "trueLabel": "",
+      "options": [],
+      "mappings": [],
+      "columns": [],
+      "xyPairs": [
+        {
+          "xSource": "time",
+          "ySource": "trainRMSE",
+          "showTimeSeries": true,
+          "showInstantProfile": false,
+          "color": "#0e7ac4",
+          "pointColor": "#0e7ac4",
+          "showLine": true,
+          "lineWidth": 2.2,
+          "lineStyle": "solid",
+          "barMode": "none",
+          "showBars": false,
+          "barColor": "#0e7ac4",
+          "barWidth": 2.2,
+          "showArea": false,
+          "areaColor": "#0e7ac4",
+          "pointMode": "none",
+          "pointSize": 2.4
+        },
+        {
+          "xSource": "time",
+          "ySource": "testRMSE",
+          "showTimeSeries": true,
+          "showInstantProfile": false,
+          "color": "#9b59b6",
+          "pointColor": "#9b59b6",
+          "showLine": true,
+          "lineWidth": 2.2,
+          "lineStyle": "solid",
+          "barMode": "none",
+          "showBars": false,
+          "barColor": "#0e7ac4",
+          "barWidth": 2.2,
+          "showArea": false,
+          "areaColor": "#0e7ac4",
+          "pointMode": "none",
+          "pointSize": 2.4
+        }
+      ]
+    }
+  ]
+}

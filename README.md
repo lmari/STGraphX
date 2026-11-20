@@ -71,7 +71,8 @@ Ha un'interfaccia utente responsive, che lo rende utilizzabile anche su tablet.
 #### Funzionalità dell'engine
 
 * Definizione della base dei tempi e modalità varie di esecuzione; pannello di configurazione aggiornato dinamicamente
-* Gestione di esecuzione completa, passo-passo, temporizzata, con modello in modalità read-only durante l'esecuzione
+* Gestione di esecuzione completa, passo-passo, temporizzata, con modello in modalità read-only durante Francesco.
+Sei disponibile ad anticipare la call con i signori di RSE a mercoledì alle 14, prima del CdF?l'esecuzione
 * Gestione opzionale del blocco di esecuzione ed evidenziazione per nodi non definiti (**)
 * Una prima gestione di controllo di correttezza del modello (**)
 * Una prima gestione di unità di misura per le variabili, con inferenza sull'unità delle variabili derivate (**)

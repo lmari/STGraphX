@@ -103,6 +103,7 @@
             <button id="manageDashboardItem" class="menu-command" type="button" data-i18n="menu.view.dashboard"></button>
             <button id="managePresentationGroupsItem" class="menu-command" type="button" data-i18n="menu.view.presentationGroups"></button>
             <button id="feedbackLoopsItem" class="menu-command" type="button" data-i18n="menu.view.feedbackLoops" data-title-i18n="tooltip.menu.view.feedbackLoops"></button>
+            <button id="findNodeItem" class="menu-command" type="button" data-i18n="menu.view.findNode" data-title-i18n="tooltip.menu.view.findNode"></button>
             <hr class="menu-sep" />
             <button id="viewOptionsItem" class="menu-command" type="button" data-i18n="menu.view.options" data-title-i18n="tooltip.menu.view.options"></button>
           </div>
@@ -825,6 +826,21 @@
         <div class="modal-actions">
           <button id="localFunctionsCancelBtn" type="button" data-i18n="action.cancel"></button>
           <button id="localFunctionsApplyBtn" type="button" data-i18n="action.apply"></button>
+        </div>
+      </div>
+    </div>
+    <div id="nodeFinderModal" class="modal-backdrop modal-modeless hidden">
+      <div class="modal-card node-finder-card" role="dialog" aria-modal="false" aria-labelledby="nodeFinderTitle">
+        <div class="modal-head">
+          <h3 id="nodeFinderTitle" data-i18n="nodeFinder.title"></h3>
+          <button id="nodeFinderCloseBtn" class="icon-btn modal-close-btn" type="button" data-i18n-aria-label="aria.close">×</button>
+        </div>
+        <label class="node-finder-filter-label" for="nodeFinderFilter" data-i18n="nodeFinder.filter"></label>
+        <input id="nodeFinderFilter" type="search" autocomplete="off" data-i18n-placeholder="nodeFinder.filterPlaceholder" />
+        <div id="nodeFinderList" class="node-finder-list" role="listbox" data-i18n-aria-label="nodeFinder.list"></div>
+        <p id="nodeFinderEmpty" class="node-finder-empty hidden" data-i18n="nodeFinder.empty"></p>
+        <div class="modal-actions">
+          <button id="nodeFinderDismissBtn" type="button" data-i18n="action.close"></button>
         </div>
       </div>
     </div>

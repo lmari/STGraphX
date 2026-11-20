@@ -2487,6 +2487,63 @@ input.inferred-unit[readonly] { color: #6d7782; background: #f4f6f8; }
   z-index: 1493;
 }
 
+.node-finder-card {
+  width: min(360px, calc(100vw - 40px));
+  max-width: calc(100vw - 20px);
+  max-height: min(68vh, 560px);
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  overflow: hidden;
+}
+
+#nodeFinderModal.modal-modeless {
+  z-index: 1494;
+}
+
+.node-finder-filter-label {
+  color: var(--muted);
+  font-size: 0.84rem;
+}
+
+.node-finder-list {
+  display: flex;
+  min-height: 0;
+  max-height: min(48vh, 390px);
+  flex-direction: column;
+  gap: 3px;
+  overflow: auto;
+  padding: 2px;
+}
+
+.node-finder-entry {
+  width: 100%;
+  min-height: 30px;
+  padding: 5px 8px;
+  border: 1px solid transparent;
+  border-radius: 6px;
+  background: transparent;
+  color: var(--text);
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.node-finder-entry:hover,
+.node-finder-entry:focus-visible,
+.node-finder-entry[aria-selected="true"] {
+  border-color: #4c819d;
+  background: #f2f8fc;
+  outline: none;
+}
+
+.node-finder-empty {
+  margin: 6px 0;
+  color: var(--muted);
+  font-style: italic;
+}
+
 .feedback-loops-summary {
   margin: 10px 0 8px;
   color: #526575;
