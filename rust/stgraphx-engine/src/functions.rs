@@ -23,8 +23,6 @@ pub(crate) fn is_supported(name: &str) -> bool {
             | "exp"
             | "floor"
             | "log"
-            | "log10"
-            | "log2"
             | "sign"
             | "sin"
             | "sqrt"
@@ -64,9 +62,7 @@ pub(crate) fn evaluate(
         "cos" => unary(name, arguments, f64::cos),
         "exp" => unary(name, arguments, f64::exp),
         "floor" => unary(name, arguments, f64::floor),
-        "log" => unary(name, arguments, f64::ln),
-        "log10" => unary(name, arguments, f64::log10),
-        "log2" => unary(name, arguments, f64::log2),
+        "log" => logarithm(arguments),
         "sign" => unary(name, arguments, f64::signum),
         "sin" => unary(name, arguments, f64::sin),
         "sqrt" => unary(name, arguments, f64::sqrt),
@@ -515,6 +511,14 @@ fn unary(name: &str, arguments: &[Value], operation: impl Fn(f64) -> f64) -> Res
     Ok(arguments[0].unary(operation))
 }
 
+fn logarithm(arguments: &[Value]) -> Result<Value, String> {
+    match arguments {
+        [value] => Ok(value.unary(f64::ln)),
+        [value, base] => value.binary(base, |number, radix| number.ln() / radix.ln()),
+        _ => Err("log expects 1 or 2 arguments".to_string()),
+    }
+}
+
 fn binary(
     name: &str,
     arguments: &[Value],
@@ -700,6 +704,26 @@ mod tests {
             evaluate("average", &[matrix], None).expect("average should work"),
             Value::scalar(2.5)
         );
+    }
+
+    #[test]
+    fn logarithm_accepts_an_optional_scalar_or_tensor_base() {
+        assert_eq!(
+            evaluate("log", &[Value::scalar(8.0), Value::scalar(2.0)], None),
+            Ok(Value::scalar(3.0))
+        );
+        let values = Value::tensor(vec![2], vec![4.0, 27.0]).expect("tensor should be valid");
+        let bases = Value::tensor(vec![2], vec![2.0, 3.0]).expect("tensor should be valid");
+        let result = evaluate("log", &[values, bases], None)
+            .expect("vector logarithm should work")
+            .as_tensor()
+            .expect("vector logarithm should be a tensor")
+            .elements()
+            .to_vec();
+        assert!((result[0] - 2.0).abs() < 1e-12);
+        assert!((result[1] - 3.0).abs() < 1e-12);
+        assert!(!is_supported("log2"));
+        assert!(!is_supported("log10"));
     }
 
     #[test]

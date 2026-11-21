@@ -58,7 +58,7 @@ Sono supportati:
   volta a ogni passaggio;
 - espressioni condizionali `if(...)` scalari o tensoriali;
 - prime funzioni matematiche vettorializzate, tra cui `abs`, `sqrt`,
-  `min`, `max` e le principali funzioni trigonometriche;
+  `log(x[, base])`, `min`, `max` e le principali funzioni trigonometriche;
 - riduttori `sum`, `average` e `count(array[, axis])`, con supporto degli assi per
   vettori e matrici;
 - funzione strutturale `size`;

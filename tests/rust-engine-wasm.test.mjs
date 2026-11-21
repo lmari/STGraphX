@@ -121,4 +121,14 @@ assert.deepEqual(pipelinesResult.snapshots[0].values, {
   singleRandom: 0,
 });
 
+const logarithmsFixture = fs.readFileSync(
+  new URL("../rust/stgraphx-engine/tests/fixtures/logarithms.json", import.meta.url),
+  "utf8",
+);
+const logarithmsResult = JSON.parse(executeModelJson(logarithmsFixture));
+const logarithms = logarithmsResult.snapshots[0].values;
+assert.ok(Math.abs(logarithms.natural - 1) < 1e-12);
+assert.ok(Math.abs(logarithms.binary - 3) < 1e-12);
+logarithms.vector.forEach((value, index) => assert.ok(Math.abs(value - index) < 1e-12));
+
 process.stdout.write("rust-engine-wasm.test.mjs: ok\n");

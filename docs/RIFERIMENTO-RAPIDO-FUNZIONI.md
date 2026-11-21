@@ -937,34 +937,14 @@ Parte intera di `x`.
 
 ### `log`
 
-**Firma:** `log(x)`
+**Firma:** `log(x[, base])`
 
-Logaritmo naturale di `x`.
+Logaritmo di x. Senza base calcola il logaritmo naturale; con base calcola log(x)/log(base). x e base possono essere scalari o array di forma compatibile.
 
 *Esempi*
 - `log(1) -> 0`
-
----
-
-### `log10`
-
-**Firma:** `log10(x)`
-
-Logaritmo in base `10` di `x`.
-
-*Esempi*
-- `log10(100) -> 2`
-
----
-
-### `log2`
-
-**Firma:** `log2(x)`
-
-Logaritmo in base `2` di `x`.
-
-*Esempi*
-- `log2(8) -> 3`
+- `log(8, 2) -> 3`
+- `log([1,10,100], 10) -> [0,1,2]`
 
 ---
 

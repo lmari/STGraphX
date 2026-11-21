@@ -415,6 +415,16 @@ async function checkRk4State(rootDir) {
   assertClose(finalSnapshot.values.timeIntegral, 0.5, 1e-12, "timeIntegral");
 }
 
+async function checkLogarithms(rootDir) {
+  const runtime = await loadFixture(rootDir, "logarithms.json");
+
+  await runtime.evaluate();
+  const values = runtime.getValues(["natural", "binary", "vector"]);
+  assertClose(values.natural, 1, 1e-12, "natural logarithm");
+  assertClose(values.binary, 3, 1e-12, "base-2 logarithm");
+  values.vector.forEach((value, index) => assertClose(value, index, 1e-12, `vector logarithm ${index}`));
+}
+
 async function main() {
   const rootDir = path.resolve(__dirname, "..");
   await checkScalarAlgebraic(rootDir);
@@ -430,6 +440,7 @@ async function main() {
   await checkArrayIterations(rootDir);
   await checkLocalFunctions(rootDir);
   await checkRk4State(rootDir);
+  await checkLogarithms(rootDir);
   console.log("rust-engine-reference.test.js: ok");
 }
 

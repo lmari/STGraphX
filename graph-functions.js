@@ -1954,6 +1954,15 @@
     return (...args) => mapFunctionArgs(args, (...scalarArgs) => fn(...scalarArgs));
   }
 
+  function logarithm(...args) {
+    if (args.length < 1 || args.length > 2) {
+      throw new Error("log expects 1 or 2 arguments");
+    }
+    return mapFunctionArgs(args, (value, base) => (
+      base === undefined ? Math.log(value) : Math.log(value) / Math.log(base)
+    ));
+  }
+
   function conditionalFunction(...args) {
     if (args.length < 3 || args.length % 2 === 0) {
       throw new Error("if expects an odd number of arguments: condition, value pairs, and a default value");
@@ -2129,9 +2138,7 @@
       exp: vectorizeFunction(Math.exp),
       floor: vectorizeFunction(Math.floor),
       int: vectorizeFunction(Math.trunc),
-      log: vectorizeFunction(Math.log),
-      log10: vectorizeFunction(Math.log10),
-      log2: vectorizeFunction(Math.log2),
+      log: logarithm,
       max: vectorizeFunction(Math.max),
       min: vectorizeFunction(Math.min),
       piecewise,
@@ -2353,9 +2360,7 @@
       exp: { kind: "math", signature: "exp(x)", descriptionKey: "expr.help.exp", insertText: "exp()", cursorOffset: 4 },
       floor: { kind: "math", signature: "floor(x)", descriptionKey: "expr.help.floor", insertText: "floor()", cursorOffset: 6 },
       int: { kind: "math", signature: "int(x)", descriptionKey: "expr.help.int", insertText: "int()", cursorOffset: 4 },
-      log: { kind: "math", signature: "log(x)", descriptionKey: "expr.help.log", insertText: "log()", cursorOffset: 4 },
-      log10: { kind: "math", signature: "log10(x)", descriptionKey: "expr.help.log10", insertText: "log10()", cursorOffset: 6 },
-      log2: { kind: "math", signature: "log2(x)", descriptionKey: "expr.help.log2", insertText: "log2()", cursorOffset: 5 },
+      log: { kind: "math", signature: "log(x[, base])", descriptionKey: "expr.help.log", insertText: "log()", cursorOffset: 4 },
       max: { kind: "math", signature: "max(x1, x2, ...)", descriptionKey: "expr.help.max", insertText: "max()", cursorOffset: 4 },
       min: { kind: "math", signature: "min(x1, x2, ...)", descriptionKey: "expr.help.min", insertText: "min()", cursorOffset: 4 },
       "%": { kind: "math", signature: "a % b", descriptionKey: "expr.help.modulo", insertText: " % ", cursorOffset: 3 },

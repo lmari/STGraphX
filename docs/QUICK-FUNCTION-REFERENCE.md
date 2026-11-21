@@ -934,34 +934,14 @@ Remove the fractional part.
 
 ### `log`
 
-**Signature:** `log(x)`
+**Signature:** `log(x[, base])`
 
-Natural logarithm.
+Logarithm of x. Without base it computes the natural logarithm; with base it computes log(x)/log(base). x and base can be scalars or arrays with compatible shapes.
 
 *Examples*
 - `log(1) -> 0`
-
----
-
-### `log10`
-
-**Signature:** `log10(x)`
-
-Base-10 logarithm.
-
-*Examples*
-- `log10(100) -> 2`
-
----
-
-### `log2`
-
-**Signature:** `log2(x)`
-
-Base-2 logarithm.
-
-*Examples*
-- `log2(8) -> 3`
+- `log(8, 2) -> 3`
+- `log([1,10,100], 10) -> [0,1,2]`
 
 ---
 

@@ -1,6 +1,6 @@
 /*!
  * STGraphX Embedded Player Bundle
- * Generated: 2026-11-21T13:30:13.093Z
+ * Generated: 2026-11-21T14:55:02.311Z
  */
 
 /* --- i18n-inline.js --- */
@@ -453,9 +453,7 @@ window.STGraphXI18nBundles = {
     "expr.help.kind.node": "Variabili disponibili",
     "expr.help.kind.probability": "Funzioni statistiche e probabilistiche",
     "expr.help.kind.variable": "Variabili disponibili",
-    "expr.help.log": "Logaritmo naturale di `x`. Esempio: `log(1) -> 0`.",
-    "expr.help.log2": "Logaritmo in base `2` di `x`. Esempio: `log2(8) -> 3`.",
-    "expr.help.log10": "Logaritmo in base `10` di `x`. Esempio: `log10(100) -> 2`.",
+    "expr.help.log": "Logaritmo di x. Senza base calcola il logaritmo naturale; con base calcola log(x)/log(base). x e base possono essere scalari o array di forma compatibile. Esempi: `log(1) -> 0` ; `log(8, 2) -> 3` ; `log([1,10,100], 10) -> [0,1,2]`.",
     "expr.help.map": "Trasformazione elemento per elemento di un vettore o di una matrice. Dentro expr, $value è il valore corrente e $0, $1, ... sono gli indici locali. Esempi: map($value*2, [1,2,3]) ; map($0+$value, [10,20,30]) ; map($0+$1, [[1,2],[3,4]]).",
     "expr.help.mapAgents": "Trasformazione riga per riga di tutti gli agenti. expr deve restituire per ogni agente una nuova riga con la stessa lunghezza. In expr self è la riga dell'agente corrente e $i il suo indice. Esempio: `mapAgents(setAt(self, ENERGY, self[ENERGY] + 1), agents)`.",
     "expr.help.max": "Massimo tra `x1`, `x2`, ... . Esempio: `max(2, 7, 4) -> 7`.",
@@ -2037,9 +2035,7 @@ window.STGraphXI18nBundles = {
     "expr.help.kind.node": "Available variables",
     "expr.help.kind.probability": "Statistical and probabilistic functions",
     "expr.help.kind.variable": "Available variables",
-    "expr.help.log": "Natural logarithm. Example: `log(1) -> 0`.",
-    "expr.help.log2": "Base-2 logarithm. Example: `log2(8) -> 3`.",
-    "expr.help.log10": "Base-10 logarithm. Example: `log10(100) -> 2`.",
+    "expr.help.log": "Logarithm of x. Without base it computes the natural logarithm; with base it computes log(x)/log(base). x and base can be scalars or arrays with compatible shapes. Examples: `log(1) -> 0` ; `log(8, 2) -> 3` ; `log([1,10,100], 10) -> [0,1,2]`.",
     "expr.help.map": "Element-by-element transformation of a vector or matrix. Inside expr, $value is the current value and $0, $1, ... are local indices. Examples: map($value*2, [1,2,3]) ; map($0+$value, [10,20,30]) ; map($0+$1, [[1,2],[3,4]]).",
     "expr.help.mapAgents": "Row-by-row transformation of all agents. expr must return a new row with the same length for each agent. Inside expr self is the current agent row and $i its index. Example: `mapAgents(setAt(self, ENERGY, self[ENERGY] + 1), agents)`.",
     "expr.help.max": "Maximum of the provided values. Example: `max(2, 7, 4) -> 7`.",
@@ -3770,7 +3766,8 @@ window.STGraphXI18nBundles = {
             ? (same(first, radians) && first.kind === "unit" && first.factors.has("rad") ? first : dimensionless())
             : fail("dimensionless");
         }
-        if (["exp", "log", "log10", "log2"].includes(node.name)) return same(first, dimensionless()) ? dimensionless() : fail("dimensionless");
+        if (node.name === "exp") return same(first, dimensionless()) ? dimensionless() : fail("dimensionless");
+        if (node.name === "log") return args.every((arg) => same(arg, dimensionless())) ? dimensionless() : fail("dimensionless");
         if (node.name === "sqrt") {
           if (!isKnown(first)) return unknown();
           if (first.kind === "zero") return zero();
@@ -5750,6 +5747,15 @@ window.STGraphXI18nBundles = {
     return (...args) => mapFunctionArgs(args, (...scalarArgs) => fn(...scalarArgs));
   }
 
+  function logarithm(...args) {
+    if (args.length < 1 || args.length > 2) {
+      throw new Error("log expects 1 or 2 arguments");
+    }
+    return mapFunctionArgs(args, (value, base) => (
+      base === undefined ? Math.log(value) : Math.log(value) / Math.log(base)
+    ));
+  }
+
   function conditionalFunction(...args) {
     if (args.length < 3 || args.length % 2 === 0) {
       throw new Error("if expects an odd number of arguments: condition, value pairs, and a default value");
@@ -5925,9 +5931,7 @@ window.STGraphXI18nBundles = {
       exp: vectorizeFunction(Math.exp),
       floor: vectorizeFunction(Math.floor),
       int: vectorizeFunction(Math.trunc),
-      log: vectorizeFunction(Math.log),
-      log10: vectorizeFunction(Math.log10),
-      log2: vectorizeFunction(Math.log2),
+      log: logarithm,
       max: vectorizeFunction(Math.max),
       min: vectorizeFunction(Math.min),
       piecewise,
@@ -6149,9 +6153,7 @@ window.STGraphXI18nBundles = {
       exp: { kind: "math", signature: "exp(x)", descriptionKey: "expr.help.exp", insertText: "exp()", cursorOffset: 4 },
       floor: { kind: "math", signature: "floor(x)", descriptionKey: "expr.help.floor", insertText: "floor()", cursorOffset: 6 },
       int: { kind: "math", signature: "int(x)", descriptionKey: "expr.help.int", insertText: "int()", cursorOffset: 4 },
-      log: { kind: "math", signature: "log(x)", descriptionKey: "expr.help.log", insertText: "log()", cursorOffset: 4 },
-      log10: { kind: "math", signature: "log10(x)", descriptionKey: "expr.help.log10", insertText: "log10()", cursorOffset: 6 },
-      log2: { kind: "math", signature: "log2(x)", descriptionKey: "expr.help.log2", insertText: "log2()", cursorOffset: 5 },
+      log: { kind: "math", signature: "log(x[, base])", descriptionKey: "expr.help.log", insertText: "log()", cursorOffset: 4 },
       max: { kind: "math", signature: "max(x1, x2, ...)", descriptionKey: "expr.help.max", insertText: "max()", cursorOffset: 4 },
       min: { kind: "math", signature: "min(x1, x2, ...)", descriptionKey: "expr.help.min", insertText: "min()", cursorOffset: 4 },
       "%": { kind: "math", signature: "a % b", descriptionKey: "expr.help.modulo", insertText: " % ", cursorOffset: 3 },

@@ -348,7 +348,8 @@
             ? (same(first, radians) && first.kind === "unit" && first.factors.has("rad") ? first : dimensionless())
             : fail("dimensionless");
         }
-        if (["exp", "log", "log10", "log2"].includes(node.name)) return same(first, dimensionless()) ? dimensionless() : fail("dimensionless");
+        if (node.name === "exp") return same(first, dimensionless()) ? dimensionless() : fail("dimensionless");
+        if (node.name === "log") return args.every((arg) => same(arg, dimensionless())) ? dimensionless() : fail("dimensionless");
         if (node.name === "sqrt") {
           if (!isKnown(first)) return unknown();
           if (first.kind === "zero") return zero();

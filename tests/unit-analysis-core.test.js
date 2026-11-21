@@ -117,6 +117,9 @@ assert.equal(unitAnalysis.display(unitAnalysis.inferAst(context.window.GraphSema
 assert.equal(unitAnalysis.display(unitAnalysis.inferAst(context.window.GraphSemantics.parseExpressionAst("sqrt(length)"), {
   resolve: (name) => name === "length" ? unitAnalysis.parseUnit("m").value : unitAnalysis.unknown(),
 })), "m^0.5");
+assert(unitAnalysis.same(unitAnalysis.inferAst(context.window.GraphSemantics.parseExpressionAst("log(ratio, 10)"), {
+  resolve: (name) => name === "ratio" ? unitAnalysis.dimensionless() : unitAnalysis.unknown(),
+}), unitAnalysis.dimensionless()));
 assert.equal(unitAnalysis.display(unitAnalysis.inferAst(context.window.GraphSemantics.parseExpressionAst("integral(a)"), {
   resolve: (name) => name === "a" ? speed : unitAnalysis.unknown(),
   timeUnit: unitAnalysis.parseUnit("s").value,
