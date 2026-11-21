@@ -1658,7 +1658,7 @@ input.inferred-unit[readonly] { color: #6d7782; background: #f4f6f8; }
 .si-unit-definitions-list { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 3px 14px; }
 .si-unit-definition-row { min-width: 0; color: #40566a; font-family: var(--mono-font, ui-monospace, monospace); font-size: 0.84rem; }
 .unit-definitions-list { display: grid; gap: 4px; }
-.unit-definition-row { display: grid; grid-template-columns: minmax(48px, 0.55fr) minmax(80px, 1fr) auto; gap: 4px; align-items: center; }
+.unit-definition-row { display: grid; grid-template-columns: minmax(48px, 0.5fr) minmax(80px, 1fr) minmax(76px, 0.8fr) minmax(76px, 0.8fr) auto; gap: 4px; align-items: center; }
 .unit-definition-row input { min-width: 0; }
 .unit-definition-remove { min-width: 26px; min-height: 26px; padding: 2px 6px; }
 
@@ -1683,6 +1683,12 @@ input.inferred-unit[readonly] { color: #6d7782; background: #f4f6f8; }
 
 @media (max-width: 620px) {
   .si-unit-definitions-list { grid-template-columns: minmax(0, 1fr); }
+  .unit-definition-row { grid-template-columns: repeat(2, minmax(0, 1fr)) auto; }
+  .unit-definition-row input:nth-child(1) { grid-column: 1; grid-row: 1; }
+  .unit-definition-row input:nth-child(2) { grid-column: 1 / span 2; grid-row: 2; }
+  .unit-definition-row input:nth-child(3) { grid-column: 1; grid-row: 3; }
+  .unit-definition-row input:nth-child(4) { grid-column: 2; grid-row: 3; }
+  .unit-definition-remove { grid-row: 1; grid-column: 3; }
 }
 
 #nodePanel h4,
@@ -2435,6 +2441,8 @@ input.inferred-unit[readonly] { color: #6d7782; background: #f4f6f8; }
 .documentation-help-heading h3 { margin: 0; }
 .documentation-help-path { overflow: hidden; color: #6b7d8b; font-family: ui-monospace, monospace; font-size: 0.72rem; text-overflow: ellipsis; white-space: nowrap; }
 .documentation-help-actions { display: flex; align-items: center; gap: 5px; }
+.documentation-help-index { width: min(330px, 45vw); min-width: 160px; height: 34px; padding: 3px 28px 3px 8px; border: 1px solid var(--line); border-radius: 6px; background: #fff; color: #203246; font-size: .82rem; }
+.documentation-help-index:disabled { background: #f3f6f8; color: #738394; }
 .documentation-help-actions .icon-btn { min-width: 34px; min-height: 34px; font-size: 1.5rem; line-height: 1; }
 .documentation-help-content { flex: 1 1 auto; min-height: 0; max-height: calc(100vh - 175px); overflow: auto; padding: 10px; border: 1px solid var(--line); border-radius: 8px; background: #fbfcfe; color: #203246; line-height: 1.45; }
 .documentation-help-content a { color: #12639c; cursor: pointer; }

@@ -71,9 +71,13 @@ function requestScene2DImageAsset(path) {
 
 // Unit "1" is the internal notation for a dimensionless value and should not
 // consume space in widget labels intended for model readers.
-function displayWidgetUnit(value) {
+function displayWidgetUnit(value, scalarValue = null) {
   const unit = String(value ?? "").trim();
-  return unit === "1" ? "" : unit;
+  if (unit === "1") return "";
+  const formatUnitForValue = globalThis.STGraphXValueFormatting?.formatUnitForValue;
+  return typeof formatUnitForValue === "function"
+    ? formatUnitForValue(unit, scalarValue, graph.unitDefinitions)
+    : unit;
 }
 
 function addTableWidget(at = null) {
@@ -4486,7 +4490,7 @@ function buildNodeTooltipText(node) {
     description,
     analysisIssue,
   ].filter(Boolean).join(" | ");
-  const unit = displayWidgetUnit(node.unit || node.inferredUnit);
+  const unit = displayWidgetUnit(node.unit || node.inferredUnit, node.computedValue);
   if (node.computedValue != null) {
     const valueText = summarizeTooltipValue(node.computedValue);
     const valueWithUnit = unit

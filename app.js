@@ -279,6 +279,7 @@ const expressionNodeRangeMinInput = document.getElementById("expressionNodeRange
 const expressionNodeRangeMaxInput = document.getElementById("expressionNodeRangeMaxInput");
 const documentationHelpBtn = document.getElementById("documentationHelpBtn");
 const functionalThinkingHelpBtn = document.getElementById("functionalThinkingHelpBtn");
+const unitsIntroductionHelpBtn = document.getElementById("unitsIntroductionHelpBtn");
 const functionsHelpBtn = document.getElementById("functionsHelpBtn");
 const eightTupleBtn = document.getElementById("eightTupleBtn");
 const examplesHelpBtn = document.getElementById("examplesHelpBtn");
@@ -292,8 +293,7 @@ const functionsHelpTypeFilter = document.getElementById("functionsHelpTypeFilter
 const documentationHelpModal = document.getElementById("documentationHelpModal");
 const documentationHelpCloseBtn = document.getElementById("documentationHelpCloseBtn");
 const documentationHelpDismissBtn = document.getElementById("documentationHelpDismissBtn");
-const documentationHelpBackBtn = document.getElementById("documentationHelpBackBtn");
-const documentationHelpForwardBtn = document.getElementById("documentationHelpForwardBtn");
+const documentationHelpIndex = document.getElementById("documentationHelpIndex");
 const documentationHelpTitle = document.getElementById("documentationHelpTitle");
 const documentationHelpPath = document.getElementById("documentationHelpPath");
 const documentationHelpContent = document.getElementById("documentationHelpContent");
@@ -616,6 +616,7 @@ const {
   formatComputedValue,
   formatExecutionDuration,
   formatNumberValue,
+  formatUnitForValue,
   isAgentSpaceValue,
   summarizeExpressionPreviewValue,
   summarizeNodeRuntimeValue,
@@ -1260,8 +1261,7 @@ const helpContentHelpers = globalThis.STGraphXHelpContent?.createHelpContentHelp
   documentationHelpTitle,
   documentationHelpPath,
   documentationHelpContent,
-  documentationHelpBackBtn,
-  documentationHelpForwardBtn,
+  documentationHelpIndex,
   examplesHelpModal,
   examplesHelpTitle,
   examplesHelpIntro,
@@ -5797,7 +5797,11 @@ function setExpressionEntryTooltip(entry = null) {
   const preview = expressionValuePreviewForEntry(entry);
   const lines = [];
   if (entry?.name && preview?.text) {
-    const unit = preview.unit ? ` ${preview.unit}` : "";
+    const previewNode = entry.name === "this" || entry.name === "self"
+      ? getNodeById(ui.expressionEditor?.nodeId)
+      : graph.nodes.find((candidate) => candidate?.name === entry.name);
+    const displayUnit = formatUnitForValue(preview.unit, previewNode?.computedValue, graph.unitDefinitions);
+    const unit = displayUnit ? ` ${displayUnit}` : "";
     const type = preview.typeLabel ? ` (${preview.typeLabel})` : "";
     lines.push(`${entry.name} = ${preview.text}${unit}${type}`);
   } else {
@@ -8108,6 +8112,25 @@ function openScenarioManager() {
   window.setTimeout(() => saveCurrent.focus(), 0);
 }
 
+function normalizeUnitDefinition(definition) {
+  return {
+    symbol: String(definition?.symbol ?? definition?.name ?? "").trim(),
+    expression: String(definition?.expression ?? definition?.value ?? "").trim(),
+    singular: String(definition?.singular ?? "").trim(),
+    plural: String(definition?.plural ?? "").trim(),
+  };
+}
+
+function serializeUnitDefinition(definition) {
+  const normalized = normalizeUnitDefinition(definition);
+  return {
+    symbol: normalized.symbol,
+    expression: normalized.expression,
+    ...(normalized.singular ? { singular: normalized.singular } : {}),
+    ...(normalized.plural ? { plural: normalized.plural } : {}),
+  };
+}
+
 function renderUnitDefinitionsEditor() {
   if (!unitDefinitionsList) {
     return;
@@ -8128,15 +8151,31 @@ function renderUnitDefinitionsEditor() {
     expression.placeholder = "kg*m/s^2";
     expression.setAttribute("aria-label", t("label.unitDefinitionExpression"));
     expression.title = t("label.unitDefinitionExpression");
+    const singular = document.createElement("input");
+    singular.type = "text";
+    singular.value = String(definition?.singular ?? "");
+    singular.placeholder = t("label.unitDefinitionSingularPlaceholder");
+    singular.setAttribute("aria-label", t("label.unitDefinitionSingular"));
+    singular.title = t("label.unitDefinitionSingular");
+    const plural = document.createElement("input");
+    plural.type = "text";
+    plural.value = String(definition?.plural ?? "");
+    plural.placeholder = t("label.unitDefinitionPluralPlaceholder");
+    plural.setAttribute("aria-label", t("label.unitDefinitionPlural"));
+    plural.title = t("label.unitDefinitionPlural");
     const update = () => {
       if (!graph.unitDefinitions[index]) return;
       graph.unitDefinitions[index].symbol = String(symbol.value ?? "").trim();
       graph.unitDefinitions[index].expression = String(expression.value ?? "").trim();
+      graph.unitDefinitions[index].singular = String(singular.value ?? "").trim();
+      graph.unitDefinitions[index].plural = String(plural.value ?? "").trim();
       analyzeModelStaticIssues();
       scheduleFileStatusRefresh();
     };
     symbol.addEventListener("input", update);
     expression.addEventListener("input", update);
+    singular.addEventListener("input", update);
+    plural.addEventListener("input", update);
     const remove = document.createElement("button");
     remove.type = "button";
     remove.className = "unit-definition-remove";
@@ -8149,7 +8188,7 @@ function renderUnitDefinitionsEditor() {
       scheduleFileStatusRefresh();
       renderUnitDefinitionsEditor();
     });
-    row.append(symbol, expression, remove);
+    row.append(symbol, expression, singular, plural, remove);
     unitDefinitionsList.appendChild(row);
   });
 }
@@ -9949,7 +9988,7 @@ function exportGraphData() {
     },
     modelProperties: graph.properties.map((p) => ({ key: String(p.key), value: String(p.value) })),
     unitDefinitions: graph.unitDefinitions
-      .map((definition) => ({ symbol: String(definition?.symbol ?? "").trim(), expression: String(definition?.expression ?? "").trim() }))
+      .map(serializeUnitDefinition)
       .filter((definition) => definition.symbol || definition.expression),
     scenarios: normalizeScenarios(graph.scenarios),
     nodeCounter,
@@ -10242,7 +10281,7 @@ function applyGraphData(data) {
     ? data.modelProperties.map((p) => ({ key: String(p?.key ?? ""), value: String(p?.value ?? "") }))
     : [];
   graph.unitDefinitions = Array.isArray(data?.unitDefinitions)
-    ? data.unitDefinitions.map((definition) => ({ symbol: String(definition?.symbol ?? definition?.name ?? "").trim(), expression: String(definition?.expression ?? definition?.value ?? "").trim() }))
+    ? data.unitDefinitions.map(normalizeUnitDefinition)
     : [];
   graph.scenarios = normalizeScenarios(data?.scenarios);
   graph.localFunctions = Array.isArray(data?.localFunctions)
@@ -13698,7 +13737,7 @@ function importGraphData(data) {
       ? data.modelProperties.map((p) => ({ key: String(p?.key ?? ""), value: String(p?.value ?? "") }))
       : [],
     unitDefinitions: Array.isArray(data.unitDefinitions)
-      ? data.unitDefinitions.map((definition) => ({ symbol: String(definition?.symbol ?? definition?.name ?? "").trim(), expression: String(definition?.expression ?? definition?.value ?? "").trim() }))
+      ? data.unitDefinitions.map(normalizeUnitDefinition)
       : [],
     scenarios: normalizeScenarios(data?.scenarios),
     debug: {
@@ -16347,7 +16386,7 @@ timeStartInput.addEventListener("change", () => commitExecutionInput(timeStartIn
 timeStepInput.addEventListener("change", () => commitExecutionInput(timeStepInput, "dt"));
 timeUnitInput?.addEventListener("change", () => { graph.execution.timeUnit = String(timeUnitInput.value ?? "").trim() || "s"; timeUnitInput.value = graph.execution.timeUnit; analyzeModelStaticIssues(); scheduleFileStatusRefresh(); });
 addUnitDefinitionBtn?.addEventListener("click", () => {
-  graph.unitDefinitions.push({ symbol: "", expression: "" });
+  graph.unitDefinitions.push({ symbol: "", expression: "", singular: "", plural: "" });
   scheduleFileStatusRefresh();
   renderUnitDefinitionsEditor();
   unitDefinitionsList?.querySelector(".unit-definition-row:last-child input")?.focus();
@@ -17707,6 +17746,12 @@ if (functionalThinkingHelpBtn) {
   functionalThinkingHelpBtn.addEventListener("click", () => {
     closeTopMenus();
     openDocumentationHelp("docs/introduzione-pensiero-funzionale.md");
+  });
+}
+if (unitsIntroductionHelpBtn) {
+  unitsIntroductionHelpBtn.addEventListener("click", () => {
+    closeTopMenus();
+    openDocumentationHelp("docs/introduzione-unita-di-misura.md");
   });
 }
 if (documentationHelpBtn) {

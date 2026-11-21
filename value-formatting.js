@@ -12,6 +12,46 @@
   }
   globalScope.STGraphXValueFormatting = factory();
 })(typeof globalThis !== "undefined" ? globalThis : this, function createValueFormattingExports() {
+  function formatUnitForValue(unitValue, value, unitDefinitions = []) {
+    const unit = String(unitValue ?? "").trim();
+    if (!unit || unit === "1" || !Number.isFinite(Number(value))) {
+      return unit === "1" ? "" : unit;
+    }
+    const definitions = Array.isArray(unitDefinitions) ? unitDefinitions : [];
+    const chooseName = (definition) => {
+      const symbol = String(definition?.symbol ?? definition?.name ?? "").trim();
+      const singular = String(definition?.singular ?? "").trim();
+      const plural = String(definition?.plural ?? "").trim();
+      return Math.abs(Number(value)) === 1
+        ? (singular || symbol)
+        : (plural || singular || symbol);
+    };
+    // The quantity determines grammatical number only for factors in the
+    // numerator: 2 pezzi/giorno, not 2 pezzo/giorni.
+    let numerator = true;
+    return unit.split(/([*/])/u).map((part) => {
+      if (part === "/") {
+        numerator = false;
+        return part;
+      }
+      if (part === "*") {
+        numerator = true;
+        return part;
+      }
+      if (!numerator) return part;
+      const match = part.match(/^([^\^]+)(\^-?\d+)?$/u);
+      if (!match || (match[2] && match[2] !== "^1")) return part;
+      const name = match[1];
+      const definition = definitions.find((entry) => {
+        const symbol = String(entry?.symbol ?? entry?.name ?? "").trim();
+        return name === symbol
+          || name === String(entry?.singular ?? "").trim()
+          || name === String(entry?.plural ?? "").trim();
+      });
+      return definition ? `${chooseName(definition)}${match[2] || ""}` : part;
+    }).join("");
+  }
+
   function createValueFormattingHelpers(options = {}) {
     const translate = typeof options.t === "function" ? options.t : (key) => key;
     const clamp = typeof options.clamp === "function"
@@ -184,6 +224,7 @@
       formatComputedValue,
       formatExecutionDuration,
       formatNumberValue,
+      formatUnitForValue,
       isAgentSpaceValue,
       summarizeExpressionPreviewValue,
       summarizeNodeRuntimeValue,
@@ -191,5 +232,5 @@
     };
   }
 
-  return { createValueFormattingHelpers };
+  return { createValueFormattingHelpers, formatUnitForValue };
 });

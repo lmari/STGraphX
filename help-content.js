@@ -28,6 +28,7 @@
     "docs/QUICK-FUNCTION-REFERENCE.md",
     "docs/RIFERIMENTO-RAPIDO-FUNZIONI.md",
     "docs/introduzione-pensiero-funzionale.md",
+    "docs/introduzione-unita-di-misura.md",
   ]);
   const EXAMPLE_LAYOUT_VARIANTS = new Set(["list", "compact", "stack"]);
   const EXAMPLES_HELP_STYLE_TAG_ID = "examples-help-external-style";
@@ -80,8 +81,7 @@
     const documentationHelpTitle = options.documentationHelpTitle || null;
     const documentationHelpPath = options.documentationHelpPath || null;
     const documentationHelpContent = options.documentationHelpContent || null;
-    const documentationHelpBackBtn = options.documentationHelpBackBtn || null;
-    const documentationHelpForwardBtn = options.documentationHelpForwardBtn || null;
+    const documentationHelpIndex = options.documentationHelpIndex || null;
     const examplesHelpModal = options.examplesHelpModal || null;
     const examplesHelpTitle = options.examplesHelpTitle || null;
     const examplesHelpIntro = options.examplesHelpIntro || null;
@@ -98,6 +98,7 @@
     const documentationHistory = [];
     let documentationHistoryIndex = -1;
     let documentationRequestId = 0;
+    let documentationIndexTargets = new Map();
 
     function localizedRecordText(record) {
       if (typeof record === "string") {
@@ -490,6 +491,7 @@
 
     function documentationTitleForPath(path) {
       if (path === "docs/introduzione-pensiero-funzionale.md") return t("functionalThinking.title");
+      if (path === "docs/introduzione-unita-di-misura.md") return t("unitsIntroduction.title");
       const name = String(path || "").split("/").pop() || "";
       return name.replace(/\.md$/iu, "") || t("documentation.title");
     }
@@ -509,13 +511,35 @@
       ));
     }
 
-    function updateDocumentationNavigation() {
-      if (documentationHelpBackBtn) {
-        documentationHelpBackBtn.disabled = documentationHistoryIndex <= 0;
-      }
-      if (documentationHelpForwardBtn) {
-        documentationHelpForwardBtn.disabled = documentationHistoryIndex < 0 || documentationHistoryIndex >= documentationHistory.length - 1;
-      }
+    function clearDocumentationIndex() {
+      documentationIndexTargets = new Map();
+      if (!documentationHelpIndex) return;
+      documentationHelpIndex.replaceChildren();
+      const placeholder = document.createElement("option");
+      placeholder.value = "";
+      placeholder.textContent = t("documentation.index");
+      placeholder.selected = true;
+      placeholder.disabled = true;
+      documentationHelpIndex.appendChild(placeholder);
+      documentationHelpIndex.disabled = true;
+    }
+
+    function buildDocumentationIndex() {
+      clearDocumentationIndex();
+      if (!documentationHelpIndex || !documentationHelpContent) return;
+      const headings = Array.from(documentationHelpContent.querySelectorAll("h2, h3, h4"));
+      if (!headings.length) return;
+      headings.forEach((heading, index) => {
+        const id = `documentation-section-${index}`;
+        heading.id = id;
+        documentationIndexTargets.set(id, heading);
+        const option = document.createElement("option");
+        option.value = id;
+        const level = Number(String(heading.tagName).slice(1));
+        option.textContent = `${"  ".repeat(Math.max(0, level - 2))}${heading.textContent.trim()}`;
+        documentationHelpIndex.appendChild(option);
+      });
+      documentationHelpIndex.disabled = false;
     }
 
     function linkifyDocumentationUrls() {
@@ -575,7 +599,7 @@
       if (documentationHelpTitle) documentationHelpTitle.textContent = documentationTitleForPath(normalized);
       if (documentationHelpPath) documentationHelpPath.textContent = normalized;
       documentationHelpContent.textContent = t("documentation.loading");
-      updateDocumentationNavigation();
+      clearDocumentationIndex();
       try {
         const text = await loadExamplesAssetText(normalized);
         if (requestId !== documentationRequestId) return false;
@@ -588,6 +612,7 @@
         // the reader may need to open, so make them actionable here as well.
         linkifyDocumentationUrls();
         bindDocumentationLinks();
+        buildDocumentationIndex();
         documentationHelpContent.scrollTop = 0;
         await globalThis.STGraphXMarkdown?.renderMermaidDiagrams?.(documentationHelpContent, {
           isCurrent: () => requestId === documentationRequestId,
@@ -602,6 +627,7 @@
       } catch (error) {
         if (requestId !== documentationRequestId) return false;
         documentationHelpContent.textContent = t("documentation.loadError", { message: String(error?.message || error || "") });
+        clearDocumentationIndex();
         return false;
       }
     }
@@ -667,8 +693,6 @@
         void renderDocumentationPath(path);
       } else if (documentationHistoryIndex < 0) {
         void renderDocumentationPath(DOCUMENTATION_ENTRY_PATH);
-      } else {
-        updateDocumentationNavigation();
       }
     }
 
@@ -676,18 +700,10 @@
       documentationHelpModal?.classList.add("hidden");
     }
 
-    if (documentationHelpBackBtn) {
-      documentationHelpBackBtn.addEventListener("click", () => {
-        if (documentationHistoryIndex <= 0) return;
-        documentationHistoryIndex -= 1;
-        void renderDocumentationPath(documentationHistory[documentationHistoryIndex], { addToHistory: false });
-      });
-    }
-    if (documentationHelpForwardBtn) {
-      documentationHelpForwardBtn.addEventListener("click", () => {
-        if (documentationHistoryIndex >= documentationHistory.length - 1) return;
-        documentationHistoryIndex += 1;
-        void renderDocumentationPath(documentationHistory[documentationHistoryIndex], { addToHistory: false });
+    if (documentationHelpIndex) {
+      documentationHelpIndex.addEventListener("change", () => {
+        const target = documentationIndexTargets.get(documentationHelpIndex.value);
+        if (target) target.scrollIntoView({ block: "start", behavior: "smooth" });
       });
     }
 
