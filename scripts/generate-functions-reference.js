@@ -38,8 +38,9 @@ if (!messages || !docs) {
 }
 
 const locale = lang === "it" ? "it" : "en";
-const groupOrder = ["variable", "function", "array", "probability", "math", "agent"];
+const groupOrder = ["syntax", "variable", "function", "array", "probability", "math", "agent"];
 const groupLabelKeys = {
+  syntax: "help.group.syntax",
   variable: "help.group.variables",
   function: "help.group.functions",
   array: "help.group.array",
@@ -72,7 +73,9 @@ const entries = [
 ].map(([name, entry]) => ({
   ...entry,
   name,
-  group: entry.helpSection || entry.kind || "function",
+  // The placeholder and the pipeline are a single language construct, not
+  // independently available variables or ordinary mathematical functions.
+  group: name === "_" || name === "|>" ? "syntax" : (entry.helpSection || entry.kind || "function"),
   description: copy(entry.descriptionKey),
 }));
 
@@ -80,10 +83,11 @@ const title = lang === "it"
   ? "STGraphX - Riferimento rapido alle funzioni"
   : "STGraphX - Quick Function Reference";
 const generated = lang === "it" ? "Generato automaticamente" : "Generated automatically";
+const signatureLabel = lang === "it" ? "Firma" : "Signature";
 const lines = [
   `# ${title}`,
   "",
-  `${generated} da \`i18n-inline.js\` e \`graph-functions.js\` (release ${context.window.STGraphXAppMeta?.releaseDate || "unknown"}).`,
+  `${generated} ${lang === "it" ? "da" : "from"} \`i18n-inline.js\` ${lang === "it" ? "e" : "and"} \`graph-functions.js\` (release ${context.window.STGraphXAppMeta?.releaseDate || "unknown"}).`,
   "",
   lang === "it"
     ? "Rigenerare con \`npm run docs:functions\`."
@@ -102,12 +106,12 @@ for (const group of groupOrder) {
   lines.push("", `## ${copy(groupLabelKeys[group])}`);
   groupEntries.forEach((entry, index) => {
     const { body, examples } = splitDescription(entry.description);
-    lines.push("", `### \`${entry.name}\``, "", `\`${entry.signature || entry.name}\``);
+    lines.push("", `### \`${entry.name}\``, "", `**${signatureLabel}:** \`${entry.signature || entry.name}\``);
     if (body) {
       lines.push("", body);
     }
     if (examples.length) {
-      lines.push("", `**${copy("expr.help.examples")}**`);
+      lines.push("", `*${copy("expr.help.examples")}*`);
       examples.forEach((example) => lines.push(`- \`${example}\``));
     }
     if (index < groupEntries.length - 1) {

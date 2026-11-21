@@ -28,6 +28,7 @@
     "docs/QUICK-FUNCTION-REFERENCE.md",
     "docs/RIFERIMENTO-RAPIDO-FUNZIONI.md",
     "docs/introduzione-pensiero-funzionale.md",
+    "docs/introduzione-pensiero-array.md",
     "docs/introduzione-unita-di-misura.md",
   ]);
   const EXAMPLE_LAYOUT_VARIANTS = new Set(["list", "compact", "stack"]);
@@ -491,6 +492,7 @@
 
     function documentationTitleForPath(path) {
       if (path === "docs/introduzione-pensiero-funzionale.md") return t("functionalThinking.title");
+      if (path === "docs/introduzione-pensiero-array.md") return t("arrayThinking.title");
       if (path === "docs/introduzione-unita-di-misura.md") return t("unitsIntroduction.title");
       const name = String(path || "").split("/").pop() || "";
       return name.replace(/\.md$/iu, "") || t("documentation.title");

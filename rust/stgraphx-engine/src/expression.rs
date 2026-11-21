@@ -592,47 +592,44 @@ fn evaluate_generated_array(
     context: &EvaluationContext<'_>,
 ) -> Result<Value, String> {
     if arguments.len() < 2 {
-        return Err("array expects at least one axis and an expression".to_string());
+        return Err("array expects at least one dimension and an expression".to_string());
     }
 
-    let mut axes = Vec::with_capacity(arguments.len() - 1);
+    let mut dimensions = Vec::with_capacity(arguments.len() - 1);
     let mut total_size = 1usize;
     for (index, argument) in arguments[..arguments.len() - 1].iter().enumerate() {
-        let axis = match argument.evaluate(context)? {
+        let dimension = match argument.evaluate(context)? {
             Value::Scalar(size)
                 if size.is_finite()
                     && size >= 0.0
                     && size.fract() == 0.0
                     && size <= MAX_GENERATED_ARRAY_ELEMENTS as f64 =>
             {
-                (0..size as usize)
-                    .map(|value| value as f64)
-                    .collect::<Vec<_>>()
+                size as usize
             }
-            Value::Tensor(values) if values.rank() == 1 => values.elements().to_vec(),
             _ => {
                 return Err(format!(
-                    "array axis {index} must be a non-negative integer or a vector"
+                    "array dimension {index} must be a non-negative integer"
                 ))
             }
         };
         total_size = total_size
-            .checked_mul(axis.len().max(1))
+            .checked_mul(dimension.max(1))
             .ok_or_else(|| "array is too large".to_string())?;
         if total_size > MAX_GENERATED_ARRAY_ELEMENTS {
             return Err("array is too large".to_string());
         }
-        axes.push(axis);
+        dimensions.push(dimension);
     }
 
     fn build(
-        axes: &[Vec<f64>],
+        dimensions: &[usize],
         level: usize,
         body: &Expression,
         context: &EvaluationContext<'_>,
         local_values: &HashMap<String, Value>,
     ) -> Result<Value, String> {
-        if level == axes.len() {
+        if level == dimensions.len() {
             return body.evaluate(&EvaluationContext {
                 values: context.values,
                 time: context.time,
@@ -648,19 +645,18 @@ fn evaluate_generated_array(
             });
         }
 
-        let mut elements = Vec::with_capacity(axes[level].len());
-        for (index, value) in axes[level].iter().copied().enumerate() {
+        let mut elements = Vec::with_capacity(dimensions[level]);
+        for index in 0..dimensions[level] {
             let mut nested_values = local_values.clone();
-            nested_values.insert(format!("${level}"), Value::scalar(value));
-            nested_values.insert(format!("$i{level}"), Value::scalar(index as f64));
-            elements.push(build(axes, level + 1, body, context, &nested_values)?);
+            nested_values.insert(format!("${level}"), Value::scalar(index as f64));
+            elements.push(build(dimensions, level + 1, body, context, &nested_values)?);
         }
         Value::from_array_elements(elements)
     }
 
     let inherited_values = context.local_values.cloned().unwrap_or_default();
     build(
-        &axes,
+        &dimensions,
         0,
         &arguments[arguments.len() - 1],
         context,
@@ -1569,8 +1565,7 @@ mod tests {
 
     #[test]
     fn generated_array_indices_are_local_references() {
-        let expression =
-            parse("array(n,values[$0]+external+$i0)").expect("expression should parse");
+        let expression = parse("array(n,values[$0]+external)").expect("expression should parse");
         assert_eq!(
             expression.references().into_iter().collect::<Vec<_>>(),
             vec![
@@ -1598,7 +1593,7 @@ mod tests {
     }
 
     #[test]
-    fn generated_arrays_support_numeric_and_vector_axes() {
+    fn generated_arrays_support_numeric_dimensions() {
         let values = HashMap::new();
         let local_functions = HashMap::new();
         let evaluate_array = |source: &str| {
@@ -1621,18 +1616,30 @@ mod tests {
         };
 
         assert_eq!(
-            evaluate_array("array(3,$0+$i0)"),
-            Value::tensor(vec![3], vec![0.0, 2.0, 4.0]).expect("tensor should be valid")
+            evaluate_array("array(3,$0)"),
+            Value::tensor(vec![3], vec![0.0, 1.0, 2.0]).expect("tensor should be valid")
         );
         assert_eq!(
-            evaluate_array("array([2,4],$0+$i0)"),
-            Value::tensor(vec![2], vec![2.0, 5.0]).expect("tensor should be valid")
-        );
-        assert_eq!(
-            evaluate_array("array(2,[10,20],$0+$1+$i0+$i1)"),
-            Value::tensor(vec![2, 2], vec![10.0, 21.0, 12.0, 23.0])
+            evaluate_array("array(2,3,$0+$1)"),
+            Value::tensor(vec![2, 3], vec![0.0, 1.0, 2.0, 1.0, 2.0, 3.0])
                 .expect("tensor should be valid")
         );
+        assert!(parse("array([2,4],$0)")
+            .expect("expression should parse")
+            .evaluate(&EvaluationContext {
+                values: &values,
+                time: 0.0,
+                t0: 0.0,
+                t1: 1.0,
+                dt: 1.0,
+                self_value: None,
+                allow_integral: false,
+                local_values: None,
+                local_functions: &local_functions,
+                local_function_stack: &[],
+                random: None,
+            })
+            .is_err());
     }
 
     #[test]

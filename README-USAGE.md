@@ -74,16 +74,20 @@ associativo a sinistra; `_` e' valido solo nella parte destra di una pipeline.
     - `range(1,5)` -> `[1,2,3,4]`
     - `range(0,10,2)` -> `[0,2,4,6,8]`
 
-- `array(axis0[, axis1, ...], expr)`
-  - costruisce un vettore, una matrice o un array multidimensionale valutando `expr` per ogni combinazione degli assi
-  - ogni asse puo essere un intero `n`, equivalente ai valori `0,...,n-1`, oppure un vettore che contiene direttamente i valori dell'asse
-  - dentro `expr`, `$0`, `$1`, ... sono i valori correnti degli assi e `$i0`, `$i1`, ... i rispettivi indici da zero
+- `array(n0[, n1, ...], expr)`
+  - costruisce un vettore, una matrice o un array multidimensionale valutando `expr` per ogni combinazione degli indici
+  - ogni dimensione `n` deve essere un intero non negativo
+  - dentro `expr`, `$0`, `$1`, ... sono gli indici correnti delle dimensioni, da zero
   - esempi:
     - `array(3, 0)` -> `[0,0,0]`
     - `array(3, $0*2)` -> `[0,2,4]`
-    - `array(range(-2,3), $0)` -> `[-2,-1,0,1,2]`
+    - `array(5, $0-2)` -> `[-2,-1,0,1,2]`
     - `array(2, 3, $0+$1)` -> `[[0,1,2],[1,2,3]]`
-    - `array(range(-2,3), $i0)` -> `[0,1,2,3,4]`
+    - `array(size(x), f(x[$0]))` valuta `f` sugli elementi del vettore `x`
+  - la forma `array(["colonna1","colonna2",...], righe, colonne, expr)` crea una matrice con colonne nominate; il numero di nomi deve coincidere con `colonne`
+    - `array(["quantità","prezzo"], 5, 2, 0)` crea una matrice `5 × 2`
+    - `m["quantità"]` e `col(m, "quantità")` restituiscono la colonna nominata
+    - le operazioni possono aggiungere o rimuovere righe, ma non modificare il numero di colonne della matrice nominata
 
 ### Accesso e slicing
 

@@ -139,7 +139,7 @@
         }
       ],
       "input": false,
-      "valueExpression": "flatten(array(nLev,2*nLev-1,min($i0,max(-$i0,$i1-(nLev-1)))))"
+      "valueExpression": "flatten(array(nLev,2*nLev-1,min($0,max(-$0,$1-(nLev-1)))))"
     },
     {
       "id": 5,
@@ -164,7 +164,7 @@
         }
       ],
       "input": false,
-      "valueExpression": "flatten(array(nLev,2*nLev-1,nLev-$i0))"
+      "valueExpression": "flatten(array(nLev,2*nLev-1,nLev-$0))"
     },
     {
       "id": 6,

@@ -64,8 +64,8 @@ Sono supportati:
 - funzione strutturale `size`;
 - indicizzazione e slicing di tensori, inclusi indici negativi, passi e
   selezioni multiple di righe o colonne;
-- generazione di tensori con `array(...)`, inclusi assi vettoriali e variabili
-  locali `$0`, `$1`, ... e `$i0`, `$i1`, ...;
+- generazione di tensori con `array(...)`, usando dimensioni intere e variabili
+  locali di indice `$0`, `$1`, ...;
 - generazione di sequenze numeriche crescenti o decrescenti con `range(...)`;
 - generatore pseudo-casuale deterministico compatibile con il motore JavaScript,
   configurato da `execution.randomSeed`, e funzioni `rand(...)` e
@@ -99,6 +99,8 @@ Il filtro conserva solo risultati tensoriali rettangolari e non supporta ancora
 le modalità testuali `rows` e `cols`. Non sono inoltre supportate in RK4 le
 transizioni che combinano `integral(...)` con altre operazioni esterne, né i
 sottomodelli o gli input esterni.
+Le matrici con colonne nominate create dalla forma estesa di `array(...)` sono
+per ora disponibili solo nel motore JavaScript.
 Le funzioni statistiche `median`, `mode`, `correlation`, `linearRegression` e
 `polynomialRegression` sono disponibili nel motore JavaScript e non sono
 ancora supportate dal motore Rust.

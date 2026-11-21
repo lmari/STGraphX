@@ -2446,6 +2446,8 @@ input.inferred-unit[readonly] { color: #6d7782; background: #f4f6f8; }
 .documentation-help-actions .icon-btn { min-width: 34px; min-height: 34px; font-size: 1.5rem; line-height: 1; }
 .documentation-help-content { flex: 1 1 auto; min-height: 0; max-height: calc(100vh - 175px); overflow: auto; padding: 10px; border: 1px solid var(--line); border-radius: 8px; background: #fbfcfe; color: #203246; line-height: 1.45; }
 .documentation-help-content a { color: #12639c; cursor: pointer; }
+.documentation-help-content h3 { margin-top: 1.05em; padding: .3em .5em; border-left: 4px solid #6d9bbe; border-radius: 0 4px 4px 0; background: #eef5f9; }
+.documentation-help-content hr { height: 0; margin: 1.15em .1em .95em; border: 0; border-top: 2px solid #bfd1df; }
 .markdown-content img { display: block; max-width: 100%; height: auto; margin: 1em auto; }
 .markdown-table-scroll { max-width: 100%; overflow-x: auto; margin: .8em 0; }
 .markdown-content table { border-collapse: collapse; }

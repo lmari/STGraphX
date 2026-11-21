@@ -341,6 +341,41 @@ function adaptLegacyArrayIndices(expression, location, warnings) {
   return output;
 }
 
+function adaptLegacyArrayLocalIndices(expression, location, warnings) {
+  const source = String(expression || "");
+  let output = "";
+  let changed = false;
+  let quote = "";
+  for (let index = 0; index < source.length; index += 1) {
+    const char = source[index];
+    if (quote) {
+      output += char;
+      if (char === "\\") {
+        output += source[index + 1] || "";
+        index += 1;
+      } else if (char === quote) {
+        quote = "";
+      }
+      continue;
+    }
+    if (char === '"' || char === "'") {
+      quote = char;
+      output += char;
+      continue;
+    }
+    const match = source.slice(index).match(/^\$i(\d+)\b/u);
+    if (match) {
+      output += `$${match[1]}`;
+      index += match[0].length - 1;
+      changed = true;
+      continue;
+    }
+    output += char;
+  }
+  if (changed) warnings.push(`${location}: convertiti gli indici locali legacy $i0, $i1, ... nella sintassi $0, $1, ....`);
+  return output;
+}
+
 function adaptLegacySizeOperator(expression, location, warnings) {
   const source = String(expression || "");
   let output = "";
@@ -481,6 +516,7 @@ function adaptLegacyAppendOperator(expression, location, warnings) {
 function adaptLegacyExpression(expression, location, warnings) {
   let converted = adaptLegacyRanges(expression, location, warnings);
   converted = adaptLegacyArrayIndices(converted, location, warnings);
+  converted = adaptLegacyArrayLocalIndices(converted, location, warnings);
   converted = adaptLegacySizeOperator(converted, location, warnings);
   converted = adaptLegacyReductions(converted, location, warnings);
   return adaptLegacyAppendOperator(converted, location, warnings);

@@ -49,7 +49,7 @@ Questa versione converte:
 * converte vettori di intervallo `[1:5]` e `[1:2:5]` in `range(1, 6)` e `range(1, 6, 2)`;
 * l'operatore dimensionale `@x` in `size(x)`;
 *  l'operatore di concatenazione `x#y` in `append(x, y)` (con catene convertite da sinistra a destra);
-* la sintassi `array([d0,d1,...], expr)` in `array(d0, d1, ..., expr)`; gli indici locali legacy `$i0`, `$i1`, ... sono gia supportati direttamente e vengono mantenuti.
+* la sintassi `array([d0,d1,...], expr)` in `array(d0, d1, ..., expr)` e gli indici locali legacy `$i0`, `$i1`, ... nei corrispondenti `$0`, `$1`, ...;
 
 Il convertitore segnala inoltre costrutti sospetti, come indici legacy residui, eventuali operatori `#` non convertiti, letture da foglio elettronico e `&&`/`||`.  
 I nodi legacy di stato con un'espressione di output separata vengono convertiti in nodi di stato e quell'espressione viene conservata nelle `formula notes`, perché STGraphX non usa quel costrutto.  

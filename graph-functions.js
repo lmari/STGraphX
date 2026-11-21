@@ -7,6 +7,7 @@
 
 (function attachGraphFunctions(global) {
   const AGENT_SCHEMA_KEY = "__stgraphxAgentSchema";
+  const NAMED_COLUMNS_KEY = "__stgraphxNamedColumns";
   const AGENT_FIELD_NAME_RE = /^[A-Za-z_][A-Za-z0-9_]*$/;
   const AGENT_FIELD_RESERVED_NAMES = new Set([
     "this",
@@ -34,6 +35,10 @@
     return Array.isArray(fieldNames) ? fieldNames.slice() : null;
   }
 
+  function cloneColumnNames(columnNames) {
+    return Array.isArray(columnNames) ? columnNames.slice() : null;
+  }
+
   function attachAgentSchema(value, fieldNames) {
     if (!Array.isArray(value) || !Array.isArray(fieldNames)) {
       return value;
@@ -54,6 +59,43 @@
     return cloneAgentSchema(value[AGENT_SCHEMA_KEY]);
   }
 
+  function attachNamedColumns(value, columnNames) {
+    if (!Array.isArray(value) || !Array.isArray(columnNames)) {
+      return value;
+    }
+    Object.defineProperty(value, NAMED_COLUMNS_KEY, {
+      value: cloneColumnNames(columnNames),
+      configurable: true,
+      enumerable: false,
+      writable: true,
+    });
+    return value;
+  }
+
+  function getNamedColumnNames(value) {
+    if (!Array.isArray(value) || !Array.isArray(value[NAMED_COLUMNS_KEY])) {
+      return null;
+    }
+    return cloneColumnNames(value[NAMED_COLUMNS_KEY]);
+  }
+
+  function getMatrixColumnNames(value) {
+    return getNamedColumnNames(value) || getAgentFieldNames(value);
+  }
+
+  function isNamedColumnMatrix(value) {
+    return Array.isArray(getNamedColumnNames(value));
+  }
+
+  function preserveMatrixColumnSchema(source, target) {
+    const agentFields = getAgentFieldNames(source);
+    if (agentFields) {
+      return attachAgentSchema(target, agentFields);
+    }
+    const columnNames = getNamedColumnNames(source);
+    return columnNames ? attachNamedColumns(target, columnNames) : target;
+  }
+
   function isAgentStructuredValue(value) {
     return Array.isArray(getAgentFieldNames(value));
   }
@@ -63,11 +105,7 @@
       return value;
     }
     const cloned = value.map((item) => (Array.isArray(item) ? item.slice() : item));
-    const fieldNames = getAgentFieldNames(value);
-    if (fieldNames) {
-      attachAgentSchema(cloned, fieldNames);
-    }
-    return cloned;
+    return preserveMatrixColumnSchema(value, cloned);
   }
 
   function collectAgentFieldAliasesFromContext(context) {
@@ -770,13 +808,17 @@
     const { rowCount, colCount } = ensureRectangularMatrix(value, "resize");
     const rows = normalizeResizeDimension(dimensions[0]);
     const cols = normalizeResizeDimension(dimensions[1]);
-    return Array.from(
+    if (getNamedColumnNames(value) && cols !== colCount) {
+      throw new Error("resize must preserve the column count of a matrix with named columns");
+    }
+    const out = Array.from(
       { length: rows },
       (_, rowIndex) => Array.from(
         { length: cols },
         (_, colIndex) => (rowIndex < rowCount && colIndex < colCount ? value[rowIndex][colIndex] : 0),
       ),
     );
+    return preserveMatrixColumnSchema(value, out);
   }
 
   function ensureFlatVector(value, fnName) {
@@ -824,6 +866,17 @@
     return fieldNames;
   }
 
+  function normalizeNamedColumnNames(columnNamesValue) {
+    const columnNames = ensureFlatVector(columnNamesValue, "array").map((item) => String(item ?? "").trim());
+    if (!columnNames.length || columnNames.some((name) => !name)) {
+      throw new Error("array column names must be non-empty strings");
+    }
+    if (new Set(columnNames).size !== columnNames.length) {
+      throw new Error("array column names must be unique");
+    }
+    return columnNames;
+  }
+
   function validateAgentRows(rowsValue, fieldNames) {
     if (rowsValue == null) {
       return [];
@@ -856,7 +909,7 @@
       throw new Error(`${fnName} expects a matrix`);
     }
     const rowCount = value.length;
-    const fieldNames = getAgentFieldNames(value);
+    const fieldNames = getMatrixColumnNames(value);
     const colCount = rowCount > 0 ? value[0].length : (fieldNames ? fieldNames.length : 0);
     if (!value.every((row) => row.length === colCount && row.every((item) => !Array.isArray(item)))) {
       throw new Error(`${fnName} expects a rectangular matrix`);
@@ -880,7 +933,7 @@
     const { rowCount, fieldNames } = ensureRectangularMatrix(matrixValue, "row");
     const rowIndex = normalizeIndex(Number(rowIndexValue), rowCount, "row");
     const out = matrixValue[rowIndex].slice();
-    if (fieldNames) {
+    if (getAgentFieldNames(matrixValue)) {
       attachAgentSchema(out, fieldNames);
     }
     return out;
@@ -903,46 +956,43 @@
   function setMatrixRow(matrixValue, rowIndexValue, nextRowValue) {
     const { rowCount, colCount, fieldNames } = ensureRectangularMatrix(matrixValue, "setRow");
     const rowIndex = normalizeIndex(Number(rowIndexValue), rowCount, "setRow");
-    const nextRow = ensureFlatVector(nextRowValue, "setRow");
+    const nextRow = Array.isArray(nextRowValue)
+      ? ensureFlatVector(nextRowValue, "setRow")
+      : Array(colCount).fill(nextRowValue);
     if (nextRow.length !== colCount) {
       throw new Error("setRow expects a row vector with matching length");
     }
     const out = matrixValue.map((row) => row.slice());
     out[rowIndex] = nextRow.slice();
-    if (fieldNames) {
-      attachAgentSchema(out, fieldNames);
-    }
-    return out;
+    return preserveMatrixColumnSchema(matrixValue, out);
   }
 
   function appendMatrixRow(matrixValue, nextRowValue) {
     const { colCount, fieldNames } = ensureRectangularMatrix(matrixValue, "appendRow");
-    const nextRow = ensureFlatVector(nextRowValue, "appendRow");
+    const nextRow = Array.isArray(nextRowValue)
+      ? ensureFlatVector(nextRowValue, "appendRow")
+      : Array(colCount).fill(nextRowValue);
     if (nextRow.length !== colCount) {
       throw new Error("appendRow expects a row vector with matching length");
     }
     const out = matrixValue.map((row) => row.slice());
     out.push(nextRow.slice());
-    if (fieldNames) {
-      attachAgentSchema(out, fieldNames);
-    }
-    return out;
+    return preserveMatrixColumnSchema(matrixValue, out);
   }
 
   function removeMatrixRow(matrixValue, rowIndexValue) {
     const { rowCount, fieldNames } = ensureRectangularMatrix(matrixValue, "removeRow");
     const rowIndex = normalizeIndex(Number(rowIndexValue), rowCount, "removeRow");
     const out = matrixValue.filter((_, idx) => idx !== rowIndex).map((row) => row.slice());
-    if (fieldNames) {
-      attachAgentSchema(out, fieldNames);
-    }
-    return out;
+    return preserveMatrixColumnSchema(matrixValue, out);
   }
 
   function setMatrixColumn(matrixValue, colIndexValue, nextColumnValue) {
     const { rowCount, colCount, fieldNames } = ensureRectangularMatrix(matrixValue, "setCol");
     const colIndex = resolveMatrixColumnIndex(colIndexValue, fieldNames, colCount, "setCol");
-    const nextColumn = ensureFlatVector(nextColumnValue, "setCol");
+    const nextColumn = Array.isArray(nextColumnValue)
+      ? ensureFlatVector(nextColumnValue, "setCol")
+      : Array(rowCount).fill(nextColumnValue);
     if (nextColumn.length !== rowCount) {
       throw new Error("setCol expects a vector with one value per matrix row");
     }
@@ -951,10 +1001,7 @@
       nextRow[colIndex] = nextColumn[rowIdx];
       return nextRow;
     });
-    if (fieldNames) {
-      attachAgentSchema(out, fieldNames);
-    }
-    return out;
+    return preserveMatrixColumnSchema(matrixValue, out);
   }
 
   function normalizeAgentSpaceDimensions(sizeValue) {
@@ -1329,7 +1376,7 @@
       throw new Error("setAt expects a rectangular matrix");
     }
     const matrix = target.map((row) => row.slice());
-    const fieldNames = getAgentFieldNames(target);
+    const fieldNames = getMatrixColumnNames(target);
     if (Array.isArray(indexOrIndices)) {
       if (indexOrIndices.length !== 2) {
         throw new Error("setAt expects [row, col] for matrix cell replacement");
@@ -1337,20 +1384,14 @@
       const rowIdx = normalizeIndex(Number(indexOrIndices[0]), rowCount, "setAt");
       const colIdx = normalizeIndex(Number(indexOrIndices[1]), colCount, "setAt");
       matrix[rowIdx][colIdx] = nextValue;
-      if (fieldNames) {
-        attachAgentSchema(matrix, fieldNames);
-      }
-      return matrix;
+      return preserveMatrixColumnSchema(target, matrix);
     }
     const rowIdx = normalizeIndex(Number(indexOrIndices), rowCount, "setAt");
     if (!Array.isArray(nextValue) || nextValue.length !== colCount || nextValue.some((item) => Array.isArray(item))) {
       throw new Error("setAt expects a row vector with matching length");
     }
     matrix[rowIdx] = nextValue.slice();
-    if (fieldNames) {
-      attachAgentSchema(matrix, fieldNames);
-    }
-    return matrix;
+    return preserveMatrixColumnSchema(target, matrix);
   }
 
   function removeAtValue(target, indexValue, axis = null) {
@@ -1379,14 +1420,13 @@
     if (normalizedAxis === 0) {
       const rowIdx = normalizeIndex(Number(indexValue), rowCount, "removeAt");
       const out = target.filter((_, idx) => idx !== rowIdx).map((row) => row.slice());
-      const fieldNames = getAgentFieldNames(target);
-      if (fieldNames) {
-        attachAgentSchema(out, fieldNames);
-      }
-      return out;
+      return preserveMatrixColumnSchema(target, out);
     }
     const colIdx = normalizeIndex(Number(indexValue), colCount, "removeAt");
     const out = target.map((row) => row.filter((_, idx) => idx !== colIdx));
+    if (getNamedColumnNames(target)) {
+      throw new Error("removeAt axis 1 is not supported for matrices with named columns");
+    }
     const fieldNames = getAgentFieldNames(target);
     if (fieldNames) {
       const nextFieldNames = fieldNames.filter((_, idx) => idx !== colIdx);
@@ -1412,7 +1452,7 @@
       return value.length;
     }
     const rowCount = value.length;
-    const fieldNames = getAgentFieldNames(value);
+    const fieldNames = getMatrixColumnNames(value);
     const colCount = rowCount > 0 ? value[0].length : (fieldNames ? fieldNames.length : 0);
     if (!value.every((row) => row.length === colCount)) {
       throw new Error("size expects a rectangular matrix");
@@ -2209,9 +2249,8 @@
       // Pipeline placeholder
       _: { kind: "variable", signature: "_", descriptionKey: "expr.help.pipelinePlaceholder" },
 
-      // Array axes
-      $0: { kind: "variable", signature: "$0, $1, ...", descriptionKey: "expr.help.arrayAxisValue" },
-      $i0: { kind: "variable", signature: "$i0, $i1, ...", descriptionKey: "expr.help.arrayAxisIndex" },
+      // Array indices
+      $0: { kind: "variable", signature: "$0, $1, ...", descriptionKey: "expr.help.arrayIndex" },
 
       // Time and state
       dt: { kind: "variable", signature: "dt", descriptionKey: "expr.help.dt" },
@@ -2243,25 +2282,19 @@
       agents: { kind: "agent", signature: "agents(fieldNames[, rowsOrCount])", descriptionKey: "expr.help.agents", insertText: "agents()", cursorOffset: 7, helpSection: "agent" },
       agentSpace: { kind: "agent", signature: "agentSpace(agents, xCol, yCol[, idCol][, [rows, cols][, neighborhood[, toroidal[, radius]]]])", descriptionKey: "expr.help.agentSpace", insertText: "agentSpace()", cursorOffset: 11, helpSection: "agent" },
       allNeighborCounts: { kind: "agent", signature: "allNeighborCounts(agents, space)", descriptionKey: "expr.help.allNeighborCounts", insertText: "allNeighborCounts()", cursorOffset: 18, helpSection: "agent" },
-      appendRow: { kind: "agent", signature: "appendRow(matrix, row)", descriptionKey: "expr.help.appendRow", insertText: "appendRow()", cursorOffset: 10, helpSection: "agent" },
-      col: { kind: "agent", signature: "col(matrix, j)", descriptionKey: "expr.help.col", insertText: "col()", cursorOffset: 4, helpSection: "agent" },
       filterAgents: { kind: "agent", signature: "filterAgents(cond, agents)", descriptionKey: "expr.help.filterAgents", insertText: "filterAgents()", cursorOffset: 13, helpSection: "agent" },
       mapAgents: { kind: "agent", signature: "mapAgents(expr, agents)", descriptionKey: "expr.help.mapAgents", insertText: "mapAgents()", cursorOffset: 10, helpSection: "agent" },
       neighborCountOf: { kind: "agent", signature: "neighborCountOf(agents, space, i)", descriptionKey: "expr.help.neighborCountOf", insertText: "neighborCountOf()", cursorOffset: 16, helpSection: "agent" },
       neighborsOf: { kind: "agent", signature: "neighborsOf(agents, space, i)", descriptionKey: "expr.help.neighborsOf", insertText: "neighborsOf()", cursorOffset: 12, helpSection: "agent" },
-      ncols: { kind: "agent", signature: "ncols(matrix)", descriptionKey: "expr.help.ncols", insertText: "ncols()", cursorOffset: 6, helpSection: "agent" },
-      nrows: { kind: "agent", signature: "nrows(matrix)", descriptionKey: "expr.help.nrows", insertText: "nrows()", cursorOffset: 6, helpSection: "agent" },
-      removeRow: { kind: "agent", signature: "removeRow(matrix, i)", descriptionKey: "expr.help.removeRow", insertText: "removeRow()", cursorOffset: 10, helpSection: "agent" },
-      row: { kind: "agent", signature: "row(matrix, i)", descriptionKey: "expr.help.row", insertText: "row()", cursorOffset: 4, helpSection: "agent" },
-      setCol: { kind: "agent", signature: "setCol(matrix, j, vector)", descriptionKey: "expr.help.setCol", insertText: "setCol()", cursorOffset: 7, helpSection: "agent" },
-      setRow: { kind: "agent", signature: "setRow(matrix, i, row)", descriptionKey: "expr.help.setRow", insertText: "setRow()", cursorOffset: 7, helpSection: "agent" },
       spaceMatrix: { kind: "agent", signature: "spaceMatrix(space)", descriptionKey: "expr.help.spaceMatrix", insertText: "spaceMatrix()", cursorOffset: 12, helpSection: "agent" },
 
       // Array functions
       append: { kind: "array", signature: "append(value1, value2[, value3, ...]) | append(vector|matrix, ..., axis)", descriptionKey: "expr.help.append", insertText: "append()", cursorOffset: 7 },
       argmax: { kind: "array", signature: "argmax(vector|matrix)", descriptionKey: "expr.help.argmax", insertText: "argmax()", cursorOffset: 7 },
       argmin: { kind: "array", signature: "argmin(vector|matrix)", descriptionKey: "expr.help.argmin", insertText: "argmin()", cursorOffset: 7 },
-      array: { kind: "array", signature: "array(axis0[, axis1, ...], expr)", descriptionKey: "expr.help.array", insertText: "array()", cursorOffset: 6 },
+      array: { kind: "array", signature: "array(n0[, n1, ...], expr) | array(columnNames, rows, cols, expr)", descriptionKey: "expr.help.array", insertText: "array()", cursorOffset: 6 },
+      appendRow: { kind: "array", signature: "appendRow(matrix, row|value)", descriptionKey: "expr.help.appendRow", insertText: "appendRow()", cursorOffset: 10 },
+      col: { kind: "array", signature: "col(matrix, j)", descriptionKey: "expr.help.col", insertText: "col()", cursorOffset: 4 },
       coords: { kind: "array", signature: "coords(matrix[, value])", descriptionKey: "expr.help.coords", insertText: "coords()", cursorOffset: 7 },
       filter: { kind: "array", signature: "filter(cond, array[, mode])", descriptionKey: "expr.help.filter", insertText: "filter()", cursorOffset: 7 },
       flatten: { kind: "array", signature: "flatten(matrix)", descriptionKey: "expr.help.flatten", insertText: "flatten()", cursorOffset: 8 },
@@ -2270,11 +2303,17 @@
       indicesWhere: { kind: "array", signature: "indicesWhere(array) | indicesWhere(cond, array)", descriptionKey: "expr.help.indicesWhere", insertText: "indicesWhere()", cursorOffset: 13 },
       intersection: { kind: "array", signature: "intersection(vectorA, vectorB)", descriptionKey: "expr.help.intersection", insertText: "intersection()", cursorOffset: 13 },
       neighbors: { kind: "array", signature: "neighbors(matrix, row, col[, diagonals[, toroidal]])", descriptionKey: "expr.help.neighbors", insertText: "neighbors()", cursorOffset: 10 },
+      ncols: { kind: "array", signature: "ncols(matrix)", descriptionKey: "expr.help.ncols", insertText: "ncols()", cursorOffset: 6 },
+      nrows: { kind: "array", signature: "nrows(matrix)", descriptionKey: "expr.help.nrows", insertText: "nrows()", cursorOffset: 6 },
       remove: { kind: "array", signature: "remove(array, n) | remove(n, array)", descriptionKey: "expr.help.remove", insertText: "remove()", cursorOffset: 7 },
       removeAt: { kind: "array", signature: "removeAt(vector, index) | removeAt(matrix, index[, axis])", descriptionKey: "expr.help.removeAt", insertText: "removeAt()", cursorOffset: 9 },
+      removeRow: { kind: "array", signature: "removeRow(matrix, i)", descriptionKey: "expr.help.removeRow", insertText: "removeRow()", cursorOffset: 10 },
       resize: { kind: "array", signature: "resize(vector, length) | resize(matrix, rows, cols)", descriptionKey: "expr.help.resize", insertText: "resize()", cursorOffset: 7 },
+      row: { kind: "array", signature: "row(matrix, i)", descriptionKey: "expr.help.row", insertText: "row()", cursorOffset: 4 },
       set: { kind: "array", signature: "set(vector)", descriptionKey: "expr.help.set", insertText: "set()", cursorOffset: 4 },
       setAt: { kind: "array", signature: "setAt(vector, index, value) | setAt(matrix, [row,col], value) | setAt(matrix, row, rowVector)", descriptionKey: "expr.help.setAt", insertText: "setAt()", cursorOffset: 6 },
+      setCol: { kind: "array", signature: "setCol(matrix, j, vector|value)", descriptionKey: "expr.help.setCol", insertText: "setCol()", cursorOffset: 7 },
+      setRow: { kind: "array", signature: "setRow(matrix, i, row|value)", descriptionKey: "expr.help.setRow", insertText: "setRow()", cursorOffset: 7 },
       shuffle: { kind: "array", signature: "shuffle(vector|matrix)", descriptionKey: "expr.help.shuffle", insertText: "shuffle()", cursorOffset: 8 },
       size: { kind: "array", signature: "size(array[, axis])", descriptionKey: "expr.help.size", insertText: "size()", cursorOffset: 5 },
       sort: { kind: "array", signature: "sort(vector)", descriptionKey: "expr.help.sort", insertText: "sort()", cursorOffset: 5 },
@@ -2343,6 +2382,12 @@
     helpers: Object.freeze({
       attachAgentSchema,
       getAgentFieldNames,
+      attachNamedColumns,
+      getNamedColumnNames,
+      getMatrixColumnNames,
+      isNamedColumnMatrix,
+      preserveMatrixColumnSchema,
+      normalizeNamedColumnNames,
       isAgentStructuredValue,
       cloneArrayPreservingAgentSchema,
       collectAgentFieldAliasesFromContext,

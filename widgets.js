@@ -2182,7 +2182,12 @@ function expandedTableMatrix(widget, nodeMap = buildNodeNameMap()) {
   if (!matrix.every((row) => row.length === columnCount)) {
     return null;
   }
-  return { name: displayedCols[0], matrix, columnCount };
+  return {
+    name: displayedCols[0],
+    matrix,
+    columnCount,
+    columnNames: graphFunctionHelpers.getMatrixColumnNames?.(matrix) || null,
+  };
 }
 
 function renderExpandedTableWidgetBody(body, widget, nodeMap = buildNodeNameMap()) {
@@ -2198,7 +2203,7 @@ function renderExpandedTableWidgetBody(body, widget, nodeMap = buildNodeNameMap(
     headRow.appendChild(corner);
     for (let column = 0; column < expandedMatrix.columnCount; column += 1) {
       const th = document.createElement("th");
-      th.textContent = `[${column}]`;
+      th.textContent = expandedMatrix.columnNames?.[column] || `[${column}]`;
       headRow.appendChild(th);
     }
     thead.appendChild(headRow);

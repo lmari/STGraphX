@@ -32,14 +32,14 @@
       "name": "selected",
       "type": "algebraic",
       "output": true,
-      "valueExpression": "array(axisValues,$0+$i0)"
+      "valueExpression": "array(size(axisValues),axisValues[$0]+$0)"
     },
     {
       "id": 5,
       "name": "generatedGrid",
       "type": "algebraic",
       "output": true,
-      "valueExpression": "array(2,axisValues,$0+$1+$i0+$i1)"
+      "valueExpression": "array(2,size(axisValues),$0+axisValues[$1]+$0+$1)"
     },
     {
       "id": 6,

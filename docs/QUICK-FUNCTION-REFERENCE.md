@@ -1,45 +1,50 @@
 # STGraphX - Quick Function Reference
 
-Generated automatically da `i18n-inline.js` e `graph-functions.js` (release 2026.11.17).
+Generated automatically from `i18n-inline.js` and `graph-functions.js` (release 2026.11.21).
 
 Regenerate with `npm run docs:functions`.
 
 List of functions, system variables, and utilities available in expressions.
 
-## Available variables
+## Special notation
 
 ### `_`
 
-`_`
+**Signature:** `_`
 
 Pipeline placeholder for `|>`. In the right-hand expression it represents the value, evaluated once, from the left-hand expression. `|>` has the lowest precedence and is left-associative.
 
-**Examples**
+*Examples*
 - `x |> _ + 1 |> _ * 2`
 - `[1,2,3] |> _[0]`
 - `sin(time) |> if(_ > 0, 2*_, -_)`
 
 ---
 
+### `|>`
+
+**Signature:** `value |> expression`
+
+Applies the expression on the right to the value produced on the left. In the right-hand expression, `_` denotes that value, evaluated once. `|>` has the lowest precedence and is left-associative; `_` is valid only on the right side of a pipeline.
+
+*Examples*
+- `x |> _ + 1 |> _ * 2`
+- `[1,2,3] |> _[0]`
+- `sin(time) |> if(_ > 0, 2*_, -_)`
+
+## Available variables
+
 ### `$0`
 
-`$0, $1, ...`
+**Signature:** `$0, $1, ...`
 
-In array(...), current value of the first axis ($0), second axis ($1), and so on.
-
----
-
-### `$i0`
-
-`$i0, $i1, ...`
-
-In array(...), zero-based index of the first axis ($i0), second axis ($i1), and so on.
+In array(...), zero-based index of the first dimension ($0), second ($1), and so on.
 
 ---
 
 ### `dt`
 
-`dt`
+**Signature:** `dt`
 
 Execution time step.
 
@@ -47,7 +52,7 @@ Execution time step.
 
 ### `t0`
 
-`t0`
+**Signature:** `t0`
 
 Execution start time.
 
@@ -55,7 +60,7 @@ Execution start time.
 
 ### `t1`
 
-`t1`
+**Signature:** `t1`
 
 Execution end time.
 
@@ -63,7 +68,7 @@ Execution end time.
 
 ### `this`
 
-`this`
+**Signature:** `this`
 
 'this' is the current full value of the state variable. In scalar mode it is a single value; in vector mode it is the whole vector.
 
@@ -71,7 +76,7 @@ Execution end time.
 
 ### `time`
 
-`time`
+**Signature:** `time`
 
 Current execution time.
 
@@ -79,33 +84,33 @@ Current execution time.
 
 ### `getModelProperty`
 
-`getModelProperty(name, fallback)`
+**Signature:** `getModelProperty(name, fallback)`
 
 A custom model property.
 
-**Examples**
+*Examples*
 - `getModelProperty("title", "untitled")`
 
 ---
 
 ### `getProperty`
 
-`getProperty(name, fallback)`
+**Signature:** `getProperty(name, fallback)`
 
 A custom property from the current variable.
 
-**Examples**
+*Examples*
 - `getProperty("unit", "")`
 
 ---
 
 ### `if`
 
-`if(condition, value[, condition, value, ...], defaultValue)`
+**Signature:** `if(condition, value[, condition, value, ...], defaultValue)`
 
 Value associated with the first true condition, evaluated in order, or defaultValue. Evaluation is lazy and works element by element with vector or matrix conditions.
 
-**Examples**
+*Examples*
 - `if(x > 0, x, 0)`
 - `if(x < 0, -1, x == 0, 0, 1)`
 
@@ -113,22 +118,22 @@ Value associated with the first true condition, evaluated in order, or defaultVa
 
 ### `integral`
 
-`integral(x)`
+**Signature:** `integral(x)`
 
 Integrates x over time. With Euler it is equivalent to this + x * dt; with RK4 it automatically uses fourth-order Runge-Kutta on integral(...) calls present in state transitions.
 
-**Examples**
+*Examples*
 - `integral(flow)`
 
 ---
 
 ### `map`
 
-`map(expr, array)`
+**Signature:** `map(expr, array)`
 
 Element-by-element transformation of a vector or matrix. Inside expr, $value is the current value and $0, $1, ... are local indices.
 
-**Examples**
+*Examples*
 - `map($value*2, [1,2,3])`
 - `map($0+$value, [10,20,30])`
 - `map($0+$1, [[1,2],[3,4]])`
@@ -137,22 +142,22 @@ Element-by-element transformation of a vector or matrix. Inside expr, $value is 
 
 ### `range`
 
-`range(stop) | range(start, stop[, step])`
+**Signature:** `range(stop) | range(start, stop[, step])`
 
 A numeric sequence with exclusive end value.
 
-**Examples**
+*Examples*
 - `range(4) -> [0,1,2,3]`
 
 ---
 
 ### `readData`
 
-`readData(path, sheet, row, column) | readData(path, sheet, row1, column1, row2, column2)`
+**Signature:** `readData(path, sheet, row, column) | readData(path, sheet, row1, column1, row2, column2)`
 
 Reads values from an XLSX file relative to the model folder. With four arguments it returns a cell; with six arguments it reads an inclusive range, returning a scalar, vector, or matrix. Rows and columns start at 1 and can be expressions that evaluate to positive integers.
 
-**Examples**
+*Examples*
 - `readData("data/values.xlsx", "Data", time+1, 3)`
 `readData("data/values.xlsx", "Data", 2, 1, 10, 4)`
 
@@ -160,11 +165,11 @@ Reads values from an XLSX file relative to the model folder. With four arguments
 
 ### `reduce`
 
-`reduce(op|fn, vector[, init]) | reduce(op|fn, matrix, axis[, init])`
+**Signature:** `reduce(op|fn, vector[, init]) | reduce(op|fn, matrix, axis[, init])`
 
 Progressive reduction of a vector or matrix. For matrices axis=0 reduces columns, axis=1 reduces rows.
 
-**Examples**
+*Examples*
 - `reduce(+, [1,2,3])`
 - `reduce(max, [3,7,2])`
 - `reduce(+, [[1,2],[3,4]], 0)`
@@ -173,33 +178,33 @@ Progressive reduction of a vector or matrix. For matrices axis=0 reduces columns
 
 ### `setModelProperty`
 
-`setModelProperty(name, value)`
+**Signature:** `setModelProperty(name, value)`
 
 Assignment of a custom model property, returning the assigned value.
 
-**Examples**
+*Examples*
 - `setModelProperty("title", "Experiment")`
 
 ---
 
 ### `setProperty`
 
-`setProperty(name, value)`
+**Signature:** `setProperty(name, value)`
 
 Assignment of a custom property on the current variable, returning the assigned value.
 
-**Examples**
+*Examples*
 - `setProperty("unit", "kg")`
 
 ## Array functions
 
 ### `append`
 
-`append(value1, value2[, value3, ...]) | append(vector|matrix, ..., axis)`
+**Signature:** `append(value1, value2[, value3, ...]) | append(vector|matrix, ..., axis)`
 
 Concatenates two or more values in sequence. On vectors it appends elements or vectors. If a matrix is present, axis=0 (default) concatenates rows and axis=1 columns: argument order determines whether they are placed before or after the matrix. Agent matrices support axis=0 only.
 
-**Examples**
+*Examples*
 - `append([1,2], 3, [4,5])`
 - `append([[1,2]], [3,4], [5,6])`
 - `append([[1,2],[3,4]], [5,6], 1)`
@@ -207,46 +212,73 @@ Concatenates two or more values in sequence. On vectors it appends elements or v
 
 ---
 
+### `appendRow`
+
+**Signature:** `appendRow(matrix, row|value)`
+
+A copy of the matrix with a new row appended at the end. The second argument can be a row vector or a scalar repeated in every column. For agent matrices it adds a new agent.
+
+*Examples*
+- `appendRow([[1,2]], [3,4])`
+- `appendRow([[1,2]], 0)`
+- `appendRow(agents, [3,1])`
+
+---
+
 ### `argmax`
 
-`argmax(vector|matrix)`
+**Signature:** `argmax(vector|matrix)`
 
 The index of the first maximum value. For a vector it returns an index; for a matrix it returns [row, column]. In a tie it selects the first element in row and column order.
 
-**Examples**
+*Examples*
 - `argmax([2,7,4]) -> 1`
 
 ---
 
 ### `argmin`
 
-`argmin(vector|matrix)`
+**Signature:** `argmin(vector|matrix)`
 
 The index of the first minimum value. For a vector it returns an index; for a matrix it returns [row, column]. In a tie it selects the first element in row and column order.
 
-**Examples**
+*Examples*
 - `argmin([2,-1,4]) -> 1`
 
 ---
 
 ### `array`
 
-`array(axis0[, axis1, ...], expr)`
+**Signature:** `array(n0[, n1, ...], expr) | array(columnNames, rows, cols, expr)`
 
-Array obtained by evaluating expr for every combination of axes. An axis can be an integer n (values 0,...,n-1) or a vector of values. $0, $1, ... are axis values; $i0, $i1, ... are their indices.
+Builds an array by evaluating expr for every combination of dimensions. Each dimension n must be a non-negative integer; $0, $1, ... are the current zero-based indices. The form array(columnNames, rows, cols, expr) creates a matrix with named columns, also accessible as matrix["name"].
 
-**Examples**
-- `array(range(-2,3), $0^2)`
+*Examples*
+- `array(3, $0*2)`
+- `array(5, ($0-2)^2)`
+- `array(["quantity","price"], 5, 2, 0)`
+
+---
+
+### `col`
+
+**Signature:** `col(matrix, j)`
+
+Column j from the matrix as a vector. j can also be the name of a named column.
+
+*Examples*
+- `col([[1,2],[3,4]], 1) -> [2,4]`
+- `col(agents, ENERGY)`
 
 ---
 
 ### `coords`
 
-`coords(matrix[, value])`
+**Signature:** `coords(matrix[, value])`
 
 The [row, column] coordinates of non-zero cells in a matrix, or only of the cells equal to value if provided.
 
-**Examples**
+*Examples*
 - `coords([[0,1,0],[2,0,3]]) -> [[0,1],[1,0],[1,2]]`
 - `coords([[0,1,0],[2,0,3]], 2) -> [[1,0]]`
 
@@ -254,11 +286,11 @@ The [row, column] coordinates of non-zero cells in a matrix, or only of the cell
 
 ### `filter`
 
-`filter(cond, array[, mode])`
+**Signature:** `filter(cond, array[, mode])`
 
 Selection from a vector or matrix. With omitted mode or 'elements' it keeps the elements for which the condition is true. With mode='rows' it filters matrix rows, where $value is the current row and $0 its index. With mode='cols' it filters matrix columns, where $value is the current column and $0 its index.
 
-**Examples**
+*Examples*
 - `filter($value>0, [-2,0,3])`
 - `filter($0===$1, [[1,2],[3,4]])`
 - `filter(grid[$value]==1, coordinates, 'rows')`
@@ -267,22 +299,22 @@ Selection from a vector or matrix. With omitted mode or 'elements' it keeps the 
 
 ### `flatten`
 
-`flatten(matrix)`
+**Signature:** `flatten(matrix)`
 
 Turns a matrix into a vector by concatenating its rows.
 
-**Examples**
+*Examples*
 - `flatten([[1,2],[3,4]]) -> [1,2,3,4]`
 
 ---
 
 ### `frequency`
 
-`frequency(vector[, n|bins, mode])`
+**Signature:** `frequency(vector[, n|bins, mode])`
 
 A two-column `[center, frequency]` matrix computed from a numeric vector. Without further arguments it uses distinct values as categories, in increasing order. With integer `n`, it builds n uniform bins from the minimum to the maximum. With `mode='categories'`, the vector supplies categories; with `mode='edges'`, it supplies increasing interval boundaries, left-closed and right-open except for the last interval.
 
-**Examples**
+*Examples*
 - `frequency([1,2,2,3])`
 - `frequency([1,2,2,3], 2)`
 - `frequency([0,10,10,20], [0,10,20], "categories")`
@@ -292,11 +324,11 @@ A two-column `[center, frequency]` matrix computed from a numeric vector. Withou
 
 ### `grid`
 
-`grid(rows, cols[, [nRows, nCols][, collisions[, value]]])`
+**Signature:** `grid(rows, cols[, [nRows, nCols][, collisions[, value]]])`
 
 A spatial matrix from non-negative integer coordinates. rows gives the rows, cols gives the columns. If you provide [nRows, nCols], the resulting matrix has fixed size and raises an error if any coordinate falls outside the bounds. collisions can be 'error', 'first', or 'sum': the first raises an error on coincident coordinates, the second keeps the first occurrence value, the third sums coincident values. If value is omitted it uses 1; if it is scalar it uses that value in every occupied cell; if it is a vector it uses value[i] in the cell at row rows[i] and column cols[i].
 
-**Examples**
+*Examples*
 - `grid([1,1], [0,2]) -> [[0,0,0],[1,0,1]]`
 - `grid([1,1], [0,2], [4,5])`
 - `grid([1,1], [0,0], 'sum') -> [[0],[2]]`
@@ -306,11 +338,11 @@ A spatial matrix from non-negative integer coordinates. rows gives the rows, col
 
 ### `indicesWhere`
 
-`indicesWhere(array) | indicesWhere(cond, array)`
+**Signature:** `indicesWhere(array) | indicesWhere(cond, array)`
 
 Indices of truthy elements or of elements matching the condition. For a vector it returns a vector of indices; for a matrix it returns a vector of [row,col] pairs.
 
-**Examples**
+*Examples*
 - `indicesWhere([0,1,0,1]) -> [1,3]`
 - `indicesWhere($value>0, [-2,0,3]) -> [2]`
 - `indicesWhere($0===$1, [[1,2],[3,4]]) -> [[0,0],[1,1]]`
@@ -319,35 +351,59 @@ Indices of truthy elements or of elements matching the condition. For a vector i
 
 ### `intersection`
 
-`intersection(vectorA, vectorB)`
+**Signature:** `intersection(vectorA, vectorB)`
 
 The elements present in both vectors, without duplicates and preserving the order of the first vector.
 
-**Examples**
+*Examples*
 - `intersection([1,2,2,3], [2,3,4]) -> [2,3]`
+
+---
+
+### `ncols`
+
+**Signature:** `ncols(matrix)`
+
+The number of matrix columns. For an agent population it matches the number of properties.
+
+*Examples*
+- `ncols([[1,2],[3,4]]) -> 2`
+- `ncols(agents)`
 
 ---
 
 ### `neighbors`
 
-`neighbors(matrix, row, col[, diagonals[, toroidal]])`
+**Signature:** `neighbors(matrix, row, col[, diagonals[, toroidal]])`
 
 The values of cells neighboring the selected one. With diagonals=true it uses the Moore neighborhood, with diagonals=false only up, down, left, and right. With toroidal=true space wraps around the borders.
 
-**Examples**
+*Examples*
 - `neighbors([[1,2,3],[4,5,6],[7,8,9]], 1, 1) -> [1,2,3,4,6,7,8,9]`
 - `neighbors([[1,2,3],[4,5,6],[7,8,9]], 1, 1, false) -> [2,4,6,8]`
 - `neighbors([[1,2,3],[4,5,6],[7,8,9]], 0, 0, false, true) -> [2,4,3,7]`
 
 ---
 
+### `nrows`
+
+**Signature:** `nrows(matrix)`
+
+The number of matrix rows. For an agent population it matches the number of agents.
+
+*Examples*
+- `nrows([[1,2],[3,4]]) -> 2`
+- `nrows(agents)`
+
+---
+
 ### `remove`
 
-`remove(array, n) | remove(n, array)`
+**Signature:** `remove(array, n) | remove(n, array)`
 
 A copy of a vector without its last n elements, or without its first n elements when n is the first argument. For a matrix it removes rows. n must be a non-negative integer; if it exceeds the size, the result is an empty array.
 
-**Examples**
+*Examples*
 - `remove([1,2,3,4], 2) -> [1,2]`
 - `remove(2, [1,2,3,4]) -> [3,4]`
 - `remove([[1,2],[3,4],[5,6]], 1) -> [[1,2],[3,4]]`
@@ -356,59 +412,109 @@ A copy of a vector without its last n elements, or without its first n elements 
 
 ### `removeAt`
 
-`removeAt(vector, index) | removeAt(matrix, index[, axis])`
+**Signature:** `removeAt(vector, index) | removeAt(matrix, index[, axis])`
 
 A copy without the selected vector element or without the selected matrix row or column. For matrices axis=0 removes a row, axis=1 a column.
 
-**Examples**
+*Examples*
 - `removeAt([1,2,3], 1) -> [1,3]`
 - `removeAt([[1,2],[3,4]], 0) -> [[3,4]]`
 - `removeAt([[1,2],[3,4]], 1, 1) -> [[1],[3]]`
 
 ---
 
+### `removeRow`
+
+**Signature:** `removeRow(matrix, i)`
+
+A copy of the matrix without row i. For agent matrices it removes agent i.
+
+*Examples*
+- `removeRow([[1,2],[3,4]], 0) -> [[3,4]]`
+- `removeRow(agents, 2)`
+
+---
+
 ### `resize`
 
-`resize(vector, length) | resize(matrix, rows, cols)`
+**Signature:** `resize(vector, length) | resize(matrix, rows, cols)`
 
 A copy of a vector or matrix with different dimensions. It keeps existing positions, drops excess values, and fills new positions with zeros. Agent matrices are not supported.
 
-**Examples**
+*Examples*
 - `resize([1,2], 4) -> [1,2,0,0]`
 - `resize([[1,2],[3,4]], 3, 4) -> [[1,2,0,0],[3,4,0,0],[0,0,0,0]]`
 
 ---
 
+### `row`
+
+**Signature:** `row(matrix, i)`
+
+Row i from the matrix. If the matrix represents agents, it returns the property vector of agent i.
+
+*Examples*
+- `row([[1,2],[3,4]], 0) -> [1,2]`
+- `row(agents, 0)`
+
+---
+
 ### `set`
 
-`set(vector)`
+**Signature:** `set(vector)`
 
 Vector without duplicates, preserving first appearance order.
 
-**Examples**
+*Examples*
 - `set([3,1,3,2,1]) -> [3,1,2]`
 
 ---
 
 ### `setAt`
 
-`setAt(vector, index, value) | setAt(matrix, [row,col], value) | setAt(matrix, row, rowVector)`
+**Signature:** `setAt(vector, index, value) | setAt(matrix, [row,col], value) | setAt(matrix, row, rowVector)`
 
 A copy with the element or row replaced.
 
-**Examples**
+*Examples*
 - `setAt([1,2,3], 1, 9) -> [1,9,3]`
 - `setAt([[1,2],[3,4]], [1,0], 8) -> [[1,2],[8,4]]`
 
 ---
 
+### `setCol`
+
+**Signature:** `setCol(matrix, j, vector|value)`
+
+A copy of the matrix with column j replaced by a vector or by a scalar repeated in every row. j can also be the name of a named column.
+
+*Examples*
+- `setCol([[1,2],[3,4]], 1, [8,9])`
+- `setCol([[1,2],[3,4]], 0, 7)`
+- `setCol(agents, ENERGY, newEnergy)`
+
+---
+
+### `setRow`
+
+**Signature:** `setRow(matrix, i, row|value)`
+
+A copy of the matrix with row i replaced by a vector or by a scalar repeated in every column.
+
+*Examples*
+- `setRow([[1,2],[3,4]], 1, [8,9])`
+- `setRow([[1,2],[3,4]], 0, 7)`
+- `setRow(agents, 3, [10,1,4,7])`
+
+---
+
 ### `shuffle`
 
-`shuffle(vector|matrix)`
+**Signature:** `shuffle(vector|matrix)`
 
 A copy of the vector with its elements randomly shuffled or a copy of the matrix with its rows randomly shuffled.
 
-**Examples**
+*Examples*
 - `shuffle([1,2,3,4])`
 - `shuffle([[1,2],[3,4],[5,6]])`
 
@@ -416,11 +522,11 @@ A copy of the vector with its elements randomly shuffled or a copy of the matrix
 
 ### `size`
 
-`size(array[, axis])`
+**Signature:** `size(array[, axis])`
 
 The size of a vector or matrix. For a vector it returns the length; for a matrix it returns [rows, columns]. With axis=0 or axis=1 it returns a single dimension.
 
-**Examples**
+*Examples*
 - `size([1,2,3]) -> 3`
 - `size([[1,2],[3,4]]) -> [2,2]`
 - `size([[1,2],[3,4]], 1) -> 2`
@@ -429,22 +535,22 @@ The size of a vector or matrix. For a vector it returns the length; for a matrix
 
 ### `sort`
 
-`sort(vector)`
+**Signature:** `sort(vector)`
 
 A copy of the vector sorted in ascending order.
 
-**Examples**
+*Examples*
 - `sort([3,1,2]) -> [1,2,3]`
 
 ---
 
 ### `sum`
 
-`sum(array[, axis])`
+**Signature:** `sum(array[, axis])`
 
 Sum of the elements of a vector or matrix. For a matrix without axis it returns the overall sum; with axis=0 it returns column sums, with axis=1 row sums.
 
-**Examples**
+*Examples*
 - `sum([1,2,3]) -> 6`
 - `sum([[1,2],[3,4]]) -> 10`
 - `sum([[1,2],[3,4]], 0) -> [4,6]`
@@ -453,11 +559,11 @@ Sum of the elements of a vector or matrix. For a matrix without axis it returns 
 
 ### `transpose`
 
-`transpose(vector|matrix)`
+**Signature:** `transpose(vector|matrix)`
 
 Swaps the rows and columns of a matrix. A vector becomes a column matrix. Agent matrices are not supported.
 
-**Examples**
+*Examples*
 - `transpose([1,2,3]) -> [[1],[2],[3]]`
 - `transpose([[1,2,3],[4,5,6]]) -> [[1,4],[2,5],[3,6]]`
 
@@ -465,22 +571,22 @@ Swaps the rows and columns of a matrix. A vector becomes a column matrix. Agent 
 
 ### `union`
 
-`union(vectorA, vectorB)`
+**Signature:** `union(vectorA, vectorB)`
 
 Union of two vectors, without duplicates and preserving first appearance order.
 
-**Examples**
+*Examples*
 - `union([1,2], [2,3]) -> [1,2,3]`
 
 ## Statistical and probabilistic functions
 
 ### `average`
 
-`average(array[, axis])`
+**Signature:** `average(array[, axis])`
 
 Arithmetic mean of a vector or matrix. For a matrix without axis it returns the overall mean; with axis=0 it returns column means, with axis=1 row means.
 
-**Examples**
+*Examples*
 - `average([1,2,3]) -> 2`
 - `average([[1,2],[3,4]]) -> 2.5`
 - `average([[1,2],[3,4]], 0) -> [2,3]`
@@ -489,11 +595,11 @@ Arithmetic mean of a vector or matrix. For a matrix without axis it returns the 
 
 ### `bernoulli`
 
-`bernoulli([p], x, mode)`
+**Signature:** `bernoulli([p], x, mode)`
 
 Bernoulli distribution; p defaults to 0.5. If x is omitted it samples 0 or 1. With mode=0 it computes the probability mass, with mode=1 the cdf, with mode=2 the discrete quantile.
 
-**Examples**
+*Examples*
 - `bernoulli()`
 - `bernoulli([0.3], 1, 0)`
 
@@ -501,11 +607,11 @@ Bernoulli distribution; p defaults to 0.5. If x is omitted it samples 0 or 1. Wi
 
 ### `binomial`
 
-`binomial([n, p], x, mode)`
+**Signature:** `binomial([n, p], x, mode)`
 
 Binomial distribution with n trials and success probability p; n defaults to 1 and p to 0.5. If x is omitted it samples a value. With mode=0 it computes the probability mass, with mode=1 the cdf, with mode=2 the discrete quantile.
 
-**Examples**
+*Examples*
 - `binomial()`
 - `binomial([10,0.2], 3, 0)`
 
@@ -513,11 +619,11 @@ Binomial distribution with n trials and success probability p; n defaults to 1 a
 
 ### `choice`
 
-`choice(vector|matrix)`
+**Signature:** `choice(vector|matrix)`
 
 Randomly picks one element from a non-empty vector or one row from a non-empty matrix.
 
-**Examples**
+*Examples*
 - `choice([10,20,30])`
 - `choice([[1,2],[3,4]])`
 
@@ -525,22 +631,22 @@ Randomly picks one element from a non-empty vector or one row from a non-empty m
 
 ### `correlation`
 
-`correlation(x, y)`
+**Signature:** `correlation(x, y)`
 
 Pearson linear correlation coefficient of two numeric vectors of equal length, with at least two values. Returns a number between -1 and 1; reports an error if either vector is constant.
 
-**Examples**
+*Examples*
 - `correlation([1,2,3],[2,4,6]) -> 1`
 
 ---
 
 ### `count`
 
-`count(array[, axis]) | count(cond, array[, axis])`
+**Signature:** `count(array[, axis]) | count(cond, array[, axis])`
 
 Counts truthy elements or elements matching the condition, using $value and local indices $0, $1, ... as in filter().
 
-**Examples**
+*Examples*
 - `count([1,0,1]) -> 2`
 - `count($value>0, [-2,0,3]) -> 1`
 - `count($value==1, [[1,0],[1,1]], 1) -> [1,2]`
@@ -549,11 +655,11 @@ Counts truthy elements or elements matching the condition, using $value and loca
 
 ### `exponential`
 
-`exponential([params], x, mode)`
+**Signature:** `exponential([params], x, mode)`
 
 Exponential distribution; rate defaults to 1. If x is omitted it samples a value. With mode=0 it computes the pdf, with mode=1 the cdf, with mode=2 the icdf.
 
-**Examples**
+*Examples*
 - `exponential()`
 - `exponential([2])`
 - `exponential([2], 1.5, 0)`
@@ -563,11 +669,11 @@ Exponential distribution; rate defaults to 1. If x is omitted it samples a value
 
 ### `gaussian`
 
-`gaussian([mu, sigma], x, mode)`
+**Signature:** `gaussian([mu, sigma], x, mode)`
 
 Normal distribution; mu defaults to 0 and sigma to 1. If x is omitted it samples a value. With mode=0 it computes the pdf, with mode=1 the cdf, with mode=2 the icdf.
 
-**Examples**
+*Examples*
 - `gaussian()`
 - `gaussian([0,1])`
 - `gaussian([0,1], 0, 0)`
@@ -577,22 +683,22 @@ Normal distribution; mu defaults to 0 and sigma to 1. If x is omitted it samples
 
 ### `linearRegression`
 
-`linearRegression(x, y)`
+**Signature:** `linearRegression(x, y)`
 
 Linear least-squares regression with an intercept, equivalent to polynomialRegression(x,y,1). Returns the vector [a0,a1,...,R²,RMSE]: coefficients in ascending power order (a0+a1*x+...), followed by R² and RMSE. RMSE is sqrt(sum((y-yPredicted)^2)/n), in y units, without a degrees-of-freedom correction. Requires at least two numeric pairs and non-constant x values.
 
-**Examples**
+*Examples*
 - `linearRegression([0,1,2],[1,3,5]) -> approximately [1,2,1,0]`
 
 ---
 
 ### `median`
 
-`median(array[, axis])`
+**Signature:** `median(array[, axis])`
 
 Median of a non-empty numeric vector or matrix. With an even number of values it returns the mean of the two middle values. For a matrix, omit `axis` to use all values, use `axis=0` for columns or `axis=1` for rows.
 
-**Examples**
+*Examples*
 - `median([3,1,2]) -> 2`
 - `median([1,4]) -> 2.5`
 
@@ -600,22 +706,22 @@ Median of a non-empty numeric vector or matrix. With an even number of values it
 
 ### `mode`
 
-`mode(array[, axis])`
+**Signature:** `mode(array[, axis])`
 
 Mode of a non-empty numeric vector or matrix. Returns the most frequent value; ties select the smallest value, including when all values are distinct. For a matrix, omit `axis` to use all values, use `axis=0` for columns or `axis=1` for rows.
 
-**Examples**
+*Examples*
 - `mode([3,1,3,1]) -> 1`
 
 ---
 
 ### `poisson`
 
-`poisson([rate], x, mode)`
+**Signature:** `poisson([rate], x, mode)`
 
 Poisson distribution with rate; rate defaults to 1. If x is omitted it samples a value. With mode=0 it computes the probability mass, with mode=1 the cdf, with mode=2 the discrete quantile.
 
-**Examples**
+*Examples*
 - `poisson()`
 - `poisson([4], 2, 0)`
 
@@ -623,22 +729,22 @@ Poisson distribution with rate; rate defaults to 1. If x is omitted it samples a
 
 ### `polynomialRegression`
 
-`polynomialRegression(x, y[, degree])`
+**Signature:** `polynomialRegression(x, y[, degree])`
 
 Polynomial least-squares regression with an intercept. `degree` is a non-negative integer, default 1; requires at least degree+1 observations and enough distinct x values. Returns the vector [a0,a1,...,R²,RMSE]: coefficients in ascending power order (a0+a1*x+...), followed by R² and RMSE. RMSE is sqrt(sum((y-yPredicted)^2)/n), in y units, without a degrees-of-freedom correction. Degree 0 estimates the mean. For constant y, R² is 1. Uses QR with scaled data; reports numerically dependent bases or unrepresentable results. For high degrees or strongly shifted x, original-coordinate coefficients may lose precision.
 
-**Examples**
+*Examples*
 - `polynomialRegression([0,1,2],[1,4,9],2) -> approximately [1,2,1,1,0]`
 
 ---
 
 ### `rand`
 
-`rand([max]) | rand(min, max)`
+**Signature:** `rand([max]) | rand(min, max)`
 
 Uniform random number. With no arguments it returns a value between 0 and 1; with one argument between 0 and max; with two arguments between min and max.
 
-**Examples**
+*Examples*
 - `rand()`
 - `rand(10)`
 - `rand(-1, 1)`
@@ -647,11 +753,11 @@ Uniform random number. With no arguments it returns a value between 0 and 1; wit
 
 ### `randInt`
 
-`randInt(max) | randInt(min, max)`
+**Signature:** `randInt(max) | randInt(min, max)`
 
 Uniform random integer, with inclusive upper bound. With one argument it returns an integer between 0 and max; with two arguments between min and max.
 
-**Examples**
+*Examples*
 - `randInt(5)`
 - `randInt(2, 7)`
 
@@ -659,22 +765,22 @@ Uniform random integer, with inclusive upper bound. With one argument it returns
 
 ### `stdev`
 
-`stdev(array[, axis])`
+**Signature:** `stdev(array[, axis])`
 
 Standard deviation of a vector or matrix. For a matrix without axis it returns the overall standard deviation; with axis=0 it returns column standard deviations, with axis=1 row standard deviations.
 
-**Examples**
+*Examples*
 - `stdev([1,2,3])`
 
 ---
 
 ### `uniform`
 
-`uniform([min, max], x, mode)`
+**Signature:** `uniform([min, max], x, mode)`
 
 Uniform distribution; min defaults to 0 and max to 1. If x is omitted it samples a value. With mode=0 it computes the pdf, with mode=1 the cdf, with mode=2 the icdf.
 
-**Examples**
+*Examples*
 - `uniform()`
 - `uniform([0,10], 3, 1)`
 - `uniform([0,10], 0.25, 2)`
@@ -683,374 +789,361 @@ Uniform distribution; min defaults to 0 and max to 1. If x is omitted it samples
 
 ### `%`
 
-`a % b`
+**Signature:** `a % b`
 
 Euclidean remainder of `a` divided by `b`. With a positive divisor, the result is between `0` and `b-1`, even when `a` is negative. It operates element by element on vectors and matrices.
 
-**Examples**
+*Examples*
 - `7 % 3 -> 1`
 - `-1 % 3 -> 2`
 - `[1,2,3] % 2 -> [1,0,1]`
 
 ---
 
-### `|>`
-
-`value |> expression`
-
-Applies the expression on the right to the value produced on the left. In the right-hand expression, `_` denotes that value, evaluated once. `|>` has the lowest precedence and is left-associative; `_` is valid only on the right side of a pipeline.
-
-**Examples**
-- `x |> _ + 1 |> _ * 2`
-- `[1,2,3] |> _[0]`
-- `sin(time) |> if(_ > 0, 2*_, -_)`
-
----
-
 ### `abs`
 
-`abs(x)`
+**Signature:** `abs(x)`
 
 Absolute value.
 
-**Examples**
+*Examples*
 - `abs(-3) -> 3`
 
 ---
 
 ### `acos`
 
-`acos(x)`
+**Signature:** `acos(x)`
 
 Arc cosine.
 
-**Examples**
+*Examples*
 - `acos(1) -> 0`
 
 ---
 
 ### `and`
 
-`a and b`
+**Signature:** `a and b`
 
 Boolean operator equivalent to &&.
 
-**Examples**
+*Examples*
 - `a and b`
 
 ---
 
 ### `asin`
 
-`asin(x)`
+**Signature:** `asin(x)`
 
 Arc sine.
 
-**Examples**
+*Examples*
 - `asin(0) -> 0`
 
 ---
 
 ### `atan`
 
-`atan(x)`
+**Signature:** `atan(x)`
 
 Arc tangent.
 
-**Examples**
+*Examples*
 - `atan(0) -> 0`
 
 ---
 
 ### `atan2`
 
-`atan2(y, x)`
+**Signature:** `atan2(y, x)`
 
 Two-argument arc tangent (y, x).
 
-**Examples**
+*Examples*
 - `atan2(0, 1) -> 0`
 
 ---
 
 ### `ceil`
 
-`ceil(x)`
+**Signature:** `ceil(x)`
 
 Round up.
 
-**Examples**
+*Examples*
 - `ceil(1.2) -> 2`
 
 ---
 
 ### `cos`
 
-`cos(x)`
+**Signature:** `cos(x)`
 
 Trigonometric cosine.
 
-**Examples**
+*Examples*
 - `cos(0) -> 1`
 
 ---
 
 ### `cosh`
 
-`cosh(x)`
+**Signature:** `cosh(x)`
 
 Hyperbolic cosine.
 
-**Examples**
+*Examples*
 - `cosh(0) -> 1`
 
 ---
 
 ### `exp`
 
-`exp(x)`
+**Signature:** `exp(x)`
 
 Natural exponential e^x.
 
-**Examples**
+*Examples*
 - `exp(0) -> 1`
 
 ---
 
 ### `floor`
 
-`floor(x)`
+**Signature:** `floor(x)`
 
 Round down.
 
-**Examples**
+*Examples*
 - `floor(1.8) -> 1`
 
 ---
 
 ### `int`
 
-`int(x)`
+**Signature:** `int(x)`
 
 Remove the fractional part.
 
-**Examples**
+*Examples*
 - `int(-1.8) -> -1`
 
 ---
 
 ### `log`
 
-`log(x)`
+**Signature:** `log(x)`
 
 Natural logarithm.
 
-**Examples**
+*Examples*
 - `log(1) -> 0`
 
 ---
 
 ### `log10`
 
-`log10(x)`
+**Signature:** `log10(x)`
 
 Base-10 logarithm.
 
-**Examples**
+*Examples*
 - `log10(100) -> 2`
 
 ---
 
 ### `log2`
 
-`log2(x)`
+**Signature:** `log2(x)`
 
 Base-2 logarithm.
 
-**Examples**
+*Examples*
 - `log2(8) -> 3`
 
 ---
 
 ### `max`
 
-`max(x1, x2, ...)`
+**Signature:** `max(x1, x2, ...)`
 
 Maximum of the provided values.
 
-**Examples**
+*Examples*
 - `max(2, 7, 4) -> 7`
 
 ---
 
 ### `min`
 
-`min(x1, x2, ...)`
+**Signature:** `min(x1, x2, ...)`
 
 Minimum of the provided values.
 
-**Examples**
+*Examples*
 - `min(2, 7, 4) -> 2`
 
 ---
 
 ### `not`
 
-`not x`
+**Signature:** `not x`
 
 Boolean operator equivalent to !.
 
-**Examples**
+*Examples*
 - `not x`
 
 ---
 
 ### `or`
 
-`a or b`
+**Signature:** `a or b`
 
 Boolean operator equivalent to ||.
 
-**Examples**
+*Examples*
 - `a or b`
 
 ---
 
 ### `piecewise`
 
-`piecewise(cx, cy, x)`
+**Signature:** `piecewise(cx, cy, x)`
 
 Signal defined by control points with linear interpolation. cx and cy are numeric vectors of the same length, with at least two items; cx must be strictly increasing. x can be a scalar, vector, or matrix. Outside the cx interval it returns the nearest endpoint value.
 
-**Examples**
+*Examples*
 - `piecewise([0,2,5], [0,10,4], time)`
 
 ---
 
 ### `pos`
 
-`pos(x)`
+**Signature:** `pos(x)`
 
 Positive part of x: x if positive, otherwise 0. It also operates element by element on vectors and matrices.
 
-**Examples**
+*Examples*
 - `pos(-2) -> 0`
 
 ---
 
 ### `pow`
 
-`pow(base, exp)`
+**Signature:** `pow(base, exp)`
 
 Power: base raised to exponent.
 
-**Examples**
+*Examples*
 - `pow(2, 3) -> 8`
 
 ---
 
 ### `round`
 
-`round(x)`
+**Signature:** `round(x)`
 
 Round to the nearest integer.
 
-**Examples**
+*Examples*
 - `round(1.6) -> 2`
 
 ---
 
 ### `sign`
 
-`sign(x)`
+**Signature:** `sign(x)`
 
 Sign of the number: -1, 0, or 1.
 
-**Examples**
+*Examples*
 - `sign(-4) -> -1`
 
 ---
 
 ### `sin`
 
-`sin(x)`
+**Signature:** `sin(x)`
 
 Trigonometric sine.
 
-**Examples**
+*Examples*
 - `sin(0) -> 0`
 
 ---
 
 ### `sinh`
 
-`sinh(x)`
+**Signature:** `sinh(x)`
 
 Hyperbolic sine.
 
-**Examples**
+*Examples*
 - `sinh(0) -> 0`
 
 ---
 
 ### `spline`
 
-`spline(cx, cy, x)`
+**Signature:** `spline(cx, cy, x)`
 
 Signal defined by control points with a natural cubic spline. cx and cy are numeric vectors of the same length, with at least two items; cx must be strictly increasing. x can be a scalar, vector, or matrix. Outside the cx interval it returns the nearest endpoint value.
 
-**Examples**
+*Examples*
 - `spline([0,2,5], [0,10,4], time)`
 
 ---
 
 ### `sqrt`
 
-`sqrt(x)`
+**Signature:** `sqrt(x)`
 
 Square root.
 
-**Examples**
+*Examples*
 - `sqrt(9) -> 3`
 
 ---
 
 ### `tan`
 
-`tan(x)`
+**Signature:** `tan(x)`
 
 Trigonometric tangent.
 
-**Examples**
+*Examples*
 - `tan(0) -> 0`
 
 ---
 
 ### `tanh`
 
-`tanh(x)`
+**Signature:** `tanh(x)`
 
 Hyperbolic tangent.
 
-**Examples**
+*Examples*
 - `tanh(0) -> 0`
 
 ---
 
 ### `trunc`
 
-`trunc(x)`
+**Signature:** `trunc(x)`
 
 Remove the fractional part.
 
-**Examples**
+*Examples*
 - `trunc(-1.8) -> -1`
 
 ## Agent functions and variables
 
 ### `$i`
 
-`$i`
+**Signature:** `$i`
 
 Row index of the current agent or cell. In scalar execution it is 0; in vector execution it identifies the local component; in matrix agent-based contexts it is the current row.
 
@@ -1058,7 +1151,7 @@ Row index of the current agent or cell. In scalar execution it is 0; in vector e
 
 ### `$j`
 
-`$j`
+**Signature:** `$j`
 
 Column index of the current agent or cell in matrix agent-based contexts. It is not available for non-matrix structures.
 
@@ -1066,22 +1159,22 @@ Column index of the current agent or cell in matrix agent-based contexts. It is 
 
 ### `agentIndicesWhere`
 
-`agentIndicesWhere(cond, agents)`
+**Signature:** `agentIndicesWhere(cond, agents)`
 
 The indices of agents for which the condition is true. Inside the condition self is the current agent row and $i its index.
 
-**Examples**
+*Examples*
 - `agentIndicesWhere(self[STATE] == 1, agents)`
 
 ---
 
 ### `agents`
 
-`agents(fieldNames[, rowsOrCount])`
+**Signature:** `agents(fieldNames[, rowsOrCount])`
 
 Creates an agent matrix with a property schema. fieldNames is a vector of field names; the second argument can be an optional matrix of initial agents or a number of agents to initialize with zeros.
 
-**Examples**
+*Examples*
 - `agents(["ID","STATE","X","Y"])`
 - `agents(["ID","STATE"], [[1,0],[2,1]])`
 - `agents(["X","Y","VX","VY"], 10)`
@@ -1090,171 +1183,83 @@ Creates an agent matrix with a property schema. fieldNames is a vector of field 
 
 ### `agentSpace`
 
-`agentSpace(agents, xCol, yCol[, idCol][, [rows, cols][, neighborhood[, toroidal[, radius]]]])`
+**Signature:** `agentSpace(agents, xCol, yCol[, idCol][, [rows, cols][, neighborhood[, toroidal[, radius]]]])`
 
 A spatial index for an agent population with non-negative integer coordinates in columns xCol and yCol. If you provide idCol, space cells store that property values instead of row indices. neighborhood can be 'moore' or 'vonNeumann'.
 
-**Examples**
+*Examples*
 - `agentSpace(agents, X, Y)`
 
 ---
 
 ### `allNeighborCounts`
 
-`allNeighborCounts(agents, space)`
+**Signature:** `allNeighborCounts(agents, space)`
 
 A vector with the neighbor count of every agent.
 
-**Examples**
+*Examples*
 - `allNeighborCounts(agents, space)`
-
----
-
-### `appendRow`
-
-`appendRow(matrix, row)`
-
-A copy of the matrix with a new row appended at the end. For agent matrices it adds a new agent.
-
-**Examples**
-- `appendRow(agents, [3,1])`
-
----
-
-### `col`
-
-`col(matrix, j)`
-
-Column j from the matrix as a vector.
-
-**Examples**
-- `col(agents, ENERGY)`
 
 ---
 
 ### `filterAgents`
 
-`filterAgents(cond, agents)`
+**Signature:** `filterAgents(cond, agents)`
 
 The sub-population of agents satisfying the condition. Inside the condition self is the current agent row and $i its index.
 
-**Examples**
+*Examples*
 - `filterAgents(self[ENERGY] > 0, agents)`
 
 ---
 
 ### `mapAgents`
 
-`mapAgents(expr, agents)`
+**Signature:** `mapAgents(expr, agents)`
 
 Row-by-row transformation of all agents. expr must return a new row with the same length for each agent. Inside expr self is the current agent row and $i its index.
 
-**Examples**
+*Examples*
 - `mapAgents(setAt(self, ENERGY, self[ENERGY] + 1), agents)`
-
----
-
-### `ncols`
-
-`ncols(matrix)`
-
-The number of matrix columns. For an agent population it matches the number of properties.
-
-**Examples**
-- `ncols(agents)`
 
 ---
 
 ### `neighborCountOf`
 
-`neighborCountOf(agents, space, i)`
+**Signature:** `neighborCountOf(agents, space, i)`
 
 How many neighbors agent i has in the given space.
 
-**Examples**
+*Examples*
 - `neighborCountOf(agents, space, 0)`
 
 ---
 
 ### `neighborsOf`
 
-`neighborsOf(agents, space, i)`
+**Signature:** `neighborsOf(agents, space, i)`
 
 The references of agents neighboring the agent at row i, using the space built with agentSpace(...). If agentSpace uses idCol, the returned references are those identifier values; otherwise they are row indices. It excludes the agent itself.
 
-**Examples**
+*Examples*
 - `neighborsOf(agents, space, 0)`
-
----
-
-### `nrows`
-
-`nrows(matrix)`
-
-The number of matrix rows. For an agent population it matches the number of agents.
-
-**Examples**
-- `nrows(agents)`
-
----
-
-### `removeRow`
-
-`removeRow(matrix, i)`
-
-A copy of the matrix without row i. For agent matrices it removes agent i.
-
-**Examples**
-- `removeRow(agents, 2)`
-
----
-
-### `row`
-
-`row(matrix, i)`
-
-Row i from the matrix. If the matrix represents agents, it returns the property vector of agent i.
-
-**Examples**
-- `row(agents, 0)`
 
 ---
 
 ### `self`
 
-`self`
+**Signature:** `self`
 
 Current local variable value. In scalar execution it matches the variable value; in vector execution it refers to the current agent component; in matrix agent-based contexts it matches the current cell value.
 
 ---
 
-### `setCol`
-
-`setCol(matrix, j, vector)`
-
-A copy of the matrix with column j replaced by the vector values. The vector must provide one value for each row.
-
-**Examples**
-- `setCol(agents, ENERGY, newEnergy)`
-
----
-
-### `setRow`
-
-`setRow(matrix, i, row)`
-
-A copy of the matrix with row i replaced by row.
-
-**Examples**
-- `setRow(agents, 3, [10,1,4,7])`
-
----
-
 ### `spaceMatrix`
 
-`spaceMatrix(space)`
+**Signature:** `spaceMatrix(space)`
 
 The matrix of agent counts per cell from an agentSpace(...) value. Useful when you want to treat space as a generic matrix.
 
-**Examples**
+*Examples*
 - `spaceMatrix(agentSpace(agents, X, Y))`

@@ -10,6 +10,7 @@
   const PLAYER_LANGS = new Set(["it", "en"]);
   const scene2dCore = global.STGraphXScene2D || {};
   const readDataCore = global.STGraphXReadDataCore || {};
+  const graphFunctionHelpers = global.GraphFunctions?.helpers || {};
   const SUBMODEL_LIBRARY_ICONS = Object.freeze({
     module: "◆",
     layers: "▤",
@@ -3814,6 +3815,7 @@
           && matrixValue.every(Array.isArray)
           && matrixValue.every((row) => row.length === matrixValue[0].length);
         if (isMatrix) {
+          const matrixColumnNames = graphFunctionHelpers.getMatrixColumnNames?.(matrixValue) || null;
           const thead = document.createElement("thead");
           const headRow = document.createElement("tr");
           const corner = document.createElement("th");
@@ -3822,7 +3824,7 @@
           headRow.appendChild(corner);
           for (let column = 0; column < matrixValue[0].length; column += 1) {
             const th = document.createElement("th");
-            th.textContent = `[${column}]`;
+            th.textContent = matrixColumnNames?.[column] || `[${column}]`;
             headRow.appendChild(th);
           }
           thead.appendChild(headRow);

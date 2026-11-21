@@ -178,7 +178,7 @@
           "value": "Numero di vicini occupati"
         }
       ],
-      "valueExpression": "array(size(space,0),size(space,1), count($value != 0, neighbors(space, $i0, $i1, true, true)))",
+      "valueExpression": "array(size(space,0),size(space,1), count($value != 0, neighbors(space, $0, $1, true, true)))",
       "input": false
     },
     {
@@ -203,7 +203,7 @@
           "value": "Numero di vicini dello stesso tipo"
         }
       ],
-      "valueExpression": "array(size(space,0),size(space,1), if(space[$i0,$i1] == 0, 0, count($value == space[$i0,$i1], neighbors(space, $i0, $i1, true, true))))",
+      "valueExpression": "array(size(space,0),size(space,1), if(space[$0,$1] == 0, 0, count($value == space[$0,$1], neighbors(space, $0, $1, true, true))))",
       "input": false
     },
     {
@@ -228,7 +228,7 @@
           "value": "Quota di vicini simili"
         }
       ],
-      "valueExpression": "array(size(space,0),size(space,1), if(space[$i0,$i1] == 0 or occupiedN[$i0,$i1] == 0, 1, sameN[$i0,$i1] / occupiedN[$i0,$i1]))",
+      "valueExpression": "array(size(space,0),size(space,1), if(space[$0,$1] == 0 or occupiedN[$0,$1] == 0, 1, sameN[$0,$1] / occupiedN[$0,$1]))",
       "input": false
     },
     {

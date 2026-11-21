@@ -1,6 +1,6 @@
 /*!
  * STGraphX Embedded Player Bundle
- * Generated: 2026-11-17T20:57:19.734Z
+ * Generated: 2026-11-21T13:30:13.093Z
  */
 
 /* --- i18n-inline.js --- */
@@ -13,7 +13,7 @@
 
 window.STGraphXAppMeta = {
   author: "Luca Mari",
-  releaseDate: "2026.11.17",
+  releaseDate: "2026.11.21",
   license: "MPL-2.0",
   copyright: "Copyright (c) 2026 Luca Mari",
 };
@@ -156,11 +156,23 @@ window.STGraphXI18nBundles = {
     "menu.help.about": "About...",
     "menu.help.analyze": "Analizza modello...",
     "menu.help.documentation": "Guida di STGraphX...",
+    "menu.help.functionalThinking": "Pensare per funzioni...",
+    "menu.help.arrayThinking": "Pensare per array...",
+    "menu.help.introductions": "Introduzione a...",
+    "menu.help.unitsIntroduction": "Unità di misura...",
+    "functionalThinking.title": "Pensare per funzioni con STGraphX",
+    "arrayThinking.title": "Pensare per array con STGraphX",
+    "unitsIntroduction.title": "Ragionare con le unità di misura in STGraphX",
+    "tooltip.menu.help.functionalThinking": "Apre l’introduzione al pensiero funzionale con STGraphX.",
+    "tooltip.menu.help.arrayThinking": "Apre l’introduzione al pensiero per array con STGraphX.",
+    "tooltip.menu.help.unitsIntroduction": "Apre l’introduzione alle unità di misura in STGraphX.",
     "menu.help.eightTuple": "Genera 8-upla...",
     "menu.help.examples": "Modelli di esempio...",
     "menu.help.functions": "Funzioni disponibili...",
     "documentation.loadError": "Impossibile caricare il documento: {message}",
     "documentation.loading": "Caricamento documento...",
+    "documentation.diagramError": "Impossibile disegnare il grafo; qui sotto è riportato il codice Mermaid.",
+    "documentation.index": "Indice del documento",
     "documentation.title": "Guida di STGraphX",
     "menu.insert": "Inserisci",
     "menu.insert.buttonWidget": "Pulsante",
@@ -203,6 +215,7 @@ window.STGraphXI18nBundles = {
     "menu.tools.unitDefinitions": "Unità di misura...",
     "menu.view": "Vista",
     "menu.view.dashboard": "Dashboard...",
+    "menu.view.findNode": "Elenco dei nodi...",
     "menu.view.modelNotes": "Appunti del modello...",
     "menu.view.fit": "Adatta al contenuto",
     "menu.view.feedbackLoops": "Cicli di feedback...",
@@ -277,6 +290,10 @@ window.STGraphXI18nBundles = {
     "label.timeStep": "delta t",
     "label.timeUnit": "Unità di tempo",
     "label.unitDefinitionExpression": "Definizione",
+    "label.unitDefinitionPlural": "Nome plurale",
+    "label.unitDefinitionPluralPlaceholder": "anni",
+    "label.unitDefinitionSingular": "Nome singolare",
+    "label.unitDefinitionSingularPlaceholder": "anno",
     "label.unitDefinitionSymbol": "Simbolo",
     "label.value": "Valore",
     "label.valueComputed": "Valore calcolato",
@@ -335,6 +352,12 @@ window.STGraphXI18nBundles = {
     "view.btn.hideWidgets": "Nascondi widget",
     "view.btn.showGraph": "Mostra grafo",
     "view.btn.showWidgets": "Mostra widget",
+    "nodeFinder.empty": "Nessun nodo corrisponde alla ricerca.",
+    "nodeFinder.filter": "Cerca per nome",
+    "nodeFinder.filterPlaceholder": "Nome del nodo",
+    "nodeFinder.list": "Elenco alfabetico dei nodi",
+    "nodeFinder.title": "Elenco dei nodi",
+    "nodeFinder.unnamed": "(senza nome)",
     "viewOptions.canvas": "Canvas",
     "viewOptions.interface": "Interfaccia e valori",
     "viewOptions.language": "Lingua dell'interfaccia",
@@ -369,18 +392,19 @@ window.STGraphXI18nBundles = {
     "expr.help.allNeighborCounts": "Un vettore con il numero di vicini di ogni agente. Esempio: `allNeighborCounts(agents, space)`.",
     "expr.help.and": "Congiunzione logica (equivalente a `&&`). Esempio: `a and b`.",
     "expr.help.append": "Concatena in sequenza due o piu valori. Su vettori aggiunge elementi o concatena vettori. Se è presente una matrice, axis=0 (default) concatena righe e axis=1 colonne: l'ordine degli argomenti stabilisce se sono inserite prima o dopo la matrice. Le matrici agents supportano solo axis=0. Esempi: append([1,2], 3, [4,5]) ; append([[1,2]], [3,4], [5,6]) ; append([[1,2],[3,4]], [5,6], 1) ; append([5,6], [[1,2],[3,4]], 1).",
-    "expr.help.appendRow": "Una copia della matrice con una nuova riga aggiunta in fondo. Per matrici agents aggiunge un nuovo agente. Esempio: `appendRow(agents, [3,1])`.",
+    "expr.help.appendRow": "Una copia della matrice con una nuova riga aggiunta in fondo. Il secondo argomento puo essere un vettore riga o uno scalare, ripetuto in ogni colonna. Per matrici agents aggiunge un nuovo agente. Esempi: `appendRow([[1,2]], [3,4])` ; `appendRow([[1,2]], 0)` ; `appendRow(agents, [3,1])`.",
     "expr.help.argmax": "L'indice del primo valore massimo. Per un vettore restituisce un indice; per una matrice restituisce [riga, colonna]. In caso di parita sceglie il primo elemento in ordine di righe e colonne. Esempi: argmax([2,7,4]) -> 1 ; argmax([[1,5],[5,2]]) -> [0,1].",
     "expr.help.argmin": "L'indice del primo valore minimo. Per un vettore restituisce un indice; per una matrice restituisce [riga, colonna]. In caso di parita sceglie il primo elemento in ordine di righe e colonne. Esempi: argmin([2,-1,4]) -> 1 ; argmin([[3,2],[1,1]]) -> [1,0].",
-    "expr.help.array": "Array ottenuto valutando expr per ogni combinazione degli axis. Un axis puo essere un intero n (valori 0,...,n-1) oppure un vettore di valori. $0, $1, ... sono i valori degli axis; $i0, $i1, ... i rispettivi indici. Esempio: array(range(-2,3), $0^2).",
-    "expr.help.arrayAxisIndex": "In array(...), indice da zero del primo asse ($i0), del secondo ($i1), e cosi via.",
-    "expr.help.arrayAxisValue": "In array(...), valore corrente del primo asse ($0), del secondo ($1), e cosi via.",
+    "expr.help.array": "Costruisce un array valutando expr per ogni combinazione delle dimensioni. Ogni dimensione n deve essere un intero non negativo; $0, $1, ... sono gli indici correnti da zero. La forma array(columnNames, rows, cols, expr) crea una matrice con colonne nominate, accessibili anche con matrice[\"nome\"]. Esempi: array(3, $0*2) ; array(5, ($0-2)^2) ; array([\"quantità\",\"prezzo\"], 5, 2, 0).",
+    "expr.help.arrayIndex": "In array(...), indice da zero della prima dimensione ($0), della seconda ($1), e cosi via.",
     "expr.help.asin": "Arcoseno di `x`. Esempio: `asin(0) -> 0`.",
     "expr.help.atan": "Arcotangente di `x`. Esempio: `atan(0) -> 0`.",
     "expr.help.atan2": "Arcotangente con due argomenti `(y, x)`. Esempio: `atan2(0, 1) -> 0`.",
     "expr.help.median": "Mediana di un vettore o di una matrice numerici non vuoti. Con un numero pari di valori restituisce la media dei due centrali. Per una matrice, senza `axis` usa tutti i valori; con `axis=0` opera per colonna, con `axis=1` per riga. Esempi: median([3,1,2]) -> 2 ; median([1,4]) -> 2.5.",
     "expr.help.mode": "Moda di un vettore o di una matrice numerici non vuoti. Restituisce il valore più frequente; in caso di parità sceglie il più piccolo, anche quando tutti i valori sono distinti. Per una matrice, senza `axis` usa tutti i valori; con `axis=0` opera per colonna, con `axis=1` per riga. Esempi: mode([3,1,3,1]) -> 1.",
     "expr.help.polynomialRegression": "Regressione polinomiale ai minimi quadrati, con intercetta. `degree` è un intero non negativo, predefinito 1; occorrono almeno degree+1 osservazioni e valori x distinti sufficienti. Restituisce il vettore [a0,a1,...,R²,RMSE]: coefficienti in ordine crescente di potenza (a0+a1*x+...) seguiti da R² e RMSE. RMSE è sqrt(sum((y-yStimata)^2)/n), nelle unità di y, senza correzione per i gradi di libertà. Il grado 0 stima la media. Con y costante R² vale 1. Usa QR con dati riscalati; segnala basi numericamente dipendenti o risultati non rappresentabili. Con gradi elevati o x molto traslati, i coefficienti nelle coordinate originali possono perdere precisione. Esempi: polynomialRegression([0,1,2],[1,4,9],2) -> circa [1,2,1,1,0].",
+    "expr.help.pipelinePlaceholder": "Segnaposto della pipeline `|>`. Nella parte destra rappresenta il valore, calcolato una sola volta, della parte sinistra. `|>` ha la precedenza più bassa ed è associativo a sinistra. Esempi: `x |> _ + 1 |> _ * 2` ; `[1,2,3] |> _[0]` ; `sin(time) |> if(_ > 0, 2*_, -_)`.",
+    "expr.help.pipeline": "Applica l'espressione a destra al valore prodotto a sinistra. Nella parte destra `_` indica quel valore, calcolato una sola volta. `|>` ha la precedenza più bassa ed è associativo a sinistra; `_` è valido solo a destra di una pipeline. Esempi: `x |> _ + 1 |> _ * 2` ; `[1,2,3] |> _[0]` ; `sin(time) |> if(_ > 0, 2*_, -_)`.",
     "expr.help.linearRegression": "Regressione lineare ai minimi quadrati con intercetta, equivalente a polynomialRegression(x,y,1). Restituisce il vettore [a0,a1,...,R²,RMSE]: coefficienti in ordine crescente di potenza (a0+a1*x+...) seguiti da R² e RMSE. RMSE è sqrt(sum((y-yStimata)^2)/n), nelle unità di y, senza correzione per i gradi di libertà. Richiede almeno due coppie numeriche e valori x non tutti uguali. Esempi: linearRegression([0,1,2],[1,3,5]) -> circa [1,2,1,0].",
     "expr.error.regressionVectors": "La regressione richiede due vettori numerici non vuoti della stessa lunghezza",
     "expr.error.regressionDegree": "Il grado della regressione deve essere un intero non negativo minore del numero di osservazioni",
@@ -395,7 +419,7 @@ window.STGraphXI18nBundles = {
     "expr.help.binomial": "Distribuzione binomiale (parametri predefiniti: `n=1`, `p=0.5`). Se `x` manca, estrae un campione. Con `mode=0` calcola la pmf, con `mode=1` la cdf, con `mode=2` il quantile discreto. Esempi: `binomial()`; `binomial([10,0.2], 3, 0)`.",
     "expr.help.ceil": "Arrotondamento per eccesso di `x`. Esempio: `ceil(1.2) -> 2`.",
     "expr.help.choice": "Elemento estratto casualmente da un vettore non vuoto oppure riga estratta casualmente da una matrice non vuota. Esempi: choice([10,20,30]) ; choice([[1,2],[3,4]]).",
-    "expr.help.col": "La colonna j-esima della matrice come vettore. Esempio: `col(agents, ENERGY)`.",
+    "expr.help.col": "La colonna j-esima della matrice come vettore. j puo essere anche il nome di una colonna nominata. Esempi: `col([[1,2],[3,4]], 1) -> [2,4]` ; `col(agents, ENERGY)`.",
     "expr.help.coords": "Le coordinate [riga, colonna] delle celle non nulle della matrice, oppure solo di quelle uguali a valore se specificato. Esempi: coords([[0,1,0],[2,0,3]]) -> [[0,1],[1,0],[1,2]] ; coords([[0,1,0],[2,0,3]], 2) -> [[1,0]].",
     "expr.help.cos": "Coseno di `x`. Esempio: `cos(0) -> 1`.",
     "expr.help.cosh": "Coseno iperbolico di `x`. Esempio: `cosh(0) -> 1`.",
@@ -437,12 +461,12 @@ window.STGraphXI18nBundles = {
     "expr.help.max": "Massimo tra `x1`, `x2`, ... . Esempio: `max(2, 7, 4) -> 7`.",
     "expr.help.min": "Minimo tra `x1`, `x2`, ... . Esempio: `min(2, 7, 4) -> 2`.",
     "expr.help.modulo": "Resto euclideo della divisione di `a` per `b`. Con un divisore positivo il risultato è compreso tra `0` e `b-1`, anche se `a` è negativo. Opera elemento per elemento su vettori e matrici. Esempi: `7 % 3 -> 1` ; `-1 % 3 -> 2` ; `[1,2,3] % 2 -> [1,0,1]`.",
-    "expr.help.ncols": "Il numero di colonne della matrice. Per una popolazione di agenti coincide con il numero di proprietà. Esempio: `ncols(agents)`.",
+    "expr.help.ncols": "Il numero di colonne della matrice. Per una popolazione di agenti coincide con il numero di proprietà. Esempi: `ncols([[1,2],[3,4]]) -> 2` ; `ncols(agents)`.",
     "expr.help.neighborCountOf": "Quanti vicini ha l'agente i nello spazio dato. Esempio: `neighborCountOf(agents, space, 0)`.",
     "expr.help.neighbors": "I valori delle celle vicine a quella indicata. Con `diagonals=true` usa il vicinato di Moore, con `diagonals=false` solo sopra, sotto, sinistra e destra. Con `toroidal=true` lo spazio si richiude sui bordi. Esempi: neighbors([[1,2,3],[4,5,6],[7,8,9]], 1, 1) -> [1,2,3,4,6,7,8,9] ; neighbors([[1,2,3],[4,5,6],[7,8,9]], 1, 1, false) -> [2,4,6,8] ; neighbors([[1,2,3],[4,5,6],[7,8,9]], 0, 0, false, true) -> [2,4,3,7].",
     "expr.help.neighborsOf": "I riferimenti degli agenti vicini all'agente di riga i, usando lo spazio costruito con agentSpace(...). Se agentSpace usa idCol, i riferimenti restituiti sono quei valori identificativi; altrimenti sono indici di riga. Esclude l'agente stesso. Esempio: `neighborsOf(agents, space, 0)`.",
     "expr.help.not": "Negazione logica (equivalente a `!`). Esempio: not x. Esempio: `not active`.",
-    "expr.help.nrows": "Il numero di righe della matrice. Per una popolazione di agenti coincide con il numero di agenti. Esempio: `nrows(agents)`.",
+    "expr.help.nrows": "Il numero di righe della matrice. Per una popolazione di agenti coincide con il numero di agenti. Esempi: `nrows([[1,2],[3,4]]) -> 2` ; `nrows(agents)`.",
     "expr.help.or": "Disgiunzione logica (equivalente a `||`). Esempio: `a or b`.",
     "expr.help.piecewise": "Segnale definito dai punti di controllo `cx` e `cy` con interpolazione lineare: `cx` e `cy` sono vettori numerici della stessa lunghezza, con almeno due elementi; `cx` deve essere strettamente crescente. `x` puo essere scalare, vettore o matrice. Fuori dall'intervallo di `cx` restituisce il valore dell'estremo piu vicino. Esempio: piecewise([0,2,5], [0,10,4], time).",
     "expr.help.poisson": "Distribuzione di Poisson (parametro predefinito: `rate=1`). Se `x` manca, estrae un campione. Con `mode=0` calcola la pmf, con `mode=1` la cdf, con `mode=2` il quantile discreto. Esempi: `poisson()`; `poisson([4], 2, 0)`.",
@@ -455,17 +479,17 @@ window.STGraphXI18nBundles = {
     "expr.help.reduce": "Riduzione progressiva di un vettore o di una matrice mediante un operatore o una funzione. Per le matrici axis=0 riduce per colonne, axis=1 per righe. Esempi: reduce(+, [1,2,3]) ; reduce(max, [3,7,2]) ; reduce(+, [[1,2],[3,4]], 0).",
     "expr.help.remove": "Copia di un vettore senza gli ultimi n elementi, oppure senza i primi n elementi se n è il primo argomento. Per una matrice rimuove righe. n deve essere un intero non negativo; se supera la dimensione restituisce un array vuoto. Esempi: remove([1,2,3,4], 2) -> [1,2] ; remove(2, [1,2,3,4]) -> [3,4] ; remove([[1,2],[3,4],[5,6]], 1) -> [[1,2],[3,4]].",
     "expr.help.removeAt": "Una copia senza l'elemento indicato del vettore oppure senza la riga o la colonna indicate della matrice. Per le matrici axis=0 rimuove una riga, axis=1 una colonna. Esempi: removeAt([1,2,3], 1) -> [1,3] ; removeAt([[1,2],[3,4]], 0) -> [[3,4]] ; removeAt([[1,2],[3,4]], 1, 1) -> [[1],[3]].",
-    "expr.help.removeRow": "Una copia della matrice senza la riga i. Per matrici agents elimina l'agente i. Esempio: `removeRow(agents, 2)`.",
+    "expr.help.removeRow": "Una copia della matrice senza la riga i. Per matrici agents elimina l'agente i. Esempi: `removeRow([[1,2],[3,4]], 0) -> [[3,4]]` ; `removeRow(agents, 2)`.",
     "expr.help.resize": "Copia di un vettore o di una matrice con dimensioni diverse. Mantiene le posizioni esistenti, elimina quelle eccedenti e riempie con zeri quelle nuove. Le matrici agents non sono supportate. Esempi: resize([1,2], 4) -> [1,2,0,0] ; resize([[1,2],[3,4]], 3, 4) -> [[1,2,0,0],[3,4,0,0],[0,0,0,0]].",
     "expr.help.round": "Arrotondamento all'intero più vicino di `x`. Esempio: `round(1.6) -> 2`.",
-    "expr.help.row": "La riga i-esima della matrice. Se la matrice rappresenta agenti, restituisce il vettore proprietà dell'agente i. Esempio: `row(agents, 0)`.",
+    "expr.help.row": "La riga i-esima della matrice. Se la matrice rappresenta agenti, restituisce il vettore proprietà dell'agente i. Esempi: `row([[1,2],[3,4]], 0) -> [1,2]` ; `row(agents, 0)`.",
     "expr.help.self": "Valore locale corrente della variabile. In esecuzione scalare coincide con il valore della variabile; in esecuzione vettoriale indica la componente dell'agente corrente; nei contesti matriciali agent-based coincide con il valore della cella corrente.",
     "expr.help.set": "Vettore senza duplicati, nell'ordine della prima apparizione. Esempio: set([3,1,3,2,1]) -> [3,1,2].",
     "expr.help.setAt": "Una copia con l'elemento o la riga sostituiti. Esempi: setAt([1,2,3], 1, 9) -> [1,9,3] ; setAt([[1,2],[3,4]], [1,0], 8) -> [[1,2],[8,4]].",
-    "expr.help.setCol": "Una copia della matrice con la colonna j sostituita dai valori del vettore. Il vettore deve avere una voce per ogni riga. Esempio: `setCol(agents, ENERGY, newEnergy)`.",
+    "expr.help.setCol": "Una copia della matrice con la colonna j sostituita da un vettore o da uno scalare ripetuto in ogni riga. j puo essere anche il nome di una colonna nominata. Esempi: `setCol([[1,2],[3,4]], 1, [8,9])` ; `setCol([[1,2],[3,4]], 0, 7)` ; `setCol(agents, ENERGY, newEnergy)`.",
     "expr.help.setModelProperty": "Assegnazione di una proprietà custom del modello, con restituzione del valore assegnato. Esempio: `setModelProperty(\"title\", \"Experiment\")`.",
     "expr.help.setProperty": "Assegnazione di una proprietà custom della variabile, con restituzione del valore assegnato. Esempio: `setProperty(\"unit\", \"kg\")`.",
-    "expr.help.setRow": "Una copia della matrice con la riga i sostituita da riga. Esempio: `setRow(agents, 3, [10,1,4,7])`.",
+    "expr.help.setRow": "Una copia della matrice con la riga i sostituita da un vettore o da uno scalare ripetuto in ogni colonna. Esempi: `setRow([[1,2],[3,4]], 1, [8,9])` ; `setRow([[1,2],[3,4]], 0, 7)` ; `setRow(agents, 3, [10,1,4,7])`.",
     "expr.help.shuffle": "Una copia del vettore con gli elementi mescolati casualmente oppure una copia della matrice con le righe mescolate casualmente. Esempi: shuffle([1,2,3,4]) ; shuffle([[1,2],[3,4],[5,6]]).",
     "expr.help.sign": "Segno di `x`: `-1`, `0` o `1`. Esempio: `sign(-4) -> -1`.",
     "expr.help.sin": "Seno di `x`. Esempio: `sin(0) -> 0`.",
@@ -542,13 +566,21 @@ window.STGraphXI18nBundles = {
     "expr.error.appendColumnVector": "Con axis=1, append richiede una colonna vettore",
     "expr.error.appendColumnLength": "La lunghezza della colonna aggiunta non coincide con il numero di righe della matrice",
     "expr.error.appendAgentColumn": "append con axis=1 non è supportato per matrici agents",
-    "expr.error.arrayAxisIntegerOrVector": "L'asse {index} di array deve essere un intero non negativo o un vettore",
     "expr.error.arrayDimensionNonNegative": "La dimensione {index} di array deve essere un intero non negativo",
     "expr.error.arrayIndexInteger": "L'indice dell'array deve essere un intero",
     "expr.error.arrayIndexIntegerOrPair": "L'indice dell'array deve essere un intero o una coppia [riga, colonna]",
     "expr.error.arrayIndexIntegerOrVector": "L'indice dell'array deve essere un intero o un vettore di interi",
     "expr.error.arrayIndexOutOfRange": "Indice dell'array fuori intervallo",
-    "expr.error.arrayNeedsAxisExpression": "array richiede almeno un asse e un'espressione",
+    "expr.error.arrayNeedsDimensionExpression": "array richiede almeno una dimensione e un'espressione",
+    "expr.error.arrayColumnNamesArity": "con nomi di colonna, array richiede esattamente righe, colonne e un'espressione",
+    "expr.error.arrayColumnNamesCount": "il numero di nomi di colonna deve coincidere con la dimensione delle colonne",
+    "expr.error.arrayColumnNamesInvalid": "i nomi delle colonne di array devono essere stringhe non vuote e non duplicate",
+    "expr.error.namedColumnUnknown": "la colonna denominata {name} non esiste",
+    "expr.error.namedColumnsAppend": "non è possibile aggiungere colonne a una matrice con colonne nominate",
+    "expr.error.namedColumnsFilterColumns": "non è possibile filtrare le colonne di una matrice con colonne nominate",
+    "expr.error.namedColumnsFilterElements": "non è possibile filtrare gli elementi di una matrice con colonne nominate",
+    "expr.error.namedColumnsRemove": "non è possibile rimuovere colonne da una matrice con colonne nominate",
+    "expr.error.namedColumnsResize": "una matrice con colonne nominate deve conservare il numero delle colonne",
     "expr.error.arrayNeedsDimension": "array richiede almeno una dimensione",
     "expr.error.arrayTooLarge": "L'array è troppo grande",
     "expr.error.argumentList.0_1_2": "0, 1 o 2",
@@ -1041,6 +1073,7 @@ window.STGraphXI18nBundles = {
     "tooltip.menu.help.documentation": "Apre la guida e i documenti principali di STGraphX.",
     "tooltip.documentation.back": "Torna al documento precedente.",
     "tooltip.documentation.forward": "Vai al documento successivo.",
+    "tooltip.documentation.index": "Vai direttamente a una sezione del documento.",
     "tooltip.menu.help.eightTuple": "Genera una descrizione strutturata del modello attivo in forma di 8-upla.",
     "tooltip.menu.help.examples": "Apre una pagina con i modelli di esempio disponibili.",
     "tooltip.menu.help.functions": "Apre l'elenco delle funzioni disponibili nelle espressioni.",
@@ -1074,6 +1107,7 @@ window.STGraphXI18nBundles = {
     "tooltip.menu.view": "Controlli di visualizzazione, zoom e griglia.",
     "tooltip.menu.view.fit": "Adatta zoom e vista al contenuto attuale di grafo e widget.",
     "tooltip.menu.view.feedbackLoops": "Individua i cicli diretti e ne classifica il segno complessivo.",
+    "tooltip.menu.view.findNode": "Apre l'elenco alfabetico dei nodi e porta la vista sul nodo selezionato.",
     "tooltip.menu.view.gridStep": "Imposta la distanza tra le linee della griglia.",
     "tooltip.menu.view.highlightNodeEdges": "Evidenzia con colori diversi le frecce entranti e uscenti del nodo selezionato.",
     "tooltip.menu.view.options": "Apre le preferenze per griglia, valori delle variabili, unità, tooltip e formattazione numerica.",
@@ -1097,7 +1131,7 @@ window.STGraphXI18nBundles = {
     "units.base": "unità fondamentale SI",
     "units.radian": "radiante",
     "units.custom": "Unità definite dal modello",
-    "units.intro": "Le unità SI derivate sono disponibili automaticamente. Aggiungi simboli del modello con una definizione dimensionale, per esempio N = kg*m/s^2 oppure personaAnno = persona*anno.",
+    "units.intro": "Le unità SI derivate sono disponibili automaticamente. Aggiungi simboli del modello con una definizione dimensionale, per esempio N = kg*m/s^2 oppure personaAnno = persona*anno. Per ogni unità puoi anche indicare le forme singolare e plurale, usate accanto ai valori scalari.",
     "units.prefixes": "Prefissi gestiti: da, Y, Z, E, P, T, G, M, k, h, d, c, m, u/µ, n e p. Si applicano alle unità fondamentali m, g, s, A, K, mol, cd e rad, alle unità SI derivate e alle unità definite dal modello. Non si applicano a valute né alle temperature °C e °F.",
     "units.si": "Unità del Sistema Internazionale",
     "units.title": "Unità di misura",
@@ -1453,6 +1487,7 @@ window.STGraphXI18nBundles = {
     "examples.title": "Modelli di esempio",
     "help.group.agent": "Funzioni e variabili per agenti",
     "help.group.array": "Funzioni per array",
+    "help.group.syntax": "Notazione speciale",
     "help.group.functions": "Funzioni generali",
     "help.group.math": "Funzioni matematiche",
     "help.group.probability": "Funzioni statistiche e probabilistiche",
@@ -1704,12 +1739,24 @@ window.STGraphXI18nBundles = {
     "menu.help": "Help",
     "menu.help.about": "About...",
     "menu.help.analyze": "Analyze model...",
-    "menu.help.documentation": "STGraphX guide...",
+    "menu.help.documentation": "STGraphX guide (in Italian)...",
+    "menu.help.functionalThinking": "Thinking in functions (in Italian)...",
+    "menu.help.arrayThinking": "Thinking in arrays (in Italian)...",
+    "menu.help.introductions": "Introduction to...",
+    "menu.help.unitsIntroduction": "Measurement units (in Italian)...",
+    "functionalThinking.title": "Thinking in functions with STGraphX (in Italian)",
+    "arrayThinking.title": "Thinking in arrays with STGraphX (in Italian)",
+    "unitsIntroduction.title": "Reasoning about measurement units in STGraphX (in Italian)",
+    "tooltip.menu.help.functionalThinking": "Opens the introduction to functional thinking with STGraphX (in Italian).",
+    "tooltip.menu.help.arrayThinking": "Opens the introduction to array thinking with STGraphX (in Italian).",
+    "tooltip.menu.help.unitsIntroduction": "Opens the introduction to measurement units in STGraphX (in Italian).",
     "menu.help.eightTuple": "Generate 8-tuple...",
     "menu.help.examples": "Example models...",
     "menu.help.functions": "Available functions...",
     "documentation.loadError": "Unable to load the document: {message}",
     "documentation.loading": "Loading document...",
+    "documentation.diagramError": "Unable to draw the diagram; its Mermaid source is shown below.",
+    "documentation.index": "Document outline",
     "documentation.title": "STGraphX guide",
     "menu.insert": "Insert",
     "menu.insert.buttonWidget": "Button",
@@ -1752,6 +1799,7 @@ window.STGraphXI18nBundles = {
     "menu.tools.unitDefinitions": "Measurement units...",
     "menu.view": "View",
     "menu.view.dashboard": "Dashboard...",
+    "menu.view.findNode": "Node list...",
     "menu.view.modelNotes": "Model notes...",
     "menu.view.fit": "Fit to content",
     "menu.view.feedbackLoops": "Feedback loops...",
@@ -1826,6 +1874,10 @@ window.STGraphXI18nBundles = {
     "label.timeStep": "delta t",
     "label.timeUnit": "Time unit",
     "label.unitDefinitionExpression": "Definition",
+    "label.unitDefinitionPlural": "Plural name",
+    "label.unitDefinitionPluralPlaceholder": "years",
+    "label.unitDefinitionSingular": "Singular name",
+    "label.unitDefinitionSingularPlaceholder": "year",
     "label.unitDefinitionSymbol": "Symbol",
     "label.value": "Value",
     "label.valueComputed": "Computed value",
@@ -1884,6 +1936,12 @@ window.STGraphXI18nBundles = {
     "view.btn.hideWidgets": "Hide widgets",
     "view.btn.showGraph": "Show graph",
     "view.btn.showWidgets": "Show widgets",
+    "nodeFinder.empty": "No node matches the search.",
+    "nodeFinder.filter": "Search by name",
+    "nodeFinder.filterPlaceholder": "Node name",
+    "nodeFinder.list": "Alphabetical node list",
+    "nodeFinder.title": "Node list",
+    "nodeFinder.unnamed": "(unnamed)",
     "viewOptions.canvas": "Canvas",
     "viewOptions.interface": "Interface and values",
     "viewOptions.language": "Interface language",
@@ -1918,18 +1976,19 @@ window.STGraphXI18nBundles = {
     "expr.help.allNeighborCounts": "A vector with the neighbor count of every agent. Example: `allNeighborCounts(agents, space)`.",
     "expr.help.and": "Boolean operator equivalent to &&. Example: a and b.",
     "expr.help.append": "Concatenates two or more values in sequence. On vectors it appends elements or vectors. If a matrix is present, axis=0 (default) concatenates rows and axis=1 columns: argument order determines whether they are placed before or after the matrix. Agent matrices support axis=0 only. Examples: append([1,2], 3, [4,5]) ; append([[1,2]], [3,4], [5,6]) ; append([[1,2],[3,4]], [5,6], 1) ; append([5,6], [[1,2],[3,4]], 1).",
-    "expr.help.appendRow": "A copy of the matrix with a new row appended at the end. For agent matrices it adds a new agent. Example: `appendRow(agents, [3,1])`.",
+    "expr.help.appendRow": "A copy of the matrix with a new row appended at the end. The second argument can be a row vector or a scalar repeated in every column. For agent matrices it adds a new agent. Examples: `appendRow([[1,2]], [3,4])` ; `appendRow([[1,2]], 0)` ; `appendRow(agents, [3,1])`.",
     "expr.help.argmax": "The index of the first maximum value. For a vector it returns an index; for a matrix it returns [row, column]. In a tie it selects the first element in row and column order. Example: `argmax([2,7,4]) -> 1`.",
     "expr.help.argmin": "The index of the first minimum value. For a vector it returns an index; for a matrix it returns [row, column]. In a tie it selects the first element in row and column order. Example: `argmin([2,-1,4]) -> 1`.",
-    "expr.help.array": "Array obtained by evaluating expr for every combination of axes. An axis can be an integer n (values 0,...,n-1) or a vector of values. $0, $1, ... are axis values; $i0, $i1, ... are their indices. Example: `array(range(-2,3), $0^2)`.",
-    "expr.help.arrayAxisIndex": "In array(...), zero-based index of the first axis ($i0), second axis ($i1), and so on.",
-    "expr.help.arrayAxisValue": "In array(...), current value of the first axis ($0), second axis ($1), and so on.",
+    "expr.help.array": "Builds an array by evaluating expr for every combination of dimensions. Each dimension n must be a non-negative integer; $0, $1, ... are the current zero-based indices. The form array(columnNames, rows, cols, expr) creates a matrix with named columns, also accessible as matrix[\"name\"]. Examples: array(3, $0*2) ; array(5, ($0-2)^2) ; array([\"quantity\",\"price\"], 5, 2, 0).",
+    "expr.help.arrayIndex": "In array(...), zero-based index of the first dimension ($0), second ($1), and so on.",
     "expr.help.asin": "Arc sine. Example: `asin(0) -> 0`.",
     "expr.help.atan": "Arc tangent. Example: `atan(0) -> 0`.",
     "expr.help.atan2": "Two-argument arc tangent (y, x). Example: `atan2(0, 1) -> 0`.",
     "expr.help.median": "Median of a non-empty numeric vector or matrix. With an even number of values it returns the mean of the two middle values. For a matrix, omit `axis` to use all values, use `axis=0` for columns or `axis=1` for rows. Examples: median([3,1,2]) -> 2 ; median([1,4]) -> 2.5.",
     "expr.help.mode": "Mode of a non-empty numeric vector or matrix. Returns the most frequent value; ties select the smallest value, including when all values are distinct. For a matrix, omit `axis` to use all values, use `axis=0` for columns or `axis=1` for rows. Examples: mode([3,1,3,1]) -> 1.",
     "expr.help.polynomialRegression": "Polynomial least-squares regression with an intercept. `degree` is a non-negative integer, default 1; requires at least degree+1 observations and enough distinct x values. Returns the vector [a0,a1,...,R²,RMSE]: coefficients in ascending power order (a0+a1*x+...), followed by R² and RMSE. RMSE is sqrt(sum((y-yPredicted)^2)/n), in y units, without a degrees-of-freedom correction. Degree 0 estimates the mean. For constant y, R² is 1. Uses QR with scaled data; reports numerically dependent bases or unrepresentable results. For high degrees or strongly shifted x, original-coordinate coefficients may lose precision. Examples: polynomialRegression([0,1,2],[1,4,9],2) -> approximately [1,2,1,1,0].",
+    "expr.help.pipelinePlaceholder": "Pipeline placeholder for `|>`. In the right-hand expression it represents the value, evaluated once, from the left-hand expression. `|>` has the lowest precedence and is left-associative. Examples: `x |> _ + 1 |> _ * 2` ; `[1,2,3] |> _[0]` ; `sin(time) |> if(_ > 0, 2*_, -_)`.",
+    "expr.help.pipeline": "Applies the expression on the right to the value produced on the left. In the right-hand expression, `_` denotes that value, evaluated once. `|>` has the lowest precedence and is left-associative; `_` is valid only on the right side of a pipeline. Examples: `x |> _ + 1 |> _ * 2` ; `[1,2,3] |> _[0]` ; `sin(time) |> if(_ > 0, 2*_, -_)`.",
     "expr.help.linearRegression": "Linear least-squares regression with an intercept, equivalent to polynomialRegression(x,y,1). Returns the vector [a0,a1,...,R²,RMSE]: coefficients in ascending power order (a0+a1*x+...), followed by R² and RMSE. RMSE is sqrt(sum((y-yPredicted)^2)/n), in y units, without a degrees-of-freedom correction. Requires at least two numeric pairs and non-constant x values. Examples: linearRegression([0,1,2],[1,3,5]) -> approximately [1,2,1,0].",
     "expr.error.regressionVectors": "Regression expects two non-empty numeric vectors of equal length",
     "expr.error.regressionDegree": "Regression degree must be a non-negative integer smaller than the number of observations",
@@ -1944,7 +2003,7 @@ window.STGraphXI18nBundles = {
     "expr.help.binomial": "Binomial distribution with n trials and success probability p; n defaults to 1 and p to 0.5. If x is omitted it samples a value. With mode=0 it computes the probability mass, with mode=1 the cdf, with mode=2 the discrete quantile. Examples: binomial() ; binomial([10,0.2], 3, 0).",
     "expr.help.ceil": "Round up. Example: `ceil(1.2) -> 2`.",
     "expr.help.choice": "Randomly picks one element from a non-empty vector or one row from a non-empty matrix. Examples: choice([10,20,30]) ; choice([[1,2],[3,4]]).",
-    "expr.help.col": "Column j from the matrix as a vector. Example: col(agents, ENERGY).",
+    "expr.help.col": "Column j from the matrix as a vector. j can also be the name of a named column. Examples: col([[1,2],[3,4]], 1) -> [2,4] ; col(agents, ENERGY).",
     "expr.help.coords": "The [row, column] coordinates of non-zero cells in a matrix, or only of the cells equal to value if provided. Examples: coords([[0,1,0],[2,0,3]]) -> [[0,1],[1,0],[1,2]] ; coords([[0,1,0],[2,0,3]], 2) -> [[1,0]].",
     "expr.help.cos": "Trigonometric cosine. Example: `cos(0) -> 1`.",
     "expr.help.cosh": "Hyperbolic cosine. Example: `cosh(0) -> 1`.",
@@ -1986,12 +2045,12 @@ window.STGraphXI18nBundles = {
     "expr.help.max": "Maximum of the provided values. Example: `max(2, 7, 4) -> 7`.",
     "expr.help.min": "Minimum of the provided values. Example: `min(2, 7, 4) -> 2`.",
     "expr.help.modulo": "Euclidean remainder of `a` divided by `b`. With a positive divisor, the result is between `0` and `b-1`, even when `a` is negative. It operates element by element on vectors and matrices. Examples: `7 % 3 -> 1` ; `-1 % 3 -> 2` ; `[1,2,3] % 2 -> [1,0,1]`.",
-    "expr.help.ncols": "The number of matrix columns. For an agent population it matches the number of properties. Example: `ncols(agents)`.",
+    "expr.help.ncols": "The number of matrix columns. For an agent population it matches the number of properties. Examples: `ncols([[1,2],[3,4]]) -> 2` ; `ncols(agents)`.",
     "expr.help.neighborCountOf": "How many neighbors agent i has in the given space. Example: `neighborCountOf(agents, space, 0)`.",
     "expr.help.neighbors": "The values of cells neighboring the selected one. With diagonals=true it uses the Moore neighborhood, with diagonals=false only up, down, left, and right. With toroidal=true space wraps around the borders. Examples: neighbors([[1,2,3],[4,5,6],[7,8,9]], 1, 1) -> [1,2,3,4,6,7,8,9] ; neighbors([[1,2,3],[4,5,6],[7,8,9]], 1, 1, false) -> [2,4,6,8] ; neighbors([[1,2,3],[4,5,6],[7,8,9]], 0, 0, false, true) -> [2,4,3,7].",
     "expr.help.neighborsOf": "The references of agents neighboring the agent at row i, using the space built with agentSpace(...). If agentSpace uses idCol, the returned references are those identifier values; otherwise they are row indices. It excludes the agent itself. Example: `neighborsOf(agents, space, 0)`.",
     "expr.help.not": "Boolean operator equivalent to !. Example: not x.",
-    "expr.help.nrows": "The number of matrix rows. For an agent population it matches the number of agents. Example: `nrows(agents)`.",
+    "expr.help.nrows": "The number of matrix rows. For an agent population it matches the number of agents. Examples: `nrows([[1,2],[3,4]]) -> 2` ; `nrows(agents)`.",
     "expr.help.or": "Boolean operator equivalent to ||. Example: a or b.",
     "expr.help.piecewise": "Signal defined by control points with linear interpolation. cx and cy are numeric vectors of the same length, with at least two items; cx must be strictly increasing. x can be a scalar, vector, or matrix. Outside the cx interval it returns the nearest endpoint value. Example: piecewise([0,2,5], [0,10,4], time).",
     "expr.help.poisson": "Poisson distribution with rate; rate defaults to 1. If x is omitted it samples a value. With mode=0 it computes the probability mass, with mode=1 the cdf, with mode=2 the discrete quantile. Examples: poisson() ; poisson([4], 2, 0).",
@@ -2004,17 +2063,17 @@ window.STGraphXI18nBundles = {
     "expr.help.reduce": "Progressive reduction of a vector or matrix. For matrices axis=0 reduces columns, axis=1 reduces rows. Examples: reduce(+, [1,2,3]) ; reduce(max, [3,7,2]) ; reduce(+, [[1,2],[3,4]], 0).",
     "expr.help.remove": "A copy of a vector without its last n elements, or without its first n elements when n is the first argument. For a matrix it removes rows. n must be a non-negative integer; if it exceeds the size, the result is an empty array. Examples: remove([1,2,3,4], 2) -> [1,2] ; remove(2, [1,2,3,4]) -> [3,4] ; remove([[1,2],[3,4],[5,6]], 1) -> [[1,2],[3,4]].",
     "expr.help.removeAt": "A copy without the selected vector element or without the selected matrix row or column. For matrices axis=0 removes a row, axis=1 a column. Examples: removeAt([1,2,3], 1) -> [1,3] ; removeAt([[1,2],[3,4]], 0) -> [[3,4]] ; removeAt([[1,2],[3,4]], 1, 1) -> [[1],[3]].",
-    "expr.help.removeRow": "A copy of the matrix without row i. For agent matrices it removes agent i. Example: `removeRow(agents, 2)`.",
+    "expr.help.removeRow": "A copy of the matrix without row i. For agent matrices it removes agent i. Examples: `removeRow([[1,2],[3,4]], 0) -> [[3,4]]` ; `removeRow(agents, 2)`.",
     "expr.help.resize": "A copy of a vector or matrix with different dimensions. It keeps existing positions, drops excess values, and fills new positions with zeros. Agent matrices are not supported. Examples: resize([1,2], 4) -> [1,2,0,0] ; resize([[1,2],[3,4]], 3, 4) -> [[1,2,0,0],[3,4,0,0],[0,0,0,0]].",
     "expr.help.round": "Round to the nearest integer. Example: `round(1.6) -> 2`.",
-    "expr.help.row": "Row i from the matrix. If the matrix represents agents, it returns the property vector of agent i. Example: row(agents, 0).",
+    "expr.help.row": "Row i from the matrix. If the matrix represents agents, it returns the property vector of agent i. Examples: row([[1,2],[3,4]], 0) -> [1,2] ; row(agents, 0).",
     "expr.help.self": "Current local variable value. In scalar execution it matches the variable value; in vector execution it refers to the current agent component; in matrix agent-based contexts it matches the current cell value.",
     "expr.help.set": "Vector without duplicates, preserving first appearance order. Example: set([3,1,3,2,1]) -> [3,1,2].",
     "expr.help.setAt": "A copy with the element or row replaced. Examples: setAt([1,2,3], 1, 9) -> [1,9,3] ; setAt([[1,2],[3,4]], [1,0], 8) -> [[1,2],[8,4]].",
-    "expr.help.setCol": "A copy of the matrix with column j replaced by the vector values. The vector must provide one value for each row. Example: setCol(agents, ENERGY, newEnergy).",
+    "expr.help.setCol": "A copy of the matrix with column j replaced by a vector or by a scalar repeated in every row. j can also be the name of a named column. Examples: setCol([[1,2],[3,4]], 1, [8,9]) ; setCol([[1,2],[3,4]], 0, 7) ; setCol(agents, ENERGY, newEnergy).",
     "expr.help.setModelProperty": "Assignment of a custom model property, returning the assigned value. Example: `setModelProperty(\"title\", \"Experiment\")`.",
     "expr.help.setProperty": "Assignment of a custom property on the current variable, returning the assigned value. Example: `setProperty(\"unit\", \"kg\")`.",
-    "expr.help.setRow": "A copy of the matrix with row i replaced by row. Example: setRow(agents, 3, [10,1,4,7]).",
+    "expr.help.setRow": "A copy of the matrix with row i replaced by a vector or by a scalar repeated in every column. Examples: setRow([[1,2],[3,4]], 1, [8,9]) ; setRow([[1,2],[3,4]], 0, 7) ; setRow(agents, 3, [10,1,4,7]).",
     "expr.help.shuffle": "A copy of the vector with its elements randomly shuffled or a copy of the matrix with its rows randomly shuffled. Examples: shuffle([1,2,3,4]) ; shuffle([[1,2],[3,4],[5,6]]).",
     "expr.help.sign": "Sign of the number: -1, 0, or 1. Example: `sign(-4) -> -1`.",
     "expr.help.sin": "Trigonometric sine. Example: `sin(0) -> 0`.",
@@ -2091,13 +2150,21 @@ window.STGraphXI18nBundles = {
     "expr.error.appendColumnVector": "append with axis=1 expects a vector column",
     "expr.error.appendColumnLength": "Appended column length does not match matrix row count",
     "expr.error.appendAgentColumn": "append with axis=1 is not supported for agent matrices",
-    "expr.error.arrayAxisIntegerOrVector": "Array axis {index} must be a non-negative integer or a vector",
     "expr.error.arrayDimensionNonNegative": "Array dimension {index} must be a non-negative integer",
     "expr.error.arrayIndexInteger": "Array index must be an integer",
     "expr.error.arrayIndexIntegerOrPair": "Array index must be an integer or a [row, col] pair",
     "expr.error.arrayIndexIntegerOrVector": "Array index must be an integer or a vector of integers",
     "expr.error.arrayIndexOutOfRange": "Array index out of range",
-    "expr.error.arrayNeedsAxisExpression": "array requires at least one axis and an expression",
+    "expr.error.arrayNeedsDimensionExpression": "array requires at least one dimension and an expression",
+    "expr.error.arrayColumnNamesArity": "with column names, array requires exactly rows, columns, and an expression",
+    "expr.error.arrayColumnNamesCount": "the number of column names must match the column dimension",
+    "expr.error.arrayColumnNamesInvalid": "array column names must be non-empty, unique strings",
+    "expr.error.namedColumnUnknown": "the column named {name} does not exist",
+    "expr.error.namedColumnsAppend": "cannot append columns to a matrix with named columns",
+    "expr.error.namedColumnsFilterColumns": "cannot filter columns of a matrix with named columns",
+    "expr.error.namedColumnsFilterElements": "cannot filter elements of a matrix with named columns",
+    "expr.error.namedColumnsRemove": "cannot remove columns from a matrix with named columns",
+    "expr.error.namedColumnsResize": "a matrix with named columns must retain its column count",
     "expr.error.arrayNeedsDimension": "array requires at least one dimension",
     "expr.error.arrayTooLarge": "Array is too large",
     "expr.error.argumentList.0_1_2": "0, 1, or 2",
@@ -2587,9 +2654,10 @@ window.STGraphXI18nBundles = {
     "tooltip.menu.help": "Built-in help and documentation.",
     "tooltip.menu.help.about": "Shows basic information about the app.",
     "tooltip.menu.help.analyze": "Runs static checks on the model and shows a report of the detected issues.",
-    "tooltip.menu.help.documentation": "Opens the STGraphX guide and its main documentation.",
+    "tooltip.menu.help.documentation": "Opens the STGraphX README (in Italian) and its main documentation.",
     "tooltip.documentation.back": "Returns to the previous document.",
     "tooltip.documentation.forward": "Moves to the next document.",
+    "tooltip.documentation.index": "Go directly to a document section.",
     "tooltip.menu.help.eightTuple": "Generates a structured description of the active model in 8-tuple form.",
     "tooltip.menu.help.examples": "Opens a page with the example models shipped with the app.",
     "tooltip.menu.help.functions": "Opens the list of functions available in expressions.",
@@ -2623,6 +2691,7 @@ window.STGraphXI18nBundles = {
     "tooltip.menu.view": "View, zoom, and grid controls.",
     "tooltip.menu.view.fit": "Fits zoom and viewport to the current graph and widget content.",
     "tooltip.menu.view.feedbackLoops": "Finds directed cycles and classifies their overall sign.",
+    "tooltip.menu.view.findNode": "Opens an alphabetical node list and centers the selected node in the graph.",
     "tooltip.menu.view.gridStep": "Sets the spacing between grid lines.",
     "tooltip.menu.view.highlightNodeEdges": "Highlights incoming and outgoing edges of the selected node with different colors.",
     "tooltip.menu.view.options": "Opens preferences for the grid, variable values, units, tooltips, and numeric formatting.",
@@ -2646,7 +2715,7 @@ window.STGraphXI18nBundles = {
     "units.base": "SI base unit",
     "units.radian": "radian",
     "units.custom": "Model-defined units",
-    "units.intro": "Derived SI units are available automatically. Add model symbols with a dimensional definition, for example N = kg*m/s^2 or personYear = person*year.",
+    "units.intro": "Derived SI units are available automatically. Add model symbols with a dimensional definition, for example N = kg*m/s^2 or personYear = person*year. You can also provide singular and plural names, used next to scalar values.",
     "units.prefixes": "Supported prefixes: da, Y, Z, E, P, T, G, M, k, h, d, c, m, u/µ, n, and p. They apply to the base units m, g, s, A, K, mol, cd, and rad, to derived SI units, and to model-defined units. They do not apply to currencies or to the temperatures °C and °F.",
     "units.si": "International System of Units",
     "units.title": "Measurement units",
@@ -3002,6 +3071,7 @@ window.STGraphXI18nBundles = {
     "examples.title": "Example models",
     "help.group.agent": "Agent functions and variables",
     "help.group.array": "Array functions",
+    "help.group.syntax": "Special notation",
     "help.group.functions": "General functions",
     "help.group.math": "Math functions",
     "help.group.probability": "Statistical and probabilistic functions",
@@ -3172,6 +3242,13 @@ window.STGraphXI18nBundles = {
     const resolveVariable = typeof options.resolveVariable === "function" ? options.resolveVariable : null;
     // Protect code spans before looking for inline math delimiters.
     source = source.replace(/`([^`]+)`/g, (_m, code) => stash(`<code>${escapeHtml(code)}</code>`));
+    source = source.replace(/!\[([^\]\n]*)\]\(([^)\s]+)\)/g, (_match, alt, href) => {
+      const safe = safeHref(href);
+      if (!safe || /^(?:mailto:|#)/iu.test(safe)) return alt;
+      const src = options.imageBasePath && !/^(?:[a-z][a-z0-9+.-]*:|\/)/iu.test(safe)
+        ? `${options.imageBasePath}${safe}` : safe;
+      return stash(`<img src="${escapeHtml(src)}" alt="${escapeHtml(alt)}" loading="lazy">`);
+    });
     // Resolve only the contents of formulas before passing them to KaTeX.
     // Outside formulas the same syntax becomes a styled live-value element.
     if (resolveVariable) {
@@ -3218,16 +3295,60 @@ window.STGraphXI18nBundles = {
     html = html.replace(/\*\*([^*]+)\*\*/g, "<strong>$1</strong>").replace(/__([^_]+)__/g, "<strong>$1</strong>").replace(/~~([^~]+)~~/g, "<s>$1</s>").replace(/\*([^*]+)\*/g, "<em>$1</em>").replace(/_([^_]+)_/g, "<em>$1</em>");
     return html.replace(/\u0000M(\d+)\u0000/g, (_m, index) => fragments[Number(index)] || "");
   }
+  function tableCells(line) {
+    let source = String(line).trim();
+    if (source.startsWith("|")) source = source.slice(1);
+    if (source.endsWith("|") && !source.endsWith("\\|")) source = source.slice(0, -1);
+    const cells = []; let cell = ""; let ticks = 0;
+    for (let i = 0; i < source.length; i += 1) {
+      if (source[i] === "\\" && source[i + 1] === "|") { cell += "|"; i += 1; }
+      else if (source[i] === "`") {
+        const run = source.slice(i).match(/^`+/u)[0];
+        ticks = ticks === run.length ? 0 : ticks || run.length;
+        cell += run; i += run.length - 1;
+      } else if (source[i] === "|" && !ticks) { cells.push(cell.trim()); cell = ""; }
+      else cell += source[i];
+    }
+    cells.push(cell.trim());
+    return cells;
+  }
   function renderMarkdownToHtml(markdown, options = {}) {
-    const lines = String(markdown ?? "").replace(/\r\n?/g, "\n").split("\n"); const output = []; let paragraph = []; let list = null; let inCode = false; let codeLines = []; let inMath = false; let mathLines = [];
+    const lines = String(markdown ?? "").replace(/\r\n?/g, "\n").split("\n"); const output = []; let paragraph = []; let list = null; let inCode = false; let codeLines = []; let codeLanguage = ""; let inMath = false; let mathLines = [];
     const flushParagraph = () => { if (paragraph.length) { output.push(`<p>${paragraph.map((item) => renderInlineMarkdown(item, options)).join("<br>")}</p>`); paragraph = []; } };
     const flushList = () => { if (list) { output.push(`<${list.type}>${list.items.map((item) => `<li>${renderInlineMarkdown(item, options)}</li>`).join("")}</${list.type}>`); list = null; } };
-    const flushCode = () => { if (inCode) { output.push(`<pre><code>${escapeHtml(codeLines.join("\n"))}</code></pre>`); inCode = false; codeLines = []; } };
+    const flushCode = () => {
+      if (!inCode) return;
+      const diagram = options.mermaid && codeLanguage === "mermaid" ? ' data-mermaid="true"' : "";
+      output.push(`<pre${diagram}><code>${escapeHtml(codeLines.join("\n"))}</code></pre>`);
+      inCode = false; codeLines = []; codeLanguage = "";
+    };
     const flushMath = () => { if (inMath) { output.push(`<div class="latex-block">${renderLatex(resolveDynamicValueText(mathLines.join("\n"), options.resolveVariable), true, options.latexOutput)}</div>`); inMath = false; mathLines = []; } };
-    lines.forEach((line) => {
+    let skipThrough = -1;
+    lines.forEach((line, index) => {
+      if (index <= skipThrough) return;
       if (inMath) { if (/^\s*\$\$\s*$/.test(line)) flushMath(); else mathLines.push(line); return; }
-      if (/^```/.test(line)) { if (inCode) flushCode(); else { flushParagraph(); flushList(); inCode = true; } return; }
+      if (/^```/.test(line)) { if (inCode) flushCode(); else { flushParagraph(); flushList(); inCode = true; codeLanguage = line.slice(3).trim().toLowerCase(); } return; }
       if (inCode) { codeLines.push(line); return; }
+      if (line.includes("|") && index + 1 < lines.length) {
+        const headers = tableCells(line);
+        const separators = tableCells(lines[index + 1]);
+        if (headers.length === separators.length && separators.every((cell) => /^:?-{3,}:?$/u.test(cell))) {
+          flushParagraph(); flushList();
+          const cellHtml = (cell, col, tag) => {
+            const separator = separators[col];
+            const align = separator.endsWith(":") ? (separator.startsWith(":") ? "center" : "right") : "left";
+            return `<${tag} style="text-align:${align}">${renderInlineMarkdown(cell, options)}</${tag}>`;
+          };
+          const rows = [];
+          skipThrough = index + 1;
+          while (skipThrough + 1 < lines.length && lines[skipThrough + 1].includes("|") && !/^\s*```/u.test(lines[skipThrough + 1])) {
+            const cells = tableCells(lines[++skipThrough]);
+            rows.push(`<tr>${headers.map((_header, col) => cellHtml(cells[col] || "", col, "td")).join("")}</tr>`);
+          }
+          output.push(`<div class="markdown-table-scroll"><table><thead><tr>${headers.map((cell, col) => cellHtml(cell, col, "th")).join("")}</tr></thead><tbody>${rows.join("")}</tbody></table></div>`);
+          return;
+        }
+      }
       const oneLineMath = /^\s*\$\$\s*(.*?)\s*\$\$\s*$/.exec(line);
       if (oneLineMath) { flushParagraph(); flushList(); output.push(`<div class="latex-block">${renderLatex(resolveDynamicValueText(oneLineMath[1], options.resolveVariable), true, options.latexOutput)}</div>`); return; }
       if (/^\s*\$\$\s*$/.test(line)) { flushParagraph(); flushList(); inMath = true; mathLines = []; return; }
@@ -3246,7 +3367,55 @@ window.STGraphXI18nBundles = {
     function convert(node) { if (node.nodeType === Node.TEXT_NODE) return node.nodeValue || ""; if (node.nodeType !== Node.ELEMENT_NODE) return ""; const content = Array.from(node.childNodes).map(convert).join(""); switch (node.tagName) { case "H1": return `# ${content}\n\n`; case "H2": return `## ${content}\n\n`; case "H3": return `### ${content}\n\n`; case "P": case "DIV": return `${content}\n\n`; case "BR": return "\n"; case "STRONG": case "B": return `**${content}**`; case "EM": case "I": return `*${content}*`; case "LI": return `- ${content}\n`; case "HR": return "\n---\n\n"; default: return content; } }
     return Array.from(template.content.childNodes).map(convert).join("").replace(/\n{3,}/g, "\n\n").trim();
   }
-  globalThis.STGraphXMarkdown = { renderMarkdownToHtml, legacyHtmlToMarkdown };
+  // A classic, locally bundled script also works in file:// desktop shells.
+  const scriptUrl = typeof document !== "undefined" ? document.currentScript?.src || document.baseURI : "";
+  let mermaidReady = null;
+  let diagramId = 0;
+  function loadMermaid() {
+    if (!mermaidReady) {
+      mermaidReady = new Promise((resolve, reject) => {
+        const initialize = () => {
+          try {
+            const api = globalThis.mermaid;
+            api.initialize({
+              startOnLoad: false, securityLevel: "strict", suppressErrorRendering: true,
+              htmlLabels: false, theme: "neutral",
+              secure: ["securityLevel", "startOnLoad", "suppressErrorRendering", "maxTextSize", "htmlLabels", "secure"],
+            });
+            resolve(api);
+          } catch (error) { reject(error); }
+        };
+        if (globalThis.mermaid) { initialize(); return; }
+        const script = document.createElement("script");
+        script.src = new URL("vendor/mermaid/mermaid.min.js", scriptUrl).href;
+        script.onload = initialize;
+        script.onerror = () => { script.remove(); reject(new Error("Unable to load Mermaid")); };
+        document.head.appendChild(script);
+      }).catch((error) => { mermaidReady = null; throw error; });
+    }
+    return mermaidReady;
+  }
+  async function renderMermaidDiagrams(container, options = {}) {
+    const blocks = Array.from(container.querySelectorAll("pre[data-mermaid]"));
+    if (!blocks.length) return;
+    const current = (block) => container.contains(block) && (!options.isCurrent || options.isCurrent());
+    for (const block of blocks) {
+      if (!current(block)) return;
+      try {
+        const api = await loadMermaid();
+        if (!current(block)) return;
+        const { svg } = await api.render(`stgraphx-mermaid-${++diagramId}`, block.textContent);
+        if (!current(block)) return;
+        const diagram = document.createElement("div");
+        diagram.className = "markdown-mermaid";
+        diagram.innerHTML = svg;
+        block.replaceWith(diagram);
+      } catch (error) {
+        if (current(block)) options.onError?.(block, error);
+      }
+    }
+  }
+  globalThis.STGraphXMarkdown = { renderMarkdownToHtml, legacyHtmlToMarkdown, renderMermaidDiagrams };
 })();
 
 
@@ -3261,6 +3430,7 @@ window.STGraphXI18nBundles = {
   globalScope.STGraphXUnitAnalysisCore = factory();
 })(typeof globalThis !== "undefined" ? globalThis : this, function createUnitAnalysisCore() {
   const EPSILON = 1e-10;
+  const PIPELINE_UNIT_SCOPE_KEY = "__stgraphxPipelineUnit";
   const SI_UNIT_DEFINITIONS = Object.freeze([
     { symbol: "Hz", expression: "1/s" },
     { symbol: "N", expression: "kg*m/s^2" },
@@ -3524,14 +3694,26 @@ window.STGraphXI18nBundles = {
     const expressionAst = options.expressionAst || null;
     const targetUnit = options.targetUnit || unknown();
     const infer = (ast) => inferAst(ast, { resolve, timeUnit });
+    const inferWithScope = (ast, scope = null) => inferAst(ast, {
+      resolve: (name) => name === "_" && scope?.[PIPELINE_UNIT_SCOPE_KEY]
+        ? scope[PIPELINE_UNIT_SCOPE_KEY]
+        : resolve(name),
+      timeUnit,
+    });
     const additiveOperators = new Set(["+", "-", "<", ">", "<=", ">=", "==", "!=", "===", "!=="]);
     const expressionUnit = expressionAst ? infer(expressionAst) : unknown();
     return {
-      normalizeBinaryOperands(node, left, right) {
+      normalizeBinaryOperands(node, left, right, scope) {
         if (!additiveOperators.has(node?.op)) return null;
-        const factor = conversionFactor(infer(node.right), infer(node.left));
+        const factor = conversionFactor(inferWithScope(node.right, scope), inferWithScope(node.left, scope));
         if (factor == null || Math.abs(factor - 1) < EPSILON) return null;
         return { left, right: scaleValue(right, factor) };
+      },
+      inferPipelineValueUnit(ast, scope) {
+        return inferWithScope(ast, scope);
+      },
+      withPipelineValueUnit(scope, value) {
+        return { ...(scope || {}), [PIPELINE_UNIT_SCOPE_KEY]: value };
       },
       onFinalValue(value) {
         // With no explicit unit on the target node, express a product or
@@ -3567,6 +3749,16 @@ window.STGraphXI18nBundles = {
         if (["+", "-", "%"].includes(node.op)) return same(left, right) ? (left.kind === "zero" ? right : left) : fail("add", { left, right });
         if (["<", ">", "<=", ">=", "==", "!=", "===", "!=="].includes(node.op)) return same(left, right) ? dimensionless() : fail("compare", { left, right });
         return dimensionless();
+      }
+      if (node.type === "pipeline") {
+        const left = visit(node.left);
+        // The right hand side gets a lexical `_` binding. Re-entering the
+        // inference function preserves outer bindings for nested left sides
+        // while letting nested pipeline right sides shadow them.
+        return inferAst(node.right, {
+          ...context,
+          resolve: (name) => name === "_" ? left : resolve(name),
+        });
       }
       if (node.type === "call") {
         const args = node.args.map(visit); const first = args[0] || unknown();
@@ -3611,6 +3803,7 @@ window.STGraphXI18nBundles = {
 
 (function attachGraphFunctions(global) {
   const AGENT_SCHEMA_KEY = "__stgraphxAgentSchema";
+  const NAMED_COLUMNS_KEY = "__stgraphxNamedColumns";
   const AGENT_FIELD_NAME_RE = /^[A-Za-z_][A-Za-z0-9_]*$/;
   const AGENT_FIELD_RESERVED_NAMES = new Set([
     "this",
@@ -3638,6 +3831,10 @@ window.STGraphXI18nBundles = {
     return Array.isArray(fieldNames) ? fieldNames.slice() : null;
   }
 
+  function cloneColumnNames(columnNames) {
+    return Array.isArray(columnNames) ? columnNames.slice() : null;
+  }
+
   function attachAgentSchema(value, fieldNames) {
     if (!Array.isArray(value) || !Array.isArray(fieldNames)) {
       return value;
@@ -3658,6 +3855,43 @@ window.STGraphXI18nBundles = {
     return cloneAgentSchema(value[AGENT_SCHEMA_KEY]);
   }
 
+  function attachNamedColumns(value, columnNames) {
+    if (!Array.isArray(value) || !Array.isArray(columnNames)) {
+      return value;
+    }
+    Object.defineProperty(value, NAMED_COLUMNS_KEY, {
+      value: cloneColumnNames(columnNames),
+      configurable: true,
+      enumerable: false,
+      writable: true,
+    });
+    return value;
+  }
+
+  function getNamedColumnNames(value) {
+    if (!Array.isArray(value) || !Array.isArray(value[NAMED_COLUMNS_KEY])) {
+      return null;
+    }
+    return cloneColumnNames(value[NAMED_COLUMNS_KEY]);
+  }
+
+  function getMatrixColumnNames(value) {
+    return getNamedColumnNames(value) || getAgentFieldNames(value);
+  }
+
+  function isNamedColumnMatrix(value) {
+    return Array.isArray(getNamedColumnNames(value));
+  }
+
+  function preserveMatrixColumnSchema(source, target) {
+    const agentFields = getAgentFieldNames(source);
+    if (agentFields) {
+      return attachAgentSchema(target, agentFields);
+    }
+    const columnNames = getNamedColumnNames(source);
+    return columnNames ? attachNamedColumns(target, columnNames) : target;
+  }
+
   function isAgentStructuredValue(value) {
     return Array.isArray(getAgentFieldNames(value));
   }
@@ -3667,11 +3901,7 @@ window.STGraphXI18nBundles = {
       return value;
     }
     const cloned = value.map((item) => (Array.isArray(item) ? item.slice() : item));
-    const fieldNames = getAgentFieldNames(value);
-    if (fieldNames) {
-      attachAgentSchema(cloned, fieldNames);
-    }
-    return cloned;
+    return preserveMatrixColumnSchema(value, cloned);
   }
 
   function collectAgentFieldAliasesFromContext(context) {
@@ -4374,13 +4604,17 @@ window.STGraphXI18nBundles = {
     const { rowCount, colCount } = ensureRectangularMatrix(value, "resize");
     const rows = normalizeResizeDimension(dimensions[0]);
     const cols = normalizeResizeDimension(dimensions[1]);
-    return Array.from(
+    if (getNamedColumnNames(value) && cols !== colCount) {
+      throw new Error("resize must preserve the column count of a matrix with named columns");
+    }
+    const out = Array.from(
       { length: rows },
       (_, rowIndex) => Array.from(
         { length: cols },
         (_, colIndex) => (rowIndex < rowCount && colIndex < colCount ? value[rowIndex][colIndex] : 0),
       ),
     );
+    return preserveMatrixColumnSchema(value, out);
   }
 
   function ensureFlatVector(value, fnName) {
@@ -4428,6 +4662,17 @@ window.STGraphXI18nBundles = {
     return fieldNames;
   }
 
+  function normalizeNamedColumnNames(columnNamesValue) {
+    const columnNames = ensureFlatVector(columnNamesValue, "array").map((item) => String(item ?? "").trim());
+    if (!columnNames.length || columnNames.some((name) => !name)) {
+      throw new Error("array column names must be non-empty strings");
+    }
+    if (new Set(columnNames).size !== columnNames.length) {
+      throw new Error("array column names must be unique");
+    }
+    return columnNames;
+  }
+
   function validateAgentRows(rowsValue, fieldNames) {
     if (rowsValue == null) {
       return [];
@@ -4460,7 +4705,7 @@ window.STGraphXI18nBundles = {
       throw new Error(`${fnName} expects a matrix`);
     }
     const rowCount = value.length;
-    const fieldNames = getAgentFieldNames(value);
+    const fieldNames = getMatrixColumnNames(value);
     const colCount = rowCount > 0 ? value[0].length : (fieldNames ? fieldNames.length : 0);
     if (!value.every((row) => row.length === colCount && row.every((item) => !Array.isArray(item)))) {
       throw new Error(`${fnName} expects a rectangular matrix`);
@@ -4484,7 +4729,7 @@ window.STGraphXI18nBundles = {
     const { rowCount, fieldNames } = ensureRectangularMatrix(matrixValue, "row");
     const rowIndex = normalizeIndex(Number(rowIndexValue), rowCount, "row");
     const out = matrixValue[rowIndex].slice();
-    if (fieldNames) {
+    if (getAgentFieldNames(matrixValue)) {
       attachAgentSchema(out, fieldNames);
     }
     return out;
@@ -4507,46 +4752,43 @@ window.STGraphXI18nBundles = {
   function setMatrixRow(matrixValue, rowIndexValue, nextRowValue) {
     const { rowCount, colCount, fieldNames } = ensureRectangularMatrix(matrixValue, "setRow");
     const rowIndex = normalizeIndex(Number(rowIndexValue), rowCount, "setRow");
-    const nextRow = ensureFlatVector(nextRowValue, "setRow");
+    const nextRow = Array.isArray(nextRowValue)
+      ? ensureFlatVector(nextRowValue, "setRow")
+      : Array(colCount).fill(nextRowValue);
     if (nextRow.length !== colCount) {
       throw new Error("setRow expects a row vector with matching length");
     }
     const out = matrixValue.map((row) => row.slice());
     out[rowIndex] = nextRow.slice();
-    if (fieldNames) {
-      attachAgentSchema(out, fieldNames);
-    }
-    return out;
+    return preserveMatrixColumnSchema(matrixValue, out);
   }
 
   function appendMatrixRow(matrixValue, nextRowValue) {
     const { colCount, fieldNames } = ensureRectangularMatrix(matrixValue, "appendRow");
-    const nextRow = ensureFlatVector(nextRowValue, "appendRow");
+    const nextRow = Array.isArray(nextRowValue)
+      ? ensureFlatVector(nextRowValue, "appendRow")
+      : Array(colCount).fill(nextRowValue);
     if (nextRow.length !== colCount) {
       throw new Error("appendRow expects a row vector with matching length");
     }
     const out = matrixValue.map((row) => row.slice());
     out.push(nextRow.slice());
-    if (fieldNames) {
-      attachAgentSchema(out, fieldNames);
-    }
-    return out;
+    return preserveMatrixColumnSchema(matrixValue, out);
   }
 
   function removeMatrixRow(matrixValue, rowIndexValue) {
     const { rowCount, fieldNames } = ensureRectangularMatrix(matrixValue, "removeRow");
     const rowIndex = normalizeIndex(Number(rowIndexValue), rowCount, "removeRow");
     const out = matrixValue.filter((_, idx) => idx !== rowIndex).map((row) => row.slice());
-    if (fieldNames) {
-      attachAgentSchema(out, fieldNames);
-    }
-    return out;
+    return preserveMatrixColumnSchema(matrixValue, out);
   }
 
   function setMatrixColumn(matrixValue, colIndexValue, nextColumnValue) {
     const { rowCount, colCount, fieldNames } = ensureRectangularMatrix(matrixValue, "setCol");
     const colIndex = resolveMatrixColumnIndex(colIndexValue, fieldNames, colCount, "setCol");
-    const nextColumn = ensureFlatVector(nextColumnValue, "setCol");
+    const nextColumn = Array.isArray(nextColumnValue)
+      ? ensureFlatVector(nextColumnValue, "setCol")
+      : Array(rowCount).fill(nextColumnValue);
     if (nextColumn.length !== rowCount) {
       throw new Error("setCol expects a vector with one value per matrix row");
     }
@@ -4555,10 +4797,7 @@ window.STGraphXI18nBundles = {
       nextRow[colIndex] = nextColumn[rowIdx];
       return nextRow;
     });
-    if (fieldNames) {
-      attachAgentSchema(out, fieldNames);
-    }
-    return out;
+    return preserveMatrixColumnSchema(matrixValue, out);
   }
 
   function normalizeAgentSpaceDimensions(sizeValue) {
@@ -4933,7 +5172,7 @@ window.STGraphXI18nBundles = {
       throw new Error("setAt expects a rectangular matrix");
     }
     const matrix = target.map((row) => row.slice());
-    const fieldNames = getAgentFieldNames(target);
+    const fieldNames = getMatrixColumnNames(target);
     if (Array.isArray(indexOrIndices)) {
       if (indexOrIndices.length !== 2) {
         throw new Error("setAt expects [row, col] for matrix cell replacement");
@@ -4941,20 +5180,14 @@ window.STGraphXI18nBundles = {
       const rowIdx = normalizeIndex(Number(indexOrIndices[0]), rowCount, "setAt");
       const colIdx = normalizeIndex(Number(indexOrIndices[1]), colCount, "setAt");
       matrix[rowIdx][colIdx] = nextValue;
-      if (fieldNames) {
-        attachAgentSchema(matrix, fieldNames);
-      }
-      return matrix;
+      return preserveMatrixColumnSchema(target, matrix);
     }
     const rowIdx = normalizeIndex(Number(indexOrIndices), rowCount, "setAt");
     if (!Array.isArray(nextValue) || nextValue.length !== colCount || nextValue.some((item) => Array.isArray(item))) {
       throw new Error("setAt expects a row vector with matching length");
     }
     matrix[rowIdx] = nextValue.slice();
-    if (fieldNames) {
-      attachAgentSchema(matrix, fieldNames);
-    }
-    return matrix;
+    return preserveMatrixColumnSchema(target, matrix);
   }
 
   function removeAtValue(target, indexValue, axis = null) {
@@ -4983,14 +5216,13 @@ window.STGraphXI18nBundles = {
     if (normalizedAxis === 0) {
       const rowIdx = normalizeIndex(Number(indexValue), rowCount, "removeAt");
       const out = target.filter((_, idx) => idx !== rowIdx).map((row) => row.slice());
-      const fieldNames = getAgentFieldNames(target);
-      if (fieldNames) {
-        attachAgentSchema(out, fieldNames);
-      }
-      return out;
+      return preserveMatrixColumnSchema(target, out);
     }
     const colIdx = normalizeIndex(Number(indexValue), colCount, "removeAt");
     const out = target.map((row) => row.filter((_, idx) => idx !== colIdx));
+    if (getNamedColumnNames(target)) {
+      throw new Error("removeAt axis 1 is not supported for matrices with named columns");
+    }
     const fieldNames = getAgentFieldNames(target);
     if (fieldNames) {
       const nextFieldNames = fieldNames.filter((_, idx) => idx !== colIdx);
@@ -5016,7 +5248,7 @@ window.STGraphXI18nBundles = {
       return value.length;
     }
     const rowCount = value.length;
-    const fieldNames = getAgentFieldNames(value);
+    const fieldNames = getMatrixColumnNames(value);
     const colCount = rowCount > 0 ? value[0].length : (fieldNames ? fieldNames.length : 0);
     if (!value.every((row) => row.length === colCount)) {
       throw new Error("size expects a rectangular matrix");
@@ -5810,9 +6042,11 @@ window.STGraphXI18nBundles = {
 
   const expressionDocs = Object.freeze({
     variables: {
-      // Array axes
-      $0: { kind: "variable", signature: "$0, $1, ...", descriptionKey: "expr.help.arrayAxisValue" },
-      $i0: { kind: "variable", signature: "$i0, $i1, ...", descriptionKey: "expr.help.arrayAxisIndex" },
+      // Pipeline placeholder
+      _: { kind: "variable", signature: "_", descriptionKey: "expr.help.pipelinePlaceholder" },
+
+      // Array indices
+      $0: { kind: "variable", signature: "$0, $1, ...", descriptionKey: "expr.help.arrayIndex" },
 
       // Time and state
       dt: { kind: "variable", signature: "dt", descriptionKey: "expr.help.dt" },
@@ -5844,25 +6078,19 @@ window.STGraphXI18nBundles = {
       agents: { kind: "agent", signature: "agents(fieldNames[, rowsOrCount])", descriptionKey: "expr.help.agents", insertText: "agents()", cursorOffset: 7, helpSection: "agent" },
       agentSpace: { kind: "agent", signature: "agentSpace(agents, xCol, yCol[, idCol][, [rows, cols][, neighborhood[, toroidal[, radius]]]])", descriptionKey: "expr.help.agentSpace", insertText: "agentSpace()", cursorOffset: 11, helpSection: "agent" },
       allNeighborCounts: { kind: "agent", signature: "allNeighborCounts(agents, space)", descriptionKey: "expr.help.allNeighborCounts", insertText: "allNeighborCounts()", cursorOffset: 18, helpSection: "agent" },
-      appendRow: { kind: "agent", signature: "appendRow(matrix, row)", descriptionKey: "expr.help.appendRow", insertText: "appendRow()", cursorOffset: 10, helpSection: "agent" },
-      col: { kind: "agent", signature: "col(matrix, j)", descriptionKey: "expr.help.col", insertText: "col()", cursorOffset: 4, helpSection: "agent" },
       filterAgents: { kind: "agent", signature: "filterAgents(cond, agents)", descriptionKey: "expr.help.filterAgents", insertText: "filterAgents()", cursorOffset: 13, helpSection: "agent" },
       mapAgents: { kind: "agent", signature: "mapAgents(expr, agents)", descriptionKey: "expr.help.mapAgents", insertText: "mapAgents()", cursorOffset: 10, helpSection: "agent" },
       neighborCountOf: { kind: "agent", signature: "neighborCountOf(agents, space, i)", descriptionKey: "expr.help.neighborCountOf", insertText: "neighborCountOf()", cursorOffset: 16, helpSection: "agent" },
       neighborsOf: { kind: "agent", signature: "neighborsOf(agents, space, i)", descriptionKey: "expr.help.neighborsOf", insertText: "neighborsOf()", cursorOffset: 12, helpSection: "agent" },
-      ncols: { kind: "agent", signature: "ncols(matrix)", descriptionKey: "expr.help.ncols", insertText: "ncols()", cursorOffset: 6, helpSection: "agent" },
-      nrows: { kind: "agent", signature: "nrows(matrix)", descriptionKey: "expr.help.nrows", insertText: "nrows()", cursorOffset: 6, helpSection: "agent" },
-      removeRow: { kind: "agent", signature: "removeRow(matrix, i)", descriptionKey: "expr.help.removeRow", insertText: "removeRow()", cursorOffset: 10, helpSection: "agent" },
-      row: { kind: "agent", signature: "row(matrix, i)", descriptionKey: "expr.help.row", insertText: "row()", cursorOffset: 4, helpSection: "agent" },
-      setCol: { kind: "agent", signature: "setCol(matrix, j, vector)", descriptionKey: "expr.help.setCol", insertText: "setCol()", cursorOffset: 7, helpSection: "agent" },
-      setRow: { kind: "agent", signature: "setRow(matrix, i, row)", descriptionKey: "expr.help.setRow", insertText: "setRow()", cursorOffset: 7, helpSection: "agent" },
       spaceMatrix: { kind: "agent", signature: "spaceMatrix(space)", descriptionKey: "expr.help.spaceMatrix", insertText: "spaceMatrix()", cursorOffset: 12, helpSection: "agent" },
 
       // Array functions
       append: { kind: "array", signature: "append(value1, value2[, value3, ...]) | append(vector|matrix, ..., axis)", descriptionKey: "expr.help.append", insertText: "append()", cursorOffset: 7 },
       argmax: { kind: "array", signature: "argmax(vector|matrix)", descriptionKey: "expr.help.argmax", insertText: "argmax()", cursorOffset: 7 },
       argmin: { kind: "array", signature: "argmin(vector|matrix)", descriptionKey: "expr.help.argmin", insertText: "argmin()", cursorOffset: 7 },
-      array: { kind: "array", signature: "array(axis0[, axis1, ...], expr)", descriptionKey: "expr.help.array", insertText: "array()", cursorOffset: 6 },
+      array: { kind: "array", signature: "array(n0[, n1, ...], expr) | array(columnNames, rows, cols, expr)", descriptionKey: "expr.help.array", insertText: "array()", cursorOffset: 6 },
+      appendRow: { kind: "array", signature: "appendRow(matrix, row|value)", descriptionKey: "expr.help.appendRow", insertText: "appendRow()", cursorOffset: 10 },
+      col: { kind: "array", signature: "col(matrix, j)", descriptionKey: "expr.help.col", insertText: "col()", cursorOffset: 4 },
       coords: { kind: "array", signature: "coords(matrix[, value])", descriptionKey: "expr.help.coords", insertText: "coords()", cursorOffset: 7 },
       filter: { kind: "array", signature: "filter(cond, array[, mode])", descriptionKey: "expr.help.filter", insertText: "filter()", cursorOffset: 7 },
       flatten: { kind: "array", signature: "flatten(matrix)", descriptionKey: "expr.help.flatten", insertText: "flatten()", cursorOffset: 8 },
@@ -5871,11 +6099,17 @@ window.STGraphXI18nBundles = {
       indicesWhere: { kind: "array", signature: "indicesWhere(array) | indicesWhere(cond, array)", descriptionKey: "expr.help.indicesWhere", insertText: "indicesWhere()", cursorOffset: 13 },
       intersection: { kind: "array", signature: "intersection(vectorA, vectorB)", descriptionKey: "expr.help.intersection", insertText: "intersection()", cursorOffset: 13 },
       neighbors: { kind: "array", signature: "neighbors(matrix, row, col[, diagonals[, toroidal]])", descriptionKey: "expr.help.neighbors", insertText: "neighbors()", cursorOffset: 10 },
+      ncols: { kind: "array", signature: "ncols(matrix)", descriptionKey: "expr.help.ncols", insertText: "ncols()", cursorOffset: 6 },
+      nrows: { kind: "array", signature: "nrows(matrix)", descriptionKey: "expr.help.nrows", insertText: "nrows()", cursorOffset: 6 },
       remove: { kind: "array", signature: "remove(array, n) | remove(n, array)", descriptionKey: "expr.help.remove", insertText: "remove()", cursorOffset: 7 },
       removeAt: { kind: "array", signature: "removeAt(vector, index) | removeAt(matrix, index[, axis])", descriptionKey: "expr.help.removeAt", insertText: "removeAt()", cursorOffset: 9 },
+      removeRow: { kind: "array", signature: "removeRow(matrix, i)", descriptionKey: "expr.help.removeRow", insertText: "removeRow()", cursorOffset: 10 },
       resize: { kind: "array", signature: "resize(vector, length) | resize(matrix, rows, cols)", descriptionKey: "expr.help.resize", insertText: "resize()", cursorOffset: 7 },
+      row: { kind: "array", signature: "row(matrix, i)", descriptionKey: "expr.help.row", insertText: "row()", cursorOffset: 4 },
       set: { kind: "array", signature: "set(vector)", descriptionKey: "expr.help.set", insertText: "set()", cursorOffset: 4 },
       setAt: { kind: "array", signature: "setAt(vector, index, value) | setAt(matrix, [row,col], value) | setAt(matrix, row, rowVector)", descriptionKey: "expr.help.setAt", insertText: "setAt()", cursorOffset: 6 },
+      setCol: { kind: "array", signature: "setCol(matrix, j, vector|value)", descriptionKey: "expr.help.setCol", insertText: "setCol()", cursorOffset: 7 },
+      setRow: { kind: "array", signature: "setRow(matrix, i, row|value)", descriptionKey: "expr.help.setRow", insertText: "setRow()", cursorOffset: 7 },
       shuffle: { kind: "array", signature: "shuffle(vector|matrix)", descriptionKey: "expr.help.shuffle", insertText: "shuffle()", cursorOffset: 8 },
       size: { kind: "array", signature: "size(array[, axis])", descriptionKey: "expr.help.size", insertText: "size()", cursorOffset: 5 },
       sort: { kind: "array", signature: "sort(vector)", descriptionKey: "expr.help.sort", insertText: "sort()", cursorOffset: 5 },
@@ -5921,6 +6155,7 @@ window.STGraphXI18nBundles = {
       max: { kind: "math", signature: "max(x1, x2, ...)", descriptionKey: "expr.help.max", insertText: "max()", cursorOffset: 4 },
       min: { kind: "math", signature: "min(x1, x2, ...)", descriptionKey: "expr.help.min", insertText: "min()", cursorOffset: 4 },
       "%": { kind: "math", signature: "a % b", descriptionKey: "expr.help.modulo", insertText: " % ", cursorOffset: 3 },
+      "|>": { kind: "math", signature: "value |> expression", descriptionKey: "expr.help.pipeline", insertText: " |> _", cursorOffset: 4 },
       not: { kind: "math", signature: "not x", descriptionKey: "expr.help.not", insertText: "not ", cursorOffset: 4 },
       or: { kind: "math", signature: "a or b", descriptionKey: "expr.help.or", insertText: " or ", cursorOffset: 4 },
       piecewise: { kind: "math", signature: "piecewise(cx, cy, x)", descriptionKey: "expr.help.piecewise", insertText: "piecewise()", cursorOffset: 10 },
@@ -5943,6 +6178,12 @@ window.STGraphXI18nBundles = {
     helpers: Object.freeze({
       attachAgentSchema,
       getAgentFieldNames,
+      attachNamedColumns,
+      getNamedColumnNames,
+      getMatrixColumnNames,
+      isNamedColumnMatrix,
+      preserveMatrixColumnSchema,
+      normalizeNamedColumnNames,
       isAgentStructuredValue,
       cloneArrayPreservingAgentSchema,
       collectAgentFieldAliasesFromContext,
@@ -5974,7 +6215,7 @@ window.STGraphXI18nBundles = {
     "instanceof", "let", "new", "return", "super", "switch", "this", "throw", "try", "typeof",
     "var", "void", "while", "with", "yield", "enum", "await", "implements", "interface",
     "package", "private", "protected", "public", "static", "null", "true", "false", "time",
-    "t0", "t1", "dt", "and", "or", "not",
+    "t0", "t1", "dt", "and", "or", "not", "_",
   ]);
   const graphFunctions = global.GraphFunctions || {};
   const sameArrayShape = graphFunctions.helpers?.sameArrayShape || ((left, right) => JSON.stringify(left) === JSON.stringify(right));
@@ -5982,8 +6223,15 @@ window.STGraphXI18nBundles = {
   const indicesWhereValues = graphFunctions.helpers?.indicesWhereValues;
   const attachAgentSchema = graphFunctions.helpers?.attachAgentSchema || ((value) => value);
   const getAgentFieldNames = graphFunctions.helpers?.getAgentFieldNames || (() => null);
+  const attachNamedColumns = graphFunctions.helpers?.attachNamedColumns || ((value) => value);
+  const getNamedColumnNames = graphFunctions.helpers?.getNamedColumnNames || (() => null);
+  const getMatrixColumnNames = graphFunctions.helpers?.getMatrixColumnNames || getAgentFieldNames;
+  const preserveMatrixColumnSchema = graphFunctions.helpers?.preserveMatrixColumnSchema || ((_, value) => value);
+  const normalizeNamedColumnNames = graphFunctions.helpers?.normalizeNamedColumnNames || ((value) => value);
   const collectAgentFieldAliasesFromContext = graphFunctions.helpers?.collectAgentFieldAliasesFromContext || (() => ({}));
   const EXPRESSION_CACHE_LIMIT = 1000;
+  const PIPELINE_PLACEHOLDER_SCOPE_KEY = "__stgraphxPipelinePlaceholder";
+  const PIPELINE_UNIT_SCOPE_KEY = "__stgraphxPipelineUnit";
   const expressionCache = new Map();
 
   function unavailablePropertyGetter() {
@@ -6279,42 +6527,42 @@ window.STGraphXI18nBundles = {
       return { ok: true, kind: "text", value };
     }
     if (Array.isArray(value) && value.length === 0) {
-      const fieldNames = getAgentFieldNames(value);
+      const fieldNames = getMatrixColumnNames(value);
       if (fieldNames) {
         const cloned = [];
-        attachAgentSchema(cloned, fieldNames);
+        preserveMatrixColumnSchema(value, cloned);
         return { ok: true, kind: "matrix", value: cloned };
       }
     }
     if (isNumericVector(value)) {
       const cloned = value.slice();
-      const fieldNames = getAgentFieldNames(value);
+      const fieldNames = getMatrixColumnNames(value);
       if (fieldNames) {
-        attachAgentSchema(cloned, fieldNames);
+        preserveMatrixColumnSchema(value, cloned);
       }
       return { ok: true, kind: "vector", value: cloned };
     }
     if (isComputedVector(value)) {
       const cloned = value.slice();
-      const fieldNames = getAgentFieldNames(value);
+      const fieldNames = getMatrixColumnNames(value);
       if (fieldNames) {
-        attachAgentSchema(cloned, fieldNames);
+        preserveMatrixColumnSchema(value, cloned);
       }
       return { ok: true, kind: "vector", value: cloned };
     }
     if (isNumericMatrix(value)) {
       const cloned = value.map((row) => row.slice());
-      const fieldNames = getAgentFieldNames(value);
+      const fieldNames = getMatrixColumnNames(value);
       if (fieldNames) {
-        attachAgentSchema(cloned, fieldNames);
+        preserveMatrixColumnSchema(value, cloned);
       }
       return { ok: true, kind: "matrix", value: cloned };
     }
     if (isComputedMatrix(value)) {
       const cloned = value.map((row) => row.slice());
-      const fieldNames = getAgentFieldNames(value);
+      const fieldNames = getMatrixColumnNames(value);
       if (fieldNames) {
-        attachAgentSchema(cloned, fieldNames);
+        preserveMatrixColumnSchema(value, cloned);
       }
       return { ok: true, kind: "matrix", value: cloned };
     }
@@ -6336,7 +6584,7 @@ window.STGraphXI18nBundles = {
   function collectIdentifierReferences(expression) {
     const src = String(expression ?? "");
     const refs = new Set();
-    const skipped = new Set(["true", "false", "null", "this", "self", "__self", "$i", "$j", "$value", "time", "t0", "t1", "dt"]);
+    const skipped = new Set(["true", "false", "null", "_", "this", "self", "__self", "$i", "$j", "$value", "time", "t0", "t1", "dt"]);
     let i = 0;
     let mode = "code";
     while (i < src.length) {
@@ -6397,7 +6645,8 @@ window.STGraphXI18nBundles = {
       currentValue.length === deltaValue.length &&
       currentValue.every((row, rowIdx) => row.length === deltaValue[rowIdx].length)
     ) {
-      return currentValue.map((row, rowIdx) => row.map((item, colIdx) => item + deltaValue[rowIdx][colIdx] * dt));
+      const result = currentValue.map((row, rowIdx) => row.map((item, colIdx) => item + deltaValue[rowIdx][colIdx] * dt));
+      return getNamedColumnNames(currentValue) ? preserveMatrixColumnSchema(currentValue, result) : result;
     }
     throw new Error("integral requires matching numeric state and derivative");
   }
@@ -6418,9 +6667,9 @@ window.STGraphXI18nBundles = {
     }
     if (Array.isArray(value)) {
       const normalized = value.map((item) => coerceBooleanToNumber(item));
-      const fieldNames = getAgentFieldNames(value);
+      const fieldNames = getMatrixColumnNames(value);
       if (fieldNames) {
-        attachAgentSchema(normalized, fieldNames);
+        preserveMatrixColumnSchema(value, normalized);
       }
       return normalized;
     }
@@ -6676,7 +6925,7 @@ window.STGraphXI18nBundles = {
     );
   }
 
-  function validateAstReferences(node, knownNames) {
+  function validateAstReferences(node, knownNames, placeholderDepth = 0) {
     if (!node || typeof node !== "object") {
       return;
     }
@@ -6684,47 +6933,53 @@ window.STGraphXI18nBundles = {
       case "literal":
         return;
       case "array":
-        node.elements.forEach((item) => validateAstReferences(item, knownNames));
+        node.elements.forEach((item) => validateAstReferences(item, knownNames, placeholderDepth));
         return;
       case "identifier":
+        if (node.name === "_") {
+          if (placeholderDepth > 0) {
+            return;
+          }
+          throw new ReferenceError("_ is only available in a pipeline right-hand expression");
+        }
         if (!knownNames.has(node.name) && !isImplicitExpressionIdentifier(node.name)) {
           throw new ReferenceError(`${node.name} is not defined`);
         }
         return;
       case "member":
-        validateAstReferences(node.target, knownNames);
+        validateAstReferences(node.target, knownNames, placeholderDepth);
         return;
       case "index":
-        validateAstReferences(node.target, knownNames);
-        validateAstReferences(node.index, knownNames);
+        validateAstReferences(node.target, knownNames, placeholderDepth);
+        validateAstReferences(node.index, knownNames, placeholderDepth);
         return;
       case "slice":
-        validateAstReferences(node.target, knownNames);
+        validateAstReferences(node.target, knownNames, placeholderDepth);
         if (node.start) {
-          validateAstReferences(node.start, knownNames);
+          validateAstReferences(node.start, knownNames, placeholderDepth);
         }
         if (node.end) {
-          validateAstReferences(node.end, knownNames);
+          validateAstReferences(node.end, knownNames, placeholderDepth);
         }
         if (node.step) {
-          validateAstReferences(node.step, knownNames);
+          validateAstReferences(node.step, knownNames, placeholderDepth);
         }
         return;
       case "multi-access":
-        validateAstReferences(node.target, knownNames);
+        validateAstReferences(node.target, knownNames, placeholderDepth);
         (node.accessors || []).forEach((accessor) => {
           if (accessor.kind === "index") {
-            validateAstReferences(accessor.index, knownNames);
+            validateAstReferences(accessor.index, knownNames, placeholderDepth);
             return;
           }
           if (accessor.start) {
-            validateAstReferences(accessor.start, knownNames);
+            validateAstReferences(accessor.start, knownNames, placeholderDepth);
           }
           if (accessor.end) {
-            validateAstReferences(accessor.end, knownNames);
+            validateAstReferences(accessor.end, knownNames, placeholderDepth);
           }
           if (accessor.step) {
-            validateAstReferences(accessor.step, knownNames);
+            validateAstReferences(accessor.step, knownNames, placeholderDepth);
           }
         });
         return;
@@ -6733,16 +6988,16 @@ window.STGraphXI18nBundles = {
           throw new ReferenceError(`${node.name} is not defined`);
         }
         if (node.name === "array" && node.args.length >= 2) {
-          node.args.slice(0, -1).forEach((arg) => validateAstReferences(arg, knownNames));
+          node.args.slice(0, -1).forEach((arg) => validateAstReferences(arg, knownNames, placeholderDepth));
           const localKnownNames = new Set(knownNames);
           node.args.slice(0, -1).forEach((_, index) => {
             localKnownNames.add(`$${index}`);
             localKnownNames.add(`$i${index}`);
           });
-          validateAstReferences(node.args[node.args.length - 1], localKnownNames);
+          validateAstReferences(node.args[node.args.length - 1], localKnownNames, placeholderDepth);
           return;
         }
-        (node.args || []).forEach((arg) => validateAstReferences(arg, knownNames));
+        (node.args || []).forEach((arg) => validateAstReferences(arg, knownNames, placeholderDepth));
         return;
       case "callable-ref":
         if (node.refKind === "function" && !knownNames.has(node.name)) {
@@ -6750,11 +7005,15 @@ window.STGraphXI18nBundles = {
         }
         return;
       case "unary":
-        validateAstReferences(node.argument, knownNames);
+        validateAstReferences(node.argument, knownNames, placeholderDepth);
         return;
       case "binary":
-        validateAstReferences(node.left, knownNames);
-        validateAstReferences(node.right, knownNames);
+        validateAstReferences(node.left, knownNames, placeholderDepth);
+        validateAstReferences(node.right, knownNames, placeholderDepth);
+        return;
+      case "pipeline":
+        validateAstReferences(node.left, knownNames, placeholderDepth);
+        validateAstReferences(node.right, knownNames, placeholderDepth + 1);
         return;
       default:
         return;
@@ -6916,26 +7175,33 @@ window.STGraphXI18nBundles = {
 
   function vectorizedBinaryOperation(left, right, scalarFn) {
     if (Array.isArray(left) || Array.isArray(right)) {
+      const schemaSource = Array.isArray(left) && getNamedColumnNames(left)
+        ? left
+        : (Array.isArray(right) && getNamedColumnNames(right) ? right : null);
+      let result;
       if (Array.isArray(left) && Array.isArray(right)) {
         if (!sameArrayShape(left, right)) {
           throw new Error("operator arguments must have matching shapes");
         }
-        return left.map((item, idx) => vectorizedBinaryOperation(item, right[idx], scalarFn));
+        result = left.map((item, idx) => vectorizedBinaryOperation(item, right[idx], scalarFn));
+      } else {
+        const arr = Array.isArray(left) ? left : right;
+        const scalar = Array.isArray(left) ? right : left;
+        result = arr.map((item) => vectorizedBinaryOperation(
+          Array.isArray(left) ? item : scalar,
+          Array.isArray(left) ? scalar : item,
+          scalarFn,
+        ));
       }
-      const arr = Array.isArray(left) ? left : right;
-      const scalar = Array.isArray(left) ? right : left;
-      return arr.map((item) => vectorizedBinaryOperation(
-        Array.isArray(left) ? item : scalar,
-        Array.isArray(left) ? scalar : item,
-        scalarFn,
-      ));
+      return schemaSource ? preserveMatrixColumnSchema(schemaSource, result) : result;
     }
     return scalarFn(left, right);
   }
 
   function vectorizedUnaryOperation(value, scalarFn) {
     if (Array.isArray(value)) {
-      return value.map((item) => vectorizedUnaryOperation(item, scalarFn));
+      const result = value.map((item) => vectorizedUnaryOperation(item, scalarFn));
+      return getNamedColumnNames(value) ? preserveMatrixColumnSchema(value, result) : result;
     }
     return scalarFn(value);
   }
@@ -7030,7 +7296,8 @@ window.STGraphXI18nBundles = {
     const buildResult = (value, path = []) => value.map((item, index) => (
       Array.isArray(item) ? buildResult(item, [...path, index]) : evaluateAtPath([...path, index])
     ));
-    return buildResult(shape);
+    const result = buildResult(shape);
+    return getNamedColumnNames(shape) ? preserveMatrixColumnSchema(shape, result) : result;
   }
 
   function normalizeSliceIndex(value, size, fallback) {
@@ -7151,19 +7418,22 @@ window.STGraphXI18nBundles = {
 
   function isAppendMatrix(value) {
     return Array.isArray(value) && (
-      Boolean(getAgentFieldNames(value))
+      Boolean(getMatrixColumnNames(value))
       || (value.length > 0 && value.every((row) => Array.isArray(row)))
     );
   }
 
   function appendMatrixVector(matrix, vector, axis = 0, prepend = false) {
-    const fieldNames = getAgentFieldNames(matrix);
+    const fieldNames = getMatrixColumnNames(matrix);
     if (!Number.isInteger(axis) || (axis !== 0 && axis !== 1)) {
       throw new Error("append matrix axis must be 0 or 1");
     }
     if (axis === 1) {
-      if (fieldNames) {
+      if (getAgentFieldNames(matrix)) {
         throw new Error("append axis 1 is not supported for agent matrices");
+      }
+      if (getNamedColumnNames(matrix)) {
+        throw new Error("append axis 1 is not supported for matrices with named columns");
       }
       if (!Array.isArray(vector) || vector.some((item) => Array.isArray(item))) {
         throw new Error("append on matrices axis 1 expects a vector column");
@@ -7191,10 +7461,7 @@ window.STGraphXI18nBundles = {
     }
     const copiedRows = matrix.map((row) => row.slice());
     const out = prepend ? [vector.slice(), ...copiedRows] : [...copiedRows, vector.slice()];
-    if (fieldNames) {
-      attachAgentSchema(out, fieldNames);
-    }
-    return out;
+    return preserveMatrixColumnSchema(matrix, out);
   }
 
   function appendArrayValues(target, value, axis = 0) {
@@ -7204,21 +7471,14 @@ window.STGraphXI18nBundles = {
       }
       throw new Error("append expects a vector or matrix as first argument, or a scalar followed by a vector");
     }
-    const fieldNames = getAgentFieldNames(target);
     const isMatrix = isAppendMatrix(target);
     if (!isMatrix) {
       if (Array.isArray(value)) {
         const out = [...target, ...value];
-        if (fieldNames) {
-          attachAgentSchema(out, fieldNames);
-        }
-        return out;
+        return preserveMatrixColumnSchema(target, out);
       }
       const out = [...target, value];
-      if (fieldNames) {
-        attachAgentSchema(out, fieldNames);
-      }
-      return out;
+      return preserveMatrixColumnSchema(target, out);
     }
     return appendMatrixVector(target, value, axis);
   }
@@ -7234,11 +7494,7 @@ window.STGraphXI18nBundles = {
       ? Math.min(count, target.length)
       : Math.max(0, target.length - count);
     const out = fromStart ? target.slice(splitIndex) : target.slice(0, splitIndex);
-    const fieldNames = getAgentFieldNames(target);
-    if (fieldNames) {
-      attachAgentSchema(out, fieldNames);
-    }
-    return out;
+    return preserveMatrixColumnSchema(target, out);
   }
 
   function tokenizeExpression(source) {
@@ -7257,7 +7513,7 @@ window.STGraphXI18nBundles = {
         i += 3;
         continue;
       }
-      if (["&&", "||", "==", "!=", "<=", ">=", "**"].includes(two)) {
+      if (["&&", "||", "==", "!=", "<=", ">=", "**", "|>"].includes(two)) {
         tokens.push({ type: "op", value: two });
         i += 2;
         continue;
@@ -7364,6 +7620,26 @@ window.STGraphXI18nBundles = {
       return token;
     };
 
+    // A placeholder in the right side of a nested pipeline belongs to that
+    // nested pipeline. Its left side, instead, still sees the outer value.
+    function referencesCurrentPipelinePlaceholder(node) {
+      if (!node || typeof node !== "object") {
+        return false;
+      }
+      if (node.type === "identifier") {
+        return node.name === "_";
+      }
+      if (node.type === "pipeline") {
+        return referencesCurrentPipelinePlaceholder(node.left);
+      }
+      return Object.values(node).some((value) => {
+        if (Array.isArray(value)) {
+          return value.some((item) => referencesCurrentPipelinePlaceholder(item));
+        }
+        return referencesCurrentPipelinePlaceholder(value);
+      });
+    }
+
     function parseReduceReference() {
       const token = peek();
       if (!token) {
@@ -7393,22 +7669,22 @@ window.STGraphXI18nBundles = {
           return { kind: "slice", start, end, step };
         }
         if (!match(":")) {
-          end = parseLogicalOr();
+          end = parsePipeline();
           if (match(":")) {
             if (!peek() || (peek().type === "op" && [",", "]"].includes(peek().value))) {
               return { kind: "slice", start, end, step };
             }
-            step = parseLogicalOr();
+            step = parsePipeline();
           }
         } else if (!peek() || (peek().type === "op" && [",", "]"].includes(peek().value))) {
           return { kind: "slice", start, end, step };
         } else {
-          step = parseLogicalOr();
+          step = parsePipeline();
         }
         return { kind: "slice", start, end, step };
       }
 
-      const first = parseLogicalOr();
+      const first = parsePipeline();
       if (!match(":")) {
         return { kind: "index", index: first };
       }
@@ -7418,17 +7694,17 @@ window.STGraphXI18nBundles = {
         return { kind: "slice", start, end, step };
       }
       if (!match(":")) {
-        end = parseLogicalOr();
+        end = parsePipeline();
         if (match(":")) {
           if (!peek() || (peek().type === "op" && [",", "]"].includes(peek().value))) {
             return { kind: "slice", start, end, step };
           }
-          step = parseLogicalOr();
+          step = parsePipeline();
         }
       } else if (!peek() || (peek().type === "op" && [",", "]"].includes(peek().value))) {
         return { kind: "slice", start, end, step };
       } else {
-        step = parseLogicalOr();
+        step = parsePipeline();
       }
       return { kind: "slice", start, end, step };
     }
@@ -7463,7 +7739,7 @@ window.STGraphXI18nBundles = {
         throw new SyntaxError("Unexpected end of input");
       }
       if (match("(")) {
-        const expr = parseLogicalOr();
+        const expr = parsePipeline();
         expect(")");
         return expr;
       }
@@ -7471,9 +7747,9 @@ window.STGraphXI18nBundles = {
         if (match("]")) {
           return { type: "array", elements: [] };
         }
-        const elements = [parseLogicalOr()];
+        const elements = [parsePipeline()];
         while (match(",")) {
-          elements.push(parseLogicalOr());
+          elements.push(parsePipeline());
         }
         expect("]");
         return { type: "array", elements };
@@ -7495,13 +7771,13 @@ window.STGraphXI18nBundles = {
             if (!match(")")) {
               args.push(parseReduceReference());
               while (match(",")) {
-                args.push(parseLogicalOr());
+                args.push(parsePipeline());
               }
               expect(")");
             }
           } else if (!match(")")) {
             do {
-              args.push(parseLogicalOr());
+              args.push(parsePipeline());
             } while (match(","));
             expect(")");
           }
@@ -7619,7 +7895,19 @@ window.STGraphXI18nBundles = {
       return left;
     }
 
-    const ast = parseLogicalOr();
+    function parsePipeline() {
+      let left = parseLogicalOr();
+      while (match("|>")) {
+        const right = parseLogicalOr();
+        if (!referencesCurrentPipelinePlaceholder(right)) {
+          throw new SyntaxError("Pipeline right-hand expression must reference '_'");
+        }
+        left = { type: "pipeline", left, right };
+      }
+      return left;
+    }
+
+    const ast = parsePipeline();
     if (peek().type !== "eof") {
       throw new SyntaxError(`Unexpected token ${peek().value}`);
     }
@@ -7704,6 +7992,16 @@ window.STGraphXI18nBundles = {
         throw new Error("indexing requires an array or matrix");
       }
       const rawIndex = evaluateAstNode(accessor.index, scope, hooks);
+      if (typeof rawIndex === "string" && isMatrixTarget(target)) {
+        const columnNames = getMatrixColumnNames(target);
+        if (columnNames) {
+          const columnIndex = columnNames.indexOf(rawIndex.trim());
+          if (columnIndex < 0) {
+            throw new Error(`matrix column name '${rawIndex.trim()}' is unknown`);
+          }
+          return target.map((row) => row[columnIndex]);
+        }
+      }
       if (Array.isArray(rawIndex)) {
         if (isMatrixTarget(target)) {
           if (rawIndex.every((pair) => Array.isArray(pair))) {
@@ -7774,6 +8072,9 @@ window.STGraphXI18nBundles = {
         return node.elements.map((item) => evaluateAstNode(item, scope, hooks));
       case "identifier":
         {
+          if (node.name === "_" && scope?.[PIPELINE_PLACEHOLDER_SCOPE_KEY] !== true) {
+            throw new ReferenceError("_ is only available in a pipeline right-hand expression");
+          }
           const resolved = lookupEvaluationScopeValue(scope, node.name);
           if (resolved.found) {
             return resolved.value;
@@ -7817,44 +8118,53 @@ window.STGraphXI18nBundles = {
         }
         if (node.name === "array") {
           if (node.args.length < 2) {
-            throw new Error("array expects at least one axis and an expression");
+            throw new Error("array expects at least one dimension and an expression");
           }
-          const axes = node.args.slice(0, -1).map((axisNode, idx) => {
-            const axisValue = evaluateAstNode(axisNode, scope, hooks);
-            if (Array.isArray(axisValue)) {
-              if (axisValue.some((value) => Array.isArray(value))) {
-                throw new Error(`array axis ${idx} must be a non-negative integer or a vector`);
-              }
-              return axisValue.slice();
+          let dimensionStart = 0;
+          let columnNames = null;
+          const firstArgument = evaluateAstNode(node.args[0], scope, hooks);
+          if (Array.isArray(firstArgument) && firstArgument.every((item) => typeof item === "string")) {
+            columnNames = normalizeNamedColumnNames(firstArgument);
+            dimensionStart = 1;
+            if (node.args.length !== 4) {
+              throw new Error("array column names require exactly two dimensions and an expression");
             }
-            const size = Number(axisValue);
-            if (!Number.isInteger(size) || size < 0) {
-              throw new Error(`array axis ${idx} must be a non-negative integer or a vector`);
+          }
+          const dimensions = node.args.slice(dimensionStart, -1).map((dimensionNode, idx) => {
+            const dimensionValue = dimensionStart === 0 && idx === 0
+              ? firstArgument
+              : evaluateAstNode(dimensionNode, scope, hooks);
+            const size = Number(dimensionValue);
+            if (typeof dimensionValue !== "number" || !Number.isInteger(size) || size < 0) {
+              throw new Error(`array dimension ${idx} must be a non-negative integer`);
             }
-            return Array.from({ length: size }, (_, index) => index);
+            return size;
           });
-          const totalSize = axes.reduce((acc, axis) => acc * Math.max(1, axis.length), 1);
+          const totalSize = dimensions.reduce((acc, dimension) => acc * Math.max(1, dimension), 1);
           if (totalSize > 100000) {
             throw new Error("array is too large");
           }
-          const buildArray = (level, localValues, localIndices) => {
-            if (level >= axes.length) {
+          const buildArray = (level, localIndices) => {
+            if (level >= dimensions.length) {
               const localScope = { ...scope };
-              localValues.forEach((value, idx) => {
-                localScope[`$${idx}`] = value;
-              });
               localIndices.forEach((index, idx) => {
-                localScope[`$i${idx}`] = index;
+                localScope[`$${idx}`] = index;
               });
               return evaluateAstNode(node.args[node.args.length - 1], localScope, hooks);
             }
-            return axes[level].map((value, index) => buildArray(
+            return Array.from({ length: dimensions[level] }, (_value, index) => buildArray(
               level + 1,
-              [...localValues, value],
               [...localIndices, index],
             ));
           };
-          return buildArray(0, [], []);
+          const result = buildArray(0, []);
+          if (columnNames) {
+            if (dimensions.length !== 2 || dimensions[1] !== columnNames.length) {
+              throw new Error("array column name count must match the column dimension");
+            }
+            return attachNamedColumns(result, columnNames);
+          }
+          return result;
         }
         if (node.name === "map") {
           if (node.args.length !== 2) {
@@ -7874,7 +8184,8 @@ window.STGraphXI18nBundles = {
             }
             return value.map((item, idx) => mapArray(item, [...localIndices, idx]));
           };
-          return mapArray(target, []);
+          const result = mapArray(target, []);
+          return getNamedColumnNames(target) ? preserveMatrixColumnSchema(target, result) : result;
         }
         if (node.name === "filter") {
           if (node.args.length < 2 || node.args.length > 3) {
@@ -7900,10 +8211,14 @@ window.STGraphXI18nBundles = {
               throw new Error("filter mode 'rows' or 'cols' requires a rectangular matrix");
             }
             if (mode === "rows") {
-              return target.filter((row, rowIdx) => {
+              const result = target.filter((row, rowIdx) => {
                 const localScope = { ...scope, $value: row.slice(), $0: rowIdx };
                 return coerceBooleanToNumber(evaluateAstNode(node.args[0], localScope, hooks));
               }).map((row) => row.slice());
+              return getNamedColumnNames(target) ? preserveMatrixColumnSchema(target, result) : result;
+            }
+            if (getNamedColumnNames(target)) {
+              throw new Error("filter columns is not supported for matrices with named columns");
             }
             const keptColumns = Array.from({ length: colCount }, (_, colIdx) => {
               const column = target.map((row) => row[colIdx]);
@@ -7911,6 +8226,9 @@ window.STGraphXI18nBundles = {
               return coerceBooleanToNumber(evaluateAstNode(node.args[0], localScope, hooks)) ? colIdx : null;
             }).filter((colIdx) => colIdx != null);
             return target.map((row) => keptColumns.map((colIdx) => row[colIdx]));
+          }
+          if (getNamedColumnNames(target)) {
+            throw new Error("filter elements is not supported for matrices with named columns");
           }
           const filterArray = (value, localIndices) => {
             if (!Array.isArray(value)) {
@@ -8210,6 +8528,16 @@ window.STGraphXI18nBundles = {
           default:
             throw new Error(`Unsupported operator ${node.op}`);
         }
+      }
+      case "pipeline": {
+        const value = evaluateAstNode(node.left, scope, hooks);
+        // `_` is an AST-local binding, so the left expression is evaluated
+        // once even if the right expression refers to it repeatedly.
+        let rightScope = { ...(scope || {}), _: value, [PIPELINE_PLACEHOLDER_SCOPE_KEY]: true };
+        if (typeof hooks?.inferPipelineValueUnit === "function" && typeof hooks?.withPipelineValueUnit === "function") {
+          rightScope = hooks.withPipelineValueUnit(rightScope, hooks.inferPipelineValueUnit(node.left, scope));
+        }
+        return evaluateAstNode(node.right, rightScope, hooks);
       }
       default:
         throw new Error(`Unsupported AST node ${node.type}`);
@@ -13359,6 +13687,7 @@ window.STGraphXI18nBundles = {
   const PLAYER_LANGS = new Set(["it", "en"]);
   const scene2dCore = global.STGraphXScene2D || {};
   const readDataCore = global.STGraphXReadDataCore || {};
+  const graphFunctionHelpers = global.GraphFunctions?.helpers || {};
   const SUBMODEL_LIBRARY_ICONS = Object.freeze({
     module: "◆",
     layers: "▤",
@@ -17163,6 +17492,7 @@ window.STGraphXI18nBundles = {
           && matrixValue.every(Array.isArray)
           && matrixValue.every((row) => row.length === matrixValue[0].length);
         if (isMatrix) {
+          const matrixColumnNames = graphFunctionHelpers.getMatrixColumnNames?.(matrixValue) || null;
           const thead = document.createElement("thead");
           const headRow = document.createElement("tr");
           const corner = document.createElement("th");
@@ -17171,7 +17501,7 @@ window.STGraphXI18nBundles = {
           headRow.appendChild(corner);
           for (let column = 0; column < matrixValue[0].length; column += 1) {
             const th = document.createElement("th");
-            th.textContent = `[${column}]`;
+            th.textContent = matrixColumnNames?.[column] || `[${column}]`;
             headRow.appendChild(th);
           }
           thead.appendChild(headRow);

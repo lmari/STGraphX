@@ -169,13 +169,39 @@ assert.equal(context.window.GraphSemantics.evaluateValueExpression("size(range(1
 assert.equal(context.window.GraphSemantics.evaluateValueExpression("size([])").value, 0);
 assert.equal(context.window.GraphSemantics.evaluateValueExpression("if(size([])==0, 0, 99)").value, 0);
 assert.deepEqual(context.window.GraphSemantics.evaluateValueExpression("array(2, 2, $0+$1)").value, [[0, 1], [1, 2]]);
-assert.deepEqual(context.window.GraphSemantics.evaluateValueExpression("array(range(-2, 3), $0)").value, [-2, -1, 0, 1, 2]);
-assert.deepEqual(context.window.GraphSemantics.evaluateValueExpression("array(range(-2, 3), $i0)").value, [0, 1, 2, 3, 4]);
-assert.deepEqual(context.window.GraphSemantics.evaluateValueExpression("array(2, range(10, 13), [$0, $1, $i0, $i1])").value, [
-  [[0, 10, 0, 0], [0, 11, 0, 1], [0, 12, 0, 2]],
-  [[1, 10, 1, 0], [1, 11, 1, 1], [1, 12, 1, 2]],
+assert.deepEqual(context.window.GraphSemantics.evaluateValueExpression("array(5, $0-2)").value, [-2, -1, 0, 1, 2]);
+assert.deepEqual(context.window.GraphSemantics.evaluateValueExpression("array(2, 3, [$0, $1])").value, [
+  [[0, 0], [0, 1], [0, 2]],
+  [[1, 0], [1, 1], [1, 2]],
 ]);
-assert.deepEqual(context.window.GraphSemantics.evaluateValueExpression("array([2,4], $0)").value, [2, 4]);
+const namedMatrix = context.window.GraphSemantics.evaluateValueExpression('array(["quantità","prezzo"], 2, 2, $0+$1)');
+assert.equal(namedMatrix.ok, true);
+assert.deepEqual(namedMatrix.value, [[0, 1], [1, 2]]);
+assert.deepEqual(context.window.GraphFunctions.helpers.getNamedColumnNames(namedMatrix.value), ["quantità", "prezzo"]);
+assert.deepEqual(context.window.GraphSemantics.evaluateValueExpression('array(["quantità","prezzo"], 2, 2, $0+$1)["quantità"]').value, [0, 1]);
+assert.deepEqual(context.window.GraphSemantics.evaluateValueExpression('col(array(["quantità","prezzo"], 2, 2, $0+$1), "prezzo")').value, [1, 2]);
+assert.deepEqual(context.window.GraphSemantics.evaluateValueExpression("row([[1,2],[3,4]], 1)").value, [3, 4]);
+assert.deepEqual(context.window.GraphSemantics.evaluateValueExpression("setRow([[1,2],[3,4]], 1, [8,9])").value, [[1, 2], [8, 9]]);
+assert.deepEqual(context.window.GraphSemantics.evaluateValueExpression("setRow([[1,2],[3,4]], 0, 7)").value, [[7, 7], [3, 4]]);
+assert.deepEqual(context.window.GraphSemantics.evaluateValueExpression("setCol([[1,2],[3,4]], 1, [8,9])").value, [[1, 8], [3, 9]]);
+assert.deepEqual(context.window.GraphSemantics.evaluateValueExpression("setCol([[1,2],[3,4]], 0, 7)").value, [[7, 2], [7, 4]]);
+assert.deepEqual(context.window.GraphSemantics.evaluateValueExpression("appendRow([[1,2],[3,4]], [5,6])").value, [[1, 2], [3, 4], [5, 6]]);
+assert.deepEqual(context.window.GraphSemantics.evaluateValueExpression("appendRow([[1,2],[3,4]], 7)").value, [[1, 2], [3, 4], [7, 7]]);
+assert.equal(context.window.GraphSemantics.evaluateValueExpression("nrows([[1,2],[3,4]])").value, 2);
+assert.equal(context.window.GraphSemantics.evaluateValueExpression("ncols([[1,2],[3,4]])").value, 2);
+assert.deepEqual(context.window.GraphSemantics.evaluateValueExpression("removeRow([[1,2],[3,4]], 0)").value, [[3, 4]]);
+assert.deepEqual(context.window.GraphSemantics.evaluateValueExpression('setCol(array(["quantità","prezzo"], 2, 2, 0), "prezzo", 9)["prezzo"]').value, [9, 9]);
+assert.deepEqual(context.window.GraphSemantics.evaluateValueExpression('((array(["quantità","prezzo"], 2, 2, $0+$1) + 1)["prezzo"])').value, [2, 3]);
+assert.deepEqual(context.window.GraphSemantics.evaluateValueExpression('filter($0 == 0, array(["quantità","prezzo"], 2, 2, $0+$1), "rows")["quantità"]').value, [0]);
+assert.deepEqual(context.window.GraphSemantics.evaluateValueExpression('array(["quantità"], 0, 1, 0)["quantità"]').value, []);
+const namedRows = context.window.GraphSemantics.evaluateValueExpression('append(array(["quantità","prezzo"], 1, 2, $1), [3,4])["prezzo"]');
+assert.deepEqual(namedRows.value, [1, 4]);
+assert.equal(context.window.GraphSemantics.evaluateValueExpression('append(array(["quantità","prezzo"], 2, 2, 0), [1,2], 1)').ok, false);
+assert.equal(context.window.GraphSemantics.evaluateValueExpression('resize(array(["quantità","prezzo"], 2, 2, 0), 2, 3)').ok, false);
+assert.equal(context.window.GraphSemantics.evaluateValueExpression('removeAt(array(["quantità","prezzo"], 2, 2, 0), 0, 1)').ok, false);
+assert.equal(context.window.GraphSemantics.evaluateValueExpression('filter($0 == 0, array(["quantità","prezzo"], 2, 2, 0), "cols")').ok, false);
+assert.equal(context.window.GraphSemantics.evaluateValueExpression("array(range(-2, 3), $0)").ok, false);
+assert.equal(context.window.GraphSemantics.evaluateValueExpression("array([2], $0)").ok, false);
 assert.deepEqual(context.window.GraphSemantics.evaluateValueExpression("[1,2,3,4][[0,2]]").value, [1, 3]);
 assert.deepEqual(context.window.GraphSemantics.evaluateValueExpression("[1,2,3,4][[-1,0,-1]]").value, [4, 1, 4]);
 assert.equal(context.window.GraphSemantics.evaluateValueExpression("[[1,2,3],[4,5,6],[7,8,9]][[0,2]]").value, 3);
@@ -184,7 +210,7 @@ assert.deepEqual(context.window.GraphSemantics.evaluateValueExpression("[[1,2,3]
 assert.deepEqual(context.window.GraphSemantics.evaluateValueExpression("[[1,2,3],[4,5,6],[7,8,9]][[[0,1],[2,0]]]").value, [2, 7]);
 assert.equal(context.window.GraphSemantics.evaluateValueExpression("[1,2][[0,3]]").ok, false);
 assert.equal(context.window.GraphSemantics.evaluateValueExpression("array([[1,2]], $0)").ok, false);
-assert.equal(context.window.GraphSemantics.validateExpressionSyntax("array(range(-2, 3), $i0)").ok, true);
+assert.equal(context.window.GraphSemantics.validateExpressionSyntax("array(3, $0)").ok, true);
 assert.equal(context.window.GraphSemantics.validateExpressionSyntax("$i0").ok, false);
 assert.deepEqual(context.window.GraphSemantics.evaluateValueExpression("append(1, [2,3])").value, [1, 2, 3]);
 assert.deepEqual(context.window.GraphSemantics.evaluateValueExpression("append(1, [])").value, [1]);

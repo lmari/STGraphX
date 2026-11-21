@@ -21,6 +21,11 @@
   const indicesWhereValues = graphFunctions.helpers?.indicesWhereValues;
   const attachAgentSchema = graphFunctions.helpers?.attachAgentSchema || ((value) => value);
   const getAgentFieldNames = graphFunctions.helpers?.getAgentFieldNames || (() => null);
+  const attachNamedColumns = graphFunctions.helpers?.attachNamedColumns || ((value) => value);
+  const getNamedColumnNames = graphFunctions.helpers?.getNamedColumnNames || (() => null);
+  const getMatrixColumnNames = graphFunctions.helpers?.getMatrixColumnNames || getAgentFieldNames;
+  const preserveMatrixColumnSchema = graphFunctions.helpers?.preserveMatrixColumnSchema || ((_, value) => value);
+  const normalizeNamedColumnNames = graphFunctions.helpers?.normalizeNamedColumnNames || ((value) => value);
   const collectAgentFieldAliasesFromContext = graphFunctions.helpers?.collectAgentFieldAliasesFromContext || (() => ({}));
   const EXPRESSION_CACHE_LIMIT = 1000;
   const PIPELINE_PLACEHOLDER_SCOPE_KEY = "__stgraphxPipelinePlaceholder";
@@ -320,42 +325,42 @@
       return { ok: true, kind: "text", value };
     }
     if (Array.isArray(value) && value.length === 0) {
-      const fieldNames = getAgentFieldNames(value);
+      const fieldNames = getMatrixColumnNames(value);
       if (fieldNames) {
         const cloned = [];
-        attachAgentSchema(cloned, fieldNames);
+        preserveMatrixColumnSchema(value, cloned);
         return { ok: true, kind: "matrix", value: cloned };
       }
     }
     if (isNumericVector(value)) {
       const cloned = value.slice();
-      const fieldNames = getAgentFieldNames(value);
+      const fieldNames = getMatrixColumnNames(value);
       if (fieldNames) {
-        attachAgentSchema(cloned, fieldNames);
+        preserveMatrixColumnSchema(value, cloned);
       }
       return { ok: true, kind: "vector", value: cloned };
     }
     if (isComputedVector(value)) {
       const cloned = value.slice();
-      const fieldNames = getAgentFieldNames(value);
+      const fieldNames = getMatrixColumnNames(value);
       if (fieldNames) {
-        attachAgentSchema(cloned, fieldNames);
+        preserveMatrixColumnSchema(value, cloned);
       }
       return { ok: true, kind: "vector", value: cloned };
     }
     if (isNumericMatrix(value)) {
       const cloned = value.map((row) => row.slice());
-      const fieldNames = getAgentFieldNames(value);
+      const fieldNames = getMatrixColumnNames(value);
       if (fieldNames) {
-        attachAgentSchema(cloned, fieldNames);
+        preserveMatrixColumnSchema(value, cloned);
       }
       return { ok: true, kind: "matrix", value: cloned };
     }
     if (isComputedMatrix(value)) {
       const cloned = value.map((row) => row.slice());
-      const fieldNames = getAgentFieldNames(value);
+      const fieldNames = getMatrixColumnNames(value);
       if (fieldNames) {
-        attachAgentSchema(cloned, fieldNames);
+        preserveMatrixColumnSchema(value, cloned);
       }
       return { ok: true, kind: "matrix", value: cloned };
     }
@@ -438,7 +443,8 @@
       currentValue.length === deltaValue.length &&
       currentValue.every((row, rowIdx) => row.length === deltaValue[rowIdx].length)
     ) {
-      return currentValue.map((row, rowIdx) => row.map((item, colIdx) => item + deltaValue[rowIdx][colIdx] * dt));
+      const result = currentValue.map((row, rowIdx) => row.map((item, colIdx) => item + deltaValue[rowIdx][colIdx] * dt));
+      return getNamedColumnNames(currentValue) ? preserveMatrixColumnSchema(currentValue, result) : result;
     }
     throw new Error("integral requires matching numeric state and derivative");
   }
@@ -459,9 +465,9 @@
     }
     if (Array.isArray(value)) {
       const normalized = value.map((item) => coerceBooleanToNumber(item));
-      const fieldNames = getAgentFieldNames(value);
+      const fieldNames = getMatrixColumnNames(value);
       if (fieldNames) {
-        attachAgentSchema(normalized, fieldNames);
+        preserveMatrixColumnSchema(value, normalized);
       }
       return normalized;
     }
@@ -967,26 +973,33 @@
 
   function vectorizedBinaryOperation(left, right, scalarFn) {
     if (Array.isArray(left) || Array.isArray(right)) {
+      const schemaSource = Array.isArray(left) && getNamedColumnNames(left)
+        ? left
+        : (Array.isArray(right) && getNamedColumnNames(right) ? right : null);
+      let result;
       if (Array.isArray(left) && Array.isArray(right)) {
         if (!sameArrayShape(left, right)) {
           throw new Error("operator arguments must have matching shapes");
         }
-        return left.map((item, idx) => vectorizedBinaryOperation(item, right[idx], scalarFn));
+        result = left.map((item, idx) => vectorizedBinaryOperation(item, right[idx], scalarFn));
+      } else {
+        const arr = Array.isArray(left) ? left : right;
+        const scalar = Array.isArray(left) ? right : left;
+        result = arr.map((item) => vectorizedBinaryOperation(
+          Array.isArray(left) ? item : scalar,
+          Array.isArray(left) ? scalar : item,
+          scalarFn,
+        ));
       }
-      const arr = Array.isArray(left) ? left : right;
-      const scalar = Array.isArray(left) ? right : left;
-      return arr.map((item) => vectorizedBinaryOperation(
-        Array.isArray(left) ? item : scalar,
-        Array.isArray(left) ? scalar : item,
-        scalarFn,
-      ));
+      return schemaSource ? preserveMatrixColumnSchema(schemaSource, result) : result;
     }
     return scalarFn(left, right);
   }
 
   function vectorizedUnaryOperation(value, scalarFn) {
     if (Array.isArray(value)) {
-      return value.map((item) => vectorizedUnaryOperation(item, scalarFn));
+      const result = value.map((item) => vectorizedUnaryOperation(item, scalarFn));
+      return getNamedColumnNames(value) ? preserveMatrixColumnSchema(value, result) : result;
     }
     return scalarFn(value);
   }
@@ -1081,7 +1094,8 @@
     const buildResult = (value, path = []) => value.map((item, index) => (
       Array.isArray(item) ? buildResult(item, [...path, index]) : evaluateAtPath([...path, index])
     ));
-    return buildResult(shape);
+    const result = buildResult(shape);
+    return getNamedColumnNames(shape) ? preserveMatrixColumnSchema(shape, result) : result;
   }
 
   function normalizeSliceIndex(value, size, fallback) {
@@ -1202,19 +1216,22 @@
 
   function isAppendMatrix(value) {
     return Array.isArray(value) && (
-      Boolean(getAgentFieldNames(value))
+      Boolean(getMatrixColumnNames(value))
       || (value.length > 0 && value.every((row) => Array.isArray(row)))
     );
   }
 
   function appendMatrixVector(matrix, vector, axis = 0, prepend = false) {
-    const fieldNames = getAgentFieldNames(matrix);
+    const fieldNames = getMatrixColumnNames(matrix);
     if (!Number.isInteger(axis) || (axis !== 0 && axis !== 1)) {
       throw new Error("append matrix axis must be 0 or 1");
     }
     if (axis === 1) {
-      if (fieldNames) {
+      if (getAgentFieldNames(matrix)) {
         throw new Error("append axis 1 is not supported for agent matrices");
+      }
+      if (getNamedColumnNames(matrix)) {
+        throw new Error("append axis 1 is not supported for matrices with named columns");
       }
       if (!Array.isArray(vector) || vector.some((item) => Array.isArray(item))) {
         throw new Error("append on matrices axis 1 expects a vector column");
@@ -1242,10 +1259,7 @@
     }
     const copiedRows = matrix.map((row) => row.slice());
     const out = prepend ? [vector.slice(), ...copiedRows] : [...copiedRows, vector.slice()];
-    if (fieldNames) {
-      attachAgentSchema(out, fieldNames);
-    }
-    return out;
+    return preserveMatrixColumnSchema(matrix, out);
   }
 
   function appendArrayValues(target, value, axis = 0) {
@@ -1255,21 +1269,14 @@
       }
       throw new Error("append expects a vector or matrix as first argument, or a scalar followed by a vector");
     }
-    const fieldNames = getAgentFieldNames(target);
     const isMatrix = isAppendMatrix(target);
     if (!isMatrix) {
       if (Array.isArray(value)) {
         const out = [...target, ...value];
-        if (fieldNames) {
-          attachAgentSchema(out, fieldNames);
-        }
-        return out;
+        return preserveMatrixColumnSchema(target, out);
       }
       const out = [...target, value];
-      if (fieldNames) {
-        attachAgentSchema(out, fieldNames);
-      }
-      return out;
+      return preserveMatrixColumnSchema(target, out);
     }
     return appendMatrixVector(target, value, axis);
   }
@@ -1285,11 +1292,7 @@
       ? Math.min(count, target.length)
       : Math.max(0, target.length - count);
     const out = fromStart ? target.slice(splitIndex) : target.slice(0, splitIndex);
-    const fieldNames = getAgentFieldNames(target);
-    if (fieldNames) {
-      attachAgentSchema(out, fieldNames);
-    }
-    return out;
+    return preserveMatrixColumnSchema(target, out);
   }
 
   function tokenizeExpression(source) {
@@ -1787,6 +1790,16 @@
         throw new Error("indexing requires an array or matrix");
       }
       const rawIndex = evaluateAstNode(accessor.index, scope, hooks);
+      if (typeof rawIndex === "string" && isMatrixTarget(target)) {
+        const columnNames = getMatrixColumnNames(target);
+        if (columnNames) {
+          const columnIndex = columnNames.indexOf(rawIndex.trim());
+          if (columnIndex < 0) {
+            throw new Error(`matrix column name '${rawIndex.trim()}' is unknown`);
+          }
+          return target.map((row) => row[columnIndex]);
+        }
+      }
       if (Array.isArray(rawIndex)) {
         if (isMatrixTarget(target)) {
           if (rawIndex.every((pair) => Array.isArray(pair))) {
@@ -1903,44 +1916,53 @@
         }
         if (node.name === "array") {
           if (node.args.length < 2) {
-            throw new Error("array expects at least one axis and an expression");
+            throw new Error("array expects at least one dimension and an expression");
           }
-          const axes = node.args.slice(0, -1).map((axisNode, idx) => {
-            const axisValue = evaluateAstNode(axisNode, scope, hooks);
-            if (Array.isArray(axisValue)) {
-              if (axisValue.some((value) => Array.isArray(value))) {
-                throw new Error(`array axis ${idx} must be a non-negative integer or a vector`);
-              }
-              return axisValue.slice();
+          let dimensionStart = 0;
+          let columnNames = null;
+          const firstArgument = evaluateAstNode(node.args[0], scope, hooks);
+          if (Array.isArray(firstArgument) && firstArgument.every((item) => typeof item === "string")) {
+            columnNames = normalizeNamedColumnNames(firstArgument);
+            dimensionStart = 1;
+            if (node.args.length !== 4) {
+              throw new Error("array column names require exactly two dimensions and an expression");
             }
-            const size = Number(axisValue);
-            if (!Number.isInteger(size) || size < 0) {
-              throw new Error(`array axis ${idx} must be a non-negative integer or a vector`);
+          }
+          const dimensions = node.args.slice(dimensionStart, -1).map((dimensionNode, idx) => {
+            const dimensionValue = dimensionStart === 0 && idx === 0
+              ? firstArgument
+              : evaluateAstNode(dimensionNode, scope, hooks);
+            const size = Number(dimensionValue);
+            if (typeof dimensionValue !== "number" || !Number.isInteger(size) || size < 0) {
+              throw new Error(`array dimension ${idx} must be a non-negative integer`);
             }
-            return Array.from({ length: size }, (_, index) => index);
+            return size;
           });
-          const totalSize = axes.reduce((acc, axis) => acc * Math.max(1, axis.length), 1);
+          const totalSize = dimensions.reduce((acc, dimension) => acc * Math.max(1, dimension), 1);
           if (totalSize > 100000) {
             throw new Error("array is too large");
           }
-          const buildArray = (level, localValues, localIndices) => {
-            if (level >= axes.length) {
+          const buildArray = (level, localIndices) => {
+            if (level >= dimensions.length) {
               const localScope = { ...scope };
-              localValues.forEach((value, idx) => {
-                localScope[`$${idx}`] = value;
-              });
               localIndices.forEach((index, idx) => {
-                localScope[`$i${idx}`] = index;
+                localScope[`$${idx}`] = index;
               });
               return evaluateAstNode(node.args[node.args.length - 1], localScope, hooks);
             }
-            return axes[level].map((value, index) => buildArray(
+            return Array.from({ length: dimensions[level] }, (_value, index) => buildArray(
               level + 1,
-              [...localValues, value],
               [...localIndices, index],
             ));
           };
-          return buildArray(0, [], []);
+          const result = buildArray(0, []);
+          if (columnNames) {
+            if (dimensions.length !== 2 || dimensions[1] !== columnNames.length) {
+              throw new Error("array column name count must match the column dimension");
+            }
+            return attachNamedColumns(result, columnNames);
+          }
+          return result;
         }
         if (node.name === "map") {
           if (node.args.length !== 2) {
@@ -1960,7 +1982,8 @@
             }
             return value.map((item, idx) => mapArray(item, [...localIndices, idx]));
           };
-          return mapArray(target, []);
+          const result = mapArray(target, []);
+          return getNamedColumnNames(target) ? preserveMatrixColumnSchema(target, result) : result;
         }
         if (node.name === "filter") {
           if (node.args.length < 2 || node.args.length > 3) {
@@ -1986,10 +2009,14 @@
               throw new Error("filter mode 'rows' or 'cols' requires a rectangular matrix");
             }
             if (mode === "rows") {
-              return target.filter((row, rowIdx) => {
+              const result = target.filter((row, rowIdx) => {
                 const localScope = { ...scope, $value: row.slice(), $0: rowIdx };
                 return coerceBooleanToNumber(evaluateAstNode(node.args[0], localScope, hooks));
               }).map((row) => row.slice());
+              return getNamedColumnNames(target) ? preserveMatrixColumnSchema(target, result) : result;
+            }
+            if (getNamedColumnNames(target)) {
+              throw new Error("filter columns is not supported for matrices with named columns");
             }
             const keptColumns = Array.from({ length: colCount }, (_, colIdx) => {
               const column = target.map((row) => row[colIdx]);
@@ -1997,6 +2024,9 @@
               return coerceBooleanToNumber(evaluateAstNode(node.args[0], localScope, hooks)) ? colIdx : null;
             }).filter((colIdx) => colIdx != null);
             return target.map((row) => keptColumns.map((colIdx) => row[colIdx]));
+          }
+          if (getNamedColumnNames(target)) {
+            throw new Error("filter elements is not supported for matrices with named columns");
           }
           const filterArray = (value, localIndices) => {
             if (!Array.isArray(value)) {

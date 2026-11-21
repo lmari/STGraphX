@@ -35,11 +35,11 @@
   "modelProperties": [],
   "unitDefinitions": [],
   "scenarios": [],
-  "nodeCounter": 38,
-  "edgeCounter": 87,
-  "widgetCounter": 8,
-  "textItemCounter": 3,
-  "presentationGroupCounter": 5,
+  "nodeCounter": 39,
+  "edgeCounter": 88,
+  "widgetCounter": 9,
+  "textItemCounter": 4,
+  "presentationGroupCounter": 6,
   "presentationGroups": [],
   "dashboard": null,
   "execution": {
@@ -54,7 +54,7 @@
     "strictDefinitions": false,
     "stopOnRuntimeError": true,
     "checkRanges": false,
-    "randomSeed": null
+    "randomSeed": 42
   },
   "nodes": [
     {
@@ -688,7 +688,7 @@
         }
       ],
       "input": false,
-      "valueExpression": "array(batchSize,hiddenSize,tanh(batchX[$i0]*W1[$i1]+b1[$i1]))"
+      "valueExpression": "array(batchSize,hiddenSize,tanh(batchX[$0]*W1[$1]+b1[$1]))"
     },
     {
       "id": 26,
@@ -766,7 +766,7 @@
         }
       ],
       "input": false,
-      "valueExpression": "array(batchSize,hiddenSize,error[$i0]*W2[$i1]*(1-hidden[$i0,$i1]^2))"
+      "valueExpression": "array(batchSize,hiddenSize,error[$0]*W2[$1]*(1-hidden[$0,$1]^2))"
     },
     {
       "id": 29,

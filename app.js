@@ -279,6 +279,7 @@ const expressionNodeRangeMinInput = document.getElementById("expressionNodeRange
 const expressionNodeRangeMaxInput = document.getElementById("expressionNodeRangeMaxInput");
 const documentationHelpBtn = document.getElementById("documentationHelpBtn");
 const functionalThinkingHelpBtn = document.getElementById("functionalThinkingHelpBtn");
+const arrayThinkingHelpBtn = document.getElementById("arrayThinkingHelpBtn");
 const unitsIntroductionHelpBtn = document.getElementById("unitsIntroductionHelpBtn");
 const functionsHelpBtn = document.getElementById("functionsHelpBtn");
 const eightTupleBtn = document.getElementById("eightTupleBtn");
@@ -2415,16 +2416,40 @@ function localizeExpressionErrorMessage(message) {
   if (lower === "array requires at least one dimension") {
     return t("expr.error.arrayNeedsDimension");
   }
-  if (lower === "array expects at least one axis and an expression") {
-    return t("expr.error.arrayNeedsAxisExpression");
+  if (lower === "array expects at least one dimension and an expression") {
+    return t("expr.error.arrayNeedsDimensionExpression");
+  }
+  if (lower === "array column names require exactly two dimensions and an expression") {
+    return t("expr.error.arrayColumnNamesArity");
+  }
+  if (lower === "array column name count must match the column dimension") {
+    return t("expr.error.arrayColumnNamesCount");
+  }
+  if (lower === "array column names must be non-empty strings" || lower === "array column names must be unique") {
+    return t("expr.error.arrayColumnNamesInvalid");
+  }
+  if (lower === "append axis 1 is not supported for matrices with named columns") {
+    return t("expr.error.namedColumnsAppend");
+  }
+  if (lower === "removeat axis 1 is not supported for matrices with named columns") {
+    return t("expr.error.namedColumnsRemove");
+  }
+  if (lower === "resize must preserve the column count of a matrix with named columns") {
+    return t("expr.error.namedColumnsResize");
+  }
+  if (lower === "filter columns is not supported for matrices with named columns") {
+    return t("expr.error.namedColumnsFilterColumns");
+  }
+  if (lower === "filter elements is not supported for matrices with named columns") {
+    return t("expr.error.namedColumnsFilterElements");
+  }
+  const namedColumnMatch = raw.match(/^matrix column name '(.+)' is unknown$/i);
+  if (namedColumnMatch) {
+    return t("expr.error.namedColumnUnknown", { name: namedColumnMatch[1] });
   }
   const arrayDimMatch = raw.match(/^array dimension (\d+) must be a non-negative integer$/i);
   if (arrayDimMatch) {
     return t("expr.error.arrayDimensionNonNegative", { index: arrayDimMatch[1] });
-  }
-  const arrayAxisMatch = raw.match(/^array axis (\d+) must be a non-negative integer or a vector$/i);
-  if (arrayAxisMatch) {
-    return t("expr.error.arrayAxisIntegerOrVector", { index: arrayAxisMatch[1] });
   }
   if (lower === "array is a special expression form" || lower === "map is a special expression form" || lower === "filter is a special expression form" || lower === "reduce is a special expression form" || lower === "append is a special expression form") {
     return t("expr.error.specialForm");
@@ -17746,6 +17771,12 @@ if (functionalThinkingHelpBtn) {
   functionalThinkingHelpBtn.addEventListener("click", () => {
     closeTopMenus();
     openDocumentationHelp("docs/introduzione-pensiero-funzionale.md");
+  });
+}
+if (arrayThinkingHelpBtn) {
+  arrayThinkingHelpBtn.addEventListener("click", () => {
+    closeTopMenus();
+    openDocumentationHelp("docs/introduzione-pensiero-array.md");
   });
 }
 if (unitsIntroductionHelpBtn) {

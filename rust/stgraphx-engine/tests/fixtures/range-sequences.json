@@ -40,7 +40,7 @@
       "name": "valueAndIndex",
       "type": "algebraic",
       "output": true,
-      "valueExpression": "array(axisValues,[$0,$i0])"
+      "valueExpression": "array(size(axisValues),[axisValues[$0],$0])"
     }
   ],
   "edges": [
