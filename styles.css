@@ -6084,3 +6084,34 @@ body.tablet-sidebar-layout .menu-run-btn {
     pointer-events: none;
   }
 }
+
+/* Mathematical source: a native modal keeps focus within the text workflow. */
+#mathSourceDialog {
+  width: min(850px, calc(100vw - 40px));
+  max-height: calc(100vh - 40px);
+  box-sizing: border-box;
+  border: 1px solid #8995a4;
+  border-radius: 8px;
+  padding: 20px;
+  overflow: auto;
+}
+#mathSourceDialog::backdrop { background: rgb(0 0 0 / 35%); }
+#mathSourceDialog h2 { margin-top: 0; }
+#mathSourceHint { line-height: 1.5; }
+#mathSourceText {
+  display: block;
+  box-sizing: border-box;
+  width: 100%;
+  height: min(45vh, 440px);
+  min-height: 180px;
+  margin-top: 8px;
+  padding: 12px;
+  font-family: monospace;
+  font-size: 14px;
+  line-height: 1.5;
+  resize: vertical;
+  tab-size: 2;
+}
+#mathSourceStatus { white-space: pre-wrap; overflow-wrap: anywhere; min-height: 1.5em; }
+.math-source-actions { display: flex; gap: 8px; flex-wrap: wrap; }
+.math-source-actions button { padding: 6px 12px; }

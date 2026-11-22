@@ -16679,6 +16679,67 @@ deleteBtn.addEventListener("click", removeSelected);
 cutBtn.addEventListener("click", cutSelectionToClipboard);
 copyBtn.addEventListener("click", copySelectionToClipboard);
 pasteBtn.addEventListener("click", pasteFromClipboard);
+const mathSourceUi = globalThis.STGraphXMathSourceUi.createMathSourceUi({
+  document,
+  t,
+  codec: globalThis.STGraphXMathSource.createCodec(semantics),
+  getModel: exportGraphData,
+  copyText: copyTextToClipboard,
+  async loadText() {
+    if (supportsOpenFilePicker()) {
+      const [handle] = await showOpenFilePickerCompat({
+        multiple: false,
+        types: [{ description: t("mathSource.label"), accept: { "text/plain": [".stgx", ".txt"] } }],
+      });
+      return handle ? (await handle.getFile()).text() : null;
+    }
+    document.getElementById("mathSourceFileInput").click();
+    return null;
+  },
+  async saveText(text) {
+    const filename = `${(currentFileName || "model").replace(/\.[^.]+$/, "")}.stgx`;
+    if (supportsSaveFilePicker()) {
+      const handle = await showSaveFilePickerCompat({
+        suggestedName: filename,
+        types: [{ description: t("mathSource.label"), accept: { "text/plain": [".stgx"] } }],
+      });
+      await writeTextToFileHandle(handle, text);
+    } else downloadTextFile(filename, text);
+  },
+  createModel(model) {
+    saveActiveWorkspaceTabState();
+    closeDocumentTransientUi();
+    resetGraphToEmptyModel();
+    createWorkspaceTabFromCurrentState({ activate: true });
+    // Associate the empty saved snapshot with the NEW tab, preserving the old one.
+    markSavedSnapshot();
+    importGraphData(model);
+    render();
+    fitToContent();
+    dirtySinceLastSave = true;
+    updateFileStatusLabel(true);
+    setStatusKey("mathSource.created");
+  },
+});
+document.getElementById("mathSourceFileInput").addEventListener("change", async (event) => {
+  const file = event.target.files?.[0];
+  try {
+    if (file) {
+      mathSourceUi.setImportedText(await file.text());
+    }
+  } catch (error) {
+    document.getElementById("mathSourceStatus").textContent = String(error.message || error);
+  } finally { event.target.value = ""; }
+});
+document.getElementById("showMathSourceBtn").addEventListener("click", () => {
+  closeTopMenus();
+  mathSourceUi.open("export");
+});
+document.getElementById("newMathSourceBtn").addEventListener("click", () => {
+  closeTopMenus();
+  mathSourceUi.open("import");
+});
+
 newGraphBtn.addEventListener("click", () => {
   void createNewGraph();
 });
@@ -18747,6 +18808,7 @@ addPropBtn.addEventListener("click", () => {
 });
 
 window.addEventListener("keydown", (evt) => {
+  if (document.getElementById("mathSourceDialog")?.open) return;
   if ((evt.ctrlKey || evt.metaKey) && !evt.shiftKey && evt.key.toLowerCase() === "n" && !isTypingTarget(evt.target)) {
     evt.preventDefault();
     evt.stopPropagation();

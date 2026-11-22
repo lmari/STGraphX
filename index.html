@@ -22,6 +22,8 @@
           <button class="menu-title" type="button" data-menu="fileMenu" data-i18n="menu.file" data-title-i18n="tooltip.menu.file"></button>
           <div class="menu-panel" id="fileMenu">
             <button id="newGraphBtn" class="menu-command" type="button" data-title-i18n="tooltip.menu.file.new"><span data-i18n="menu.file.new"></span><span class="menu-shortcut">Alt+N</span></button>
+            <button id="newMathSourceBtn" class="menu-command" type="button" data-i18n="mathSource.new"></button>
+            <button id="showMathSourceBtn" class="menu-command" type="button" data-i18n="mathSource.show"></button>
             <button id="loadJsonBtn" class="menu-command" type="button" data-title-i18n="tooltip.menu.file.load"><span data-i18n="menu.file.load"></span><span class="menu-shortcut">Alt+O</span></button>
             <div id="recentModelsMenuRoot" class="menu-submenu hidden">
               <button id="recentModelsMenuBtn" class="menu-submenu-toggle" type="button">
@@ -1017,7 +1019,24 @@
     </div>
     <div id="appTooltip" class="app-tooltip hidden" role="tooltip" aria-hidden="true"></div>
 
+    <dialog id="mathSourceDialog" aria-labelledby="mathSourceTitle" aria-describedby="mathSourceHint">
+      <h2 id="mathSourceTitle"></h2>
+      <p id="mathSourceHint" data-i18n="mathSource.hint"></p>
+      <label for="mathSourceText" data-i18n="mathSource.label"></label>
+      <textarea id="mathSourceText" spellcheck="false" autocapitalize="off" autocomplete="off"></textarea>
+      <p id="mathSourceStatus" role="status" aria-live="polite"></p>
+      <div class="math-source-actions">
+        <button id="mathSourceLoad" type="button" data-i18n="mathSource.load"></button>
+        <button id="mathSourceCreate" type="button" data-i18n="mathSource.create"></button>
+        <button id="mathSourceCopy" type="button" data-i18n="action.copy"></button>
+        <button id="mathSourceSave" type="button" data-i18n="mathSource.save"></button>
+        <button id="mathSourceClose" type="button" data-i18n="action.close"></button>
+      </div>
+    </dialog>
+    <input id="mathSourceFileInput" type="file" accept=".stgx,.txt,text/plain" hidden />
     <script src="graph-functions.js"></script>
+    <script src="math-source-core.js"></script>
+    <script src="math-source-ui.js"></script>
     <script src="semantic.js"></script>
     <script src="i18n-inline.js"></script>
     <script src="vendor/katex/katex.min.js"></script>

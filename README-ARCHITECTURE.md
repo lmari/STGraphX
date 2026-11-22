@@ -10,6 +10,7 @@ Questo documento descrive i componenti dell'applicazione e i loro confini.
 Per i dettagli complementari:
 
 - [AGENTS.md](AGENTS.md): norme di sviluppo, flusso Git e controlli richiesti;
+- [README-MATH-SOURCE.md](README-MATH-SOURCE.md): formato testuale matematico e importazione/esportazione;
 - [README-HEADLESS.md](README-HEADLESS.md): API JavaScript senza interfaccia;
 - [README-PLAYER.md](README-PLAYER.md): player incorporabile;
 - [rust/README.md](rust/README.md): capacità e limiti correnti del motore Rust;
@@ -261,6 +262,16 @@ Espone in particolare:
 - `window.GraphFunctions.createMathScope(...)`
 - `window.GraphFunctions.probability`
 - `window.GraphFunctions.expressionDocs`
+
+### Sorgente matematico
+
+`math-source-core.js` converte fra sorgente matematico `.stgx` e documenti JSON
+versione 1, riusando validazione ed espressioni di `semantic.js`. Inferisce gli
+archi e assegna un layout predefinito senza dipendere dal DOM o dalla shell.
+`math-source-ui.js` gestisce la finestra di consultazione/esportazione e quella
+di creazione da testo. `app.js` collega file picker, clipboard e schede.
+Il JSON resta il formato di salvataggio; il formato a due file non è implementato.
+Sintassi e limiti sono descritti in [README-MATH-SOURCE.md](README-MATH-SOURCE.md).
 
 ### Modulo semantico
 

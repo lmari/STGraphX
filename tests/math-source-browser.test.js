@@ -1,0 +1,121 @@
+"use strict";
+// Optional integration test: requires Firefox, a local socket and process access.
+const assert = require("node:assert/strict");
+const http = require("node:http");
+const fs = require("node:fs/promises");
+const os = require("node:os");
+const path = require("node:path");
+const { spawn } = require("node:child_process");
+const root = path.resolve(__dirname, "..");
+
+async function exerciseEditor() {
+  const wait = () => new Promise((resolve) => setTimeout(resolve, 200));
+  const check = (condition, message) => { if (!condition) throw new Error(message); };
+  try {
+    await wait(); await wait();
+    check(!window.__stgraphxBootError, window.__stgraphxBootError);
+    const previousTab = workspace.activeTabId;
+    importGraphData(STGraphXMathSource.createCodec(semantics).parse("output preserved=7"));
+    render(); await wait();
+    const original = JSON.stringify(exportGraphData());
+    const count = workspace.tabs.length;
+    const get = (id) => document.getElementById(id);
+    get("newMathSourceBtn").click();
+    check(get("mathSourceDialog").open, "Import dialog did not open");
+    get("mathSourceText").value = "bad = missing";
+    get("mathSourceCreate").click(); await wait();
+    check(workspace.tabs.length === count, "Invalid input changed workspace tabs");
+    check(get("mathSourceStatus").textContent.includes("bad"), "Missing diagnostic");
+
+    // Exercise the browser file-input fallback with an actual File object.
+    const transfer = new DataTransfer();
+    transfer.items.add(new File(["t0=0\nt1=2\ndt=1\noutput x=1;this+1\ny=x*2"], "sample.stgx", { type: "text/plain" }));
+    get("mathSourceFileInput").files = transfer.files;
+    get("mathSourceFileInput").dispatchEvent(new Event("change")); await wait();
+    check(get("mathSourceText").value.includes("output x=1"), "File import did not fill source");
+    get("mathSourceCreate").click(); await wait();
+    check(workspace.tabs.length === count + 1, "Model was not created in a new tab");
+    check(!get("mathSourceDialog").open, "Successful import did not close dialog");
+    check(exportGraphData().nodes.length === 2, "Missing imported nodes");
+    check(exportGraphData().edges.length === 1, "Missing inferred edge");
+    check(hasUnsavedChanges(), "Imported model must be unsaved");
+    const importedTab = workspace.activeTabId;
+    switchWorkspaceTab(previousTab); await wait();
+    check(JSON.stringify(exportGraphData()) === original, "Previous tab was modified");
+    switchWorkspaceTab(importedTab); await wait();
+    get("showMathSourceBtn").click();
+    check(get("mathSourceText").readOnly, "Export view should be read-only");
+    check(get("mathSourceText").value.includes("output x = 1; this+1"), "Wrong exported definitions");
+    check(!get("mathSourceSave").disabled, "Export is disabled for a valid model");
+
+    // Use the real save helper, replacing only the platform picker/handle.
+    let savedText = "", savedName = "";
+    supportsSaveFilePicker = () => true;
+    showSaveFilePickerCompat = async (options) => {
+      savedName = options.suggestedName;
+      return { createWritable: async () => ({ write: async (text) => { savedText = text; }, close: async () => {} }) };
+    };
+    get("mathSourceSave").click(); await wait();
+    check(savedName.endsWith(".stgx"), "Wrong source extension");
+    check(savedText === get("mathSourceText").value, "Exported file differs from source view");
+    check(hasUnsavedChanges() && !currentFileHandle, "Source export changed JSON save state");
+    get("mathSourceClose").click();
+    get("newMathSourceBtn").click();
+    get("mathSourceText").value = 'a=1\n@unit a = "m"\nb=100\n@unit b = "cm"\noutput total=a+b\n@unit total = "m"';
+    get("mathSourceCreate").click(); await wait();
+    recalculateAfterNodeDefinitionChange();
+    check(graph.nodes.find((node) => node.name === "total")?.computedValue === 2, "Unit conversion changed after import");
+    await fetch("/__result", { method: "POST", body: JSON.stringify({ ok: true }) });
+  } catch (error) {
+    await fetch("/__result", { method: "POST", body: JSON.stringify({ ok: false, error: error.message, stack: error.stack }) });
+  }
+}
+
+async function main() {
+  const profile = await fs.mkdtemp(path.join(os.tmpdir(), "stgraphx-math-browser-"));
+  let browser, timer, resolveResult, rejectResult;
+  const result = new Promise((resolve, reject) => { resolveResult = resolve; rejectResult = reject; });
+  const server = http.createServer(async (req, res) => {
+    try {
+      if (req.url === "/__result") {
+        let body = "";
+        for await (const chunk of req) body += chunk;
+        res.end("ok"); resolveResult(JSON.parse(body)); return;
+      }
+      const url = new URL(req.url, "http://localhost");
+      const relative = url.pathname === "/__test" ? "index.html" : decodeURIComponent(url.pathname).replace(/^\//, "");
+      const filename = path.resolve(root, relative);
+      if (!filename.startsWith(`${root}${path.sep}`)) { res.writeHead(403).end(); return; }
+      let data = await fs.readFile(filename);
+      const types = { ".html": "text/html", ".js": "text/javascript", ".css": "text/css", ".json": "application/json", ".svg": "image/svg+xml", ".wasm": "application/wasm" };
+      res.setHeader("Content-Type", types[path.extname(filename)] || "application/octet-stream");
+      if (url.pathname === "/__test") data = data.toString().replace("</body>", `<script>(${exerciseEditor.toString()})();</script></body>`);
+      res.end(data);
+    } catch { res.writeHead(404).end(); }
+  });
+  try {
+    await new Promise((resolve, reject) => {
+      server.once("error", reject);
+      server.listen(0, "127.0.0.1", resolve);
+    });
+    const url = `http://127.0.0.1:${server.address().port}/__test`;
+    browser = spawn(process.env.STGRAPHX_FIREFOX || "firefox", ["--headless", "--no-remote", "--profile", profile, url], { stdio: "ignore" });
+    browser.once("error", rejectResult);
+    browser.once("exit", (code) => rejectResult(new Error(`Firefox exited before test completion (${code})`)));
+    timer = setTimeout(() => rejectResult(new Error("Browser test timed out")), 30000);
+    const response = await result;
+    assert.equal(response.ok, true, `${response.error || ""}\n${response.stack || ""}`);
+    console.log("math-source-browser.test.js: ok");
+  } finally {
+    clearTimeout(timer);
+    if (browser?.pid && browser.exitCode === null) {
+      const exited = new Promise((resolve) => browser.once("exit", resolve));
+      browser.kill("SIGTERM");
+      await exited;
+    }
+    server.closeAllConnections();
+    await new Promise((resolve) => server.close(resolve));
+    await fs.rm(profile, { recursive: true, force: true });
+  }
+}
+main().catch((error) => { console.error(error); process.exitCode = 1; });
