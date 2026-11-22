@@ -73,6 +73,66 @@ async function run() {
   assert.deepEqual(timedProgress, [2, 5], "each visual batch publishes its final progress");
   controller.stopTimedExecution(false);
 
+  let playIntervalCallback = null;
+  let playInitialized = false;
+  const playCalls = [];
+  const playExecution = {
+    // Deliberately invalid finite-run bounds: playmode must only require dt.
+    t0: "not used",
+    dt: 0.5,
+    t1: "not used",
+    delayMs: 1,
+    renderEverySteps: 2,
+    currentTime: null,
+  };
+  const playTimedState = { timedRunHandle: null, timedStepRunning: false };
+  const playController = globalThis.STGraphXRuntimeController.createRuntimeController({
+    session: {
+      hasInitializedStateSnapshot: () => playInitialized,
+      clearSubmodelState: () => {},
+      initializeAt: (_time, _model, _execution, options) => {
+        playInitialized = true;
+        playCalls.push({ kind: "initialize", options });
+      },
+      promotePending: () => {},
+      evaluateAtTime: (time, env, options) => {
+        playCalls.push({ kind: "evaluate", time, env, options });
+        return { successCount: 1, errorCount: 0 };
+      },
+    },
+    getExecution: () => playExecution,
+    timedState: playTimedState,
+    t: (key) => key,
+    enforceStrictDefinitions: () => true,
+    ensureBreakpointReady: () => true,
+    prepareForExecution: async () => true,
+    isExecutionEnded: () => true,
+    refreshRuntimeView: () => {},
+    render: () => {},
+    updateEditingLockUi: () => {},
+    setStatusKey: () => {},
+    setStatus: () => {},
+    formatNumberValue: (value) => String(value),
+    evaluateBreakpointConditionAtTime: () => ({ hit: false, invalid: false }),
+    clearVisualHistory: () => {},
+    clearSimulationHistory: () => {},
+    setIntervalFn: (callback) => {
+      playIntervalCallback = callback;
+      return 2;
+    },
+    clearIntervalFn: () => {},
+  });
+  await playController.togglePlayExecution();
+  assert.equal(playTimedState.timedRunMode, "play", "playmode records its running mode");
+  await playIntervalCallback();
+  assert.equal(playExecution.currentTime, 0.5, "playmode advances from an internal zero origin using dt");
+  assert.equal(playCalls[0].options.playMode, true, "playmode initialization reaches the runtime core");
+  assert.equal(playCalls[1].env.playMode, true, "playmode evaluation marks its environment");
+  assert.equal(playCalls[1].options.playMode, true, "playmode evaluation reaches the runtime core");
+  await playIntervalCallback();
+  assert.equal(playExecution.currentTime, 1.5, "playmode never stops at the finite execution bounds");
+  playController.stopTimedExecution(false);
+
   const errorExecution = {
     t0: 0,
     dt: 1,

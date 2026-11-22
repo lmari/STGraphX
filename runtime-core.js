@@ -348,11 +348,15 @@
       return readDataFromWorkbook(cache[normalizedPath], sheetName, row1, column1, row2, column2);
     }
 
-    function buildExecutionGlobalsForModel(model, rootExecution, timeValue) {
-      return {
+    function buildExecutionGlobalsForModel(model, rootExecution, timeValue, options = {}) {
+      const playMode = Boolean(options?.playMode);
+      const timeGlobals = playMode ? {} : {
         time: timeValue,
         t0: Number(rootExecution.t0),
         t1: Number(rootExecution.t1),
+      };
+      return {
+        ...timeGlobals,
         dt: Number(rootExecution.dt),
         getModelProperty: (key, fallback = null) => {
           const name = String(key ?? "");
@@ -394,8 +398,8 @@
       };
     }
 
-    function evaluateParameterNodesForModel(model, timeValue, rootExecution) {
-      const globals = buildExecutionGlobalsForModel(model, rootExecution, timeValue);
+    function evaluateParameterNodesForModel(model, timeValue, rootExecution, options = {}) {
+      const globals = buildExecutionGlobalsForModel(model, rootExecution, timeValue, options);
       const parameterNodes = (model?.nodes || []).filter((node) => node?.shape === "diamond");
       const pending = new Set();
       const resolved = new Set();
@@ -488,9 +492,9 @@
       }
     }
 
-    function buildInitialStateContextForModel(model, node, timeValue, rootExecution, referencedNames = null) {
+    function buildInitialStateContextForModel(model, node, timeValue, rootExecution, referencedNames = null, options = {}) {
       const context = {
-        ...buildExecutionGlobalsForModel(model, rootExecution, timeValue),
+        ...buildExecutionGlobalsForModel(model, rootExecution, timeValue, options),
         ...nodePropertyAccessForContext(node),
       };
       globalParameterNodesForModel(model, node.id).forEach((depNode) => {
@@ -510,9 +514,9 @@
       return context;
     }
 
-    function initializeStateNodesForModel(model, timeValue, rootExecution) {
+    function initializeStateNodesForModel(model, timeValue, rootExecution, options = {}) {
       resetModelRandomGenerator(model);
-      evaluateParameterNodesForModel(model, timeValue, rootExecution);
+      evaluateParameterNodesForModel(model, timeValue, rootExecution, options);
       const initialNodes = (model.nodes || []).filter((node) =>
         isStateNode(node) || (node.shape === "ellipse" && !node.externalValueEnabled));
       const pending = new Set();
@@ -570,7 +574,7 @@
           } else {
             const result = semantics.evaluateValueExpression(
               expression,
-              buildInitialStateContextForModel(model, node, timeValue, rootExecution, references),
+              buildInitialStateContextForModel(model, node, timeValue, rootExecution, references, options),
               randomEvaluationOptions(model, {
                 localFunctions: localFunctionsForRuntimeModel(model),
                 ...unitEvaluationOptionsForNode(model, node, expression),
@@ -818,7 +822,7 @@
 
     function provisionalSubmodelValuesForModel(model, timeValue, env) {
       const provisionalValues = new Map();
-      const parentContext = buildExecutionGlobalsForModel(model, env.rootExecution, timeValue);
+      const parentContext = buildExecutionGlobalsForModel(model, env.rootExecution, timeValue, env);
       (model?.nodes || []).forEach((node) => {
         if (!node?.computedError && node?.computedValue !== null && node?.computedValue !== undefined) {
           parentContext[node.name] = node.computedValue;
@@ -841,14 +845,14 @@
         const overrides = buildSubmodelInputOverrides(model, runtimeNode, parentContext, { allowUnresolved: true });
         applyRuntimeModelInputOverrides(probeModel, overrides.overrides);
         if (probeModel.execution.currentTime == null) {
-          initializeStateNodesForModel(probeModel, timeValue, env.rootExecution);
+          initializeStateNodesForModel(probeModel, timeValue, env.rootExecution, env);
         } else if (probeModel.execution.currentTime !== timeValue) {
           promotePendingStateNodesForModel(probeModel);
         }
         evaluateModelAtTimeRecursive(
           probeModel,
           timeValue,
-          { rootExecution: env.rootExecution, stack: [...env.stack, normalizedPath] },
+          { rootExecution: env.rootExecution, stack: [...env.stack, normalizedPath], playMode: Boolean(env.playMode) },
           { applyResults: false, skipProvisionalSubmodels: true },
         );
         provisionalValues.set(runtimeNode.id, outputValuesForModel(probeModel));
@@ -917,7 +921,7 @@
           let childResult;
           if (childModel.execution.currentTime == null || childModel.execution.currentTime !== timeValue) {
             if (childModel.execution.currentTime == null) {
-              initializeStateNodesForModel(childModel, timeValue, env.rootExecution);
+              initializeStateNodesForModel(childModel, timeValue, env.rootExecution, env);
             } else {
               promotePendingStateNodesForModel(childModel);
             }
@@ -928,6 +932,7 @@
             {
               rootExecution: env.rootExecution,
               stack: [...env.stack, normalizedPath],
+              playMode: Boolean(env.playMode),
             },
             { applyResults },
           );
@@ -958,7 +963,7 @@
       algebraicValueMap,
       stateValueOverrides = null,
     ) {
-      const globals = buildExecutionGlobalsForModel(model, env.rootExecution, timeValue);
+      const globals = buildExecutionGlobalsForModel(model, env.rootExecution, timeValue, env);
       const results = new Map();
       (model?.nodes || []).forEach((node) => {
         if (!integralStateIds.has(node.id)) {
@@ -1060,7 +1065,7 @@
     }
 
     function evaluateModelAtTimeRecursive(model, timeValue, env, options = {}) {
-      const executionGlobals = buildExecutionGlobalsForModel(model, env.rootExecution, timeValue);
+      const executionGlobals = buildExecutionGlobalsForModel(model, env.rootExecution, timeValue, env);
       const planEntry = executionPlanForModel(model);
       const executionPlan = planEntry.plan;
       const unitEvaluationOptions = (node) => unitEvaluationOptionsForNode(model, node, node?.valueExpression);
@@ -1117,7 +1122,7 @@
           const stage2 = semantics.evaluateStatefulGraphStep(
             model.nodes,
             model.edges,
-            buildExecutionGlobalsForModel(model, env.rootExecution, timeValue + dt / 2),
+            buildExecutionGlobalsForModel(model, env.rootExecution, timeValue + dt / 2, env),
             executionPlan,
             {
               derivativeStateNodeIds: integralStateNodeIds,
@@ -1148,7 +1153,7 @@
             const stage3 = semantics.evaluateStatefulGraphStep(
               model.nodes,
               model.edges,
-              buildExecutionGlobalsForModel(model, env.rootExecution, timeValue + dt / 2),
+              buildExecutionGlobalsForModel(model, env.rootExecution, timeValue + dt / 2, env),
               executionPlan,
               {
                 derivativeStateNodeIds: integralStateNodeIds,
@@ -1179,7 +1184,7 @@
               const stage4 = semantics.evaluateStatefulGraphStep(
                 model.nodes,
                 model.edges,
-                buildExecutionGlobalsForModel(model, env.rootExecution, timeValue + dt),
+                buildExecutionGlobalsForModel(model, env.rootExecution, timeValue + dt, env),
                 executionPlan,
                 {
                   derivativeStateNodeIds: integralStateNodeIds,

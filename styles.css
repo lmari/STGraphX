@@ -45,6 +45,13 @@ body {
   background: #fff;
 }
 
+.menu-roots {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  min-width: 0;
+}
+
 .workspace-tabs {
   display: flex;
   align-items: center;
@@ -1347,8 +1354,14 @@ body.full-execution-running * {
 
 .run-icons-row {
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 4px;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 3px;
+}
+
+#globalPanel .run-icons-row .icon-btn {
+  min-width: 0;
+  padding-left: 1px;
+  padding-right: 1px;
 }
 
 .model-section {
@@ -2444,7 +2457,7 @@ input.inferred-unit[readonly] { color: #6d7782; background: #f4f6f8; }
 .documentation-help-index { width: min(330px, 45vw); min-width: 160px; height: 34px; padding: 3px 28px 3px 8px; border: 1px solid var(--line); border-radius: 6px; background: #fff; color: #203246; font-size: .82rem; }
 .documentation-help-index:disabled { background: #f3f6f8; color: #738394; }
 .documentation-help-actions .icon-btn { min-width: 34px; min-height: 34px; font-size: 1.5rem; line-height: 1; }
-.documentation-help-content { flex: 1 1 auto; min-height: 0; max-height: calc(100vh - 175px); overflow: auto; padding: 10px; border: 1px solid var(--line); border-radius: 8px; background: #fbfcfe; color: #203246; line-height: 1.45; }
+.documentation-help-content { flex: 1 1 auto; min-height: 0; max-height: calc(100vh - 135px); overflow: auto; padding: 10px; border: 1px solid var(--line); border-radius: 8px; background: #fbfcfe; color: #203246; line-height: 1.45; }
 .documentation-help-content a { color: #12639c; cursor: pointer; }
 .documentation-help-content h3 { margin-top: 1.05em; padding: .3em .5em; border-left: 4px solid #6d9bbe; border-radius: 0 4px 4px 0; background: #eef5f9; }
 .documentation-help-content hr { height: 0; margin: 1.15em .1em .95em; border: 0; border-top: 2px solid #bfd1df; }
@@ -3725,6 +3738,60 @@ input.inferred-unit[readonly] { color: #6d7782; background: #f4f6f8; }
   box-shadow: inset 0 0 0 1px rgba(186, 31, 54, 0.12);
 }
 
+.expression-completion-menu {
+  position: fixed;
+  /* The expression editor is a modeless modal at z-index 1450. */
+  z-index: 1460;
+  display: grid;
+  max-height: min(260px, 42vh);
+  overflow: auto;
+  padding: 4px;
+  border: 1px solid #79a9cf;
+  border-radius: 8px;
+  background: #fff;
+  box-shadow: 0 8px 24px rgba(31, 62, 86, 0.24);
+}
+
+.expression-completion-menu.hidden {
+  display: none;
+}
+
+.expression-completion-item {
+  display: grid;
+  grid-template-columns: minmax(0, auto) minmax(0, 1fr);
+  align-items: baseline;
+  gap: 8px;
+  width: 100%;
+  padding: 6px 8px;
+  border: 0;
+  border-radius: 5px;
+  background: transparent;
+  color: #173750;
+  text-align: left;
+  cursor: pointer;
+}
+
+.expression-completion-item:hover,
+.expression-completion-item.active {
+  background: #e5f1fb;
+}
+
+.expression-completion-item code {
+  color: #0c5488;
+  font-family: var(--font-mono);
+  font-size: 0.86rem;
+  font-weight: 650;
+}
+
+.expression-completion-signature {
+  overflow: hidden;
+  color: #60788c;
+  font-family: var(--font-mono);
+  font-size: 0.74rem;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
 .expression-editor-highlight,
 .expression-editor-textarea {
   width: 100%;
@@ -4165,6 +4232,25 @@ input.inferred-unit[readonly] { color: #6d7782; background: #f4f6f8; }
   overflow: hidden;
 }
 
+/* The transition formula is the primary, potentially long state definition. */
+.expression-editor-main.state-node-editor .expression-editor-core {
+  grid-template-rows: auto minmax(0, 1fr);
+  overflow: hidden;
+}
+
+.expression-editor-main.state-node-editor .expression-editor-core.expression-state-transition-manual-height {
+  overflow: auto;
+}
+
+.expression-editor-main.state-node-editor .expression-editor-core.expression-state-transition-manual-height .expression-main-field {
+  overflow: visible;
+}
+
+.expression-editor-main.state-node-editor .expression-main-field {
+  min-height: 0;
+  overflow: hidden;
+}
+
 .expression-editor-main > .expression-editor-surface:not(.expression-editor-surface-compact) {
   min-height: 220px;
 }
@@ -4218,14 +4304,43 @@ input.inferred-unit[readonly] { color: #6d7782; background: #f4f6f8; }
 .expression-state-initial-input {
   min-height: 52px;
   height: 52px;
-  max-height: min(24vh, 140px);
+  max-height: min(16vh, 96px);
   resize: vertical;
 }
 
-.expression-editor-main.state-node-editor > .expression-editor-surface:not(.expression-editor-surface-compact) .expression-editor-textarea {
-  min-height: 260px;
-  height: 260px;
+.expression-editor-main.state-node-editor .expression-main-field .expression-editor-surface {
+  flex: 1 1 auto;
+  min-height: 80px;
+  height: auto;
   max-height: min(54vh, 460px);
+  overflow: hidden;
+}
+
+.expression-editor-main.state-node-editor .expression-main-field .expression-editor-textarea {
+  min-height: 80px;
+  height: 100%;
+  max-height: none;
+  resize: none;
+}
+
+.expression-state-transition-resize-handle {
+  display: none;
+}
+
+.expression-editor-card.state-node-editor .expression-state-transition-resize-handle {
+  position: absolute;
+  right: 3px;
+  bottom: 3px;
+  z-index: 2;
+  display: block;
+  width: 15px;
+  height: 15px;
+  border-right: 2px solid #86a7c3;
+  border-bottom: 2px solid #86a7c3;
+  border-bottom-right-radius: 2px;
+  cursor: ns-resize;
+  touch-action: none;
+}
 }
 
 .expression-main-docs {
@@ -4576,6 +4691,11 @@ body.tablet-sidebar-layout .expression-editor-core {
   gap: 6px;
 }
 
+body.tablet-sidebar-layout .expression-editor-main.state-node-editor .expression-editor-core {
+  grid-template-rows: auto minmax(0, 1fr);
+  overflow: hidden;
+}
+
 body.tablet-sidebar-layout .expression-state-initial {
   gap: 2px;
 }
@@ -4612,7 +4732,22 @@ body.tablet-sidebar-layout .expression-editor-textarea {
 body.tablet-sidebar-layout .expression-state-initial-input {
   min-height: 46px;
   height: 46px;
-  max-height: min(18vh, 120px);
+  max-height: min(14vh, 88px);
+}
+
+body.tablet-sidebar-layout .expression-editor-main.state-node-editor .expression-main-field {
+  min-height: 0;
+}
+
+body.tablet-sidebar-layout .expression-editor-main.state-node-editor .expression-main-field .expression-editor-textarea {
+  min-height: 70px;
+  height: 100%;
+  max-height: none;
+}
+
+body.tablet-sidebar-layout .expression-editor-main.state-node-editor .expression-main-field .expression-editor-surface {
+  min-height: 70px;
+  height: auto;
 }
 
 body.tablet-sidebar-layout .expression-main-docs {
@@ -5346,6 +5481,22 @@ body.tablet-sidebar-layout .menu-bar {
   padding: 8px;
 }
 
+body.tablet-sidebar-layout .menu-roots {
+  flex: 1 1 100%;
+  flex-wrap: nowrap;
+  overflow-x: auto;
+  overscroll-behavior-x: contain;
+  scrollbar-width: none;
+}
+
+body.tablet-sidebar-layout .menu-roots::-webkit-scrollbar {
+  display: none;
+}
+
+body.tablet-sidebar-layout .menu-roots .menu-root {
+  flex: 0 0 auto;
+}
+
 body.tablet-sidebar-layout .menu-status {
   flex: 1 1 100%;
   order: 20;
@@ -5432,6 +5583,22 @@ body.tablet-sidebar-layout .menu-run-btn {
     flex-wrap: wrap;
     row-gap: 8px;
     padding: 8px;
+  }
+
+  .menu-roots {
+    flex: 1 1 100%;
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    overscroll-behavior-x: contain;
+    scrollbar-width: none;
+  }
+
+  .menu-roots::-webkit-scrollbar {
+    display: none;
+  }
+
+  .menu-roots .menu-root {
+    flex: 0 0 auto;
   }
 
   .menu-status {
@@ -5624,31 +5791,6 @@ body.tablet-sidebar-layout .menu-run-btn {
     min-width: 240px;
   }
 
-  .value-widget-header {
-    padding: 7px 10px;
-    font-size: 0.86rem;
-    min-height: 34px;
-  }
-
-  .value-widget-drag-handle {
-    min-width: 28px;
-    min-height: 28px;
-    font-size: 0.9rem;
-  }
-
-  .value-widget-header button {
-    min-width: 24px;
-    min-height: 24px;
-    font-size: 0.8rem;
-  }
-
-  .value-widget-body {
-    padding: 9px;
-  }
-
-  .slider-widget-wrap input[type="range"] {
-    min-height: 34px;
-  }
 }
 
 
@@ -5797,8 +5939,6 @@ body.tablet-sidebar-layout .menu-run-btn {
     grid-template-columns: 1fr;
   }
 
-  .slider-range-line,
-  .slider-value-row,
   .xy-chart-config,
   .expression-status-row,
   .expression-editor-toolbar,

@@ -56,16 +56,16 @@
           && initializedNodeLists.get(targetModel) === nodeList,
         );
       },
-      initializeAt(timeValue, targetModel = this.model, execution = this.getRootExecution()) {
+      initializeAt(timeValue, targetModel = this.model, execution = this.getRootExecution(), optionsForCore = {}) {
         if (typeof beforeInitialize === "function") {
-          beforeInitialize({ session: this, model: targetModel, timeValue, execution });
+          beforeInitialize({ session: this, model: targetModel, timeValue, execution, options: optionsForCore });
         }
-        core.initializeStateNodesForModel(targetModel, timeValue, execution);
+        core.initializeStateNodesForModel(targetModel, timeValue, execution, optionsForCore);
         if (targetModel && typeof targetModel === "object" && Array.isArray(targetModel.nodes)) {
           initializedNodeLists.set(targetModel, targetModel.nodes);
         }
         if (typeof afterInitialize === "function") {
-          afterInitialize({ session: this, model: targetModel, timeValue, execution });
+          afterInitialize({ session: this, model: targetModel, timeValue, execution, options: optionsForCore });
         }
       },
       promotePending(targetModel = this.model) {

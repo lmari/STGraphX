@@ -1,6 +1,6 @@
 # STGraphX: Readme
 
-versione 21 novembre 2026
+versione 22 novembre 2026
 
 Copyright (c) 2026 Luca Mari
 
@@ -70,12 +70,11 @@ Ha un'interfaccia utente responsive, che lo rende utilizzabile anche su tablet.
 
 #### Funzionalità dell'engine
 
-* Definizione della base dei tempi e modalità varie di esecuzione; pannello di configurazione aggiornato dinamicamente
-* Gestione di esecuzione completa, passo-passo, temporizzata, con modello in modalità read-only durante Francesco.
-Sei disponibile ad anticipare la call con i signori di RSE a mercoledì alle 14, prima del CdF?l'esecuzione
+* Definizione della base dei tempi e modalità varie di esecuzione: completa, passo-passo, temporizzata, continua ("playmode")
+* Pannello di configurazione aggiornato dinamicamente
 * Gestione opzionale del blocco di esecuzione ed evidenziazione per nodi non definiti (**)
 * Una prima gestione di controllo di correttezza del modello (**)
-* Una prima gestione di unità di misura per le variabili, con inferenza sull'unità delle variabili derivate (**)
+* Una prima gestione di unità di misura per le variabili, con mulitpli e sottomultipli, unità definite nel modello, inferenza sull'unità delle variabili derivate (**)
 * Un primo debugger, con gestione di watch e breakpoint, anche con messaggio semantico (**)
 * Possibilità di assegnare un random seed per i generatori di numeri pseudo-casuali (**)
 * Strumento per analisi di sensibilità (**, su idea di Francesco Bertolotti)
@@ -115,7 +114,6 @@ Sei disponibile ad anticipare la call con i signori di RSE a mercoledì alle 14,
 * Altri widget e altre opzioni per i widget già presenti
 * Altre funzioni
 * Nodi di stato con output
-* Playmode e altre modalità di esecuzione
 * ...
 
 ## Appunti sul progetto

@@ -68,6 +68,19 @@
       return { t0, dt, t1 };
     }
 
+    function validatePlayConfig() {
+      const dt = Number(getExecution()?.dt);
+      if (!Number.isFinite(dt)) {
+        setStatusKey?.("error.timeInvalid");
+        return null;
+      }
+      if (dt === 0) {
+        setStatusKey?.("error.timeStepZero");
+        return null;
+      }
+      return { dt };
+    }
+
     function clearTimedExecutionStateSilently() {
       if (timedState.timedRunHandle != null) {
         clearIntervalFn?.(timedState.timedRunHandle);
@@ -76,16 +89,18 @@
       timedState.timedStepRunning = false;
       timedState.timedRunStartedAt = 0;
       timedState.timedStepLastActivityAt = 0;
+      timedState.timedRunMode = null;
     }
 
     function stopTimedExecution(updateStatus = true, reason = "stopped") {
       const hadHandle = timedState.timedRunHandle != null;
       const wasRunningStep = timedState.timedStepRunning === true;
+      const mode = timedState.timedRunMode;
       clearTimedExecutionStateSilently();
       if (hadHandle || wasRunningStep) {
         updateEditingLockUi?.();
         if (updateStatus) {
-          setStatusKey?.("status.timedStopped");
+          setStatusKey?.(mode === "play" ? "status.playStopped" : "status.timedStopped");
         }
         render?.();
         onTimedExecutionStopped?.({ reason });
@@ -141,7 +156,7 @@
       }
     }
 
-    async function ensureExecutionReady() {
+    async function ensureExecutionReady({ playMode = false } = {}) {
       if (!enforceStrictDefinitions?.()) {
         return null;
       }
@@ -151,23 +166,24 @@
       if (!(await prepareForExecution?.())) {
         return null;
       }
-      return validateTimeConfig();
+      return playMode ? validatePlayConfig() : validateTimeConfig();
     }
 
     async function executeOneStep(restartIfEnded = true, {
       refreshView = true,
       notifyBreakpoint = true,
       reportProgress = true,
+      playMode = false,
     } = {}) {
       const execution = getExecution();
-      const cfg = await ensureExecutionReady();
+      const cfg = await ensureExecutionReady({ playMode });
       if (!cfg) {
         return false;
       }
 
       let restarted = false;
       const hasStateSnapshot = session.hasInitializedStateSnapshot();
-      if (isExecutionEnded(cfg)) {
+      if (!playMode && isExecutionEnded(cfg)) {
         if (!restartIfEnded) {
           setStatusKey?.("status.evalDone", {
             count: 0,
@@ -182,7 +198,7 @@
         execution.currentTime = null;
         restarted = true;
       }
-      const nextTime = execution.currentTime == null ? cfg.t0 : execution.currentTime + cfg.dt;
+      const nextTime = execution.currentTime == null ? (playMode ? 0 : cfg.t0) : execution.currentTime + cfg.dt;
 
       const startingFresh = execution.currentTime == null;
       if (restarted) {
@@ -194,14 +210,17 @@
 
       if (execution.currentTime == null) {
         session.clearSubmodelState();
-        session.initializeAt(nextTime);
+        session.initializeAt(nextTime, undefined, undefined, { playMode });
       } else {
         session.promotePending();
       }
 
-      const stepResult = session.evaluateAtTime(nextTime, evaluationEnv());
+      const stepResult = session.evaluateAtTime(nextTime, {
+        ...evaluationEnv(),
+        playMode,
+      }, { playMode });
       execution.currentTime = nextTime;
-      if (reportProgress) {
+      if (reportProgress && !playMode) {
         reportExecutionProgress(nextTime, cfg);
       }
       const breakpointResult = evaluateBreakpointConditionAtTime?.(nextTime) || { hit: false, invalid: false };
@@ -235,7 +254,7 @@
         };
       }
 
-      const completed = hasReachedExecutionEnd(nextTime, cfg);
+      const completed = !playMode && hasReachedExecutionEnd(nextTime, cfg);
 
       if (restarted && stepResult.errorCount === 0) {
         setStatusKey?.("status.executionRestarted", {
@@ -243,7 +262,7 @@
           count: stepResult.successCount,
         });
       } else if (stepResult.errorCount > 0) {
-        setStatusKey?.("error.evalStepFailed", {
+        setStatusKey?.(playMode ? "error.evalPlayFailed" : "error.evalStepFailed", {
           node: stepResult.firstErrorNode,
           reason: stepResult.firstErrorMessage || evalReasonText?.(stepResult.firstErrorReason),
           time: formatNumberValue?.(Number(nextTime)),
@@ -435,14 +454,14 @@
       setStatusKey?.("status.executionReset", { time: formatNumberValue?.(Number(cfg.t0)) });
     }
 
-    async function toggleTimedExecution() {
+    async function startTimedExecution(playMode = false) {
       const execution = getExecution();
       if (timedState.timedRunHandle != null) {
         stopTimedExecution(true, "stopped");
         return;
       }
 
-      const cfg = await ensureExecutionReady();
+      const cfg = await ensureExecutionReady({ playMode });
       const delayMs = Number(execution.delayMs);
       if (!cfg) {
         return;
@@ -452,17 +471,18 @@
         return;
       }
 
-      const ended = isExecutionEnded(cfg);
-      const isFreshStart = execution.currentTime == null || ended || !session.hasInitializedStateSnapshot();
+      const ended = !playMode && isExecutionEnded(cfg);
+      const isFreshStart = playMode || execution.currentTime == null || ended || !session.hasInitializedStateSnapshot();
       if (isFreshStart) {
         clearVisualHistory?.();
-        if (ended) {
+        if (ended || playMode) {
           execution.currentTime = null;
         }
         refreshRuntimeView?.();
       }
 
       timedState.timedStepRunning = false;
+      timedState.timedRunMode = playMode ? "play" : "timed";
       timedState.timedRunStartedAt = nowFn();
       timedState.timedStepLastActivityAt = timedState.timedRunStartedAt;
       updateEditingLockUi?.();
@@ -484,6 +504,7 @@
                 refreshView: false,
                 notifyBreakpoint: false,
                 reportProgress: false,
+                playMode,
               });
               if (!outcome?.ok || outcome.completed || outcome.breakpointHit) {
                 break;
@@ -500,12 +521,14 @@
             });
             // The browser can paint only between visual batches. Reporting
             // here keeps the progress indicator in sync with that cadence.
-            reportExecutionProgress(execution.currentTime, cfg);
+            if (!playMode) {
+              reportExecutionProgress(execution.currentTime, cfg);
+            }
           }
           if (!outcome || !outcome.ok) {
             stopTimedExecution(false, outcome?.completed ? "completed" : "stopped");
             if (!outcome?.completed && !outcome?.runtimeError && !(hasStrictExecutionBlock?.())) {
-              setStatusKey?.("status.timedStopped");
+              setStatusKey?.(playMode ? "status.playStopped" : "status.timedStopped");
             }
           } else if (outcome.completed) {
             stopTimedExecution(false, "completed");
@@ -523,19 +546,29 @@
         }
       }, delayMs);
 
-      setStatusKey?.("status.timedStarted", { delay: delayMs });
+      setStatusKey?.(playMode ? "status.playStarted" : "status.timedStarted", { delay: delayMs });
       render?.();
-      onTimedExecutionStarted?.({ delay: delayMs });
+      onTimedExecutionStarted?.({ delay: delayMs, mode: playMode ? "play" : "timed" });
+    }
+
+    async function toggleTimedExecution() {
+      return startTimedExecution(false);
+    }
+
+    async function togglePlayExecution() {
+      return startTimedExecution(true);
     }
 
     return {
       validateTimeConfig,
+      validatePlayConfig,
       stopTimedExecution,
       executeOneStep,
       executeAll,
       runManualStep,
       resetExecution,
       toggleTimedExecution,
+      togglePlayExecution,
     };
   }
 

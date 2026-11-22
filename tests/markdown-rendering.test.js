@@ -51,6 +51,11 @@ assert.doesNotMatch(dynamicFormula, /data-stgraphx-variable/, "dynamic formula v
 const heading4 = renderMarkdownToHtml("#### Fourth-level heading");
 assert.match(heading4, /<h4>Fourth-level heading<\/h4>/, "fourth-level headings must be rendered");
 
+const softBreak = renderMarkdownToHtml("Prima riga\nseconda riga");
+assert.equal(softBreak, "<p>Prima riga seconda riga</p>", "a plain newline must be a Markdown soft break");
+const hardBreak = renderMarkdownToHtml("Prima riga  \nseconda riga");
+assert.equal(hardBreak, "<p>Prima riga<br>seconda riga</p>", "two trailing spaces must create a Markdown hard break");
+
 const table = renderMarkdownToHtml("| Funzione | Valore |\n| :--- | ---: |\n| `pow(2, 3)` | **8** |\n\nDopo la tabella.");
 assert.match(table, /<thead><tr><th style="text-align:left">Funzione/);
 assert.match(table, /<td style="text-align:right"><strong>8<\/strong><\/td>/);

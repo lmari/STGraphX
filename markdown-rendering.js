@@ -117,7 +117,19 @@
   }
   function renderMarkdownToHtml(markdown, options = {}) {
     const lines = String(markdown ?? "").replace(/\r\n?/g, "\n").split("\n"); const output = []; let paragraph = []; let list = null; let inCode = false; let codeLines = []; let codeLanguage = ""; let inMath = false; let mathLines = [];
-    const flushParagraph = () => { if (paragraph.length) { output.push(`<p>${paragraph.map((item) => renderInlineMarkdown(item, options)).join("<br>")}</p>`); paragraph = []; } };
+    const flushParagraph = () => {
+      if (!paragraph.length) return;
+      const html = paragraph.map((item, index) => {
+        // A plain newline is a soft break in Markdown. Two trailing spaces
+        // make it an explicit line break, as used in the introductions.
+        const hardBreak = / {2,}$/u.test(item);
+        const source = item.replace(/[ \t]+$/u, "");
+        const separator = index === paragraph.length - 1 ? "" : (hardBreak ? "<br>" : " ");
+        return `${renderInlineMarkdown(source, options)}${separator}`;
+      }).join("");
+      output.push(`<p>${html}</p>`);
+      paragraph = [];
+    };
     const flushList = () => { if (list) { output.push(`<${list.type}>${list.items.map((item) => `<li>${renderInlineMarkdown(item, options)}</li>`).join("")}</${list.type}>`); list = null; } };
     const flushCode = () => {
       if (!inCode) return;

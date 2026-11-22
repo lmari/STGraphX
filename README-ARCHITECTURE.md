@@ -293,7 +293,10 @@ Il runtime è condiviso dall'editor e dalle modalità senza editor:
 - `runtime-loader.js`: parsing JSON e preparazione delle risorse `readData`;
 - `runtime-session.js`: ciclo di vita del modello, inizializzazione e promozione
   degli stati, con hook per l'integrazione;
-- `runtime-controller.js`: comandi di esecuzione completa, manuale e temporizzata.
+- `runtime-controller.js`: comandi di esecuzione completa, manuale, temporizzata
+  e playmode. Il playmode è un ciclo JavaScript indefinito: conserva solo `dt`
+  nel contesto delle espressioni e non espone `time`, `t0` o `t1`. Non fa parte
+  del contratto del motore Rust.
 
 `app.js` collega questi componenti alla UI, al debugger e ai widget.
 `headless-runtime.js` li rende utilizzabili senza DOM dell'editor, anche da

@@ -66,6 +66,7 @@ const runEvalBtn = document.getElementById("runEvalBtn");
 const runRustEngineBtn = document.getElementById("runRustEngineBtn");
 const runStepBtn = document.getElementById("runStepBtn");
 const runTimedToggleBtn = document.getElementById("runTimedToggleBtn");
+const runPlayToggleBtn = document.getElementById("runPlayToggleBtn");
 const runResetBtn = document.getElementById("runResetBtn");
 const sensitivityAnalysisBtn = document.getElementById("sensitivityAnalysisBtn");
 const scenarioManagerBtn = document.getElementById("scenarioManagerBtn");
@@ -74,6 +75,7 @@ const watchDebuggerBtn = document.getElementById("watchDebuggerBtn");
 const topRunEvalBtn = document.getElementById("topRunEvalBtn");
 const topRunStepBtn = document.getElementById("topRunStepBtn");
 const topRunTimedBtn = document.getElementById("topRunTimedBtn");
+const topRunPlayBtn = document.getElementById("topRunPlayBtn");
 const topRunResetBtn = document.getElementById("topRunResetBtn");
 const runStrictDefinitionsInput = document.getElementById("runStrictDefinitionsInput");
 const runStopOnRuntimeErrorInput = document.getElementById("runStopOnRuntimeErrorInput");
@@ -141,6 +143,7 @@ const zoomRangeValue = document.getElementById("zoomRangeValue");
 const runFullModelBtn = document.getElementById("runFullModelBtn");
 const manualStepBtn = document.getElementById("manualStepBtn");
 const timedToggleBtn = document.getElementById("timedToggleBtn");
+const playToggleBtn = document.getElementById("playToggleBtn");
 const resetExecBtn = document.getElementById("resetExecBtn");
 
 const nodeNameInput = document.getElementById("nodeNameInput");
@@ -221,6 +224,8 @@ const modelNotesDismissBtn = document.getElementById("modelNotesDismissBtn");
 const modelNotesInsertStructureBtn = document.getElementById("modelNotesInsertStructureBtn");
 const widgetConfig = document.getElementById("widgetConfig");
 const contextMenu = document.getElementById("contextMenu");
+const expressionCompletionMenu = document.getElementById("expressionCompletionMenu");
+const nodeExpressionCompletionMenu = document.getElementById("nodeExpressionCompletionMenu");
 const canvasContent = document.getElementById("canvasContent");
 const canvasTextLayer = document.getElementById("canvasTextLayer");
 const widgetLayer = document.getElementById("widgetLayer");
@@ -241,6 +246,8 @@ const expressionStateTransitionStatus = document.getElementById("expressionState
 const expressionEditorTextarea = document.getElementById("expressionEditorTextarea");
 const expressionEditorHighlight = document.getElementById("expressionEditorHighlight");
 const expressionEditorSurface = document.querySelector(".expression-editor-surface");
+const expressionStateTransitionSurface = expressionEditorTextarea?.closest(".expression-editor-surface");
+const expressionStateTransitionResizeHandle = document.getElementById("expressionStateTransitionResizeHandle");
 const expressionEditorCard = expressionEditorModal?.querySelector(".expression-editor-card");
 const expressionEditorMain = expressionEditorModal?.querySelector(".expression-editor-main");
 const expressionEditorCore = document.getElementById("expressionEditorCore");
@@ -293,7 +300,6 @@ const functionsHelpSearch = document.getElementById("functionsHelpSearch");
 const functionsHelpTypeFilter = document.getElementById("functionsHelpTypeFilter");
 const documentationHelpModal = document.getElementById("documentationHelpModal");
 const documentationHelpCloseBtn = document.getElementById("documentationHelpCloseBtn");
-const documentationHelpDismissBtn = document.getElementById("documentationHelpDismissBtn");
 const documentationHelpIndex = document.getElementById("documentationHelpIndex");
 const documentationHelpTitle = document.getElementById("documentationHelpTitle");
 const documentationHelpPath = document.getElementById("documentationHelpPath");
@@ -1112,6 +1118,8 @@ const ui = {
   zoom: 1,
   nodeNameEditStart: null,
   timedRunHandle: null,
+  timedRunMode: null,
+  lastExecutionWasPlayMode: false,
   timedStepRunning: false,
   fullRunRunning: false,
   sensitivityRunning: false,
@@ -1140,6 +1148,7 @@ const ui = {
   expressionSidebarExpandedHeight: null,
   modalDrag: null,
   modalResize: null,
+  stateTransitionResize: null,
   tooltipTarget: null,
   tooltipPointer: null,
   tooltipShowTimer: null,
@@ -5321,13 +5330,12 @@ function compareExpressionLibraryEntries(left, right) {
   return String(left?.name || "").localeCompare(String(right?.name || ""), undefined, { numeric: true });
 }
 
-function expressionCatalogForEditor() {
-  const meta = expressionEditorMeta();
+function expressionCatalogForNodeField(node, fieldKey) {
+  const meta = expressionFieldMeta(fieldKey, node);
   if (!meta) {
     return [];
   }
   const docs = expressionDocMap();
-  const node = getNodeById(ui.expressionEditor.nodeId);
   const allowStateAliases = Boolean(meta.key === "value" && node && isStateNode(node));
   const out = [];
   const seen = new Set();
@@ -5451,6 +5459,11 @@ function expressionCatalogForEditor() {
   });
 }
 
+function expressionCatalogForEditor() {
+  const node = ui.expressionEditor?.nodeId ? getNodeById(ui.expressionEditor.nodeId) : null;
+  return expressionCatalogForNodeField(node, currentExpressionEditorFieldKey());
+}
+
 function expressionEntryKindOrder(kind) {
   switch (kind) {
     case "linkedNode":
@@ -5484,26 +5497,28 @@ function identifierPrefixAtCaret(text, caret) {
   const src = String(text ?? "");
   const pos = Math.max(0, Math.min(caret, src.length));
   let start = pos;
-  while (start > 0 && /[A-Za-z0-9_$]/.test(src[start - 1])) {
+  while (start > 0 && /[A-Za-z0-9_$.]/.test(src[start - 1])) {
     start -= 1;
   }
   const prefix = src.slice(start, pos);
-  return /^[A-Za-z_$][A-Za-z0-9_$]*$/.test(prefix) ? { start, end: pos, prefix } : null;
+  return /^[A-Za-z_$][A-Za-z0-9_$]*(?:\.[A-Za-z_$][A-Za-z0-9_$]*)*$/.test(prefix)
+    ? { start, end: pos, prefix }
+    : null;
 }
 
 function identifierAtCaret(text, caret) {
   const src = String(text ?? "");
   const pos = Math.max(0, Math.min(caret, src.length));
   let start = pos;
-  while (start > 0 && /[A-Za-z0-9_$]/.test(src[start - 1])) {
+  while (start > 0 && /[A-Za-z0-9_$.]/.test(src[start - 1])) {
     start -= 1;
   }
   let end = pos;
-  while (end < src.length && /[A-Za-z0-9_$]/.test(src[end])) {
+  while (end < src.length && /[A-Za-z0-9_$.]/.test(src[end])) {
     end += 1;
   }
   const name = src.slice(start, end);
-  return /^[A-Za-z_$][A-Za-z0-9_$]*$/.test(name) ? name : "";
+  return /^[A-Za-z_$][A-Za-z0-9_$]*(?:\.[A-Za-z_$][A-Za-z0-9_$]*)*$/.test(name) ? name : "";
 }
 
 function escapeHtml(text) {
@@ -5700,7 +5715,12 @@ function syncExpressionSurfaceSize(inputEl, highlightEl) {
   }
   const surfaceEl = inputEl.closest(".expression-editor-surface");
   const renderedHeight = inputEl.offsetHeight || inputEl.clientHeight || 0;
-  if (surfaceEl && renderedHeight > 0) {
+  // The state-transition surface either fills the available editor height or
+  // has an explicit height selected with its resize handle. Do not overwrite
+  // either mode with the textarea's measured height.
+  const isStateTransitionInput = inputEl === expressionEditorTextarea
+    && surfaceEl === expressionStateTransitionSurface;
+  if (surfaceEl && renderedHeight > 0 && !isStateTransitionInput) {
     surfaceEl.style.height = `${renderedHeight}px`;
   }
   if (highlightEl && renderedHeight > 0) {
@@ -6108,16 +6128,20 @@ function renderExpressionAutocomplete() {
   if (tokenInfo && tokenInfo.prefix.length > 0) {
     const prefixLower = tokenInfo.prefix.toLowerCase();
     const suggestions = allEntries
-      .filter((entry) => entry.name.toLowerCase().startsWith(prefixLower) && entry.name !== tokenInfo.prefix)
+      .filter((entry) => entry.name.toLowerCase().startsWith(prefixLower))
       .sort((left, right) => {
         const kindDelta = expressionEntryKindOrder(left.kind) - expressionEntryKindOrder(right.kind);
         return kindDelta || left.name.localeCompare(right.name);
       });
+    const previousSelectedName = ui.expressionEditor.completion?.entries?.[
+      ui.expressionEditor.completion.activeIndex
+    ]?.name;
+    const completionEntries = suggestions.slice(0, 8);
     ui.expressionEditor.completion = {
       tokenStart: tokenInfo.start,
       tokenEnd: tokenInfo.end,
-      entries: suggestions.slice(0, 8),
-      activeIndex: 0,
+      entries: completionEntries,
+      activeIndex: Math.max(0, completionEntries.findIndex((entry) => entry.name === previousSelectedName)),
     };
     if (ui.expressionEditor.completion.entries.length > 0) {
       if (!exactToken) {
@@ -6147,6 +6171,284 @@ function renderExpressionAutocomplete() {
   setExpressionHelp(helpEntry);
   setExpressionEntryTooltip(helpEntry);
   renderExpressionLibrary();
+  renderExpressionCompletionMenu();
+}
+
+function closeExpressionCompletionMenu() {
+  if (!expressionCompletionMenu) {
+    return;
+  }
+  expressionCompletionMenu.classList.add("hidden");
+  expressionCompletionMenu.replaceChildren();
+  if (ui.expressionEditor) {
+    ui.expressionEditor.completionMenuOpen = false;
+  }
+}
+
+function positionExpressionCompletionMenu(inputEl, menuEl = expressionCompletionMenu) {
+  if (!menuEl || !inputEl) {
+    return;
+  }
+  const inputRect = inputEl.getBoundingClientRect();
+  const margin = 8;
+  const maxWidth = Math.max(220, Math.min(380, window.innerWidth - margin * 2));
+  menuEl.style.width = `${Math.min(Math.max(inputRect.width, 250), maxWidth)}px`;
+  const menuRect = menuEl.getBoundingClientRect();
+  const left = clamp(inputRect.left, margin, Math.max(margin, window.innerWidth - menuRect.width - margin));
+  const below = inputRect.bottom + 4;
+  const above = inputRect.top - menuRect.height - 4;
+  menuEl.style.left = `${Math.round(left)}px`;
+  menuEl.style.top = `${Math.round(
+    below + menuRect.height <= window.innerHeight - margin || above < margin ? below : above,
+  )}px`;
+}
+
+function renderExpressionCompletionMenu() {
+  if (!expressionCompletionMenu) {
+    return;
+  }
+  const completion = ui.expressionEditor?.completion;
+  if (!ui.expressionEditor?.completionMenuOpen || !completion?.entries?.length) {
+    expressionCompletionMenu.classList.add("hidden");
+    expressionCompletionMenu.replaceChildren();
+    return;
+  }
+
+  const inputEl = activeExpressionEditorInput();
+  if (!inputEl) {
+    closeExpressionCompletionMenu();
+    return;
+  }
+  expressionCompletionMenu.replaceChildren();
+  completion.entries.forEach((entry, index) => {
+    const item = document.createElement("button");
+    item.type = "button";
+    item.className = "expression-completion-item";
+    item.classList.toggle("active", index === completion.activeIndex);
+    item.setAttribute("role", "option");
+    item.setAttribute("aria-selected", index === completion.activeIndex ? "true" : "false");
+    const name = document.createElement("code");
+    name.textContent = entry.name;
+    item.appendChild(name);
+    if (entry.signature && entry.signature !== entry.name) {
+      const signature = document.createElement("span");
+      signature.className = "expression-completion-signature";
+      signature.textContent = entry.signature;
+      item.appendChild(signature);
+    }
+    item.addEventListener("mousedown", (evt) => evt.preventDefault());
+    item.addEventListener("click", () => {
+      ui.expressionEditor.completion.activeIndex = index;
+      ui.expressionEditor.librarySelectedName = entry.name;
+      insertSelectedLibraryEntry();
+      closeExpressionCompletionMenu();
+    });
+    expressionCompletionMenu.appendChild(item);
+  });
+  expressionCompletionMenu.classList.remove("hidden");
+  positionExpressionCompletionMenu(inputEl);
+}
+
+function openExpressionCompletionMenu() {
+  const inputEl = activeExpressionEditorInput();
+  if (!ui.expressionEditor || !inputEl) {
+    return false;
+  }
+  renderExpressionAutocomplete();
+  if (!ui.expressionEditor.completion?.entries?.length) {
+    closeExpressionCompletionMenu();
+    return false;
+  }
+  ui.expressionEditor.completionMenuOpen = true;
+  renderExpressionCompletionMenu();
+  return true;
+}
+
+function moveExpressionCompletionSelection(direction) {
+  const completion = ui.expressionEditor?.completion;
+  if (!ui.expressionEditor?.completionMenuOpen || !completion?.entries?.length) {
+    return false;
+  }
+  completion.activeIndex = (completion.activeIndex + direction + completion.entries.length) % completion.entries.length;
+  const entry = completion.entries[completion.activeIndex];
+  if (entry) {
+    ui.expressionEditor.librarySelectedName = entry.name;
+    setExpressionHelp(entry);
+    setExpressionEntryTooltip(entry);
+  }
+  renderExpressionCompletionMenu();
+  return true;
+}
+
+function acceptExpressionCompletion() {
+  const completion = ui.expressionEditor?.completion;
+  const entry = completion?.entries?.[completion.activeIndex];
+  if (!ui.expressionEditor?.completionMenuOpen || !entry) {
+    return false;
+  }
+  ui.expressionEditor.librarySelectedName = entry.name;
+  const inserted = insertSelectedLibraryEntry();
+  closeExpressionCompletionMenu();
+  return inserted;
+}
+
+function handleExpressionCompletionKeydown(evt) {
+  const isCompletionShortcut = (evt.ctrlKey || evt.metaKey)
+    && !evt.altKey
+    && (evt.code === "Space" || evt.key === " " || evt.key === "Spacebar");
+  if (isCompletionShortcut) {
+    evt.preventDefault();
+    openExpressionCompletionMenu();
+    return true;
+  }
+  if (!ui.expressionEditor?.completionMenuOpen) {
+    return false;
+  }
+  if (evt.key === "ArrowDown" || evt.key === "ArrowUp") {
+    evt.preventDefault();
+    moveExpressionCompletionSelection(evt.key === "ArrowDown" ? 1 : -1);
+    return true;
+  }
+  if (evt.key === "Enter") {
+    evt.preventDefault();
+    acceptExpressionCompletion();
+    return true;
+  }
+  if (evt.key === "Escape") {
+    evt.preventDefault();
+    evt.stopPropagation();
+    closeExpressionCompletionMenu();
+    return true;
+  }
+  return false;
+}
+
+function closeNodePanelExpressionCompletionMenu() {
+  nodeExpressionCompletionMenu?.classList.add("hidden");
+  nodeExpressionCompletionMenu?.replaceChildren();
+  ui.nodePanelExpressionCompletion = null;
+}
+
+function nodePanelCompletionEntries(inputEl, fieldKey) {
+  const node = selectedNodeForSidebar();
+  if (!node || !inputEl) {
+    return null;
+  }
+  const caret = inputEl.selectionStart ?? 0;
+  const tokenInfo = identifierPrefixAtCaret(inputEl.value, caret);
+  if (!tokenInfo?.prefix) {
+    return null;
+  }
+  const entries = expressionCatalogForNodeField(node, fieldKey)
+    .filter((entry) => entry.name.toLowerCase().startsWith(tokenInfo.prefix.toLowerCase()))
+    .sort((left, right) => {
+      const kindDelta = expressionEntryKindOrder(left.kind) - expressionEntryKindOrder(right.kind);
+      return kindDelta || left.name.localeCompare(right.name);
+    })
+    .slice(0, 8);
+  return entries.length ? { nodeId: node.id, fieldKey, inputEl, tokenInfo, entries, activeIndex: 0 } : null;
+}
+
+function insertNodePanelExpressionCompletion(entry) {
+  const completion = ui.nodePanelExpressionCompletion;
+  if (!completion || !entry) {
+    return false;
+  }
+  const inputEl = completion.inputEl;
+  const replacement = entry.insertText || entry.name;
+  const caret = inputEl.selectionStart ?? 0;
+  const tokenInfo = identifierPrefixAtCaret(inputEl.value, caret);
+  const tokenAtCaret = identifierAtCaret(inputEl.value, caret);
+  if (!tokenInfo || (!tokenInfo.prefix && !tokenAtCaret)) {
+    return false;
+  }
+  const tokenEnd = tokenInfo.end + Math.max(0, tokenAtCaret.length - tokenInfo.prefix.length);
+  inputEl.value = `${inputEl.value.slice(0, tokenInfo.start)}${replacement}${inputEl.value.slice(tokenEnd)}`;
+  const nextCaret = tokenInfo.start + (entry.cursorOffset ?? replacement.length);
+  inputEl.focus();
+  inputEl.setSelectionRange(nextCaret, nextCaret);
+  inputEl.dispatchEvent(new Event("input", { bubbles: true }));
+  closeNodePanelExpressionCompletionMenu();
+  return true;
+}
+
+function renderNodePanelExpressionCompletionMenu() {
+  const completion = ui.nodePanelExpressionCompletion;
+  if (!nodeExpressionCompletionMenu || !completion?.entries?.length) {
+    closeNodePanelExpressionCompletionMenu();
+    return;
+  }
+  nodeExpressionCompletionMenu.replaceChildren();
+  completion.entries.forEach((entry, index) => {
+    const item = document.createElement("button");
+    item.type = "button";
+    item.className = "expression-completion-item";
+    item.classList.toggle("active", index === completion.activeIndex);
+    item.setAttribute("role", "option");
+    item.setAttribute("aria-selected", index === completion.activeIndex ? "true" : "false");
+    const name = document.createElement("code");
+    name.textContent = entry.name;
+    item.appendChild(name);
+    if (entry.signature && entry.signature !== entry.name) {
+      const signature = document.createElement("span");
+      signature.className = "expression-completion-signature";
+      signature.textContent = entry.signature;
+      item.appendChild(signature);
+    }
+    item.addEventListener("mousedown", (evt) => evt.preventDefault());
+    item.addEventListener("click", () => {
+      completion.activeIndex = index;
+      insertNodePanelExpressionCompletion(entry);
+    });
+    nodeExpressionCompletionMenu.appendChild(item);
+  });
+  nodeExpressionCompletionMenu.classList.remove("hidden");
+  positionExpressionCompletionMenu(completion.inputEl, nodeExpressionCompletionMenu);
+}
+
+function openNodePanelExpressionCompletionMenu(inputEl, fieldKey) {
+  const completion = nodePanelCompletionEntries(inputEl, fieldKey);
+  if (!completion) {
+    closeNodePanelExpressionCompletionMenu();
+    return false;
+  }
+  ui.nodePanelExpressionCompletion = completion;
+  renderNodePanelExpressionCompletionMenu();
+  return true;
+}
+
+function handleNodePanelExpressionCompletionKeydown(evt, inputEl, fieldKey) {
+  const isCompletionShortcut = (evt.ctrlKey || evt.metaKey)
+    && !evt.altKey
+    && (evt.code === "Space" || evt.key === " " || evt.key === "Spacebar");
+  if (isCompletionShortcut) {
+    evt.preventDefault();
+    evt.stopPropagation();
+    openNodePanelExpressionCompletionMenu(inputEl, fieldKey);
+    return true;
+  }
+  const completion = ui.nodePanelExpressionCompletion;
+  if (!completion || completion.inputEl !== inputEl) {
+    return false;
+  }
+  if (evt.key === "ArrowDown" || evt.key === "ArrowUp") {
+    evt.preventDefault();
+    completion.activeIndex = (completion.activeIndex + (evt.key === "ArrowDown" ? 1 : -1) + completion.entries.length) % completion.entries.length;
+    renderNodePanelExpressionCompletionMenu();
+    return true;
+  }
+  if (evt.key === "Enter") {
+    evt.preventDefault();
+    insertNodePanelExpressionCompletion(completion.entries[completion.activeIndex]);
+    return true;
+  }
+  if (evt.key === "Escape") {
+    evt.preventDefault();
+    evt.stopPropagation();
+    closeNodePanelExpressionCompletionMenu();
+    return true;
+  }
+  return false;
 }
 
 function insertSelectedLibraryEntry() {
@@ -6232,6 +6534,13 @@ function resetExpressionEditorCardPosition() {
   card.style.left = "50%";
   card.style.top = "50%";
   card.style.transform = "translate(-50%, -50%)";
+}
+
+function resetStateTransitionEditorHeight() {
+  expressionStateTransitionSurface?.style.removeProperty("height");
+  expressionStateTransitionSurface?.style.removeProperty("flex");
+  expressionEditorCore?.classList.remove("expression-state-transition-manual-height");
+  ui.stateTransitionResize = null;
 }
 
 function isTabletExpressionEditorMode() {
@@ -6619,6 +6928,7 @@ function closeExpressionEditor() {
     return;
   }
   expressionEditorModal.classList.add("hidden");
+  closeExpressionCompletionMenu();
   closeExpressionEditorSwitchModal();
   ui.expressionEditor = null;
   invalidateExpressionPreviewInitializationCache();
@@ -6654,6 +6964,7 @@ function closeExpressionEditor() {
   setExpressionPreviewState(t("expr.preview.empty"));
   syncExpressionEditorFormulaNotes();
   ui.modalResize = null;
+  resetStateTransitionEditorHeight();
   resetExpressionEditorCardPosition();
 }
 
@@ -6804,6 +7115,7 @@ function openExpressionEditor(fieldKey) {
   expressionEditorTextarea.value = String(ui.expressionEditor.initialValue ?? "");
   expressionEditorModal.classList.remove("hidden");
   resetExpressionEditorCardPosition();
+  resetStateTransitionEditorHeight();
   setExpressionSidebarCollapsed(ui.expressionSidebarCollapsed);
   setExpressionEditorView("editor", { focus: false });
   syncExpressionEditorFormulaNotes();
@@ -6899,6 +7211,7 @@ function openCustomExpressionEditor(title, initialValue, onApply) {
   expressionEditorTextarea.value = String(initialValue ?? "");
   expressionEditorModal.classList.remove("hidden");
   resetExpressionEditorCardPosition();
+  resetStateTransitionEditorHeight();
   setExpressionEditorView("editor", { focus: false });
   syncExpressionEditorFormulaNotes();
   refreshExpressionEditorValidation();
@@ -7545,6 +7858,7 @@ function captureWorkspaceTabState() {
   return {
     context: captureCurrentModelContext(),
     runtimeState: captureRuntimeStateSnapshot(),
+    lastExecutionWasPlayMode: ui.lastExecutionWasPlayMode,
   };
 }
 
@@ -7554,6 +7868,7 @@ function restoreWorkspaceTabState(state) {
   }
   restoreModelContext(state.context);
   applyRuntimeStateSnapshot(state.runtimeState);
+  ui.lastExecutionWasPlayMode = Boolean(state.lastExecutionWasPlayMode);
   render();
 }
 
@@ -9439,7 +9754,7 @@ function applyCanvasVisibility() {
 function updateModelRunButtons() {
   const blocked = hasStrictExecutionBlock();
   if (topRunEvalBtn) {
-    setTooltipText(topRunEvalBtn, `${t("menu.run.execute")} (F7)`);
+    setTooltipText(topRunEvalBtn, `${t("menu.run.execute")} (F5)`);
     topRunEvalBtn.disabled = blocked;
   }
   if (tabletRunBtn) {
@@ -9447,7 +9762,7 @@ function updateModelRunButtons() {
     tabletRunBtn.disabled = blocked;
   }
   if (topRunStepBtn) {
-    setTooltipText(topRunStepBtn, `${t("menu.run.step")} (F8)`);
+    setTooltipText(topRunStepBtn, `${t("menu.run.step")} (F7)`);
     topRunStepBtn.disabled = blocked;
   }
   if (tabletStepBtn) {
@@ -9455,18 +9770,27 @@ function updateModelRunButtons() {
     tabletStepBtn.disabled = blocked;
   }
   if (topRunTimedBtn) {
-    const timedKey = ui.timedRunHandle == null ? "action.timedStart" : "action.timedStop";
-    topRunTimedBtn.textContent = ui.timedRunHandle == null ? "▶⏱" : "⏸";
-    setTooltipText(topRunTimedBtn, `${t(timedKey)} (F9)`);
-    topRunTimedBtn.disabled = blocked && ui.timedRunHandle == null;
-    topRunTimedBtn.classList.toggle("active", ui.timedRunHandle != null);
+    const timedActive = ui.timedRunHandle != null && ui.timedRunMode === "timed";
+    const timedKey = timedActive ? "action.timedStop" : "action.timedStart";
+    topRunTimedBtn.textContent = timedActive ? "⏸" : "▶⏱";
+    setTooltipText(topRunTimedBtn, `${t(timedKey)} (F8)`);
+    topRunTimedBtn.disabled = (blocked && ui.timedRunHandle == null) || (ui.timedRunHandle != null && !timedActive);
+    topRunTimedBtn.classList.toggle("active", timedActive);
+  }
+  if (topRunPlayBtn) {
+    const playActive = ui.timedRunHandle != null && ui.timedRunMode === "play";
+    topRunPlayBtn.textContent = playActive ? "⏸" : "▶∞";
+    setTooltipText(topRunPlayBtn, `${t(playActive ? "action.playStop" : "action.playStart")} (F9)`);
+    topRunPlayBtn.disabled = (blocked && ui.timedRunHandle == null) || (ui.timedRunHandle != null && !playActive);
+    topRunPlayBtn.classList.toggle("active", playActive);
   }
   if (tabletTimedBtn) {
-    const timedKey = ui.timedRunHandle == null ? "action.timedStart" : "action.timedStop";
-    tabletTimedBtn.textContent = ui.timedRunHandle == null ? "▶⏱" : "⏸";
+    const timedActive = ui.timedRunHandle != null && ui.timedRunMode === "timed";
+    const timedKey = timedActive ? "action.timedStop" : "action.timedStart";
+    tabletTimedBtn.textContent = timedActive ? "⏸" : "▶⏱";
     setTooltipText(tabletTimedBtn, t(timedKey));
-    tabletTimedBtn.disabled = blocked && ui.timedRunHandle == null;
-    tabletTimedBtn.classList.toggle("active", ui.timedRunHandle != null);
+    tabletTimedBtn.disabled = (blocked && ui.timedRunHandle == null) || (ui.timedRunHandle != null && !timedActive);
+    tabletTimedBtn.classList.toggle("active", timedActive);
   }
   if (topRunResetBtn) {
     setTooltipText(topRunResetBtn, `${t("menu.run.reset")} (F10)`);
@@ -9479,18 +9803,26 @@ function updateModelRunButtons() {
   }
   updateTabletCanvasModeUi();
   if (runFullModelBtn) {
-    setTooltipText(runFullModelBtn, `${t("menu.run.execute")} (F7)`);
+    setTooltipText(runFullModelBtn, `${t("menu.run.execute")} (F5)`);
     runFullModelBtn.disabled = blocked;
   }
   if (manualStepBtn) {
-    setTooltipText(manualStepBtn, `${t("menu.run.step")} (F8)`);
+    setTooltipText(manualStepBtn, `${t("menu.run.step")} (F7)`);
     manualStepBtn.disabled = blocked;
   }
   if (timedToggleBtn) {
-    const timedKey = ui.timedRunHandle == null ? "action.timedStart" : "action.timedStop";
-    timedToggleBtn.textContent = ui.timedRunHandle == null ? "▶⏱" : "⏸";
-    setTooltipText(timedToggleBtn, `${t(timedKey)} (F9)`);
-    timedToggleBtn.disabled = blocked && ui.timedRunHandle == null;
+    const timedActive = ui.timedRunHandle != null && ui.timedRunMode === "timed";
+    const timedKey = timedActive ? "action.timedStop" : "action.timedStart";
+    timedToggleBtn.textContent = timedActive ? "⏸" : "▶⏱";
+    setTooltipText(timedToggleBtn, `${t(timedKey)} (F8)`);
+    timedToggleBtn.disabled = (blocked && ui.timedRunHandle == null) || (ui.timedRunHandle != null && !timedActive);
+  }
+  if (playToggleBtn) {
+    const playActive = ui.timedRunHandle != null && ui.timedRunMode === "play";
+    playToggleBtn.textContent = playActive ? "⏸" : "▶∞";
+    setTooltipText(playToggleBtn, `${t(playActive ? "action.playStop" : "action.playStart")} (F9)`);
+    playToggleBtn.disabled = (blocked && ui.timedRunHandle == null) || (ui.timedRunHandle != null && !playActive);
+    playToggleBtn.classList.toggle("active", playActive);
   }
   if (resetExecBtn) {
     setTooltipText(resetExecBtn, `${t("menu.run.reset")} (F10)`);
@@ -9505,7 +9837,14 @@ function updateModelRunButtons() {
     runStepBtn.disabled = blocked;
   }
   if (runTimedToggleBtn) {
-    runTimedToggleBtn.disabled = blocked && ui.timedRunHandle == null;
+    const timedActive = ui.timedRunHandle != null && ui.timedRunMode === "timed";
+    runTimedToggleBtn.disabled = (blocked && ui.timedRunHandle == null) || (ui.timedRunHandle != null && !timedActive);
+  }
+  if (runPlayToggleBtn) {
+    const playActive = ui.timedRunHandle != null && ui.timedRunMode === "play";
+    runPlayToggleBtn.querySelector("span")?.replaceChildren(document.createTextNode(t(playActive ? "action.playStop" : "menu.run.playToggle")));
+    runPlayToggleBtn.disabled = (blocked && ui.timedRunHandle == null) || (ui.timedRunHandle != null && !playActive);
+    setTooltipText(runPlayToggleBtn, `${t(playActive ? "action.playStop" : "action.playStart")} (F9)`);
   }
   if (runStrictDefinitionsInput) {
     runStrictDefinitionsInput.checked = Boolean(graph.execution.strictDefinitions);
@@ -10797,7 +11136,8 @@ function updateExecutionProgress(timeValue = graph.execution.currentTime) {
     executionProgress.style.bottom = "auto";
   }
   executionProgressBar.style.transform = `scaleX(${executionProgressFraction(timeValue)})`;
-  executionProgress.classList.toggle("active", isExecutionFrozen() || ui.sensitivityRunning);
+  const isPlayModeRunning = ui.timedRunHandle != null && ui.timedRunMode === "play";
+  executionProgress.classList.toggle("active", (!isPlayModeRunning && isExecutionFrozen()) || ui.sensitivityRunning);
 }
 
 function clearTimedExecutionStateSilently() {
@@ -10808,6 +11148,7 @@ function clearTimedExecutionStateSilently() {
   ui.timedStepRunning = false;
   ui.timedRunStartedAt = 0;
   ui.timedStepLastActivityAt = 0;
+  ui.timedRunMode = null;
 }
 
 function staleTimedExecutionThresholdMs() {
@@ -10924,7 +11265,7 @@ function updateEditingLockUi() {
     }
   });
 
-  setControlsDisabled(globalPanel, frozen, [runFullModelBtn, manualStepBtn, timedToggleBtn, resetExecBtn]);
+  setControlsDisabled(globalPanel, frozen, [runFullModelBtn, manualStepBtn, timedToggleBtn, playToggleBtn, resetExecBtn]);
   setControlsDisabled(nodePanel, frozen);
   setControlsDisabled(textPanel, frozen);
   setControlsDisabled(edgePanel, frozen);
@@ -12241,7 +12582,9 @@ function refreshSidebar() {
       zoomRangeValue.textContent = `${Math.round(ui.zoom * 100)}%`;
     }
     timeCurrentOutput.textContent =
-      graph.execution.currentTime == null
+      ui.lastExecutionWasPlayMode
+        ? "-"
+        : graph.execution.currentTime == null
         ? formatNumberValue(Number(graph.execution.t0))
         : formatNumberValue(Number(graph.execution.currentTime));
     renderPropertiesEditor(
@@ -15109,6 +15452,10 @@ function updateMenuTimeLabel() {
   if (!menuTimeText) {
     return;
   }
+  if (ui.lastExecutionWasPlayMode) {
+    menuTimeText.textContent = "";
+    return;
+  }
   const baseTime = graph.execution.currentTime == null
     ? Number(graph.execution.t0)
     : Number(graph.execution.currentTime);
@@ -15335,6 +15682,7 @@ async function executeOneStep(restartIfEnded = true) {
 }
 
 async function executeNodeExpressions() {
+  ui.lastExecutionWasPlayMode = false;
   await runtimeController.executeAll();
 }
 
@@ -15398,6 +15746,7 @@ async function executeModelWithRustEngine() {
   if (!rustEngineAdapter || isEditingUiLocked()) {
     return;
   }
+  ui.lastExecutionWasPlayMode = false;
   if (!enforceStrictDefinitionsIfNeeded()) {
     return;
   }
@@ -15445,15 +15794,27 @@ async function executeModelWithRustEngine() {
 }
 
 async function runManualStep() {
+  ui.lastExecutionWasPlayMode = false;
   await runtimeController.runManualStep();
 }
 
 async function resetExecution() {
+  ui.lastExecutionWasPlayMode = false;
   await runtimeController.resetExecution();
 }
 
 async function toggleTimedExecution() {
+  if (ui.timedRunHandle == null) {
+    ui.lastExecutionWasPlayMode = false;
+  }
   await runtimeController.toggleTimedExecution();
+}
+
+async function togglePlayExecution() {
+  if (ui.timedRunHandle == null) {
+    ui.lastExecutionWasPlayMode = true;
+  }
+  await runtimeController.togglePlayExecution();
 }
 
 window.addEventListener("pointermove", (evt) => {
@@ -15484,13 +15845,29 @@ window.addEventListener("pointermove", (evt) => {
   if (handleCompactTouchViewportPointerMove(evt)) {
     return;
   }
+  if (ui.stateTransitionResize && evt.pointerId === ui.stateTransitionResize.pointerId) {
+    const surface = ui.stateTransitionResize.surface;
+    if (surface) {
+      const maxHeight = Math.max(80, Math.min(460, window.innerHeight - 180));
+      const nextHeight = clamp(
+        ui.stateTransitionResize.startHeight + (evt.clientY - ui.stateTransitionResize.startClientY),
+        ui.stateTransitionResize.minHeight,
+        maxHeight,
+      );
+      surface.style.flex = "0 0 auto";
+      surface.style.height = `${Math.round(nextHeight)}px`;
+    }
+    return;
+  }
   if (ui.modalResize && evt.pointerId === ui.modalResize.pointerId) {
     const card = ui.modalResize.card;
     if (card) {
       const nextWidth = ui.modalResize.lockWidth
         ? ui.modalResize.startWidth
         : clamp(ui.modalResize.startWidth + (evt.clientX - ui.modalResize.startClientX), 780, window.innerWidth - 20);
-      const minHeight = ui.modalResize.compactExpressionEditor ? 300 : 420;
+      const minHeight = ui.modalResize.compactExpressionEditor
+        ? 300
+        : (ui.modalResize.stateExpressionEditor ? 500 : 420);
       const nextHeight = clamp(ui.modalResize.startHeight + (evt.clientY - ui.modalResize.startClientY), minHeight, window.innerHeight - 20);
       card.style.transform = "none";
       card.style.left = `${ui.modalResize.startLeft}px`;
@@ -15742,6 +16119,9 @@ window.addEventListener("pointerup", (evt) => {
   }
   if (ui.modalResize && evt.pointerId === ui.modalResize.pointerId) {
     ui.modalResize = null;
+  }
+  if (ui.stateTransitionResize && evt.pointerId === ui.stateTransitionResize.pointerId) {
+    ui.stateTransitionResize = null;
   }
 
   if (ui.dashboardDrag && evt.pointerId === ui.dashboardDrag.pointerId) {
@@ -16221,14 +16601,11 @@ if (topRunStepBtn) {
     void runManualStep();
   });
 }
-function bindTimedExecutionToggle(button) {
+function bindExecutionToggle(button, activate) {
   if (!button) {
     return;
   }
   let lastPointerActivationAt = -Infinity;
-  const activate = () => {
-    void toggleTimedExecution();
-  };
 
   // WebKit can lose a click while a timed execution refreshes the toolbar.
   // Pointer activation keeps the stop command responsive in the Tauri shell.
@@ -16249,7 +16626,8 @@ function bindTimedExecutionToggle(button) {
   });
 }
 
-bindTimedExecutionToggle(topRunTimedBtn);
+bindExecutionToggle(topRunTimedBtn, () => { void toggleTimedExecution(); });
+bindExecutionToggle(topRunPlayBtn, () => { void togglePlayExecution(); });
 if (topRunResetBtn) {
   topRunResetBtn.addEventListener("click", resetExecution);
 }
@@ -16271,7 +16649,7 @@ if (tabletStepBtn) {
     void runManualStep();
   });
 }
-bindTimedExecutionToggle(tabletTimedBtn);
+bindExecutionToggle(tabletTimedBtn, () => { void toggleTimedExecution(); });
 if (tabletResetBtn) {
   tabletResetBtn.addEventListener("click", resetExecution);
 }
@@ -16281,7 +16659,9 @@ runEvalBtn.addEventListener("click", () => {
 runStepBtn.addEventListener("click", () => {
   void runManualStep();
 });
-bindTimedExecutionToggle(runTimedToggleBtn);
+bindExecutionToggle(runTimedToggleBtn, () => { void toggleTimedExecution(); });
+bindExecutionToggle(runPlayToggleBtn, () => { void togglePlayExecution(); });
+bindExecutionToggle(playToggleBtn, () => { void togglePlayExecution(); });
 runResetBtn.addEventListener("click", resetExecution);
 
 undoBtn.addEventListener("click", undo);
@@ -17355,10 +17735,13 @@ if (unitDefinitionsModal) {
 manualStepBtn.addEventListener("click", () => {
   void runManualStep();
 });
-bindTimedExecutionToggle(timedToggleBtn);
+bindExecutionToggle(timedToggleBtn, () => { void toggleTimedExecution(); });
 resetExecBtn.addEventListener("click", resetExecution);
 
 nodeValueExprInput.addEventListener("input", () => {
+  if (ui.nodePanelExpressionCompletion?.inputEl === nodeValueExprInput) {
+    closeNodePanelExpressionCompletionMenu();
+  }
   const meta = expressionFieldMeta("value");
   if (!meta) {
     return;
@@ -17377,7 +17760,14 @@ nodeValueExprInput.addEventListener("input", () => {
   scheduleFileStatusRefresh();
 });
 
+nodeValueExprInput.addEventListener("keydown", (evt) => {
+  handleNodePanelExpressionCompletionKeydown(evt, nodeValueExprInput, "value");
+});
+
 nodeInitialStateInput.addEventListener("input", () => {
+  if (ui.nodePanelExpressionCompletion?.inputEl === nodeInitialStateInput) {
+    closeNodePanelExpressionCompletionMenu();
+  }
   const meta = expressionFieldMeta("initial");
   if (!meta) {
     return;
@@ -17394,6 +17784,10 @@ nodeInitialStateInput.addEventListener("input", () => {
     scheduleNodeDefinitionRecalculation();
   }
   scheduleFileStatusRefresh();
+});
+
+nodeInitialStateInput.addEventListener("keydown", (evt) => {
+  handleNodePanelExpressionCompletionKeydown(evt, nodeInitialStateInput, "initial");
 });
 
 if (propsList) {
@@ -17480,6 +17874,9 @@ if (expressionEditorTextarea) {
     if (handleExpressionInputClipboardShortcut(evt, expressionEditorTextarea)) {
       return;
     }
+    if (handleExpressionCompletionKeydown(evt)) {
+      return;
+    }
     if (evt.key === "ArrowDown" && evt.shiftKey) {
       evt.preventDefault();
       moveLibrarySelection(1);
@@ -17538,6 +17935,9 @@ if (expressionStateInitialInput) {
   });
   expressionStateInitialInput.addEventListener("keydown", (evt) => {
     if (handleExpressionInputClipboardShortcut(evt, expressionStateInitialInput)) {
+      return;
+    }
+    if (handleExpressionCompletionKeydown(evt)) {
       return;
     }
     if (evt.key === "ArrowDown" && evt.shiftKey) {
@@ -17605,6 +18005,42 @@ document.addEventListener("selectionchange", () => {
   const active = document.activeElement;
   if (active === expressionEditorTextarea || active === expressionStateInitialInput) {
     renderExpressionAutocomplete();
+  }
+});
+
+document.addEventListener("pointerdown", (evt) => {
+  if (!ui.expressionEditor?.completionMenuOpen || !expressionCompletionMenu) {
+    return;
+  }
+  const target = evt.target;
+  if (expressionCompletionMenu.contains(target)) {
+    return;
+  }
+  if (target === expressionEditorTextarea || target === expressionStateInitialInput) {
+    closeExpressionCompletionMenu();
+    return;
+  }
+  closeExpressionCompletionMenu();
+});
+
+document.addEventListener("pointerdown", (evt) => {
+  const completion = ui.nodePanelExpressionCompletion;
+  if (!completion || !nodeExpressionCompletionMenu) {
+    return;
+  }
+  const target = evt.target;
+  if (nodeExpressionCompletionMenu.contains(target) || target === completion.inputEl) {
+    return;
+  }
+  closeNodePanelExpressionCompletionMenu();
+});
+
+window.addEventListener("resize", () => {
+  if (ui.expressionEditor?.completionMenuOpen) {
+    renderExpressionCompletionMenu();
+  }
+  if (ui.nodePanelExpressionCompletion) {
+    renderNodePanelExpressionCompletionMenu();
   }
 });
 
@@ -17697,6 +18133,25 @@ if (expressionSymbolsFilter) {
 if (expressionEditorModal) {
   const modalCard = expressionEditorModal.querySelector(".expression-editor-card");
   bindModalDragHandle(expressionEditorModal, ".expression-editor-card");
+  if (expressionStateTransitionResizeHandle && expressionStateTransitionSurface) {
+    expressionStateTransitionResizeHandle.addEventListener("pointerdown", (evt) => {
+      if (!expressionEditorCard?.classList.contains("state-node-editor")) {
+        return;
+      }
+      evt.preventDefault();
+      evt.stopPropagation();
+      const rect = expressionStateTransitionSurface.getBoundingClientRect();
+      expressionEditorCore?.classList.add("expression-state-transition-manual-height");
+      ui.stateTransitionResize = {
+        pointerId: evt.pointerId,
+        startClientY: evt.clientY,
+        startHeight: rect.height,
+        minHeight: isTabletExpressionEditorMode() ? 70 : 80,
+        surface: expressionStateTransitionSurface,
+      };
+      evt.currentTarget?.setPointerCapture?.(evt.pointerId);
+    });
+  }
   if (expressionEditorResizeHandle && modalCard) {
     expressionEditorResizeHandle.addEventListener("pointerdown", (evt) => {
       if (isCompactTouchPointerEvent(evt)) {
@@ -17720,6 +18175,7 @@ if (expressionEditorModal) {
         startTop: rect.top,
         lockWidth: modalCard.classList.contains("expression-sidebar-collapsed"),
         compactExpressionEditor: modalCard.classList.contains("expression-sidebar-collapsed"),
+        stateExpressionEditor: modalCard.classList.contains("state-node-editor"),
         card: modalCard,
       };
       evt.currentTarget?.setPointerCapture?.(evt.pointerId);
@@ -17841,9 +18297,6 @@ if (functionsHelpDismissBtn) {
 }
 if (documentationHelpCloseBtn) {
   documentationHelpCloseBtn.addEventListener("click", closeDocumentationHelp);
-}
-if (documentationHelpDismissBtn) {
-  documentationHelpDismissBtn.addEventListener("click", closeDocumentationHelp);
 }
 if (functionsHelpSearch) {
   functionsHelpSearch.addEventListener("input", renderFunctionsHelp);
@@ -18459,24 +18912,38 @@ document.addEventListener("keydown", (evt) => {
     return;
   }
 
-  if (evt.key === "F7") {
+  if (evt.key === "F5") {
     evt.preventDefault();
     if (!hasStrictExecutionBlock()) {
       void executeNodeExpressions();
     }
     return;
   }
-  if (evt.key === "F8") {
+  if (evt.key === "F6") {
+    evt.preventDefault();
+    if (!hasStrictExecutionBlock() && !isEditingUiLocked()) {
+      void executeModelWithRustEngine();
+    }
+    return;
+  }
+  if (evt.key === "F7") {
     evt.preventDefault();
     if (!hasStrictExecutionBlock()) {
       void runManualStep();
     }
     return;
   }
+  if (evt.key === "F8") {
+    evt.preventDefault();
+    if (ui.timedRunMode === "timed" || (ui.timedRunHandle == null && !hasStrictExecutionBlock())) {
+      void toggleTimedExecution();
+    }
+    return;
+  }
   if (evt.key === "F9") {
     evt.preventDefault();
-    if (ui.timedRunHandle != null || !hasStrictExecutionBlock()) {
-      void toggleTimedExecution();
+    if (ui.timedRunMode === "play" || (ui.timedRunHandle == null && !hasStrictExecutionBlock())) {
+      void togglePlayExecution();
     }
     return;
   }

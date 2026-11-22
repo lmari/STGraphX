@@ -53,10 +53,39 @@ const model = {
   __readDataCache: {},
 };
 const execution = { t0: 0, t1: 1, dt: 1 };
+const normalGlobals = runtimeCore.buildExecutionGlobalsForModel(model, execution, 0);
+assert.equal(normalGlobals.time, 0);
+assert.equal(normalGlobals.t0, 0);
+assert.equal(normalGlobals.t1, 1);
+assert.equal(normalGlobals.dt, 1);
+const playGlobals = runtimeCore.buildExecutionGlobalsForModel(model, execution, 0, { playMode: true });
+assert.equal(playGlobals.dt, 1, "playmode keeps dt available");
+assert.equal(Object.hasOwn(playGlobals, "time"), false, "playmode does not expose time");
+assert.equal(Object.hasOwn(playGlobals, "t0"), false, "playmode does not expose t0");
+assert.equal(Object.hasOwn(playGlobals, "t1"), false, "playmode does not expose t1");
 runtimeCore.initializeStateNodesForModel(model, 0, execution);
 assert.equal(nodeById(model, 2).computedValue, 3);
 assert.equal(nodeById(model, 3).computedValue, 6);
 assert.equal(nodeById(model, 4).computedValue, 9);
+
+const timeDependentModel = {
+  properties: [], localFunctions: [], __readDataCache: {},
+  nodes: [makeNode(21, "clock", "ellipse", "time")],
+  edges: [],
+};
+const normalTimeResult = runtimeCore.evaluateModelAtTimeRecursive(
+  timeDependentModel,
+  2,
+  { rootExecution: execution, stack: [] },
+);
+assert.equal(normalTimeResult.errorCount, 0);
+assert.equal(nodeById(timeDependentModel, 21).computedValue, 2);
+const playTimeResult = runtimeCore.evaluateModelAtTimeRecursive(
+  timeDependentModel,
+  2,
+  { rootExecution: execution, stack: [], playMode: true },
+);
+assert.equal(playTimeResult.errorCount, 1, "time is unavailable while evaluating in playmode");
 
 const scaledUnitModel = {
   properties: [], localFunctions: [], unitDefinitions: [], __readDataCache: {},

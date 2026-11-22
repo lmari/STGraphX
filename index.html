@@ -17,6 +17,7 @@
   <body>
     <div class="app">
       <header class="menu-bar" id="topMenuBar">
+        <div class="menu-roots" aria-label="Menu principale">
         <div class="menu-root">
           <button class="menu-title" type="button" data-menu="fileMenu" data-i18n="menu.file" data-title-i18n="tooltip.menu.file"></button>
           <div class="menu-panel" id="fileMenu">
@@ -73,7 +74,7 @@
             <div class="menu-section-title" data-i18n="menu.insert.group.inputWidgets"></div>
             <button id="addButtonWidgetItem" class="menu-command" type="button" data-title-i18n="tooltip.menu.insert.button"><span class="menu-command-label"><span class="menu-item-icon" aria-hidden="true">◉</span><span data-i18n="menu.insert.buttonWidget"></span></span></button>
             <button id="addSelectWidgetItem" class="menu-command" type="button" data-title-i18n="tooltip.menu.insert.select"><span class="menu-command-label"><span class="menu-item-icon" aria-hidden="true">▾</span><span data-i18n="menu.insert.selectWidget"></span></span></button>
-            <button id="addSliderWidgetItem" class="menu-command" type="button" data-title-i18n="tooltip.menu.insert.slider"><span class="menu-command-label"><span class="menu-item-icon" aria-hidden="true">━●</span><span data-i18n="menu.insert.sliderWidget"></span></span></button>
+            <button id="addSliderWidgetItem" class="menu-command" type="button" data-title-i18n="tooltip.menu.insert.slider"><span class="menu-command-label"><span class="menu-item-icon" aria-hidden="true">↔</span><span data-i18n="menu.insert.sliderWidget"></span></span></button>
             <button id="addNumericWidgetItem" class="menu-command" type="button" data-title-i18n="tooltip.menu.insert.numeric"><span class="menu-command-label"><span class="menu-item-icon" aria-hidden="true">▦</span><span data-i18n="menu.insert.numericWidget"></span></span></button>
             <hr class="menu-sep" />
             <div class="menu-section-title" data-i18n="menu.insert.group.outputWidgets"></div>
@@ -112,10 +113,11 @@
         <div class="menu-root">
           <button class="menu-title" type="button" data-menu="runMenu" data-i18n="menu.run" data-title-i18n="tooltip.menu.run"></button>
           <div class="menu-panel" id="runMenu">
-            <button id="runEvalBtn" class="menu-command" type="button" data-title-i18n="tooltip.menu.run.execute"><span data-i18n="menu.run.execute"></span><span class="menu-shortcut">F7</span></button>
-            <button id="runRustEngineBtn" class="menu-command" type="button" data-title-i18n="tooltip.menu.run.rust"><span data-i18n="menu.run.rust"></span><span class="menu-shortcut" data-i18n="menu.experimental"></span></button>
-            <button id="runStepBtn" class="menu-command" type="button" data-title-i18n="tooltip.menu.run.step"><span data-i18n="menu.run.step"></span><span class="menu-shortcut">F8</span></button>
-            <button id="runTimedToggleBtn" class="menu-command" type="button" data-title-i18n="tooltip.menu.run.timed"><span data-i18n="menu.run.timedToggle"></span><span class="menu-shortcut">F9</span></button>
+            <button id="runEvalBtn" class="menu-command" type="button" data-title-i18n="tooltip.menu.run.execute"><span data-i18n="menu.run.execute"></span><span class="menu-shortcut">F5</span></button>
+            <button id="runRustEngineBtn" class="menu-command" type="button" data-title-i18n="tooltip.menu.run.rust"><span data-i18n="menu.run.rust"></span><span class="menu-shortcut">F6</span></button>
+            <button id="runStepBtn" class="menu-command" type="button" data-title-i18n="tooltip.menu.run.step"><span data-i18n="menu.run.step"></span><span class="menu-shortcut">F7</span></button>
+            <button id="runTimedToggleBtn" class="menu-command" type="button" data-title-i18n="tooltip.menu.run.timed"><span data-i18n="menu.run.timedToggle"></span><span class="menu-shortcut">F8</span></button>
+            <button id="runPlayToggleBtn" class="menu-command" type="button" data-title-i18n="tooltip.menu.run.play"><span data-i18n="menu.run.playToggle"></span><span class="menu-shortcut">F9</span></button>
             <button id="runResetBtn" class="menu-command" type="button" data-title-i18n="tooltip.menu.run.reset"><span data-i18n="menu.run.reset"></span><span class="menu-shortcut">F10</span></button>
             <hr class="menu-sep" />
             <button id="watchDebuggerBtn" class="menu-command" type="button" data-title-i18n="tooltip.menu.run.watch"><span data-i18n="menu.run.watch"></span></button>
@@ -162,11 +164,13 @@
             <button id="aboutAppBtn" class="menu-command" type="button" data-title-i18n="tooltip.menu.help.about"><span data-i18n="menu.help.about"></span></button>
           </div>
         </div>
+        </div>
 
         <div class="menu-run-toolbar" id="topRunToolbar">
           <button id="topRunEvalBtn" class="icon-btn menu-run-btn" type="button">▶▶</button>
           <button id="topRunStepBtn" class="icon-btn menu-run-btn" type="button">▶</button>
           <button id="topRunTimedBtn" class="icon-btn menu-run-btn" type="button">▶⏱</button>
+          <button id="topRunPlayBtn" class="icon-btn menu-run-btn" type="button">▶∞</button>
           <button id="topRunResetBtn" class="icon-btn menu-run-btn" type="button">↺</button>
         </div>
 
@@ -259,6 +263,7 @@
                 <button id="runFullModelBtn" class="icon-btn" type="button">▶▶</button>
                 <button id="manualStepBtn" class="icon-btn" type="button">▶</button>
                 <button id="timedToggleBtn" class="icon-btn" type="button">▶⏱</button>
+                <button id="playToggleBtn" class="icon-btn" type="button">▶∞</button>
                 <button id="resetExecBtn" class="icon-btn" type="button">↺</button>
               </div>
               <div class="row2-exec">
@@ -454,6 +459,8 @@
       </main>
     </div>
     <div id="contextMenu" class="context-menu hidden"></div>
+    <div id="expressionCompletionMenu" class="expression-completion-menu hidden" role="listbox" data-i18n-aria-label="expr.completion.label"></div>
+    <div id="nodeExpressionCompletionMenu" class="expression-completion-menu hidden" role="listbox" data-i18n-aria-label="expr.completion.label"></div>
     <div id="expressionEditorModal" class="modal-backdrop modal-modeless hidden">
       <div class="modal-card expression-editor-card" role="dialog" aria-modal="false" aria-labelledby="expressionEditorTitle">
         <div class="modal-head">
@@ -537,6 +544,7 @@
               <div class="expression-editor-surface">
                 <pre id="expressionEditorHighlight" class="expression-editor-highlight" aria-hidden="true"></pre>
                 <textarea id="expressionEditorTextarea" class="expression-editor-textarea" spellcheck="false"></textarea>
+                <div id="expressionStateTransitionResizeHandle" class="expression-state-transition-resize-handle" aria-hidden="true"></div>
               </div>
             </div>
             </div>
@@ -591,9 +599,6 @@
           </div>
         </div>
         <div id="documentationHelpContent" class="documentation-help-content markdown-content"></div>
-        <div class="modal-actions">
-          <button id="documentationHelpDismissBtn" type="button" data-i18n="action.close"></button>
-        </div>
       </div>
     </div>
     <div id="functionsHelpModal" class="modal-backdrop hidden">

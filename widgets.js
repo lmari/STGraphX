@@ -2960,6 +2960,9 @@ function refreshWidgetFrame(widget) {
   }
   const view = svg.viewBox.baseVal;
   const zoom = Math.max(0.0001, ui.zoom || 1);
+  const displayZoom = typeof isCompactTabletLayout === "function" && isCompactTabletLayout()
+    ? Math.max(0.8, zoom)
+    : zoom;
   const viewMinX = view?.x ?? 0;
   const viewMinY = view?.y ?? 0;
   const displayedPosition = typeof dashboardItemPosition === "function"
@@ -2969,7 +2972,7 @@ function refreshWidgetFrame(widget) {
   root.style.top = `${(displayedPosition.y - viewMinY) * zoom}px`;
   root.style.width = `${widget.width}px`;
   root.style.height = widget.minimized ? "36px" : `${widget.height}px`;
-  root.style.transform = `scale(${zoom})`;
+  root.style.transform = `scale(${displayZoom})`;
   root.classList.toggle("selected", ui.selected?.type === "widget" && ui.selected.id === widget.id);
   return true;
 }
@@ -3051,6 +3054,11 @@ function renderWidgets() {
       root.classList.add("minimized");
     }
     const z = Math.max(0.0001, ui.zoom || 1);
+    // Widgets are interactive controls: on a compact touch layout avoid
+    // shrinking them below a usable visual scale when the canvas is zoomed out.
+    const displayZoom = typeof isCompactTabletLayout === "function" && isCompactTabletLayout()
+      ? Math.max(0.8, z)
+      : z;
     const displayedPosition = typeof dashboardItemPosition === "function"
       ? dashboardItemPosition(widget)
       : { x: widget.x, y: widget.y };
@@ -3058,7 +3066,7 @@ function renderWidgets() {
     root.style.top = `${(displayedPosition.y - viewMinY) * z}px`;
     root.style.width = `${widget.width}px`;
     root.style.height = widget.minimized ? "36px" : `${widget.height}px`;
-    root.style.transform = `scale(${z})`;
+    root.style.transform = `scale(${displayZoom})`;
     root.style.transformOrigin = "top left";
     root.style.setProperty("--widget-font-size", `${widget.fontSize}px`);
     root.classList.toggle("title-bar-hidden", widget.showTitleBar === false && !widget.minimized);

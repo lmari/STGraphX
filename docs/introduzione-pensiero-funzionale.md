@@ -27,6 +27,8 @@ flowchart LR
 
 in cui le frecce dai nodi `quantità` e `prezzo` al nodo `costo` rendono visibili la relazione tra i due argomenti e il valore.
 
+In `STGraphX` ogni nodo definisce una funzione, il cui nome è il nome del nodo.
+
 ## Due notazioni per le funzioni
 
 Abitualmente le funzioni sono scritte in *notazione funzionale*, indicando il nome della funzione seguito dagli argomenti tra parentesi, separati da virgole. Per esempio, in `STGraphX` `pow(x, y)` calcola la potenza di base `x` ed esponente `y`.  
