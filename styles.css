@@ -4556,10 +4556,6 @@ input.inferred-unit[readonly] { color: #6d7782; background: #f4f6f8; }
     grid-template-columns: minmax(0, 1fr) minmax(250px, 0.9fr);
   }
 
-  .expression-main-docs {
-    grid-template-columns: 1fr;
-  }
-
   .expression-editor-textarea {
     min-height: min(36vh, 320px);
     height: min(36vh, 320px);
@@ -4751,7 +4747,6 @@ body.tablet-sidebar-layout .expression-editor-main.state-node-editor .expression
 }
 
 body.tablet-sidebar-layout .expression-main-docs {
-  grid-template-columns: 1fr;
   gap: 6px;
 }
 
