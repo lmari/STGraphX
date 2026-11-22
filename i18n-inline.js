@@ -14,6 +14,7 @@ window.STGraphXAppMeta = {
 
 window.STGraphXI18nBundles = {
   "it": {
+    "widget.matrixSurfaceRotate": "Trascina per ruotare e inclinare la superficie. Esc annulla il trascinamento.",
     "widget.xyCursorCoordinates": "X: {x} · Y: {y}",
     "mathSource.new": "Nuovo modello da sorgente…",
     "mathSource.show": "Mostra sorgente…",
@@ -1632,6 +1633,7 @@ window.STGraphXI18nBundles = {
 
   },
   "en": {
+    "widget.matrixSurfaceRotate": "Drag to rotate and tilt the surface. Esc cancels the drag.",
     "widget.xyCursorCoordinates": "X: {x} · Y: {y}",
     "mathSource.new": "New model from source…",
     "mathSource.show": "Show source…",

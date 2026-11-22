@@ -739,3 +739,17 @@ tooltip con le coordinate X e Y della posizione corrente. I valori seguono
 i limiti effettivi degli assi, automatici o configurati, e tengono conto dello
 zoom. Il tooltip non si aggancia ai punti delle serie e scompare fuori
 dall'area di disegno o durante il trascinamento.
+
+### Rotazione interattiva della superficie di una matrice
+
+Nel widget matrice in modalità **Superficie**, trascina direttamente sul grafico:
+lo spostamento orizzontale cambia l'azimut, quello verticale l'inclinazione.
+L'inclinazione resta fra 5° e 85°; la rotazione orizzontale può continuare oltre
+un giro completo. Funziona con mouse, penna e tocco. La barra del titolo resta
+il punto da trascinare per spostare il widget.
+
+Al rilascio, l'orientamento viene mantenuto e salvato nei campi già esistenti
+del modello. Un trascinamento corrisponde a una sola operazione Annulla/Ripristina;
+Esc o l'annullamento del gesto ripristina l'orientamento iniziale. Nell'editor
+valgono gli stessi blocchi delle altre modifiche durante l'esecuzione attiva
+e in modalità panoramica del canvas. La rotazione è disponibile anche nel player.

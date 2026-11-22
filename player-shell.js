@@ -3792,6 +3792,17 @@
             body.innerHTML = `<div class="empty">${this.t("widget.matrixSurfaceNotNumeric")}</div>`;
             return;
           }
+          global.STGraphXMatrixSurfaceInteraction?.bind(canvas, {
+            label: this.t("widget.matrixSurfaceRotate"),
+            read: () => ({ azimuth: widget.surfaceAzimuth, elevation: widget.surfaceElevation }),
+            onStart: () => { this._activeInputWidgetId = widget.id; },
+            onChange: ({ azimuth, elevation }) => {
+              widget.surfaceAzimuth = azimuth;
+              widget.surfaceElevation = elevation;
+              drawMatrixSurfaceWidgetCanvas(canvas, widget, matrix, this._zoom);
+            },
+            onEnd: () => { if (this._activeInputWidgetId === widget.id) this._activeInputWidgetId = null; },
+          });
         } else {
           drawMatrixWidgetCanvas(canvas, widget, matrix, execution, this._zoom);
         }

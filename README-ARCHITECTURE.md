@@ -233,6 +233,10 @@ In questo modo configurazione e valutazione dei breakpoint non restano mescolate
 - aggiornamento runtime dei widget
 - pannello di configurazione dei widget
 
+`matrix-surface-interaction.js` condivide fra editor e player il gesto di
+rotazione delle superfici delle matrici. L’editor collega il gesto a una singola
+transazione undo/redo, conservando azimut e inclinazione nel formato esistente.
+
 `xy-chart-tooltip.js` condivide fra editor e player il tooltip delle coordinate
 nei grafici XY, usando i limiti e l’area di disegno forniti dai renderer.
 

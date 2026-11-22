@@ -1986,6 +1986,28 @@ function drawMatrixSurfaceCanvas(canvas, widget, matrix) {
 function renderMatrixSurface(body, widget, matrix) {
   const canvas = document.createElement("canvas");
   if (drawMatrixSurfaceCanvas(canvas, widget, matrix)) {
+    globalThis.STGraphXMatrixSurfaceInteraction?.bind(canvas, {
+      label: t("widget.matrixSurfaceRotate"),
+      read: () => ({ azimuth: widget.surfaceAzimuth, elevation: widget.surfaceElevation }),
+      onStart: () => {
+        if (isEditingUiLocked() || (typeof isTabletCanvasPanMode === "function" && isTabletCanvasPanMode())) return false;
+        selectWidget(widget.id);
+        if (ui.selected?.type !== "widget" || ui.selected.id !== widget.id) return false;
+        widgetLayer.querySelectorAll(".value-widget.selected").forEach((root) => root.classList.remove("selected"));
+        canvas.closest(".value-widget")?.classList.add("selected");
+        beginTransaction();
+        return true;
+      },
+      onChange: ({ azimuth, elevation }) => {
+        widget.surfaceAzimuth = azimuth;
+        widget.surfaceElevation = elevation;
+        drawMatrixSurfaceCanvas(canvas, widget, matrix);
+      },
+      onEnd: (cancelled) => {
+        if (cancelled) cancelTransaction(); else commitTransaction();
+        refreshSidebar();
+      },
+    });
     body.appendChild(canvas);
     return;
   }

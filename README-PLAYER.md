@@ -25,7 +25,7 @@ Il player:
 * mostra:
   * grafo del modello;
   * equazioni dei nodi, con l'attributo `show-formulas="true"`;
-  * widget, con coordinate del cursore nei grafici XY;
+  * widget, con coordinate del cursore nei grafici XY e rotazione tramite trascinamento delle superfici delle matrici;
   * dashboard con pagine a tab, se definita nel modello;
   * controlli di esecuzione;
 * consente:
