@@ -7,23 +7,11 @@
 
 const { contextBridge, ipcRenderer, webUtils } = require("electron");
 const { exposePlatformInMainWorld } = require("../platform/install-platform.js");
-const { createElectronPlatform } = require("../platform/electron-platform.js");
+const { createElectronPlatform, dialogOptionsPayload } = require("../platform/electron-platform.js");
 
 const platform = createElectronPlatform({ ipcRenderer });
 
 exposePlatformInMainWorld(contextBridge, platform);
-
-function dialogOptionsPayload(options = {}) {
-  // File and directory handles contain methods and cannot cross Electron's
-  // context bridge. Pass only the serializable native path to the main process.
-  const defaultPath = String(options.defaultPath || options.startIn?.path || "").trim();
-  return {
-    title: String(options.title || ""),
-    multiple: Boolean(options.multiple),
-    suggestedName: String(options.suggestedName || ""),
-    defaultPath: defaultPath || undefined,
-  };
-}
 
 // Keep desktop file paths as plain data across the context bridge. Chromium's
 // native File System Access handles do not expose a parent directory, which is

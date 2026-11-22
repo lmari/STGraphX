@@ -25,7 +25,8 @@
     "dist:win": "electron-builder --win --config electron-builder.config.js",
     "dist:linux": "electron-builder --linux --config electron-builder.config.js",
     "dist:mac": "electron-builder --mac --config electron-builder.config.js",
-    "test:math-source:browser": "node tests/math-source-browser.test.js"
+    "test:math-source:browser": "node tests/math-source-browser.test.js",
+    "test:editor:browser": "node tests/editor-layout-browser.test.js"
   },
   "build": {
     "appId": "org.lmari.stgraphx",

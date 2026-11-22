@@ -13,6 +13,23 @@ const {
 } = require("./path-handles.js");
 const { PLATFORM_API_VERSION, normalizePlatformApi } = require("./platform-contract.js");
 
+// Keep only plain data: native handles and their methods cannot cross IPC.
+function dialogOptionsPayload(options = {}) {
+  const defaultPath = String(options.defaultPath || options.startIn?.path || "").trim();
+  return {
+    title: String(options.title || ""),
+    multiple: Boolean(options.multiple),
+    suggestedName: String(options.suggestedName || ""),
+    defaultPath: defaultPath || undefined,
+    types: (Array.isArray(options.types) ? options.types : []).map((type) => ({
+      description: String(type.description || ""),
+      accept: Object.fromEntries(Object.entries(type.accept || {}).map(([mime, extensions]) => [
+        mime, (Array.isArray(extensions) ? extensions : []).map(String),
+      ])),
+    })),
+  };
+}
+
 function createElectronPlatform({ ipcRenderer, clipboard = null }) {
   if (!ipcRenderer || typeof ipcRenderer.invoke !== "function") {
     throw new Error("ipcRenderer is required to create the Electron platform bridge");
@@ -60,22 +77,16 @@ function createElectronPlatform({ ipcRenderer, clipboard = null }) {
       return ipcRenderer.invoke("stgraphx:write-clipboard-text", normalized);
     },
     async showOpenFilePicker(options = {}) {
-      const defaultPath = String(options.defaultPath || options.startIn?.path || "");
-      const result = await ipcRenderer.invoke("stgraphx:show-open-dialog", {
-        multiple: Boolean(options.multiple),
-        title: options.title || "",
-        defaultPath: defaultPath || undefined,
-      });
+      const result = await ipcRenderer.invoke("stgraphx:show-open-dialog", dialogOptionsPayload(options));
       if (result.canceled) {
         return [];
       }
       return (result.filePaths || []).map(createFileHandle);
     },
     async showSaveFilePicker(options = {}) {
-      const result = await ipcRenderer.invoke("stgraphx:show-save-dialog", {
-        suggestedName: options.suggestedName || "model.json",
-        title: options.title || "",
-      });
+      const result = await ipcRenderer.invoke("stgraphx:show-save-dialog", dialogOptionsPayload({
+        ...options, suggestedName: options.suggestedName || "model.json",
+      }));
       if (result.canceled || !result.filePath) {
         throw createAbortError();
       }
@@ -94,5 +105,6 @@ function createElectronPlatform({ ipcRenderer, clipboard = null }) {
 }
 
 module.exports = {
+  dialogOptionsPayload,
   createElectronPlatform,
 };

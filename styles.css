@@ -4341,7 +4341,6 @@ input.inferred-unit[readonly] { color: #6d7782; background: #f4f6f8; }
   cursor: ns-resize;
   touch-action: none;
 }
-}
 
 .expression-main-docs {
   display: grid;

@@ -749,7 +749,9 @@ un giro completo. Funziona con mouse, penna e tocco. La barra del titolo resta
 il punto da trascinare per spostare il widget.
 
 Al rilascio, l'orientamento viene mantenuto e salvato nei campi già esistenti
-del modello. Un trascinamento corrisponde a una sola operazione Annulla/Ripristina;
+del modello. I campi Azimut ed Elevazione mostrano i decimali impostati nel
+modello, senza arrotondare l'orientamento memorizzato.
+Un trascinamento corrisponde a una sola operazione Annulla/Ripristina;
 Esc o l'annullamento del gesto ripristina l'orientamento iniziale. Nell'editor
 valgono gli stessi blocchi delle altre modifiche durante l'esecuzione attiva
 e in modalità panoramica del canvas. La rotazione è disponibile anche nel player.

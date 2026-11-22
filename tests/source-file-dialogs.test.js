@@ -19,5 +19,32 @@ vm.runInNewContext(fs.readFileSync(require.resolve('../platform/tauri-platform.j
   assert.equal(calls[0].args.suggestedName, 'sir.stgx');
   assert.deepEqual(Array.from(calls[0].args.extensions), ['stgx','txt']);
   assert.deepEqual(Array.from(calls[1].args.extensions), ['stgx','txt']);
+  // Execute the actual preload and both public bridges. The old preload
+  // discarded `types`, so testing only the main-process filter missed the bug.
+  const exposed = {};
+  const ipcCalls = [];
+  const preloadRequire = require('node:module').createRequire(require.resolve('../electron/preload.js'));
+  const ipcRenderer = { invoke: async (channel, options) => {
+    ipcCalls.push({channel, options: structuredClone(options)});
+    return {canceled:false, filePath:'/tmp/sir.stgx', filePaths:['/tmp/sir.stgx']};
+  } };
+  vm.runInNewContext(fs.readFileSync(require.resolve('../electron/preload.js'),'utf8'), {
+    require: (name) => name === 'electron' ? {
+      contextBridge: {exposeInMainWorld:(key,value)=>{exposed[key]=value;}}, ipcRenderer, webUtils:{},
+    } : preloadRequire(name),
+  });
+  const optionsWithHandle = {...sourceOptions, startIn:{path:'/tmp/models',getFile(){}}};
+  await exposed.STGraphXElectronFiles.showSaveFilePath(optionsWithHandle);
+  await exposed.STGraphXElectronFiles.showOpenFilePaths(optionsWithHandle);
+  await exposed.STGraphXPlatform.showSaveFilePicker(optionsWithHandle);
+  await exposed.STGraphXPlatform.showOpenFilePicker(optionsWithHandle);
+  assert.equal(ipcCalls.length,4);
+  for (const call of ipcCalls) {
+    assert.deepEqual(dialogFilters(call.options), [{name:'Source',extensions:['stgx','txt']}], call.channel);
+    assert.equal(call.options.defaultPath,'/tmp/models');
+    assert.equal(call.options.startIn,undefined,'native handles must not cross IPC');
+  }
+  await exposed.STGraphXElectronFiles.showSaveFilePath({suggestedName:'model.json'});
+  assert.deepEqual(dialogFilters(ipcCalls.at(-1).options),[{name:'JSON',extensions:['json']}]);
   console.log('source-file-dialogs.test.js: ok');
 })().catch((error) => { console.error(error); process.exitCode=1; });

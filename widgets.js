@@ -5596,13 +5596,13 @@ function refreshWidgetConfigPanel(widget) {
         input.min = String(min);
         input.max = String(max);
         input.step = "1";
-        input.value = String(widget[property]);
+        input.value = formatNumberValue(widget[property]);
         input.addEventListener("change", () => {
           runAction(() => {
             widget[property] = Number(input.value);
             sanitizeMatrixWidgetOptions(widget);
           });
-          input.value = String(widget[property]);
+          input.value = formatNumberValue(widget[property]);
         });
         surfaceViewRow.appendChild(createCompactField(label, input));
       };
