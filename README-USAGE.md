@@ -725,7 +725,7 @@ il widget mostra un messaggio esplicito invece della griglia.
 
 ## Modelli in forma testuale
 
-Il menu **File** offre **Mostra sorgente matematico…** e **Nuovo modello da
+Il menu **File** offre **Mostra sorgente…** e **Nuovo modello da
 sorgente matematico…** per copiare/esportare le definizioni o creare un modello
 in una nuova scheda da testo incollato o importato. Il nuovo modello riceve
 archi e layout predefiniti e si salva normalmente in JSON.

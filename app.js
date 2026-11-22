@@ -16685,10 +16685,13 @@ const mathSourceUi = globalThis.STGraphXMathSourceUi.createMathSourceUi({
   codec: globalThis.STGraphXMathSource.createCodec(semantics),
   getModel: exportGraphData,
   copyText: copyTextToClipboard,
+  cutSelection: cutExpressionInputSelection,
+  pasteText: pasteExpressionInputText,
   async loadText() {
     if (supportsOpenFilePicker()) {
       const [handle] = await showOpenFilePickerCompat({
         multiple: false,
+        title: t("mathSource.load"),
         types: [{ description: t("mathSource.label"), accept: { "text/plain": [".stgx", ".txt"] } }],
       });
       return handle ? (await handle.getFile()).text() : null;
@@ -16701,9 +16704,10 @@ const mathSourceUi = globalThis.STGraphXMathSourceUi.createMathSourceUi({
     if (supportsSaveFilePicker()) {
       const handle = await showSaveFilePickerCompat({
         suggestedName: filename,
+        title: t("mathSource.save"),
         types: [{ description: t("mathSource.label"), accept: { "text/plain": [".stgx"] } }],
       });
-      await writeTextToFileHandle(handle, text);
+      if (!await writeTextToFileHandle(handle, text)) throw new Error(t("mathSource.saveFailed"));
     } else downloadTextFile(filename, text);
   },
   createModel(model) {

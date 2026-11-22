@@ -46,7 +46,26 @@ async function exerciseEditor() {
     get("showMathSourceBtn").click();
     check(get("mathSourceText").readOnly, "Export view should be read-only");
     check(get("mathSourceText").value.includes("output x = 1; this+1"), "Wrong exported definitions");
-    check(!get("mathSourceSave").disabled, "Export is disabled for a valid model");
+    check(!get("mathSourceSave") && !get("mathSourceCopy"), "Export view still has action buttons");
+    check(get("mathSourceClose").parentElement.id === "mathSourceHead", "Close button is not in the header");
+    check(getComputedStyle(get("mathSourceHint")).fontSize === getComputedStyle(get("expressionEditorHint")).fontSize, "Hint styling differs from expression editor");
+    const sourceDialog = get("mathSourceDialog");
+    check(getComputedStyle(sourceDialog).resize === "both", "Dialog cannot be resized");
+    const initialTextHeight = get("mathSourceText").getBoundingClientRect().height;
+    sourceDialog.style.height = `${sourceDialog.getBoundingClientRect().height - 60}px`;
+    check(get("mathSourceText").getBoundingClientRect().height < initialTextHeight, "Text does not follow dialog resizing");
+    const head = get("mathSourceHead");
+    head.setPointerCapture = () => {}; // Synthetic events do not create an active pointer.
+    const beforeDrag = sourceDialog.getBoundingClientRect();
+    head.dispatchEvent(new PointerEvent("pointerdown", { pointerId: 7, button: 0, clientX: beforeDrag.left + 20, clientY: beforeDrag.top + 10, bubbles: true }));
+    head.dispatchEvent(new PointerEvent("pointermove", { pointerId: 7, clientX: beforeDrag.left + 45, clientY: beforeDrag.top + 35 }));
+    head.dispatchEvent(new PointerEvent("pointerup", { pointerId: 7 }));
+    check(sourceDialog.getBoundingClientRect().left > beforeDrag.left, "Dialog did not move");
+    const exportCommand = () => {
+      get("mathSourceText").dispatchEvent(new MouseEvent("contextmenu", { bubbles: true, cancelable: true, clientX: 450, clientY: 300 }));
+      return [...get("mathSourceContextMenu").querySelectorAll("button")].find((button) => button.textContent === t("mathSource.save"));
+    };
+    check(exportCommand() && !exportCommand().disabled, "Missing context export action");
 
     // Use the real save helper, replacing only the platform picker/handle.
     let savedText = "", savedName = "";
@@ -55,7 +74,10 @@ async function exerciseEditor() {
       savedName = options.suggestedName;
       return { createWritable: async () => ({ write: async (text) => { savedText = text; }, close: async () => {} }) };
     };
-    get("mathSourceSave").click(); await wait();
+    const exportButton = exportCommand();
+    const menuRect = exportButton.getBoundingClientRect();
+    check(document.elementFromPoint(menuRect.left + 5, menuRect.top + 5) === exportButton, "Context menu is not accessible above dialog");
+    exportButton.click(); await wait();
     check(savedName.endsWith(".stgx"), "Wrong source extension");
     check(savedText === get("mathSourceText").value, "Exported file differs from source view");
     check(hasUnsavedChanges() && !currentFileHandle, "Source export changed JSON save state");

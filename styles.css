@@ -6095,21 +6095,26 @@ body.tablet-sidebar-layout .menu-run-btn {
   padding: 20px;
   overflow: auto;
 }
+#mathSourceDialog[open] { display: flex; flex-direction: column; gap: 8px; }
+#mathSourceDialog { height: min(680px, calc(100vh - 40px)); min-width: min(360px, calc(100vw - 40px)); min-height: min(320px, calc(100vh - 40px)); resize: both; }
+#mathSourceHead { cursor: move; touch-action: none; flex-shrink: 0; }
+#mathSourceHead h3 { margin: 0; }
+#mathSourceDialog .math-source-actions[hidden] { display: none; }
 #mathSourceDialog::backdrop { background: rgb(0 0 0 / 35%); }
 #mathSourceDialog h2 { margin-top: 0; }
-#mathSourceHint { line-height: 1.5; }
+#mathSourceHint { margin: 0; }
 #mathSourceText {
   display: block;
   box-sizing: border-box;
   width: 100%;
-  height: min(45vh, 440px);
-  min-height: 180px;
+  flex: 1;
+  min-height: 100px;
   margin-top: 8px;
   padding: 12px;
   font-family: monospace;
   font-size: 14px;
   line-height: 1.5;
-  resize: vertical;
+  resize: none;
   tab-size: 2;
 }
 #mathSourceStatus { white-space: pre-wrap; overflow-wrap: anywhere; min-height: 1.5em; }

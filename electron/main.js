@@ -8,6 +8,7 @@
 const { app, BrowserWindow, clipboard, dialog, ipcMain, shell } = require('electron');
 const path = require('path');
 const fs = require('fs/promises');
+const { dialogFilters } = require('./dialog-filters.js');
 
 // The XDG portal emits a Chromium error-level message when a file dialog is
 // cancelled. STGraphX is not sandboxed, so prefer the native GTK/KDE chooser
@@ -192,7 +193,7 @@ app.whenReady().then(() => {
       title: options.title || 'Open JSON',
       defaultPath: options.defaultPath || undefined,
       properties: options.multiple ? ['openFile', 'multiSelections'] : ['openFile'],
-      filters: [{ name: 'JSON', extensions: ['json'] }],
+      filters: dialogFilters(options),
     });
   });
 
@@ -233,7 +234,7 @@ app.whenReady().then(() => {
     return dialog.showSaveDialog(win, {
       title: options.title || 'Save JSON',
       defaultPath: options.defaultPath || options.suggestedName || 'model.json',
-      filters: [{ name: 'JSON', extensions: ['json'] }],
+      filters: dialogFilters(options),
     });
   });
 

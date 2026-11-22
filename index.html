@@ -1020,18 +1020,19 @@
     <div id="appTooltip" class="app-tooltip hidden" role="tooltip" aria-hidden="true"></div>
 
     <dialog id="mathSourceDialog" aria-labelledby="mathSourceTitle" aria-describedby="mathSourceHint">
-      <h2 id="mathSourceTitle"></h2>
-      <p id="mathSourceHint" data-i18n="mathSource.hint"></p>
+      <div id="mathSourceHead" class="modal-head">
+        <h3 id="mathSourceTitle"></h3>
+        <button id="mathSourceClose" class="icon-btn modal-close-btn" type="button" data-i18n-aria-label="aria.close">×</button>
+      </div>
+      <p id="mathSourceHint" class="expression-editor-hint" data-i18n="mathSource.hint"></p>
       <label for="mathSourceText" data-i18n="mathSource.label"></label>
       <textarea id="mathSourceText" spellcheck="false" autocapitalize="off" autocomplete="off"></textarea>
       <p id="mathSourceStatus" role="status" aria-live="polite"></p>
       <div class="math-source-actions">
         <button id="mathSourceLoad" type="button" data-i18n="mathSource.load"></button>
         <button id="mathSourceCreate" type="button" data-i18n="mathSource.create"></button>
-        <button id="mathSourceCopy" type="button" data-i18n="action.copy"></button>
-        <button id="mathSourceSave" type="button" data-i18n="mathSource.save"></button>
-        <button id="mathSourceClose" type="button" data-i18n="action.close"></button>
       </div>
+      <div id="mathSourceContextMenu" class="context-menu hidden"></div>
     </dialog>
     <input id="mathSourceFileInput" type="file" accept=".stgx,.txt,text/plain" hidden />
     <script src="graph-functions.js"></script>

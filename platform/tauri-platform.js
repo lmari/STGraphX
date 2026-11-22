@@ -6,6 +6,12 @@
  */
 
 (function installTauriPlatformAdapter(globalScope) {
+  function pickerExtensions(options) {
+    return [...new Set((options.types || []).flatMap((type) => Object.values(type.accept || {}).flat())
+      .map((extension) => String(extension).replace(/^\./, ""))
+      .filter((extension) => /^[a-zA-Z0-9]+$/.test(extension)))];
+  }
+
   const invoke = globalScope.__TAURI__?.core?.invoke;
   const contract = globalScope.STGraphXPlatformContract;
   if (typeof invoke !== "function" || !contract?.normalizePlatformApi || globalScope.STGraphXPlatform) {
@@ -142,6 +148,7 @@
     async showOpenFilePicker(options = {}) {
       const paths = await invoke("open_file_dialog", {
         multiple: Boolean(options.multiple),
+        extensions: pickerExtensions(options),
         title: String(options.title ?? ""),
         defaultPath: String(options.defaultPath ?? options.startIn?.path ?? ""),
       });
@@ -150,6 +157,7 @@
     async showSaveFilePicker(options = {}) {
       const filePath = await invoke("save_file_dialog", {
         suggestedName: String(options.suggestedName ?? "model.json"),
+        extensions: pickerExtensions(options),
         title: String(options.title ?? ""),
       });
       if (!filePath) {

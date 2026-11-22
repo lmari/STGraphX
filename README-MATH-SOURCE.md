@@ -10,10 +10,12 @@ implementato.
 
 Nel menu **File**:
 
-- **Mostra sorgente matematico…** apre una vista di sola lettura delle
-  definizioni del modello corrente. È possibile copiarla o esportarla in un
-  file `.stgx`.
-- **Nuovo modello da sorgente matematico…** permette di incollare testo o
+- **Mostra sorgente…** apre una vista di sola lettura delle
+  definizioni del modello corrente. La finestra si sposta dalla barra del titolo
+  e si ridimensiona dall'angolo inferiore destro. Il menu contestuale del testo
+  offre selezione, copia ed esportazione in un file `.stgx`; **Chiudi** è in alto
+  a destra. Il menu è accessibile anche con Shift+F10.
+- **Nuovo modello da sorgente…** permette di incollare testo o
   importare un file `.stgx`/`.txt`. **Crea in una nuova scheda** valida il
   sorgente e crea un modello indipendente, da salvare poi in JSON. Il modello
   precedente e le sue modifiche restano nella propria scheda.
