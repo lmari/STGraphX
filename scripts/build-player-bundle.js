@@ -29,6 +29,7 @@ const bundleFiles = [
   "vendor/fflate/fflate.min.js",
   "read-data-core.js",
   "headless-runtime.js",
+  "xy-chart-tooltip.js",
   "player-shell.js",
 ];
 

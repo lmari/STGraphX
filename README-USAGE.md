@@ -731,3 +731,11 @@ in una nuova scheda da testo incollato o importato. Il nuovo modello riceve
 archi e layout predefiniti e si salva normalmente in JSON.
 Per sintassi, esempi e limiti della prima versione, vedi
 [README-MATH-SOURCE.md](README-MATH-SOURCE.md).
+
+### Coordinate del cursore nel grafico XY
+
+Portando il cursore nell'area di disegno di un widget grafico XY appare un
+tooltip con le coordinate X e Y della posizione corrente. I valori seguono
+i limiti effettivi degli assi, automatici o configurati, e tengono conto dello
+zoom. Il tooltip non si aggancia ai punti delle serie e scompare fuori
+dall'area di disegno o durante il trascinamento.

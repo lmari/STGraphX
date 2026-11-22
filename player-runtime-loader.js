@@ -29,6 +29,7 @@
     "runtime-controller.js",
     "watch-debugger-core.js",
     "headless-runtime.js",
+    "xy-chart-tooltip.js",
     "player-shell.js",
   ];
 

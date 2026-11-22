@@ -943,7 +943,8 @@
     });
   }
 
-  function drawSimpleXYChart(canvas, pairs, execution, fontSize = 11, options = {}) {
+  function drawSimpleXYChart(canvas, pairs, execution, fontSize = 11, options = {}, coordinateText) {
+    global.STGraphXXYChartTooltip?.update(canvas, null, coordinateText);
     const ctx = canvas.getContext("2d");
     if (!ctx) {
       return;
@@ -1062,6 +1063,7 @@
     const bottomPad = showAxes ? 26 + (xAxisLabel ? labelFontSize + 12 : 0) : 10;
     const plotW = Math.max(10, width - leftPad - rightPad);
     const plotH = Math.max(10, height - topPad - bottomPad);
+    global.STGraphXXYChartTooltip?.update(canvas, { leftPad, topPad, plotW, plotH, minX, maxX, minY, maxY }, coordinateText);
     const sx = (x) => leftPad + ((x - minX) / (maxX - minX)) * plotW;
     const sy = (y) => topPad + plotH - ((y - minY) / (maxY - minY)) * plotH;
 
@@ -3931,7 +3933,8 @@
         canvas.style.display = "block";
         canvas.width = Math.max(160, Math.floor(widget.width * this._zoom - 24));
         canvas.height = Math.max(120, Math.floor(widget.height * this._zoom - 54));
-        drawSimpleXYChart(canvas, chartSeriesForWidget(widget, widgetState), execution, widget.fontSize, widget);
+        drawSimpleXYChart(canvas, chartSeriesForWidget(widget, widgetState), execution, widget.fontSize, widget,
+          (x, y) => this.t("widget.xyCursorCoordinates", { x: formatNumberValue(execution, x), y: formatNumberValue(execution, y) }));
         body.appendChild(canvas);
         return;
       }

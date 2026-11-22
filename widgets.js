@@ -1115,6 +1115,8 @@ function applyRuntimeModelInputOverrides(model, inputValueMap = new Map()) {
 }
 
 function drawXYChart(canvas, seriesList = [], options = null) {
+  const coordinateText = (x, y) => t("widget.xyCursorCoordinates", { x: formatNumberValue(x), y: formatNumberValue(y) });
+  globalThis.STGraphXXYChartTooltip?.update(canvas, null, coordinateText);
   const ctx = canvas.getContext("2d");
   if (!ctx) {
     return;
@@ -1298,6 +1300,7 @@ function drawXYChart(canvas, seriesList = [], options = null) {
   const bottomPad = Math.max(30, fontSize + (cfg.xAxisLabel ? 36 : 19));
   const plotW = Math.max(10, width - leftPad - rightPad);
   const plotH = Math.max(10, height - topPad - bottomPad);
+  globalThis.STGraphXXYChartTooltip?.update(canvas, { leftPad, topPad, plotW, plotH, minX, maxX, minY, maxY }, coordinateText);
 
   if (cfg.showAxes) {
     ctx.strokeStyle = "#c4d3df";

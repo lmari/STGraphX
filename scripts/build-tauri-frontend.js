@@ -17,6 +17,7 @@ const files = [
   "math-source-core.js",
   "math-source-ui.js",
   "widgets.js",
+  "xy-chart-tooltip.js",
   "semantic.js",
   "graph-functions.js",
   "i18n-inline.js",

@@ -233,6 +233,9 @@ In questo modo configurazione e valutazione dei breakpoint non restano mescolate
 - aggiornamento runtime dei widget
 - pannello di configurazione dei widget
 
+`xy-chart-tooltip.js` condivide fra editor e player il tooltip delle coordinate
+nei grafici XY, usando i limiti e l’area di disegno forniti dai renderer.
+
 `scene2d-core.js` contiene il renderer Canvas 2D condiviso dalla shell completa e dal player per il widget Scena 2D. Riceve primitive gia valutate e non dipende dal DOM dell'editor.
 
 Espone nel renderer un namespace condiviso:

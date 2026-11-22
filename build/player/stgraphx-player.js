@@ -1,6 +1,6 @@
 /*!
  * STGraphX Embedded Player Bundle
- * Generated: 2026-11-21T14:55:02.311Z
+ * Generated: 2026-11-22T20:20:43.191Z
  */
 
 /* --- i18n-inline.js --- */
@@ -13,13 +13,41 @@
 
 window.STGraphXAppMeta = {
   author: "Luca Mari",
-  releaseDate: "2026.11.21",
+  releaseDate: "2026.11.22",
   license: "MPL-2.0",
   copyright: "Copyright (c) 2026 Luca Mari",
 };
 
 window.STGraphXI18nBundles = {
   "it": {
+    "widget.xyCursorCoordinates": "X: {x} · Y: {y}",
+    "mathSource.new": "Nuovo modello da sorgente…",
+    "mathSource.show": "Mostra sorgente…",
+    "mathSource.label": "Sorgente (.stgx)",
+    "mathSource.load": "Importa file…",
+    "mathSource.save": "Esporta sorgente…",
+    "mathSource.create": "Crea in una nuova scheda",
+    "mathSource.saved": "Sorgente esportato.",
+    "mathSource.saveFailed": "Impossibile esportare il sorgente.",
+    "mathSource.created": "Modello creato dal sorgente; salva il nuovo modello in JSON.",
+    "mathSource.hint": "Clic destro nel testo per selezionare, copiare o esportare il sorgente. Una formula definisce una variabile; due formule separate da ; definiscono stato iniziale e stato prossimo. Qualificatori facoltativi: parameter, input, output, global. Commenti: # oppure //. Per formule su più righe usa le parentesi. Il sorgente conserva tempi, unità, integratore e seme casuale; non include presentazione, intervalli, scenari o controlli di esecuzione. Definizioni di unità personalizzate, funzioni locali, sottomodelli, nodi bozza e accessi a file o proprietà non sono ancora supportati.",
+    "mathSource.error.location": "Riga {line}, colonna {column} — {name}\n{message} {detail}",
+    "mathSource.error.brackets": "Parentesi non corrispondenti.",
+    "mathSource.error.unclosed": "Stringa o parentesi non chiusa.",
+    "mathSource.error.expression": "Espressione non valida.",
+    "mathSource.error.declaration": "Dichiarazione attesa: nome = espressione.",
+    "mathSource.error.duplicate": "Definizione duplicata.",
+    "mathSource.error.setting": "Impostazione non valida: i tempi richiedono costanti numeriche o operazioni aritmetiche; integratore euler/rk4; seme intero fra 0 e 4294967295.",
+    "mathSource.error.qualifier": "Qualificatori non validi: input solo per variabili algebriche; global solo per parameter.",
+    "mathSource.error.name": "Nome non valido o riservato.",
+    "mathSource.error.empty": "Il sorgente deve definire almeno una variabile.",
+    "mathSource.error.time": "dt deve essere diverso da zero e avanzare da t0 verso t1.",
+    "mathSource.error.cycle": "Dipendenza ciclica fra definizioni iniziali o algebriche.",
+    "mathSource.error.unsupported": "Costrutto non ancora supportato dal formato sorgente.",
+    "mathSource.error.inputDependency": "Una variabile input non può dipendere da altri nodi.",
+    "mathSource.error.unit": "L’unità deve essere una stringa non vuota fra virgolette doppie.",
+    "mathSource.error.version": "Versione del sorgente non supportata.",
+
     // Application
     "about.authorLabel": "Autore",
     "about.body": "Versione sperimentale con shell web ed Electron\nEngine di simulazione JavaScript o Rust.",
@@ -68,6 +96,8 @@ window.STGraphXI18nBundles = {
     "action.tabletCanvasPan": "Modalità pan canvas",
     "action.timedStart": "Avvia temporizzata",
     "action.timedStop": "Ferma temporizzata",
+    "action.playStart": "Avvia playmode",
+    "action.playStop": "Ferma playmode",
     "app.title": "STGraphX",
     "aria.back": "Indietro",
     "aria.close": "Chiudi",
@@ -208,6 +238,7 @@ window.STGraphXI18nBundles = {
     "menu.run.stopOnRuntimeError": "Arresta al primo errore",
     "menu.run.checkRanges": "Controlla limiti dichiarati",
     "menu.run.timedToggle": "Temporizzato",
+    "menu.run.playToggle": "Playmode",
     "menu.run.watch": "Watch / breakpoint",
     "menu.tools.modelNotes": "Appunti del modello...",
     "menu.tools.scenarios": "Gestione di scenari...",
@@ -371,7 +402,8 @@ window.STGraphXI18nBundles = {
     "expr.editor.nodeType.state": "variabile di stato",
     "expr.editor.title": "Espressione",
     "expr.filter.placeholder": "Filtra simboli...",
-    "expr.hint": "Nell'editor: Tab inserisce un tab, Invio un ritorno a capo, Ctrl+Enter applica. Shift+Invio inserisce il simbolo selezionato, Shift+Freccia su/giu cambia selezione nel pannello. Selezionando il nome di una variabile, appare un tooltip con il valore della variabile.",
+    "expr.hint": "Nell'editor: Tab inserisce un tab, Invio un ritorno a capo, Ctrl+Enter applica. Ctrl+Spazio apre i completamenti; Shift+Invio inserisce il simbolo selezionato, Shift+Freccia su/giu cambia selezione nel pannello. Selezionando il nome di una variabile, appare un tooltip con il valore della variabile.",
+    "expr.completion.label": "Completamenti disponibili",
     "tooltip.expr.hideLibrary": "Nasconde la colonna con le variabili e le funzioni disponibili.",
     "tooltip.expr.showLibrary": "Mostra la colonna con le variabili e le funzioni disponibili.",
     "expr.syntaxError": "Errore di sintassi: {message}",
@@ -1003,6 +1035,8 @@ window.STGraphXI18nBundles = {
     "status.timeDelayUpdated": "Ritardo temporizzato impostato a {delay} ms.",
     "status.timedStarted": "Esecuzione temporizzata avviata ({delay} ms).",
     "status.timedStopped": "Esecuzione temporizzata fermata.",
+    "status.playStarted": "Playmode avviato ({delay} ms).",
+    "status.playStopped": "Playmode fermato.",
     "status.timeEndReached": "Fine intervallo temporale raggiunta.",
     "status.undo": "Undo eseguito.",
     "status.widgetButtonCreated": "Widget pulsante creato.",
@@ -1101,6 +1135,7 @@ window.STGraphXI18nBundles = {
     "tooltip.menu.run.reset": "Reimposta l'esecuzione a t0 e pulisce i risultati dinamici.",
     "tooltip.menu.run.step": "Esegue il modello per un solo passo temporale.",
     "tooltip.menu.run.timed": "Avvia o ferma l'esecuzione temporizzata.",
+    "tooltip.menu.run.play": "Avvia o ferma il playmode: usa dt ma non rende disponibili time, t0 e t1.",
     "tooltip.menu.run.watch": "Apre lo strumento di watch e breakpoint per il debugging del modello.",
     "tooltip.menu.view": "Controlli di visualizzazione, zoom e griglia.",
     "tooltip.menu.view.fit": "Adatta zoom e vista al contenuto attuale di grafo e widget.",
@@ -1558,6 +1593,7 @@ window.STGraphXI18nBundles = {
     "error.evalReason.syntax": "sintassi non valida",
     "error.evalReason.type": "valore non supportato",
     "error.evalStepFailed": "Errore nel passo temporale (variabile: {node}, motivo: {reason}, tempo: {time}).",
+    "error.evalPlayFailed": "Errore in playmode (variabile: {node}, motivo: {reason}).",
     "error.rustEngineBreakpoint": "Il comando Rust sperimentale non gestisce ancora i breakpoint.",
     "error.rustEngineFailed": "Esecuzione con il motore Rust non riuscita: {message}",
     "error.rustEngineUnsupportedNode": "Il motore Rust non supporta ancora la variabile {name} di tipo {type}.",
@@ -1602,6 +1638,34 @@ window.STGraphXI18nBundles = {
 
   },
   "en": {
+    "widget.xyCursorCoordinates": "X: {x} · Y: {y}",
+    "mathSource.new": "New model from source…",
+    "mathSource.show": "Show source…",
+    "mathSource.label": "Source (.stgx)",
+    "mathSource.load": "Import file…",
+    "mathSource.save": "Export source…",
+    "mathSource.create": "Create in a new tab",
+    "mathSource.saved": "Source exported.",
+    "mathSource.saveFailed": "Unable to export source.",
+    "mathSource.created": "Model created from source; save the new model as JSON.",
+    "mathSource.hint": "Right-click the text to select, copy or export source. One expression defines a variable; two expressions separated by ; define initial and next state. Optional qualifiers: parameter, input, output, global. Comments: # or //. Enclose multiline expressions in parentheses. Source preserves times, units, integrator and random seed; it excludes presentation, ranges, scenarios and execution controls. Custom unit definitions, local functions, submodels, draft nodes and file or property access are not supported yet.",
+    "mathSource.error.location": "Line {line}, column {column} — {name}\n{message} {detail}",
+    "mathSource.error.brackets": "Mismatched brackets.",
+    "mathSource.error.unclosed": "Unclosed string or bracket.",
+    "mathSource.error.expression": "Invalid expression.",
+    "mathSource.error.declaration": "Expected declaration: name = expression.",
+    "mathSource.error.duplicate": "Duplicate definition.",
+    "mathSource.error.setting": "Invalid setting: times require numeric constants or arithmetic; integrator euler/rk4; integer seed between 0 and 4294967295.",
+    "mathSource.error.qualifier": "Invalid qualifiers: input requires an algebraic variable; global requires parameter.",
+    "mathSource.error.name": "Invalid or reserved name.",
+    "mathSource.error.empty": "Source must define at least one variable.",
+    "mathSource.error.time": "dt must be nonzero and advance from t0 towards t1.",
+    "mathSource.error.cycle": "Cyclic dependency between initial or algebraic definitions.",
+    "mathSource.error.unsupported": "Construct not yet supported by the source format.",
+    "mathSource.error.inputDependency": "An input variable cannot depend on other nodes.",
+    "mathSource.error.unit": "The unit must be a nonempty double-quoted string.",
+    "mathSource.error.version": "Unsupported source version.",
+
     // Application
     "about.authorLabel": "Author",
     "about.body": "Experimental release with web and Electron shells\nJavaScript or Rust simulation engine",
@@ -1650,6 +1714,8 @@ window.STGraphXI18nBundles = {
     "action.tabletCanvasPan": "Canvas pan mode",
     "action.timedStart": "Start timed",
     "action.timedStop": "Stop timed",
+    "action.playStart": "Start playmode",
+    "action.playStop": "Stop playmode",
     "app.title": "STGraphX",
     "aria.back": "Back",
     "aria.close": "Close",
@@ -1790,6 +1856,7 @@ window.STGraphXI18nBundles = {
     "menu.run.stopOnRuntimeError": "Stop on first error",
     "menu.run.checkRanges": "Check declared ranges",
     "menu.run.timedToggle": "Timed",
+    "menu.run.playToggle": "Playmode",
     "menu.run.watch": "Watch / breakpoint",
     "menu.tools.modelNotes": "Model notes...",
     "menu.tools.scenarios": "Scenario manager...",
@@ -1953,7 +2020,8 @@ window.STGraphXI18nBundles = {
     "expr.editor.nodeType.state": "state variable",
     "expr.editor.title": "Expression",
     "expr.filter.placeholder": "Filter symbols...",
-    "expr.hint": "In the editor: Tab inserts a tab, Enter inserts a newline, Ctrl+Enter applies. Shift+Enter inserts the selected symbol, Shift+Up/Down changes the panel selection. By selecting the name of a variable, the tooltip will show the value of the variable.",
+    "expr.hint": "In the editor: Tab inserts a tab, Enter inserts a newline, Ctrl+Enter applies. Ctrl+Space opens completions; Shift+Enter inserts the selected symbol, Shift+Up/Down changes the panel selection. By selecting the name of a variable, the tooltip will show the value of the variable.",
+    "expr.completion.label": "Available completions",
     "tooltip.expr.hideLibrary": "Hide the column containing available variables and functions.",
     "tooltip.expr.showLibrary": "Show the column containing available variables and functions.",
     "expr.syntaxError": "Syntax error: {message}",
@@ -2585,6 +2653,8 @@ window.STGraphXI18nBundles = {
     "status.timeDelayUpdated": "Timed delay set to {delay} ms.",
     "status.timedStarted": "Timed execution started ({delay} ms).",
     "status.timedStopped": "Timed execution stopped.",
+    "status.playStarted": "Playmode started ({delay} ms).",
+    "status.playStopped": "Playmode stopped.",
     "status.timeEndReached": "Time range reached.",
     "status.undo": "Undo executed.",
     "status.widgetButtonCreated": "Button widget created.",
@@ -2683,6 +2753,7 @@ window.STGraphXI18nBundles = {
     "tooltip.menu.run.reset": "Resets execution to t0 and clears dynamic results.",
     "tooltip.menu.run.step": "Runs the model for a single time step.",
     "tooltip.menu.run.timed": "Starts or stops timed execution.",
+    "tooltip.menu.run.play": "Starts or stops playmode: dt is available, while time, t0, and t1 are not.",
     "tooltip.menu.run.watch": "Opens the watch and breakpoint tool for model debugging.",
     "tooltip.menu.view": "View, zoom, and grid controls.",
     "tooltip.menu.view.fit": "Fits zoom and viewport to the current graph and widget content.",
@@ -3140,6 +3211,7 @@ window.STGraphXI18nBundles = {
     "error.evalReason.syntax": "invalid syntax",
     "error.evalReason.type": "unsupported value",
     "error.evalStepFailed": "Step evaluation failed (variable: {node}, reason: {reason}, time: {time}).",
+    "error.evalPlayFailed": "Playmode evaluation failed (variable: {node}, reason: {reason}).",
     "error.rustEngineBreakpoint": "The experimental Rust command does not support breakpoints yet.",
     "error.rustEngineFailed": "Rust engine execution failed: {message}",
     "error.rustEngineUnsupportedNode": "The Rust engine does not support variable {name} of type {type} yet.",
@@ -3310,7 +3382,19 @@ window.STGraphXI18nBundles = {
   }
   function renderMarkdownToHtml(markdown, options = {}) {
     const lines = String(markdown ?? "").replace(/\r\n?/g, "\n").split("\n"); const output = []; let paragraph = []; let list = null; let inCode = false; let codeLines = []; let codeLanguage = ""; let inMath = false; let mathLines = [];
-    const flushParagraph = () => { if (paragraph.length) { output.push(`<p>${paragraph.map((item) => renderInlineMarkdown(item, options)).join("<br>")}</p>`); paragraph = []; } };
+    const flushParagraph = () => {
+      if (!paragraph.length) return;
+      const html = paragraph.map((item, index) => {
+        // A plain newline is a soft break in Markdown. Two trailing spaces
+        // make it an explicit line break, as used in the introductions.
+        const hardBreak = / {2,}$/u.test(item);
+        const source = item.replace(/[ \t]+$/u, "");
+        const separator = index === paragraph.length - 1 ? "" : (hardBreak ? "<br>" : " ");
+        return `${renderInlineMarkdown(source, options)}${separator}`;
+      }).join("");
+      output.push(`<p>${html}</p>`);
+      paragraph = [];
+    };
     const flushList = () => { if (list) { output.push(`<${list.type}>${list.items.map((item) => `<li>${renderInlineMarkdown(item, options)}</li>`).join("")}</${list.type}>`); list = null; } };
     const flushCode = () => {
       if (!inCode) return;
@@ -10120,11 +10204,15 @@ window.STGraphXI18nBundles = {
       return readDataFromWorkbook(cache[normalizedPath], sheetName, row1, column1, row2, column2);
     }
 
-    function buildExecutionGlobalsForModel(model, rootExecution, timeValue) {
-      return {
+    function buildExecutionGlobalsForModel(model, rootExecution, timeValue, options = {}) {
+      const playMode = Boolean(options?.playMode);
+      const timeGlobals = playMode ? {} : {
         time: timeValue,
         t0: Number(rootExecution.t0),
         t1: Number(rootExecution.t1),
+      };
+      return {
+        ...timeGlobals,
         dt: Number(rootExecution.dt),
         getModelProperty: (key, fallback = null) => {
           const name = String(key ?? "");
@@ -10166,8 +10254,8 @@ window.STGraphXI18nBundles = {
       };
     }
 
-    function evaluateParameterNodesForModel(model, timeValue, rootExecution) {
-      const globals = buildExecutionGlobalsForModel(model, rootExecution, timeValue);
+    function evaluateParameterNodesForModel(model, timeValue, rootExecution, options = {}) {
+      const globals = buildExecutionGlobalsForModel(model, rootExecution, timeValue, options);
       const parameterNodes = (model?.nodes || []).filter((node) => node?.shape === "diamond");
       const pending = new Set();
       const resolved = new Set();
@@ -10260,9 +10348,9 @@ window.STGraphXI18nBundles = {
       }
     }
 
-    function buildInitialStateContextForModel(model, node, timeValue, rootExecution, referencedNames = null) {
+    function buildInitialStateContextForModel(model, node, timeValue, rootExecution, referencedNames = null, options = {}) {
       const context = {
-        ...buildExecutionGlobalsForModel(model, rootExecution, timeValue),
+        ...buildExecutionGlobalsForModel(model, rootExecution, timeValue, options),
         ...nodePropertyAccessForContext(node),
       };
       globalParameterNodesForModel(model, node.id).forEach((depNode) => {
@@ -10282,9 +10370,9 @@ window.STGraphXI18nBundles = {
       return context;
     }
 
-    function initializeStateNodesForModel(model, timeValue, rootExecution) {
+    function initializeStateNodesForModel(model, timeValue, rootExecution, options = {}) {
       resetModelRandomGenerator(model);
-      evaluateParameterNodesForModel(model, timeValue, rootExecution);
+      evaluateParameterNodesForModel(model, timeValue, rootExecution, options);
       const initialNodes = (model.nodes || []).filter((node) =>
         isStateNode(node) || (node.shape === "ellipse" && !node.externalValueEnabled));
       const pending = new Set();
@@ -10342,7 +10430,7 @@ window.STGraphXI18nBundles = {
           } else {
             const result = semantics.evaluateValueExpression(
               expression,
-              buildInitialStateContextForModel(model, node, timeValue, rootExecution, references),
+              buildInitialStateContextForModel(model, node, timeValue, rootExecution, references, options),
               randomEvaluationOptions(model, {
                 localFunctions: localFunctionsForRuntimeModel(model),
                 ...unitEvaluationOptionsForNode(model, node, expression),
@@ -10590,7 +10678,7 @@ window.STGraphXI18nBundles = {
 
     function provisionalSubmodelValuesForModel(model, timeValue, env) {
       const provisionalValues = new Map();
-      const parentContext = buildExecutionGlobalsForModel(model, env.rootExecution, timeValue);
+      const parentContext = buildExecutionGlobalsForModel(model, env.rootExecution, timeValue, env);
       (model?.nodes || []).forEach((node) => {
         if (!node?.computedError && node?.computedValue !== null && node?.computedValue !== undefined) {
           parentContext[node.name] = node.computedValue;
@@ -10613,14 +10701,14 @@ window.STGraphXI18nBundles = {
         const overrides = buildSubmodelInputOverrides(model, runtimeNode, parentContext, { allowUnresolved: true });
         applyRuntimeModelInputOverrides(probeModel, overrides.overrides);
         if (probeModel.execution.currentTime == null) {
-          initializeStateNodesForModel(probeModel, timeValue, env.rootExecution);
+          initializeStateNodesForModel(probeModel, timeValue, env.rootExecution, env);
         } else if (probeModel.execution.currentTime !== timeValue) {
           promotePendingStateNodesForModel(probeModel);
         }
         evaluateModelAtTimeRecursive(
           probeModel,
           timeValue,
-          { rootExecution: env.rootExecution, stack: [...env.stack, normalizedPath] },
+          { rootExecution: env.rootExecution, stack: [...env.stack, normalizedPath], playMode: Boolean(env.playMode) },
           { applyResults: false, skipProvisionalSubmodels: true },
         );
         provisionalValues.set(runtimeNode.id, outputValuesForModel(probeModel));
@@ -10689,7 +10777,7 @@ window.STGraphXI18nBundles = {
           let childResult;
           if (childModel.execution.currentTime == null || childModel.execution.currentTime !== timeValue) {
             if (childModel.execution.currentTime == null) {
-              initializeStateNodesForModel(childModel, timeValue, env.rootExecution);
+              initializeStateNodesForModel(childModel, timeValue, env.rootExecution, env);
             } else {
               promotePendingStateNodesForModel(childModel);
             }
@@ -10700,6 +10788,7 @@ window.STGraphXI18nBundles = {
             {
               rootExecution: env.rootExecution,
               stack: [...env.stack, normalizedPath],
+              playMode: Boolean(env.playMode),
             },
             { applyResults },
           );
@@ -10730,7 +10819,7 @@ window.STGraphXI18nBundles = {
       algebraicValueMap,
       stateValueOverrides = null,
     ) {
-      const globals = buildExecutionGlobalsForModel(model, env.rootExecution, timeValue);
+      const globals = buildExecutionGlobalsForModel(model, env.rootExecution, timeValue, env);
       const results = new Map();
       (model?.nodes || []).forEach((node) => {
         if (!integralStateIds.has(node.id)) {
@@ -10832,7 +10921,7 @@ window.STGraphXI18nBundles = {
     }
 
     function evaluateModelAtTimeRecursive(model, timeValue, env, options = {}) {
-      const executionGlobals = buildExecutionGlobalsForModel(model, env.rootExecution, timeValue);
+      const executionGlobals = buildExecutionGlobalsForModel(model, env.rootExecution, timeValue, env);
       const planEntry = executionPlanForModel(model);
       const executionPlan = planEntry.plan;
       const unitEvaluationOptions = (node) => unitEvaluationOptionsForNode(model, node, node?.valueExpression);
@@ -10889,7 +10978,7 @@ window.STGraphXI18nBundles = {
           const stage2 = semantics.evaluateStatefulGraphStep(
             model.nodes,
             model.edges,
-            buildExecutionGlobalsForModel(model, env.rootExecution, timeValue + dt / 2),
+            buildExecutionGlobalsForModel(model, env.rootExecution, timeValue + dt / 2, env),
             executionPlan,
             {
               derivativeStateNodeIds: integralStateNodeIds,
@@ -10920,7 +11009,7 @@ window.STGraphXI18nBundles = {
             const stage3 = semantics.evaluateStatefulGraphStep(
               model.nodes,
               model.edges,
-              buildExecutionGlobalsForModel(model, env.rootExecution, timeValue + dt / 2),
+              buildExecutionGlobalsForModel(model, env.rootExecution, timeValue + dt / 2, env),
               executionPlan,
               {
                 derivativeStateNodeIds: integralStateNodeIds,
@@ -10951,7 +11040,7 @@ window.STGraphXI18nBundles = {
               const stage4 = semantics.evaluateStatefulGraphStep(
                 model.nodes,
                 model.edges,
-                buildExecutionGlobalsForModel(model, env.rootExecution, timeValue + dt),
+                buildExecutionGlobalsForModel(model, env.rootExecution, timeValue + dt, env),
                 executionPlan,
                 {
                   derivativeStateNodeIds: integralStateNodeIds,
@@ -11306,16 +11395,16 @@ window.STGraphXI18nBundles = {
           && initializedNodeLists.get(targetModel) === nodeList,
         );
       },
-      initializeAt(timeValue, targetModel = this.model, execution = this.getRootExecution()) {
+      initializeAt(timeValue, targetModel = this.model, execution = this.getRootExecution(), optionsForCore = {}) {
         if (typeof beforeInitialize === "function") {
-          beforeInitialize({ session: this, model: targetModel, timeValue, execution });
+          beforeInitialize({ session: this, model: targetModel, timeValue, execution, options: optionsForCore });
         }
-        core.initializeStateNodesForModel(targetModel, timeValue, execution);
+        core.initializeStateNodesForModel(targetModel, timeValue, execution, optionsForCore);
         if (targetModel && typeof targetModel === "object" && Array.isArray(targetModel.nodes)) {
           initializedNodeLists.set(targetModel, targetModel.nodes);
         }
         if (typeof afterInitialize === "function") {
-          afterInitialize({ session: this, model: targetModel, timeValue, execution });
+          afterInitialize({ session: this, model: targetModel, timeValue, execution, options: optionsForCore });
         }
       },
       promotePending(targetModel = this.model) {
@@ -11431,6 +11520,19 @@ window.STGraphXI18nBundles = {
       return { t0, dt, t1 };
     }
 
+    function validatePlayConfig() {
+      const dt = Number(getExecution()?.dt);
+      if (!Number.isFinite(dt)) {
+        setStatusKey?.("error.timeInvalid");
+        return null;
+      }
+      if (dt === 0) {
+        setStatusKey?.("error.timeStepZero");
+        return null;
+      }
+      return { dt };
+    }
+
     function clearTimedExecutionStateSilently() {
       if (timedState.timedRunHandle != null) {
         clearIntervalFn?.(timedState.timedRunHandle);
@@ -11439,16 +11541,18 @@ window.STGraphXI18nBundles = {
       timedState.timedStepRunning = false;
       timedState.timedRunStartedAt = 0;
       timedState.timedStepLastActivityAt = 0;
+      timedState.timedRunMode = null;
     }
 
     function stopTimedExecution(updateStatus = true, reason = "stopped") {
       const hadHandle = timedState.timedRunHandle != null;
       const wasRunningStep = timedState.timedStepRunning === true;
+      const mode = timedState.timedRunMode;
       clearTimedExecutionStateSilently();
       if (hadHandle || wasRunningStep) {
         updateEditingLockUi?.();
         if (updateStatus) {
-          setStatusKey?.("status.timedStopped");
+          setStatusKey?.(mode === "play" ? "status.playStopped" : "status.timedStopped");
         }
         render?.();
         onTimedExecutionStopped?.({ reason });
@@ -11504,7 +11608,7 @@ window.STGraphXI18nBundles = {
       }
     }
 
-    async function ensureExecutionReady() {
+    async function ensureExecutionReady({ playMode = false } = {}) {
       if (!enforceStrictDefinitions?.()) {
         return null;
       }
@@ -11514,23 +11618,24 @@ window.STGraphXI18nBundles = {
       if (!(await prepareForExecution?.())) {
         return null;
       }
-      return validateTimeConfig();
+      return playMode ? validatePlayConfig() : validateTimeConfig();
     }
 
     async function executeOneStep(restartIfEnded = true, {
       refreshView = true,
       notifyBreakpoint = true,
       reportProgress = true,
+      playMode = false,
     } = {}) {
       const execution = getExecution();
-      const cfg = await ensureExecutionReady();
+      const cfg = await ensureExecutionReady({ playMode });
       if (!cfg) {
         return false;
       }
 
       let restarted = false;
       const hasStateSnapshot = session.hasInitializedStateSnapshot();
-      if (isExecutionEnded(cfg)) {
+      if (!playMode && isExecutionEnded(cfg)) {
         if (!restartIfEnded) {
           setStatusKey?.("status.evalDone", {
             count: 0,
@@ -11545,7 +11650,7 @@ window.STGraphXI18nBundles = {
         execution.currentTime = null;
         restarted = true;
       }
-      const nextTime = execution.currentTime == null ? cfg.t0 : execution.currentTime + cfg.dt;
+      const nextTime = execution.currentTime == null ? (playMode ? 0 : cfg.t0) : execution.currentTime + cfg.dt;
 
       const startingFresh = execution.currentTime == null;
       if (restarted) {
@@ -11557,14 +11662,17 @@ window.STGraphXI18nBundles = {
 
       if (execution.currentTime == null) {
         session.clearSubmodelState();
-        session.initializeAt(nextTime);
+        session.initializeAt(nextTime, undefined, undefined, { playMode });
       } else {
         session.promotePending();
       }
 
-      const stepResult = session.evaluateAtTime(nextTime, evaluationEnv());
+      const stepResult = session.evaluateAtTime(nextTime, {
+        ...evaluationEnv(),
+        playMode,
+      }, { playMode });
       execution.currentTime = nextTime;
-      if (reportProgress) {
+      if (reportProgress && !playMode) {
         reportExecutionProgress(nextTime, cfg);
       }
       const breakpointResult = evaluateBreakpointConditionAtTime?.(nextTime) || { hit: false, invalid: false };
@@ -11598,7 +11706,7 @@ window.STGraphXI18nBundles = {
         };
       }
 
-      const completed = hasReachedExecutionEnd(nextTime, cfg);
+      const completed = !playMode && hasReachedExecutionEnd(nextTime, cfg);
 
       if (restarted && stepResult.errorCount === 0) {
         setStatusKey?.("status.executionRestarted", {
@@ -11606,7 +11714,7 @@ window.STGraphXI18nBundles = {
           count: stepResult.successCount,
         });
       } else if (stepResult.errorCount > 0) {
-        setStatusKey?.("error.evalStepFailed", {
+        setStatusKey?.(playMode ? "error.evalPlayFailed" : "error.evalStepFailed", {
           node: stepResult.firstErrorNode,
           reason: stepResult.firstErrorMessage || evalReasonText?.(stepResult.firstErrorReason),
           time: formatNumberValue?.(Number(nextTime)),
@@ -11798,14 +11906,14 @@ window.STGraphXI18nBundles = {
       setStatusKey?.("status.executionReset", { time: formatNumberValue?.(Number(cfg.t0)) });
     }
 
-    async function toggleTimedExecution() {
+    async function startTimedExecution(playMode = false) {
       const execution = getExecution();
       if (timedState.timedRunHandle != null) {
         stopTimedExecution(true, "stopped");
         return;
       }
 
-      const cfg = await ensureExecutionReady();
+      const cfg = await ensureExecutionReady({ playMode });
       const delayMs = Number(execution.delayMs);
       if (!cfg) {
         return;
@@ -11815,17 +11923,18 @@ window.STGraphXI18nBundles = {
         return;
       }
 
-      const ended = isExecutionEnded(cfg);
-      const isFreshStart = execution.currentTime == null || ended || !session.hasInitializedStateSnapshot();
+      const ended = !playMode && isExecutionEnded(cfg);
+      const isFreshStart = playMode || execution.currentTime == null || ended || !session.hasInitializedStateSnapshot();
       if (isFreshStart) {
         clearVisualHistory?.();
-        if (ended) {
+        if (ended || playMode) {
           execution.currentTime = null;
         }
         refreshRuntimeView?.();
       }
 
       timedState.timedStepRunning = false;
+      timedState.timedRunMode = playMode ? "play" : "timed";
       timedState.timedRunStartedAt = nowFn();
       timedState.timedStepLastActivityAt = timedState.timedRunStartedAt;
       updateEditingLockUi?.();
@@ -11847,6 +11956,7 @@ window.STGraphXI18nBundles = {
                 refreshView: false,
                 notifyBreakpoint: false,
                 reportProgress: false,
+                playMode,
               });
               if (!outcome?.ok || outcome.completed || outcome.breakpointHit) {
                 break;
@@ -11863,12 +11973,14 @@ window.STGraphXI18nBundles = {
             });
             // The browser can paint only between visual batches. Reporting
             // here keeps the progress indicator in sync with that cadence.
-            reportExecutionProgress(execution.currentTime, cfg);
+            if (!playMode) {
+              reportExecutionProgress(execution.currentTime, cfg);
+            }
           }
           if (!outcome || !outcome.ok) {
             stopTimedExecution(false, outcome?.completed ? "completed" : "stopped");
             if (!outcome?.completed && !outcome?.runtimeError && !(hasStrictExecutionBlock?.())) {
-              setStatusKey?.("status.timedStopped");
+              setStatusKey?.(playMode ? "status.playStopped" : "status.timedStopped");
             }
           } else if (outcome.completed) {
             stopTimedExecution(false, "completed");
@@ -11886,19 +11998,29 @@ window.STGraphXI18nBundles = {
         }
       }, delayMs);
 
-      setStatusKey?.("status.timedStarted", { delay: delayMs });
+      setStatusKey?.(playMode ? "status.playStarted" : "status.timedStarted", { delay: delayMs });
       render?.();
-      onTimedExecutionStarted?.({ delay: delayMs });
+      onTimedExecutionStarted?.({ delay: delayMs, mode: playMode ? "play" : "timed" });
+    }
+
+    async function toggleTimedExecution() {
+      return startTimedExecution(false);
+    }
+
+    async function togglePlayExecution() {
+      return startTimedExecution(true);
     }
 
     return {
       validateTimeConfig,
+      validatePlayConfig,
       stopTimedExecution,
       executeOneStep,
       executeAll,
       runManualStep,
       resetExecution,
       toggleTimedExecution,
+      togglePlayExecution,
     };
   }
 
@@ -13676,6 +13798,95 @@ window.STGraphXI18nBundles = {
 })(globalThis);
 
 
+/* --- xy-chart-tooltip.js --- */
+/* SPDX-License-Identifier: MPL-2.0
+ * Copyright (c) 2026 Luca Mari
+ */
+(function (root, factory) {
+  if (typeof module === "object" && module.exports) module.exports = factory();
+  else root.STGraphXXYChartTooltip = factory();
+})(typeof globalThis !== "undefined" ? globalThis : this, function () {
+  "use strict";
+  const states = new WeakMap();
+
+  // Pixel coordinates are in the canvas bitmap, not its CSS or screen size.
+  function coordinatesAt(view, px, py) {
+    if (!view || !Number.isFinite(px) || !Number.isFinite(py)) return null;
+    const { leftPad, topPad, plotW, plotH, minX, maxX, minY, maxY } = view;
+    if (plotW <= 0 || plotH <= 0 || px < leftPad || px > leftPad + plotW || py < topPad || py > topPad + plotH) return null;
+    const x = minX + (px - leftPad) / plotW * (maxX - minX);
+    const y = maxY - (py - topPad) / plotH * (maxY - minY);
+    return Number.isFinite(x) && Number.isFinite(y) ? { x, y } : null;
+  }
+
+  function canvasPoint(canvas, clientX, clientY) {
+    const rect = canvas.getBoundingClientRect();
+    if (!rect.width || !rect.height || !canvas.clientWidth || !canvas.clientHeight) return null;
+    // Borders scale with the widget during graph zoom. Exclude them before
+    // mapping the CSS content box to the bitmap used by the chart renderer.
+    const sx = rect.width / canvas.offsetWidth;
+    const sy = rect.height / canvas.offsetHeight;
+    return {
+      x: ((clientX - rect.left) / sx - canvas.clientLeft) * canvas.width / canvas.clientWidth,
+      y: ((clientY - rect.top) / sy - canvas.clientTop) * canvas.height / canvas.clientHeight,
+    };
+  }
+
+  function update(canvas, view, format) {
+    let state = states.get(canvas);
+    if (!state) {
+      state = { view: null, point: null, tooltip: null, format };
+      states.set(canvas, state);
+      state.hide = () => { if (state.tooltip) state.tooltip.hidden = true; };
+      state.refresh = () => {
+        const point = state.point && canvasPoint(canvas, state.point.x, state.point.y);
+        const value = point && coordinatesAt(state.view, point.x, point.y);
+        const parent = canvas.parentElement;
+        if (!value || !parent) { state.hide(); return; }
+        if (!state.tooltip) {
+          const tooltip = canvas.ownerDocument.createElement("div");
+          tooltip.className = "xy-chart-cursor-tooltip";
+          tooltip.setAttribute("role", "tooltip");
+          Object.assign(tooltip.style, {
+            position: "absolute", pointerEvents: "none", zIndex: "10",
+            padding: "4px 7px", borderRadius: "4px", background: "#163650",
+            color: "#fff", font: "12px sans-serif", whiteSpace: "nowrap",
+            boxShadow: "0 2px 5px #0003", maxWidth: "100%", boxSizing: "border-box",
+          });
+          if (canvas.ownerDocument.defaultView.getComputedStyle(parent).position === "static") parent.style.position = "relative";
+          parent.appendChild(tooltip);
+          state.tooltip = tooltip;
+        }
+        const tooltip = state.tooltip;
+        tooltip.textContent = state.format(value.x, value.y);
+        tooltip.hidden = false;
+        const rect = parent.getBoundingClientRect();
+        const sx = rect.width / parent.offsetWidth;
+        const sy = rect.height / parent.offsetHeight;
+        const x = (state.point.x - rect.left) / sx - parent.clientLeft + parent.scrollLeft;
+        const y = (state.point.y - rect.top) / sy - parent.clientTop + parent.scrollTop;
+        const left = x + 12 + tooltip.offsetWidth <= parent.clientWidth ? x + 12 : x - tooltip.offsetWidth - 12;
+        const top = y + 12 + tooltip.offsetHeight <= parent.clientHeight ? y + 12 : y - tooltip.offsetHeight - 12;
+        tooltip.style.left = `${Math.max(0, left)}px`;
+        tooltip.style.top = `${Math.max(0, top)}px`;
+      };
+      canvas.addEventListener("pointermove", (event) => {
+        if (event.pointerType === "touch" || event.buttons) { state.point = null; state.hide(); return; }
+        state.point = { x: event.clientX, y: event.clientY };
+        state.refresh();
+      });
+      for (const type of ["pointerleave", "pointercancel", "pointerdown"]) {
+        canvas.addEventListener(type, () => { state.point = null; state.hide(); });
+      }
+    }
+    state.view = view;
+    state.format = format;
+    state.refresh();
+  }
+  return { coordinatesAt, canvasPoint, update };
+});
+
+
 /* --- player-shell.js --- */
 /*
  * This Source Code Form is subject to the terms of the Mozilla Public
@@ -14622,7 +14833,8 @@ window.STGraphXI18nBundles = {
     });
   }
 
-  function drawSimpleXYChart(canvas, pairs, execution, fontSize = 11, options = {}) {
+  function drawSimpleXYChart(canvas, pairs, execution, fontSize = 11, options = {}, coordinateText) {
+    global.STGraphXXYChartTooltip?.update(canvas, null, coordinateText);
     const ctx = canvas.getContext("2d");
     if (!ctx) {
       return;
@@ -14741,6 +14953,7 @@ window.STGraphXI18nBundles = {
     const bottomPad = showAxes ? 26 + (xAxisLabel ? labelFontSize + 12 : 0) : 10;
     const plotW = Math.max(10, width - leftPad - rightPad);
     const plotH = Math.max(10, height - topPad - bottomPad);
+    global.STGraphXXYChartTooltip?.update(canvas, { leftPad, topPad, plotW, plotH, minX, maxX, minY, maxY }, coordinateText);
     const sx = (x) => leftPad + ((x - minX) / (maxX - minX)) * plotW;
     const sy = (y) => topPad + plotH - ((y - minY) / (maxY - minY)) * plotH;
 
@@ -17610,7 +17823,8 @@ window.STGraphXI18nBundles = {
         canvas.style.display = "block";
         canvas.width = Math.max(160, Math.floor(widget.width * this._zoom - 24));
         canvas.height = Math.max(120, Math.floor(widget.height * this._zoom - 54));
-        drawSimpleXYChart(canvas, chartSeriesForWidget(widget, widgetState), execution, widget.fontSize, widget);
+        drawSimpleXYChart(canvas, chartSeriesForWidget(widget, widgetState), execution, widget.fontSize, widget,
+          (x, y) => this.t("widget.xyCursorCoordinates", { x: formatNumberValue(execution, x), y: formatNumberValue(execution, y) }));
         body.appendChild(canvas);
         return;
       }

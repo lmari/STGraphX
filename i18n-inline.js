@@ -14,6 +14,7 @@ window.STGraphXAppMeta = {
 
 window.STGraphXI18nBundles = {
   "it": {
+    "widget.xyCursorCoordinates": "X: {x} · Y: {y}",
     "mathSource.new": "Nuovo modello da sorgente…",
     "mathSource.show": "Mostra sorgente…",
     "mathSource.label": "Sorgente (.stgx)",
@@ -1631,6 +1632,7 @@ window.STGraphXI18nBundles = {
 
   },
   "en": {
+    "widget.xyCursorCoordinates": "X: {x} · Y: {y}",
     "mathSource.new": "New model from source…",
     "mathSource.show": "Show source…",
     "mathSource.label": "Source (.stgx)",
