@@ -8,7 +8,7 @@ Copyright (c) 2026 Luca Mari
 
 STGraphX è un editor ed esecutore di modelli di sistemi dinamici a grafo orientato.
 
-È una reimplementazione di STGraph, da Java a JavaScript, realizzata interamente in _vibe coding_ con GPT-Codex-5.x (ho guardato ma mai toccato il codice generato, che al momento è di circa 1k linee HTML, 5k linee CSS, 40k linee JS).
+È una reimplementazione di STGraph, da Java a JavaScript, realizzata interamente in _agent engineering_ con GPT-Codex-5.x (ho guardato ma mai toccato il codice generato, che al momento è di circa 75k linee JS, 1k linee HTML, 5k linee CSS, 5k linee Rust).
 
 Si può provare <a href="https://lmari.github.io/STGraphX" target="_blank" rel="noopener noreferrer">direttamente da questo repo GitHub</a>.
 
