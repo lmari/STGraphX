@@ -1990,11 +1990,15 @@ function renderMatrixSurface(body, widget, matrix) {
       label: t("widget.matrixSurfaceRotate"),
       read: () => ({ azimuth: widget.surfaceAzimuth, elevation: widget.surfaceElevation }),
       onStart: () => {
-        if (isEditingUiLocked() || (typeof isTabletCanvasPanMode === "function" && isTabletCanvasPanMode())) return false;
+        // Playmode permits changing the surface viewpoint, but no other running mode does.
+        const playmodeRunning = ui.timedRunHandle != null && ui.timedRunMode === "play";
+        if ((!playmodeRunning && isEditingUiLocked())
+          || (typeof isTabletCanvasPanMode === "function" && isTabletCanvasPanMode())) return false;
         selectWidget(widget.id);
         if (ui.selected?.type !== "widget" || ui.selected.id !== widget.id) return false;
         widgetLayer.querySelectorAll(".value-widget.selected").forEach((root) => root.classList.remove("selected"));
         canvas.closest(".value-widget")?.classList.add("selected");
+        ui.matrixSurfaceInteraction = { widgetId: widget.id };
         beginTransaction();
         return true;
       },
@@ -2004,6 +2008,9 @@ function renderMatrixSurface(body, widget, matrix) {
         drawMatrixSurfaceCanvas(canvas, widget, matrix);
       },
       onEnd: (cancelled) => {
+        if (ui.matrixSurfaceInteraction?.widgetId === widget.id) {
+          ui.matrixSurfaceInteraction = null;
+        }
         if (cancelled) cancelTransaction(); else commitTransaction();
         refreshSidebar();
       },
@@ -2971,7 +2978,10 @@ function refreshRuntimeView() {
   applyWidgetDrivenNodeValues();
   // Preserve the native control being manipulated, while keeping all output
   // widgets live during the same timed execution.
-  refreshRuntimeWidgetContents(ui.sliderInteraction?.widgetId ?? null);
+  const activeInputWidgetId = ui.sliderInteraction?.widgetId
+    ?? ui.matrixSurfaceInteraction?.widgetId
+    ?? null;
+  refreshRuntimeWidgetContents(activeInputWidgetId);
   refreshRenderedNodeTooltipElements();
   refreshSidebar();
   refreshActiveTooltip();

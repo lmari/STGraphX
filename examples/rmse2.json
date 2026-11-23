@@ -1,0 +1,281 @@
+{
+  "version": 1,
+  "modelTitle": "",
+  "localFunctions": [],
+  "view": {
+    "zoom": 1,
+    "showGrid": true,
+    "highlightNodeEdges": true,
+    "showNodeValues": true,
+    "checkUnits": true,
+    "gridSize": 20,
+    "tooltipDelayMs": 300,
+    "scrollLeft": 319,
+    "scrollTop": 103
+  },
+  "debug": {
+    "watches": [],
+    "breakpointEnabled": false,
+    "breakpointExpression": "",
+    "breakpointMessage": ""
+  },
+  "modelProperties": [],
+  "unitDefinitions": [],
+  "scenarios": [],
+  "nodeCounter": 12,
+  "edgeCounter": 13,
+  "widgetCounter": 13,
+  "textItemCounter": 6,
+  "presentationGroupCounter": 6,
+  "presentationGroups": [],
+  "dashboard": null,
+  "execution": {
+    "t0": 0,
+    "dt": 1,
+    "timeUnit": "s",
+    "t1": 10,
+    "delayMs": 100,
+    "renderEverySteps": 1,
+    "decimals": 3,
+    "integrator": "euler",
+    "strictDefinitions": false,
+    "stopOnRuntimeError": false,
+    "checkRanges": false,
+    "randomSeed": null
+  },
+  "nodes": [
+    {
+      "id": 1,
+      "name": "sampleX",
+      "output": true,
+      "global": false,
+      "type": "parameter",
+      "x": 460,
+      "y": 40,
+      "width": 54,
+      "height": 54,
+      "fillColor": "",
+      "strokeColor": "",
+      "unit": "",
+      "properties": [
+        {
+          "key": "note formula",
+          "value": ""
+        },
+        {
+          "key": "descrizione",
+          "value": ""
+        }
+      ],
+      "valueExpression": "sort(array(100, rand(10)))"
+    },
+    {
+      "id": 2,
+      "name": "sampleY",
+      "output": true,
+      "global": false,
+      "type": "parameter",
+      "x": 460,
+      "y": 140,
+      "width": 54,
+      "height": 54,
+      "fillColor": "",
+      "strokeColor": "",
+      "unit": "",
+      "properties": [
+        {
+          "key": "note formula",
+          "value": ""
+        },
+        {
+          "key": "descrizione",
+          "value": ""
+        }
+      ],
+      "valueExpression": "sampleX+array(size(sampleX),4*rand()-2)"
+    },
+    {
+      "id": 3,
+      "name": "testY",
+      "output": true,
+      "global": false,
+      "type": "algebraic",
+      "x": 640,
+      "y": 80,
+      "width": 54,
+      "height": 54,
+      "fillColor": "",
+      "strokeColor": "",
+      "unit": "",
+      "properties": [
+        {
+          "key": "note formula",
+          "value": ""
+        },
+        {
+          "key": "descrizione",
+          "value": "array(size(a),size(b),\n  rmse(sampleY,(a[$0]+b[$1]*sampleX))\n)"
+        }
+      ],
+      "input": false,
+      "valueExpression": "array(size(a),size(b),sqrt(average((sampleY-(a[$0]+b[$1]*sampleX))^2)))"
+    },
+    {
+      "id": 4,
+      "name": "a",
+      "output": true,
+      "global": false,
+      "type": "algebraic",
+      "x": 580,
+      "y": 0,
+      "width": 54,
+      "height": 54,
+      "fillColor": "",
+      "strokeColor": "",
+      "unit": "",
+      "properties": [
+        {
+          "key": "note formula",
+          "value": ""
+        },
+        {
+          "key": "descrizione",
+          "value": ""
+        }
+      ],
+      "input": false,
+      "valueExpression": "range(-20,20,0.1)"
+    },
+    {
+      "id": 5,
+      "name": "b",
+      "output": true,
+      "global": false,
+      "type": "algebraic",
+      "x": 700,
+      "y": 0,
+      "width": 54,
+      "height": 54,
+      "fillColor": "",
+      "strokeColor": "",
+      "unit": "",
+      "properties": [
+        {
+          "key": "note formula",
+          "value": ""
+        },
+        {
+          "key": "descrizione",
+          "value": ""
+        }
+      ],
+      "input": false,
+      "valueExpression": "range(0,2,0.1)"
+    }
+  ],
+  "edges": [
+    {
+      "id": 1,
+      "from": 1,
+      "to": 2,
+      "color": "",
+      "influence": "none",
+      "controlPoints": []
+    },
+    {
+      "id": 2,
+      "from": 1,
+      "to": 3,
+      "color": "",
+      "influence": "none",
+      "controlPoints": []
+    },
+    {
+      "id": 3,
+      "from": 4,
+      "to": 3,
+      "color": "",
+      "influence": "none",
+      "controlPoints": []
+    },
+    {
+      "id": 4,
+      "from": 5,
+      "to": 3,
+      "color": "",
+      "influence": "none",
+      "controlPoints": []
+    },
+    {
+      "id": 9,
+      "from": 2,
+      "to": 3,
+      "color": "",
+      "influence": "none",
+      "controlPoints": []
+    }
+  ],
+  "notes": {
+    "markdown": ""
+  },
+  "textItems": [],
+  "widgets": [
+    {
+      "id": 8,
+      "type": "matrix",
+      "customTitle": "",
+      "x": 780,
+      "y": -160,
+      "width": 580,
+      "height": 580,
+      "dashboardPageId": null,
+      "minimized": false,
+      "showTitleBar": true,
+      "fontSize": 13,
+      "outputOnly": true,
+      "showHistory": false,
+      "expandNonScalarValues": false,
+      "tableTextAlign": "left",
+      "tableDecimalDigits": 0,
+      "tableColumnFormats": {},
+      "xMin": "auto",
+      "xMax": "auto",
+      "yMin": "auto",
+      "yMax": "auto",
+      "xGridStep": null,
+      "yGridStep": null,
+      "xAxisLabel": "",
+      "yAxisLabel": "",
+      "showGrid": true,
+      "showAxes": true,
+      "equalScale": true,
+      "legendPosition": "top-right",
+      "objects": [],
+      "source": "testY",
+      "showNumericValues": true,
+      "showIndices": true,
+      "autoFitCells": true,
+      "cellSize": 28,
+      "valueMin": "auto",
+      "valueMax": "auto",
+      "displayRows": null,
+      "displayCols": null,
+      "colorScheme": "heat",
+      "viewMode": "surface",
+      "surfaceStyle": "wireframe",
+      "surfaceAzimuth": -127.62649601063828,
+      "surfaceElevation": 5,
+      "surfaceHeightScale": 0.6,
+      "min": 0,
+      "max": 100,
+      "step": 1,
+      "value": 0,
+      "falseLabel": "",
+      "trueLabel": "",
+      "options": [],
+      "mappings": [],
+      "columns": [],
+      "xyPairs": []
+    }
+  ]
+}

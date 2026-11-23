@@ -1140,6 +1140,7 @@ const ui = {
   dashboardRenamePageId: null,
   modelCloseConfirmResolver: null,
   sliderInteraction: null,
+  matrixSurfaceInteraction: null,
   showGraph: true,
   showWidgets: true,
   expressionEditor: null,
