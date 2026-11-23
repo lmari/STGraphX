@@ -11,7 +11,9 @@ implementato.
 Nel menu **File**:
 
 - **Salva sorgente…** salva direttamente le definizioni del modello corrente in
-  un file `.stgx`, senza modificare lo stato del salvataggio JSON.
+  un file `.stgx`, senza modificare lo stato del salvataggio JSON. Si trova sotto
+  **Salva con nome** ed è disponibile quando sono presenti nodi, funzioni locali
+  o unità personalizzate, anche se il modello JSON è già salvato.
 - **Nuovo modello da sorgente…** apre un editor ridimensionabile e spostabile
   per scrivere, incollare o importare un file `.stgx`/`.txt`. Il testo ha
   evidenziazione della sintassi e validazione automatica; **Vai all’errore**

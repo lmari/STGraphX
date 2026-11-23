@@ -94,6 +94,7 @@ const deleteBtnLabel = deleteBtn?.querySelector("[data-i18n='menu.edit.delete']"
 const newGraphBtn = document.getElementById("newGraphBtn");
 const saveJsonBtn = document.getElementById("saveJsonBtn");
 const saveAsJsonBtn = document.getElementById("saveAsJsonBtn");
+const saveMathSourceBtn = document.getElementById("saveMathSourceBtn");
 const closeModelBtn = document.getElementById("closeModelBtn");
 const exportCsvBtn = document.getElementById("exportCsvBtn");
 const loadJsonBtn = document.getElementById("loadJsonBtn");
@@ -8106,10 +8107,9 @@ function updateFileStatusLabel(dirty = dirtySinceLastSave) {
   const key = dirty ? "file.status.dirty" : "file.status.clean";
   fileStatusText.textContent = t(key, { name: displayFileName() });
   if (saveJsonBtn) {
-    // Saving is harmless for a clean model and must remain available when a
-    // browser delays the dirty-state refresh after an edit.
-    saveJsonBtn.disabled = false;
+    saveJsonBtn.disabled = !dirty;
   }
+  saveMathSourceBtn.disabled = !(graph.nodes.length || graph.localFunctions.length || graph.unitDefinitions.length);
   const activeTab = currentWorkspaceTab();
   if (activeTab?.state?.context) {
     // Keep the file association in the tab as well as in the active globals.
@@ -16739,7 +16739,7 @@ document.getElementById("mathSourceFileInput").addEventListener("change", async 
     document.getElementById("mathSourceStatus").textContent = String(error.message || error);
   } finally { event.target.value = ""; }
 });
-document.getElementById("saveMathSourceBtn").addEventListener("click", () => {
+saveMathSourceBtn.addEventListener("click", () => {
   closeTopMenus();
   void mathSourceUi.saveCurrentSource();
 });
