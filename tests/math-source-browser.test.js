@@ -43,10 +43,30 @@ async function exerciseEditor() {
     switchWorkspaceTab(previousTab); await wait();
     check(JSON.stringify(exportGraphData()) === original, "Previous tab was modified");
     switchWorkspaceTab(importedTab); await wait();
-    get("showMathSourceBtn").click();
-    check(get("mathSourceText").readOnly, "Export view should be read-only");
-    check(get("mathSourceText").value.includes("output x = 1; this+1"), "Wrong exported definitions");
-    check(!get("mathSourceSave") && !get("mathSourceCopy"), "Export view still has action buttons");
+    get("newMathSourceBtn").click();
+    const input = get("mathSourceText");
+    const edit = (value, caret = value.length) => {
+      input.value = value; input.setSelectionRange(caret, caret); input.dispatchEvent(new Event("input"));
+    };
+    const key = (key, extra = {}) => input.dispatchEvent(new KeyboardEvent("keydown", { key, bubbles: true, cancelable: true, ...extra }));
+    edit("a = sin(time) # comment");
+    check(get("mathSourceHighlight").querySelector(".expression-token-function")?.textContent === "sin", "Missing function highlighting");
+    check(get("mathSourceHighlight").querySelector(".expression-token-comment")?.textContent === "# comment", "Missing comment highlighting");
+    edit("a = si"); key(" ", { code: "Space", ctrlKey: true });
+    check(!get("mathSourceCompletions").hidden, "Completion did not open");
+    const sin = [...get("mathSourceCompletions").children].find((button) => button.textContent.startsWith("sin("));
+    check(sin, "Missing sine completion"); sin.click();
+    check(input.value === "a = sin", "Completion replaced wrong text");
+    edit("a=1\nb=2", 0); input.setSelectionRange(0, input.value.length); key("Tab");
+    check(input.value === "  a=1\n  b=2", "Multiline indent failed"); key("Tab", { shiftKey: true });
+    check(input.value === "a=1\nb=2", "Multiline outdent failed");
+    edit("a = ("); key("Enter"); check(input.value === "a = (\n  ", "Newline indentation failed");
+    edit("a = missing"); await wait(); await wait();
+    check(!get("mathSourceGoToError").hidden, "Live diagnostic not available");
+    get("mathSourceGoToError").click(); check(input.selectionStart === 0, "Error navigation failed");
+    edit("a = 1"); await wait(); await wait();
+    check(get("mathSourceStatus").textContent === t("mathSource.valid"), "Valid source diagnostic missing");
+    check(workspace.tabs.length === count + 1, "Live validation created a model");
     check(get("mathSourceClose").parentElement.id === "mathSourceHead", "Close button is not in the header");
     check(getComputedStyle(get("mathSourceHint")).fontSize === getComputedStyle(get("expressionEditorHint")).fontSize, "Hint styling differs from expression editor");
     const sourceDialog = get("mathSourceDialog");
@@ -61,12 +81,12 @@ async function exerciseEditor() {
     head.dispatchEvent(new PointerEvent("pointermove", { pointerId: 7, clientX: beforeDrag.left + 45, clientY: beforeDrag.top + 35 }));
     head.dispatchEvent(new PointerEvent("pointerup", { pointerId: 7 }));
     check(sourceDialog.getBoundingClientRect().left > beforeDrag.left, "Dialog did not move");
-    const exportCommand = () => {
-      get("mathSourceText").dispatchEvent(new MouseEvent("contextmenu", { bubbles: true, cancelable: true, clientX: 450, clientY: 300 }));
-      return [...get("mathSourceContextMenu").querySelectorAll("button")].find((button) => button.textContent === t("mathSource.save"));
-    };
-    check(exportCommand() && !exportCommand().disabled, "Missing context export action");
-
+    input.dispatchEvent(new MouseEvent("contextmenu", { bubbles: true, cancelable: true, clientX: 450, clientY: 300 }));
+    const paste = [...get("mathSourceContextMenu").querySelectorAll("button")].find((button) => button.textContent === t("menu.edit.paste"));
+    check(paste, "Missing context paste action");
+    const menuRect = paste.getBoundingClientRect();
+    check(document.elementFromPoint(menuRect.left + 5, menuRect.top + 5) === paste, "Context menu is not accessible above dialog");
+    get("mathSourceClose").click();
     // Use the real save helper, replacing only the platform picker/handle.
     let savedText = "", savedName = "";
     supportsSaveFilePicker = () => true;
@@ -74,13 +94,16 @@ async function exerciseEditor() {
       savedName = options.suggestedName;
       return { createWritable: async () => ({ write: async (text) => { savedText = text; }, close: async () => {} }) };
     };
-    const exportButton = exportCommand();
-    const menuRect = exportButton.getBoundingClientRect();
-    check(document.elementFromPoint(menuRect.left + 5, menuRect.top + 5) === exportButton, "Context menu is not accessible above dialog");
-    exportButton.click(); await wait();
+    get("saveMathSourceBtn").click(); await wait();
+    check(!get("mathSourceDialog").open, "Save source opened an editor");
     check(savedName.endsWith(".stgx"), "Wrong source extension");
-    check(savedText === get("mathSourceText").value, "Exported file differs from source view");
+    check(savedText.includes("output x = 1; this+1"), "Wrong exported definitions");
     check(hasUnsavedChanges() && !currentFileHandle, "Source export changed JSON save state");
+    const workingPicker = showSaveFilePickerCompat;
+    showSaveFilePickerCompat = async () => { throw new Error("test save failure"); };
+    get("saveMathSourceBtn").click(); await wait();
+    check(document.body.textContent.includes("test save failure"), "Save failure was not reported");
+    showSaveFilePickerCompat = workingPicker;
     get("mathSourceClose").click();
     get("newMathSourceBtn").click();
     get("mathSourceText").value = 'a=1\n@unit a = "m"\nb=100\n@unit b = "cm"\noutput total=a+b\n@unit total = "m"';
@@ -95,8 +118,8 @@ async function exerciseEditor() {
     recalculateAfterNodeDefinitionChange();
     check(graph.nodes.find((node) => node.name === "total")?.computedValue === 1.5, "Custom-unit conversion failed");
     check(graph.nodes.find((node) => node.name === "scaled")?.computedValue === 3, "Local function evaluation failed");
-    get("showMathSourceBtn").click();
-    const extendedSource = get("mathSourceText").value;
+    get("saveMathSourceBtn").click(); await wait();
+    const extendedSource = savedText;
     check(extendedSource.includes("function twice(value)") && extendedSource.includes("@unitDefinition ha"), "Extended source export omitted definitions");
     get("mathSourceClose").click();
     get("newMathSourceBtn").click();

@@ -6097,20 +6097,20 @@ body.tablet-sidebar-layout .menu-run-btn {
 #mathSourceDialog::backdrop { background: rgb(0 0 0 / 35%); }
 #mathSourceDialog h2 { margin-top: 0; }
 #mathSourceHint { margin: 0; }
-#mathSourceText {
-  display: block;
-  box-sizing: border-box;
-  width: 100%;
-  flex: 1;
-  min-height: 100px;
-  margin-top: 8px;
-  padding: 12px;
-  font-family: monospace;
-  font-size: 14px;
-  line-height: 1.5;
-  resize: none;
-  tab-size: 2;
+.math-source-surface { position: relative; flex: 1; min-height: 100px; border: 1px solid var(--border); background: var(--bg); }
+#mathSourceText, #mathSourceHighlight {
+  box-sizing: border-box; width: 100%; height: 100%; margin: 0; padding: 12px;
+  font: 14px/1.5 var(--font-mono); tab-size: 2; white-space: pre;
+  overflow: auto; border: 0; border-radius: 0;
 }
+#mathSourceHighlight { position: absolute; inset: 0; pointer-events: none; color: var(--text); }
+#mathSourceText { position: absolute; inset: 0; resize: none; background: transparent; color: transparent; caret-color: var(--text); }
+#mathSourceText::selection { background: rgba(14, 122, 196, 0.22); }
+#mathSourceText[aria-invalid="true"] { outline: 1px solid #b83232; }
+.expression-token-comment { color: var(--muted); }
+#mathSourceCompletions { max-height: 140px; overflow: auto; flex-shrink: 0; }
+#mathSourceCompletions button { display: block; width: 100%; text-align: left; padding: 4px 8px; }
+#mathSourceCompletions button.active { background: #dceeff; color: #162f44; }
 #mathSourceStatus { white-space: pre-wrap; overflow-wrap: anywhere; min-height: 1.5em; }
 .math-source-actions { display: flex; gap: 8px; flex-wrap: wrap; }
 .math-source-actions button { padding: 6px 12px; }

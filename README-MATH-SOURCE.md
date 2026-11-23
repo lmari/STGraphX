@@ -10,15 +10,23 @@ implementato.
 
 Nel menu **File**:
 
-- **Mostra sorgente…** apre una vista di sola lettura delle
-  definizioni del modello corrente. La finestra si sposta dalla barra del titolo
-  e si ridimensiona dall'angolo inferiore destro. Il menu contestuale del testo
-  offre selezione, copia ed esportazione in un file `.stgx`; **Chiudi** è in alto
-  a destra. Il menu è accessibile anche con Shift+F10.
-- **Nuovo modello da sorgente…** permette di incollare testo o
-  importare un file `.stgx`/`.txt`. **Crea in una nuova scheda** valida il
-  sorgente e crea un modello indipendente, da salvare poi in JSON. Il modello
-  precedente e le sue modifiche restano nella propria scheda.
+- **Salva sorgente…** salva direttamente le definizioni del modello corrente in
+  un file `.stgx`, senza modificare lo stato del salvataggio JSON.
+- **Nuovo modello da sorgente…** apre un editor ridimensionabile e spostabile
+  per scrivere, incollare o importare un file `.stgx`/`.txt`. Il testo ha
+  evidenziazione della sintassi e validazione automatica; **Vai all’errore**
+  raggiunge la posizione segnalata. Ctrl+Spazio offre completamenti dei nomi
+  presenti nel testo, delle parole chiave e del catalogo delle espressioni,
+  con firme e descrizioni delle funzioni. Il catalogo comprende anche funzioni
+  utilizzabili solo in contesti specifici: la validazione verifica il sorgente
+  completo. Frecce selezionano un suggerimento, Invio/Tab lo inseriscono,
+  Esc chiude la lista. Tab/Maiusc+Tab regolano il rientro delle righe;
+  Invio mantiene il rientro. Il menu contestuale offre selezione, taglio,
+  copia e incolla, ed è accessibile anche con Maiusc+F10.
+  **Crea in una nuova scheda** (Ctrl+Invio) valida il sorgente e crea un modello
+  indipendente, da salvare poi in JSON. Il modello precedente e le sue modifiche
+  restano nella propria scheda. Chiudendo l’editor il testo viene conservato
+  per la successiva apertura nella sessione corrente.
 
 L'importazione genera nodi con stili predefiniti, disposti su una griglia,
 e archi ricavati dai riferimenti nelle espressioni, comprese le dipendenze di

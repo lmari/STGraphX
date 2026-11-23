@@ -16684,6 +16684,10 @@ const mathSourceUi = globalThis.STGraphXMathSourceUi.createMathSourceUi({
   t,
   codec: globalThis.STGraphXMathSource.createCodec(semantics),
   getModel: exportGraphData,
+  reportStatus: (message) => setStatus(message),
+  indent: indentExpressionSelection,
+  newline: insertExpressionNewlineWithIndent,
+  docs: GraphFunctions.expressionDocs,
   copyText: copyTextToClipboard,
   cutSelection: cutExpressionInputSelection,
   pasteText: pasteExpressionInputText,
@@ -16735,9 +16739,9 @@ document.getElementById("mathSourceFileInput").addEventListener("change", async 
     document.getElementById("mathSourceStatus").textContent = String(error.message || error);
   } finally { event.target.value = ""; }
 });
-document.getElementById("showMathSourceBtn").addEventListener("click", () => {
+document.getElementById("saveMathSourceBtn").addEventListener("click", () => {
   closeTopMenus();
-  mathSourceUi.open("export");
+  void mathSourceUi.saveCurrentSource();
 });
 document.getElementById("newMathSourceBtn").addEventListener("click", () => {
   closeTopMenus();

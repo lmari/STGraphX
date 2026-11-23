@@ -23,7 +23,7 @@
           <div class="menu-panel" id="fileMenu">
             <button id="newGraphBtn" class="menu-command" type="button" data-title-i18n="tooltip.menu.file.new"><span data-i18n="menu.file.new"></span><span class="menu-shortcut">Alt+N</span></button>
             <button id="newMathSourceBtn" class="menu-command" type="button" data-i18n="mathSource.new"></button>
-            <button id="showMathSourceBtn" class="menu-command" type="button" data-i18n="mathSource.show"></button>
+            <button id="saveMathSourceBtn" class="menu-command" type="button" data-i18n="mathSource.save"></button>
             <button id="loadJsonBtn" class="menu-command" type="button" data-title-i18n="tooltip.menu.file.load"><span data-i18n="menu.file.load"></span><span class="menu-shortcut">Alt+O</span></button>
             <div id="recentModelsMenuRoot" class="menu-submenu hidden">
               <button id="recentModelsMenuBtn" class="menu-submenu-toggle" type="button">
@@ -1026,9 +1026,14 @@
       </div>
       <p id="mathSourceHint" class="expression-editor-hint" data-i18n="mathSource.hint"></p>
       <label for="mathSourceText" data-i18n="mathSource.label"></label>
-      <textarea id="mathSourceText" spellcheck="false" autocapitalize="off" autocomplete="off"></textarea>
+      <div class="math-source-surface">
+        <pre id="mathSourceHighlight" aria-hidden="true"></pre>
+        <textarea id="mathSourceText" spellcheck="false" autocapitalize="off" autocomplete="off" wrap="off" aria-describedby="mathSourceHint mathSourceStatus" aria-controls="mathSourceCompletions" aria-autocomplete="list"></textarea>
+      </div>
+      <div id="mathSourceCompletions" hidden></div>
       <p id="mathSourceStatus" role="status" aria-live="polite"></p>
       <div class="math-source-actions">
+        <button id="mathSourceGoToError" type="button" hidden data-i18n="mathSource.goToError"></button>
         <button id="mathSourceLoad" type="button" data-i18n="mathSource.load"></button>
         <button id="mathSourceCreate" type="button" data-i18n="mathSource.create"></button>
       </div>

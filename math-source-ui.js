@@ -13,18 +13,113 @@
     const load = get("mathSourceLoad");
     const menuElement = get("mathSourceContextMenu");
     const menu = root.STGraphXMenuUi.createMenuUi({ contextMenu: menuElement });
-    let exportable = false;
+    const highlight = get("mathSourceHighlight");
+    const completions = get("mathSourceCompletions");
+    const goToError = get("mathSourceGoToError");
+    let diagnostic = null, validationTimer;
+    let choices = [], choiceIndex = 0, completionStart = 0;
+    const docs = new Map(Object.entries(options.docs || {}).flatMap(([, entries]) => Object.entries(entries)));
+    const keywords = ["parameter", "input", "output", "global", "function", "@unit", "@unitDefinition", "@timeUnit", "@integrator", "@seed"];
+    const escape = (value) => value.replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" })[c]);
+    function paint() {
+      const tokens = /#[^\n]*|\/\/[^\n]*|"(?:\\.|[^"\\])*"|'(?:\\.|[^'\\])*'|(?:\d+(?:\.\d*)?|\.\d+)(?:[eE][+-]?\d+)?|@?[A-Za-z_$][\w$]*|[^\w\s]/g;
+      let out = "", end = 0;
+      for (const match of text.value.matchAll(tokens)) {
+        const token = match[0];
+        const kind = /^(#|\/\/)/.test(token) ? "comment" : /^["']/.test(token) ? "string"
+          : /^(\d|\.\d)/.test(token) ? "number" : keywords.includes(token) ? "keyword"
+          : docs.has(token) ? (docs.get(token).kind === "variable" ? "variable" : "function")
+          : /^[A-Za-z_$]/.test(token) ? "node" : "operator";
+        out += escape(text.value.slice(end, match.index)) + `<span class="expression-token-${kind}">${escape(token)}</span>`;
+        end = match.index + token.length;
+      }
+      highlight.innerHTML = out + escape(text.value.slice(end)) + "\n";
+      highlight.scrollTop = text.scrollTop;
+      highlight.scrollLeft = text.scrollLeft;
+    }
+    function hideCompletions() { completions.hidden = true; choices = []; }
+    function validate() {
+      clearTimeout(validationTimer);
+      diagnostic = null;
+      goToError.hidden = true;
+      text.removeAttribute("aria-invalid");
+      try { codec.parse(text.value); status.textContent = t("mathSource.valid"); }
+      catch (error) { showError(error); }
+    }
+    function changed() {
+      paint(); hideCompletions();
+      diagnostic = null; goToError.hidden = true;
+      text.removeAttribute("aria-invalid"); status.textContent = "";
+      clearTimeout(validationTimer);
+      validationTimer = setTimeout(validate, 350);
+    }
+    function acceptCompletion() {
+      const name = choices[choiceIndex];
+      if (!name) return;
+      text.setRangeText(name, completionStart, text.selectionStart, "end");
+      changed(); text.focus();
+    }
+    function renderCompletions() {
+      completions.replaceChildren(); completions.hidden = !choices.length;
+      choices.forEach((name, index) => {
+        const button = document.createElement("button");
+        button.type = "button";
+        const doc = docs.get(name);
+        button.textContent = doc ? `${doc.signature || name} — ${t(doc.descriptionKey)}` : name;
+        button.classList.toggle("active", index === choiceIndex);
+        button.addEventListener("mousedown", (event) => event.preventDefault());
+        button.addEventListener("click", () => { choiceIndex = index; acceptCompletion(); });
+        completions.append(button);
+      });
+      completions.children[choiceIndex]?.scrollIntoView({ block: "nearest" });
+    }
+    function complete() {
+      const prefix = text.value.slice(0, text.selectionStart).match(/@?[A-Za-z_$][\w$]*$/)?.[0] || "";
+      completionStart = text.selectionStart - prefix.length;
+      const names = [...text.value.matchAll(/[A-Za-z_$][\w$]*/g)].map((match) => match[0]);
+      choices = [...new Set([...keywords, ...docs.keys(), ...names])].filter((name) => name.startsWith(prefix) && name !== prefix).sort();
+      choiceIndex = 0; renderCompletions();
+    }
+    goToError.addEventListener("click", () => {
+      if (!diagnostic) return;
+      const lines = text.value.split("\n");
+      const offset = lines.slice(0, Math.max(0, diagnostic.line - 1)).reduce((sum, line) => sum + line.length + 1, 0) + Math.max(0, (diagnostic.column || 1) - 1);
+      text.focus(); text.setSelectionRange(offset, Math.min(offset + 1, text.value.length));
+      text.scrollTop = Math.max(0, diagnostic.line - 2) * parseFloat(root.getComputedStyle(text).lineHeight);
+      paint();
+    });
+    text.addEventListener("scroll", paint);
+    text.addEventListener("keydown", (event) => {
+      if (event.isComposing) return;
+      if ((event.ctrlKey || event.metaKey) && event.code === "Space") { event.preventDefault(); complete(); return; }
+      if ((event.ctrlKey || event.metaKey) && event.key === "Enter") { event.preventDefault(); create.click(); return; }
+      if (choices.length) {
+        if (["ArrowDown", "ArrowUp"].includes(event.key)) {
+          event.preventDefault(); choiceIndex = (choiceIndex + (event.key === "ArrowDown" ? 1 : choices.length - 1)) % choices.length; renderCompletions(); return;
+        }
+        if (event.key === "Enter" || event.key === "Tab") { event.preventDefault(); acceptCompletion(); return; }
+        if (event.key === "Escape") { event.preventDefault(); hideCompletions(); return; }
+        hideCompletions();
+      }
+      if (event.key === "Tab") { event.preventDefault(); options.indent(text, event.shiftKey); changed(); }
+      else if (event.key === "Enter") { event.preventDefault(); options.newline(text); changed(); }
+    });
     let draft = "t0 = 0\nt1 = 10\ndt = 1\n\nparameter k = 0.2\nu = sin(time)\noutput x = 0; this + dt * (u - k * this)\n";
-    let importing = false;
     let busy = false;
 
-    function showError(error) {
-      status.textContent = error.code
+    function errorMessage(error) {
+      return error.code
         ? t("mathSource.error.location", {
           line: error.line, column: error.column, name: error.definition,
           message: t(`mathSource.error.${error.code}`), detail: [error.detail, error.reasonKey ? t(error.reasonKey) : ""].filter(Boolean).join(": "),
         })
         : String(error.message || error);
+    }
+    function showError(error) {
+      status.textContent = errorMessage(error);
+      diagnostic = error.line ? error : null;
+      goToError.hidden = !diagnostic;
+      text.setAttribute("aria-invalid", "true");
     }
     async function perform(action) {
       if (busy) return;
@@ -32,35 +127,35 @@
       try { await action(); } catch (error) { if (error.name !== "AbortError") showError(error); }
       finally { busy = false; }
     }
-    function open(mode) {
-      importing = mode === "import";
-      status.textContent = "";
-      get("mathSourceTitle").textContent = t(importing ? "mathSource.new" : "mathSource.show");
-      text.readOnly = !importing;
-      create.hidden = load.hidden = !importing;
-      dialog.querySelector(".math-source-actions").hidden = !importing;
-      exportable = false;
-      menu.hideContextMenu();
-      text.value = importing ? draft : "";
-      if (!importing) {
-        try { text.value = codec.serialize(options.getModel()); exportable = true; }
-        catch (error) { showError(error); }
-      }
+    function open() {
+      get("mathSourceTitle").textContent = t("mathSource.new");
+      menu.hideContextMenu(); hideCompletions();
+      text.value = draft;
       dialog.showModal();
-      text.focus();
+      paint(); validate(); text.focus();
+    }
+    async function saveCurrentSource() {
+      if (busy) return;
+      busy = true;
+      try {
+        await options.saveText(codec.serialize(options.getModel()));
+        options.reportStatus(t("mathSource.saved"));
+      } catch (error) {
+        if (error.name !== "AbortError") options.reportStatus(errorMessage(error));
+      } finally { busy = false; }
     }
     function close() { menu.hideContextMenu(); if (dialog.open) dialog.close(); }
     function setImportedText(content) {
-      if (!dialog.open || !importing || content == null) return;
+      if (!dialog.open || content == null) return;
       text.value = content;
-      status.textContent = "";
+      paint(); validate();
       text.focus();
     }
-    dialog.addEventListener("close", () => { if (importing) draft = text.value; });
+    dialog.addEventListener("close", () => { draft = text.value; });
     // Keep editor-wide shortcuts away from this modal, including its buttons.
     dialog.addEventListener("keydown", (event) => event.stopPropagation());
     get("mathSourceClose").addEventListener("click", close);
-    text.addEventListener("input", () => { status.textContent = ""; });
+    text.addEventListener("input", changed);
     create.addEventListener("click", () => perform(async () => {
       const model = codec.parse(text.value);
       await options.createModel(model);
@@ -77,16 +172,12 @@
         { label: t("menu.edit.selectAll"), action: () => { text.focus(); text.select(); } },
         { separator: true },
       ];
-      if (importing) items.push({ label: t("menu.edit.cut"), disabled: !selection, action: () => perform(() => options.cutSelection(text)) });
+      items.push({ label: t("menu.edit.cut"), disabled: !selection, action: () => perform(() => options.cutSelection(text)) });
       items.push({ label: t("menu.edit.copy"), disabled: !selection, action: () => perform(async () => {
         const copied = await options.copyText(selection);
         status.textContent = t(copied ? "status.clipboardTextCopied" : "error.clipboardTextCopyFailed");
       }) });
-      if (importing) items.push({ label: t("menu.edit.paste"), action: () => perform(() => options.pasteText(text)) });
-      else items.push({ separator: true }, { label: t("mathSource.save"), disabled: !exportable, action: () => perform(async () => {
-        await options.saveText(text.value);
-        status.textContent = t("mathSource.saved");
-      }) });
+      items.push({ label: t("menu.edit.paste"), action: () => perform(() => options.pasteText(text)) });
       const rect = text.getBoundingClientRect();
       menu.showContextMenu(event.clientX || rect.left + 16, event.clientY || rect.top + 16, items);
     }
@@ -96,11 +187,12 @@
     });
     dialog.addEventListener("pointerdown", (event) => {
       if (!menuElement.contains(event.target)) menu.hideContextMenu();
+      if (!completions.contains(event.target)) hideCompletions();
     });
     dialog.addEventListener("cancel", (event) => {
       if (!menuElement.classList.contains("hidden")) { event.preventDefault(); menu.hideContextMenu(); text.focus(); }
     });
-    dialog.addEventListener("close", () => menu.hideContextMenu());
+    dialog.addEventListener("close", () => { menu.hideContextMenu(); hideCompletions(); clearTimeout(validationTimer); });
 
     const head = get("mathSourceHead");
     let drag = null;
@@ -122,7 +214,7 @@
     });
     head.addEventListener("pointerup", () => { drag = null; });
     head.addEventListener("lostpointercapture", () => { drag = null; });
-    return { open, close, setImportedText };
+    return { open, close, setImportedText, saveCurrentSource };
   }
   root.STGraphXMathSourceUi = { createMathSourceUi };
 })(typeof globalThis !== "undefined" ? globalThis : this);
