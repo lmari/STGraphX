@@ -14,6 +14,12 @@ window.STGraphXAppMeta = {
 
 window.STGraphXI18nBundles = {
   "it": {
+    "mathSource.error.functionDefinition": "Definizione di funzione attesa: function nome(parametri) = espressione.",
+    "mathSource.error.functionParameter": "Parametro di funzione non valido o duplicato.",
+    "mathSource.error.functionArity": "Numero di argomenti errato; fra parentesi il numero richiesto.",
+    "mathSource.error.functionCycle": "Le funzioni locali non possono avere chiamate ricorsive o cicliche.",
+    "mathSource.error.unitDefinition": "Definizione di unità non valida.",
+
     "widget.matrixSurfaceRotate": "Trascina per ruotare e inclinare la superficie. Esc annulla il trascinamento.",
     "widget.xyCursorCoordinates": "X: {x} · Y: {y}",
     "mathSource.new": "Nuovo modello da sorgente…",
@@ -25,7 +31,7 @@ window.STGraphXI18nBundles = {
     "mathSource.saved": "Sorgente esportato.",
     "mathSource.saveFailed": "Impossibile esportare il sorgente.",
     "mathSource.created": "Modello creato dal sorgente; salva il nuovo modello in JSON.",
-    "mathSource.hint": "Clic destro nel testo per selezionare, copiare o esportare il sorgente. Una formula definisce una variabile; due formule separate da ; definiscono stato iniziale e stato prossimo. Qualificatori facoltativi: parameter, input, output, global. Commenti: # oppure //. Per formule su più righe usa le parentesi. Il sorgente conserva tempi, unità, integratore e seme casuale; non include presentazione, intervalli, scenari o controlli di esecuzione. Definizioni di unità personalizzate, funzioni locali, sottomodelli, nodi bozza e accessi a file o proprietà non sono ancora supportati.",
+    "mathSource.hint": "Clic destro nel testo per selezionare, copiare o esportare il sorgente. Una formula definisce una variabile; due formule separate da ; definiscono stato iniziale e stato prossimo. Qualificatori facoltativi: parameter, input, output, global. Funzioni: function f(x) = espressione. Unità personalizzate: @unitDefinition. Commenti: # oppure //. Per formule su più righe usa le parentesi. Il sorgente conserva tempi, unità, integratore e seme casuale; non include presentazione, intervalli, scenari o controlli di esecuzione. Sottomodelli, nodi bozza e accessi a file o proprietà non sono ancora supportati.",
     "mathSource.error.location": "Riga {line}, colonna {column} — {name}\n{message} {detail}",
     "mathSource.error.brackets": "Parentesi non corrispondenti.",
     "mathSource.error.unclosed": "Stringa o parentesi non chiusa.",
@@ -1633,6 +1639,12 @@ window.STGraphXI18nBundles = {
 
   },
   "en": {
+    "mathSource.error.functionDefinition": "Expected function definition: function name(parameters) = expression.",
+    "mathSource.error.functionParameter": "Invalid or duplicate function parameter.",
+    "mathSource.error.functionArity": "Wrong argument count; the required count is in parentheses.",
+    "mathSource.error.functionCycle": "Local functions cannot have recursive or cyclic calls.",
+    "mathSource.error.unitDefinition": "Invalid unit definition.",
+
     "widget.matrixSurfaceRotate": "Drag to rotate and tilt the surface. Esc cancels the drag.",
     "widget.xyCursorCoordinates": "X: {x} · Y: {y}",
     "mathSource.new": "New model from source…",
@@ -1644,7 +1656,7 @@ window.STGraphXI18nBundles = {
     "mathSource.saved": "Source exported.",
     "mathSource.saveFailed": "Unable to export source.",
     "mathSource.created": "Model created from source; save the new model as JSON.",
-    "mathSource.hint": "Right-click the text to select, copy or export source. One expression defines a variable; two expressions separated by ; define initial and next state. Optional qualifiers: parameter, input, output, global. Comments: # or //. Enclose multiline expressions in parentheses. Source preserves times, units, integrator and random seed; it excludes presentation, ranges, scenarios and execution controls. Custom unit definitions, local functions, submodels, draft nodes and file or property access are not supported yet.",
+    "mathSource.hint": "Right-click the text to select, copy or export source. One expression defines a variable; two expressions separated by ; define initial and next state. Optional qualifiers: parameter, input, output, global. Functions: function f(x) = expression. Custom units: @unitDefinition. Comments: # or //. Enclose multiline expressions in parentheses. Source preserves times, units, integrator and random seed; it excludes presentation, ranges, scenarios and execution controls. Submodels, draft nodes and file or property access are not supported yet.",
     "mathSource.error.location": "Line {line}, column {column} — {name}\n{message} {detail}",
     "mathSource.error.brackets": "Mismatched brackets.",
     "mathSource.error.unclosed": "Unclosed string or bracket.",

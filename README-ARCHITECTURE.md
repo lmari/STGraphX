@@ -273,7 +273,9 @@ Espone in particolare:
 ### Sorgente matematico
 
 `math-source-core.js` converte fra sorgente matematico `.stgx` e documenti JSON
-versione 1, riusando validazione ed espressioni di `semantic.js`. Inferisce gli
+versione 1, incluse funzioni locali e definizioni personalizzate delle unità.
+Riusa validazione ed espressioni di `semantic.js` e il validatore delle unità
+di `unit-analysis-core.js`. Inferisce gli
 archi e assegna un layout predefinito senza dipendere dal DOM o dalla shell.
 `math-source-ui.js` gestisce la finestra di consultazione/esportazione e quella
 di creazione da testo. `app.js` collega file picker, clipboard e schede.

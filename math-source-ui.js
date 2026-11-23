@@ -22,7 +22,7 @@
       status.textContent = error.code
         ? t("mathSource.error.location", {
           line: error.line, column: error.column, name: error.definition,
-          message: t(`mathSource.error.${error.code}`), detail: error.detail || "",
+          message: t(`mathSource.error.${error.code}`), detail: [error.detail, error.reasonKey ? t(error.reasonKey) : ""].filter(Boolean).join(": "),
         })
         : String(error.message || error);
     }

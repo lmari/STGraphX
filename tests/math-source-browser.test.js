@@ -87,6 +87,30 @@ async function exerciseEditor() {
     get("mathSourceCreate").click(); await wait();
     recalculateAfterNodeDefinitionChange();
     check(graph.nodes.find((node) => node.name === "total")?.computedValue === 2, "Unit conversion changed after import");
+    // New source constructs must survive the actual editor's import/export path.
+    get("newMathSourceBtn").click();
+    get("mathSourceText").value = '@unitDefinition ha = "10000*m^2"\na=1\n@unit a = "ha"\nb=5000\n@unit b = "m^2"\noutput total=a+b\n@unit total = "ha"\nfunction twice(value)=value*2\noutput scaled=twice(total)';
+    get("mathSourceCreate").click(); await wait();
+    check(!get("mathSourceDialog").open, `Extended source import failed: ${get("mathSourceStatus").textContent}`);
+    recalculateAfterNodeDefinitionChange();
+    check(graph.nodes.find((node) => node.name === "total")?.computedValue === 1.5, "Custom-unit conversion failed");
+    check(graph.nodes.find((node) => node.name === "scaled")?.computedValue === 3, "Local function evaluation failed");
+    get("showMathSourceBtn").click();
+    const extendedSource = get("mathSourceText").value;
+    check(extendedSource.includes("function twice(value)") && extendedSource.includes("@unitDefinition ha"), "Extended source export omitted definitions");
+    get("mathSourceClose").click();
+    get("newMathSourceBtn").click();
+    get("mathSourceText").value = extendedSource;
+    get("mathSourceCreate").click(); await wait();
+    recalculateAfterNodeDefinitionChange();
+    check(graph.nodes.find((node) => node.name === "total")?.computedValue === 1.5, "Custom unit lost on round trip");
+    check(graph.nodes.find((node) => node.name === "scaled")?.computedValue === 3, "Local function lost on round trip");
+    const tabCountBeforeError = workspace.tabs.length;
+    get("newMathSourceBtn").click();
+    get("mathSourceText").value = '@unitDefinition bad = "m^"\nx=1';
+    get("mathSourceCreate").click(); await wait();
+    check(workspace.tabs.length === tabCountBeforeError, "Invalid units created a tab");
+    check(get("mathSourceStatus").textContent.includes(t("analysis.unitDefinitionReason.syntax")), "Unit diagnostic is not localized");
     await fetch("/__result", { method: "POST", body: JSON.stringify({ ok: true }) });
   } catch (error) {
     await fetch("/__result", { method: "POST", body: JSON.stringify({ ok: false, error: error.message, stack: error.stack }) });

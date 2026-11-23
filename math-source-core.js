@@ -2,9 +2,9 @@
  * Copyright (c) 2026 Luca Mari
  */
 (function (root, factory) {
-  if (typeof module === "object" && module.exports) module.exports = factory();
-  else root.STGraphXMathSource = factory();
-})(typeof globalThis !== "undefined" ? globalThis : this, function () {
+  if (typeof module === "object" && module.exports) module.exports = factory(() => require("./unit-analysis-core.js"));
+  else root.STGraphXMathSource = factory(() => root.STGraphXUnitAnalysisCore);
+})(typeof globalThis !== "undefined" ? globalThis : this, function (getUnitAnalysis) {
   "use strict";
 
   class SourceError extends Error {
@@ -80,16 +80,47 @@
     function parse(source) {
       const version = /^\s*# STGraphX mathematical source v(\S+)/m.exec(String(source));
       if (version && version[1] !== "1") fail("version");
-      const model = { version: 1, nodes: [], edges: [], execution: { t0: 0, t1: 10, dt: 1, integrator: "euler", randomSeed: null } };
+      const model = { version: 1, nodes: [], edges: [], localFunctions: [], unitDefinitions: [], execution: { t0: 0, t1: 10, dt: 1, integrator: "euler", randomSeed: null } };
       const declarations = statements(source);
       const locations = new Map();
       const settings = new Set();
       const units = new Map();
+      const functionLocations = new Map();
+      const unitLocations = new Map();
       for (const statement of declarations) {
-        const match = /^(.*?)\s*=\s*([\s\S]*)$/.exec(statement.text);
+        const match = /^([\s\S]*?)\s*=\s*([\s\S]*)$/.exec(statement.text);
         if (!match) fail("declaration", statement);
         const left = match[1].trim();
         const expression = match[2].trim();
+        if (/^function\s/.test(left)) {
+          const signature = /^function\s+([^\s(]+)\s*\(([\s\S]*)\)$/.exec(left);
+          if (!signature) fail("functionDefinition", statement);
+          const name = signature[1];
+          const location = { ...statement, name };
+          const valid = semantics.validateNodeName([...model.nodes, ...model.localFunctions], name);
+          if (!valid.ok) fail(valid.reason === "duplicate" ? "duplicate" : "name", location, name);
+          const params = signature[2].trim() ? signature[2].split(",").map((param) => param.trim()) : [];
+          const seen = new Set();
+          for (const param of params) {
+            if (!semantics.validateNodeName([], param).ok || seen.has(param)) fail("functionParameter", location, param);
+            seen.add(param);
+          }
+          if (stateParts(expression, location).length !== 1) fail("functionDefinition", location);
+          model.localFunctions.push({ name, params, expression });
+          functionLocations.set(name, location);
+          continue;
+        }
+        if (/^@unitDefinition\s/.test(left)) {
+          const symbol = left.slice("@unitDefinition".length).trim();
+          const location = { ...statement, name: symbol };
+          if (unitLocations.has(symbol)) fail("duplicate", location, symbol);
+          let definition;
+          try { definition = JSON.parse(expression); } catch { fail("unit", location); }
+          if (typeof definition !== "string" || !definition.trim()) fail("unit", location);
+          model.unitDefinitions.push({ symbol, expression: definition });
+          unitLocations.set(symbol, location);
+          continue;
+        }
         if (left === "@timeUnit" || /^@unit\s/.test(left)) {
           const unitName = left.slice(5).trim();
           const settingKey = left === "@timeUnit" ? left : `@unit ${unitName}`;
@@ -132,7 +163,7 @@
         const location = { ...statement, name };
         const flags = new Set(words);
         if (words.some((word) => !["parameter", "input", "output", "global"].includes(word)) || flags.size !== words.length) fail("qualifier", location);
-        const valid = semantics.validateNodeName(model.nodes, name);
+        const valid = semantics.validateNodeName([...model.nodes, ...model.localFunctions], name);
         if (!valid.ok) fail(valid.reason === "duplicate" ? "duplicate" : "name", location, name);
         const parts = stateParts(expression, location);
         const type = parts.length === 2 ? "state" : flags.has("parameter") ? "parameter" : "algebraic";
@@ -153,27 +184,69 @@
         if (!byName.has(name)) fail("name", location, name);
         byName.get(name).unit = unit;
       }
+      const unitAnalysis = getUnitAnalysis();
+      if (model.unitDefinitions.length) {
+        const prepared = unitAnalysis.prepareDefinitions(model.unitDefinitions);
+        if (prepared.errors.length) {
+          const error = prepared.errors[0];
+          const location = unitLocations.get(error.symbol) || unitLocations.values().next().value;
+          const diagnostic = new SourceError("unitDefinition", location, error.symbol);
+          const reason = ["cycle", "duplicate", "expression", "symbol", "syntax"].includes(error.reason) ? error.reason : "syntax";
+          diagnostic.reasonKey = `analysis.unitDefinitionReason.${reason}`;
+          throw diagnostic;
+        }
+      }
+      const functions = new Map(model.localFunctions.map((definition) => [definition.name, definition]));
+      function validateExpression(expression, location, names, options = {}) {
+        let ast;
+        try { ast = semantics.parseExpressionAst(expression); }
+        catch (error) { fail("expression", location, error.message); }
+        const calls = new Set();
+        function visit(value) {
+          if (!value || typeof value !== "object") return;
+          if (value.type === "call" || value.type === "callable-ref") {
+            if (/^(readData|getProperty|setProperty|getModelProperty|setModelProperty)$/.test(value.name)) fail("unsupported", location, value.name);
+            const called = functions.get(value.name);
+            if (called) {
+              // The reference engine does not expose local functions as reducer callbacks.
+              if (value.type === "callable-ref") fail("unsupported", location, `reduce(${value.name}, ...)`);
+              calls.add(value.name);
+              if (value.type === "call" && value.args.length !== called.params.length) fail("functionArity", location, `${value.name} (${called.params.length})`);
+            }
+          }
+          Object.values(value).forEach((child) => {
+            if (Array.isArray(child)) child.forEach(visit);
+            else if (child && typeof child === "object") visit(child);
+          });
+        }
+        visit(ast);
+        const check = semantics.validateExpressionSyntax(expression, names, { ...options, localFunctions: model.localFunctions });
+        if (!check.ok) fail("expression", location, check.message);
+        return calls;
+      }
+      const functionDependencies = new Map();
+      for (const definition of model.localFunctions) {
+        functionDependencies.set(definition.name, validateExpression(definition.expression, functionLocations.get(definition.name), definition.params));
+      }
+      // Resolve the call graph without scanning strings/comments as function calls.
+      const pendingFunctions = new Set(functions.keys());
+      while (pendingFunctions.size) {
+        let progress = false;
+        for (const name of pendingFunctions) {
+          if ([...functionDependencies.get(name)].every((dependency) => !pendingFunctions.has(dependency))) {
+            pendingFunctions.delete(name); progress = true;
+          }
+        }
+        if (!progress) fail("functionCycle", functionLocations.get(pendingFunctions.values().next().value));
+      }
       const initialDependencies = new Map();
       for (const node of model.nodes) {
         const location = locations.get(node.name);
         const expressions = node.type === "state" ? [node.initialState, node.stateTransition] : [node.valueExpression];
         const dependencies = new Set();
         expressions.forEach((expression, index) => {
-          // These functions require resources/metadata outside the first source format.
-          let ast;
-          try { ast = semantics.parseExpressionAst(expression); }
-          catch (error) { fail("expression", location, error.message); }
-          function checkCalls(value) {
-            if (!value || typeof value !== "object") return;
-            if (value.type === "call" && /^(readData|getProperty|setProperty|getModelProperty|setModelProperty)$/.test(value.name)) fail("unsupported", location, value.name);
-            Object.values(value).forEach((child) => {
-              if (Array.isArray(child)) child.forEach(checkCalls); else if (child && typeof child === "object") checkCalls(child);
-            });
-          }
-          checkCalls(ast);
           const allowedNames = node.type === "parameter" ? model.nodes.filter((n) => n.type === "parameter").map((n) => n.name) : [...byName.keys()];
-          const check = semantics.validateExpressionSyntax(expression, allowedNames, { allowThisAlias: node.type === "state" && index === 1, allowIntegral: node.type === "state" && index === 1 });
-          if (!check.ok) fail("expression", location, check.message);
+          validateExpression(expression, location, allowedNames, { allowThisAlias: node.type === "state" && index === 1, allowIntegral: node.type === "state" && index === 1 });
           const refs = [...semantics.collectIdentifierReferences(expression)].filter((name) => byName.has(name));
           if (index === 0) initialDependencies.set(node.name, refs);
           refs.forEach((name) => dependencies.add(name));
@@ -196,8 +269,6 @@
     }
 
     function serialize(model) {
-      if ((model.unitDefinitions || []).length) fail("unsupported", {}, "unitDefinitions");
-      if ((model.localFunctions || []).length) fail("unsupported", {}, "localFunctions");
       if ((model.modelProperties || []).length) fail("unsupported", {}, "modelProperties");
       const execution = model.execution || {};
       const lines = ["# STGraphX mathematical source v1", `t0 = ${execution.t0 ?? 0}`, `t1 = ${execution.t1 ?? 10}`, `dt = ${execution.dt ?? 1}`];
@@ -205,14 +276,21 @@
       if (execution.randomSeed != null) lines.push(`@seed = ${execution.randomSeed}`);
       if (execution.timeUnit && execution.timeUnit !== "s") lines.push(`@timeUnit = ${JSON.stringify(execution.timeUnit)}`);
       lines.push("");
+      // Parenthesize multiline formulas to preserve logical declaration boundaries.
+      const format = (value) => {
+        const text = String(value ?? "").trim();
+        return /[\r\n]/.test(text) ? `(\n${text}\n)` : text;
+      };
+      for (const definition of model.unitDefinitions || []) {
+        lines.push(`@unitDefinition ${definition.symbol ?? definition.name ?? ""} = ${JSON.stringify(definition.expression ?? definition.value ?? "")}`);
+      }
+      for (const definition of model.localFunctions || []) {
+        lines.push(`function ${definition.name || ""}(${(definition.params || []).join(", ")}) = ${format(definition.expression)}`);
+      }
+      if (model.unitDefinitions?.length || model.localFunctions?.length) lines.push("");
       for (const node of model.nodes || []) {
         if (!["parameter", "algebraic", "state"].includes(node.type)) fail("unsupported", { name: node.name }, node.type);
         const flags = [node.global && "global", node.input && "input", node.output && "output", node.type === "parameter" && "parameter"].filter(Boolean);
-        // Parenthesize multiline expressions so declaration boundaries remain unambiguous.
-        const format = (value) => {
-          const text = String(value ?? "").trim();
-          return /[\r\n]/.test(text) ? `(\n${text}\n)` : text;
-        };
         const expression = node.type === "state" ? `${format(node.initialState)}; ${format(node.stateTransition)}` : format(node.valueExpression);
         lines.push(`${[...flags, node.name].join(" ")} = ${expression}`);
         if (String(node.unit || "").trim()) lines.push(`@unit ${node.name} = ${JSON.stringify(node.unit)}`);

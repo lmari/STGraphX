@@ -100,20 +100,12 @@ async function main() {
   for (const type of ['submodel', 'draft']) {
     assert.throws(() => codec.serialize({ nodes: [{ type, name: 'n' }] }), (e) => e.code === 'unsupported');
   }
-  assert.throws(() => codec.serialize({ ...model, localFunctions: [{}] }), (e) => e.code === 'unsupported');
+  assert.throws(() => codec.serialize({ ...model, localFunctions: [{}] }), (e) => e.code === 'functionDefinition');
   assert.throws(() => codec.serialize({ ...model, modelProperties: [{}] }), (e) => e.code === 'unsupported');
 
   // Real graph documents, including RK4 integration and seeded random draws.
-  for (const file of ['examples/sir.json', 'rust/stgraphx-engine/tests/fixtures/seeded-random.json']) {
+  for (const file of ['examples/sir.json', 'rust/stgraphx-engine/tests/fixtures/seeded-random.json', 'rust/stgraphx-engine/tests/fixtures/local-functions.json']) {
     const original = JSON.parse(fs.readFileSync(path.join(__dirname, '..', file), 'utf8'));
-    if (original.localFunctions?.length) {
-      assert.throws(() => codec.serialize(original), (e) => e.code === 'unsupported');
-      // Inline this fixture's one helper; local-function syntax is a later extension.
-      original.localFunctions = [];
-      for (const node of original.nodes) {
-        if (node.valueExpression) node.valueExpression = node.valueExpression.replace(/between\(/g, 'rand(');
-      }
-    }
     const copy = codec.parse(codec.serialize(original));
     assert.deepEqual(await run(copy), await run(original), file);
   }
@@ -132,7 +124,7 @@ async function main() {
     }),
   });
   assert.equal(converted.value, 2);
-  assert.throws(() => codec.serialize({ ...model, unitDefinitions: [{symbol:'ha', expression:'10000*m^2'}] }), (e) => e.code === 'unsupported');
+  assert.deepEqual(codec.parse(codec.serialize({ ...model, unitDefinitions: [{symbol:'ha', expression:'10000*m^2'}] })).unitDefinitions, [{symbol:'ha', expression:'10000*m^2'}]);
 
   // Initial dependencies can pass through an algebraic variable into a state.
   const initial = codec.parse('parameter p=2\na=p+1;this\nb=a*2\noutput c=b+3;this');

@@ -116,13 +116,59 @@ output totale = a + b
 
 Il valore di `totale` nell'editor è `2`. Le stringhe usano la sintassi JSON
 con virgolette doppie. La validazione dimensionale resta quella dell'editor;
-il codec conserva le unità dichiarate senza reinterpretarle. Le definizioni
-personalizzate di unità del modello non sono ancora supportate.
+il codec conserva le unità dichiarate senza reinterpretarle.
+
+### Funzioni locali
+
+```text
+function affine(value, scale, offset) = value * scale + offset
+function double(value) = affine(value, 2, 0)
+output result = double(inputValue)
+parameter inputValue = 3
+```
+
+Le funzioni possono comparire prima o dopo i nodi e le altre funzioni che le
+richiamano. Sono ammessi zero o più parametri e corpi su più righe fra
+parentesi. Valgono le regole delle funzioni locali dell'editor: nomi non
+riservati, nessun conflitto con i nodi e nessun parametro duplicato. Il corpo
+può usare i parametri, le funzioni del linguaggio e le altre funzioni locali;
+i valori dei nodi vanno passati come argomenti. Non sono ammessi `this`,
+`integral(...)`, chiamate ricorsive/cicliche o accessi alle proprietà/file
+ancora esclusi dal formato. Il numero di argomenti delle chiamate locali è
+controllato prima dell'importazione.
+
+Le funzioni locali si richiamano con `f(...)`; non possono essere passate
+come primo argomento di `reduce`, perché il runtime di riferimento non le
+espone come callback. `reduce` con operatori e funzioni built-in resta
+utilizzabile. Le descrizioni delle funzioni sono metadati esclusi dal sorgente.
+
+### Definizioni personalizzate delle unità
+
+```text
+@unitDefinition ha = "10000*m^2"
+a = 1
+@unit a = "ha"
+b = 5000
+@unit b = "m^2"
+output total = a + b
+@unit total = "ha"
+```
+
+Nell'editor `total` vale `1.5`. Le definizioni riusano la sintassi delle unità
+dell'applicazione e possono riferirsi a unità definite successivamente.
+Simboli duplicati, sintassi non valida e dipendenze cicliche vengono segnalati
+con la posizione della dichiarazione coinvolta. L'esportazione conserva simbolo
+e definizione; i nomi estesi al singolare/plurale sono metadati esclusi.
+Il controllo dimensionale delle formule rimane affidato all'editor.
+
+Queste aggiunte estendono la sintassi v1 senza cambiare le dichiarazioni
+precedenti né il formato JSON dei modelli.
 
 ## Ambito e limiti
 
-Questa prima versione supporta parametri, variabili algebriche e stati.
-L'esportazione rifiuta esplicitamente definizioni personalizzate di unità, funzioni locali, sottomodelli, nodi bozza,
+Il formato supporta parametri, variabili algebriche, stati, funzioni locali
+e definizioni personalizzate di unità.
+L'esportazione rifiuta esplicitamente sottomodelli, nodi bozza,
 proprietà del modello e formule che usano `readData`, `getProperty`,
 `setProperty`, `getModelProperty` o `setModelProperty`. Non esporta un
 sorgente parziale quando trova questi costrutti. ABM e altre estensioni del
@@ -140,11 +186,14 @@ L'equivalenza numerica riguarda modelli validi nel sottoinsieme supportato,
 con gli stessi input e senza dipendere da questi controlli o metadati esclusi.
 I test confrontano gli output e i valori finali del modello JSON e della
 versione esportata/reimportata, includendo il modello SIR con RK4 e
-un modello con casualità riproducibile.
+le fixture con funzioni locali e casualità riproducibile. Il test browser
+verifica anche le conversioni numeriche con unità personalizzate.
 
 ## API JavaScript
 
-`math-source-core.js` non dipende dal DOM né dalla shell. In Node.js:
+`math-source-core.js` non dipende dal DOM né dalla shell. Per le definizioni
+delle unità riusa `unit-analysis-core.js`, già caricato dall’editor; il modulo
+va distribuito anche accanto al codec quando lo si usa in Node.js. In Node.js:
 
 ```js
 const { STGraphXHeadlessRuntime } = require('./headless-runtime.js');
