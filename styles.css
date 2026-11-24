@@ -6112,5 +6112,5 @@ body.tablet-sidebar-layout .menu-run-btn {
 #mathSourceCompletions button { display: block; width: 100%; text-align: left; padding: 4px 8px; }
 #mathSourceCompletions button.active { background: #dceeff; color: #162f44; }
 #mathSourceStatus { white-space: pre-wrap; overflow-wrap: anywhere; min-height: 1.5em; }
-.math-source-actions { display: flex; gap: 8px; flex-wrap: wrap; }
-.math-source-actions button { padding: 6px 12px; }
+.math-source-actions { display: flex; gap: 4px; flex-wrap: nowrap; align-items: center; }
+.math-source-actions button { padding: 5px 6px; white-space: nowrap; font-size: 0.9em; }

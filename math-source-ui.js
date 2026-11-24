@@ -11,6 +11,8 @@
     const status = get("mathSourceStatus");
     const create = get("mathSourceCreate");
     const load = get("mathSourceLoad");
+    const insertTemplate = get("mathSourceInsertTemplate");
+    const insertModel = get("mathSourceInsertModel");
     const menuElement = get("mathSourceContextMenu");
     const menu = root.STGraphXMenuUi.createMenuUi({ contextMenu: menuElement });
     const highlight = get("mathSourceHighlight");
@@ -104,7 +106,19 @@
       if (event.key === "Tab") { event.preventDefault(); options.indent(text, event.shiftKey); changed(); }
       else if (event.key === "Enter") { event.preventDefault(); options.newline(text); changed(); }
     });
-    let draft = "t0 = 0\nt1 = 10\ndt = 1\n\nparameter k = 0.2\nu = sin(time)\noutput x = 0; this + dt * (u - k * this)\n";
+    const sourceTemplate = "# STGraphX mathematical source v1\n"
+      + "# Base dei tempi e opzioni di esecuzione\n"
+      + "t0 = 0\nt1 = 20\ndt = 0.1\n@integrator = rk4\n@seed = 1234\n@timeUnit = \"s\"\n\n"
+      + "# Unita' e funzioni locali\n"
+      + "@unitDefinition N = \"kg*m/s^2\"\n"
+      + "function decay(value, rate) = value * exp(-rate * time)\n\n"
+      + "# Parametri e input\n"
+      + "global parameter k = 0.3\n@unit k = \"1/s\"\n"
+      + "input u = 1\n@unit u = \"m/s\"\n\n"
+      + "# Variabile algebrica di output\n"
+      + "output velocity = decay(u, k)\n@unit velocity = \"m/s\"\n\n"
+      + "# Variabile di stato: stato iniziale ; stato prossimo\n"
+      + "output position = 0; this + dt * velocity\n@unit position = \"m\"\n";
     let busy = false;
 
     function errorMessage(error) {
@@ -130,9 +144,10 @@
     function open() {
       get("mathSourceTitle").textContent = t("mathSource.new");
       menu.hideContextMenu(); hideCompletions();
-      text.value = draft;
+      text.value = "";
+      insertModel.disabled = !options.canInsertModelSource?.();
       dialog.showModal();
-      paint(); validate(); text.focus();
+      paint(); changed(); text.focus();
     }
     async function saveCurrentSource() {
       if (busy) return;
@@ -151,11 +166,23 @@
       paint(); validate();
       text.focus();
     }
-    dialog.addEventListener("close", () => { draft = text.value; });
     // Keep editor-wide shortcuts away from this modal, including its buttons.
     dialog.addEventListener("keydown", (event) => event.stopPropagation());
     get("mathSourceClose").addEventListener("click", close);
     text.addEventListener("input", changed);
+    function insertAtCursor(content) {
+      text.setRangeText(content, text.selectionStart, text.selectionEnd, "end");
+      changed();
+      text.focus();
+    }
+    insertTemplate.addEventListener("click", () => insertAtCursor(sourceTemplate));
+    insertModel.addEventListener("click", () => {
+      try {
+        insertAtCursor(codec.serialize(options.getModel(), { validate: false }));
+        validate();
+      }
+      catch (error) { showError(error); }
+    });
     create.addEventListener("click", () => perform(async () => {
       const model = codec.parse(text.value);
       await options.createModel(model);

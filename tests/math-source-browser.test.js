@@ -22,6 +22,17 @@ async function exerciseEditor() {
     const get = (id) => document.getElementById(id);
     get("newMathSourceBtn").click();
     check(get("mathSourceDialog").open, "Import dialog did not open");
+    check(get("mathSourceText").value === "", "New source editor must start empty");
+    get("mathSourceInsertTemplate").click();
+    check(get("mathSourceText").value.includes("@integrator = rk4"), "Expanded template was not inserted");
+    await wait(); await wait();
+    check(get("mathSourceStatus").textContent === t("mathSource.valid"), "Template must be valid source");
+    check(getComputedStyle(get("mathSourceCreate").parentElement).flexWrap === "nowrap", "Source actions must remain on one line");
+    get("mathSourceInsertTemplate").focus();
+    check(get("appTooltip").parentElement === get("mathSourceDialog"), "Dialog tooltip is behind its window");
+    get("mathSourceText").value = "";
+    get("mathSourceInsertModel").click();
+    check(get("mathSourceText").value.includes("output preserved = 7"), "Active model source was not inserted");
     get("mathSourceText").value = "bad = missing";
     get("mathSourceCreate").click(); await wait();
     check(workspace.tabs.length === count, "Invalid input changed workspace tabs");

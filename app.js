@@ -409,6 +409,7 @@ const expressionEditorSwitchCancelBtn = document.getElementById("expressionEdito
 const expressionEditorSwitchDiscardBtn = document.getElementById("expressionEditorSwitchDiscardBtn");
 const expressionEditorSwitchApplyBtn = document.getElementById("expressionEditorSwitchApplyBtn");
 const appTooltip = document.getElementById("appTooltip");
+const appTooltipHome = appTooltip?.parentElement || null;
 
 window.__stgraphxBootError = null;
 window.addEventListener("error", (event) => {
@@ -1948,6 +1949,9 @@ function hideAppTooltip() {
   }
   appTooltip.classList.add("hidden");
   appTooltip.setAttribute("aria-hidden", "true");
+  if (appTooltipHome && appTooltip.parentElement !== appTooltipHome) {
+    appTooltipHome.appendChild(appTooltip);
+  }
   ui.tooltipTarget = null;
   ui.tooltipPointer = null;
 }
@@ -2000,6 +2004,13 @@ function showAppTooltip(target, clientX, clientY) {
   if (!text) {
     hideAppTooltip();
     return;
+  }
+  // Native dialogs occupy the browser top layer, above a tooltip kept in the
+  // document body. Move the tooltip into the active dialog while it is shown.
+  const activeDialog = target.closest?.("dialog[open]");
+  const tooltipParent = activeDialog || appTooltipHome;
+  if (tooltipParent && appTooltip.parentElement !== tooltipParent) {
+    tooltipParent.appendChild(appTooltip);
   }
   applyTooltipState(text, tone);
   appTooltip.classList.remove("hidden");
@@ -16685,6 +16696,7 @@ const mathSourceUi = globalThis.STGraphXMathSourceUi.createMathSourceUi({
   t,
   codec: globalThis.STGraphXMathSource.createCodec(semantics),
   getModel: exportGraphData,
+  canInsertModelSource: () => Boolean(exportGraphData().nodes?.length),
   reportStatus: (message) => setStatus(message),
   indent: indentExpressionSelection,
   newline: insertExpressionNewlineWithIndent,

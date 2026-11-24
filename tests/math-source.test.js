@@ -44,6 +44,8 @@ async function main() {
   assert.equal(model.nodes[1].type, "state");
   assert.equal(model.nodes[3].global, true);
   assert.equal(model.nodes[4].input, true);
+  assert.equal(model.nodes[0].width, 54);
+  assert.equal(model.nodes[0].height, 54);
   const edges = model.edges.map((edge) => [model.nodes[edge.from - 1].name, model.nodes[edge.to - 1].name]);
   assert.ok(edges.some(([from, to]) => from === "p" && to === "x"));
   assert.ok(edges.some(([from, to]) => from === "y" && to === "x"));
@@ -102,6 +104,10 @@ async function main() {
   }
   assert.throws(() => codec.serialize({ ...model, localFunctions: [{}] }), (e) => e.code === 'functionDefinition');
   assert.throws(() => codec.serialize({ ...model, modelProperties: [{}] }), (e) => e.code === 'unsupported');
+  const invalidForSource = { ...model, nodes: model.nodes.map((node) => ({ ...node })) };
+  invalidForSource.nodes[0].valueExpression = 'missing';
+  assert.throws(() => codec.serialize(invalidForSource), (e) => e.code === 'expression');
+  assert.match(codec.serialize(invalidForSource, { validate: false }), /result = missing/);
 
   // Real graph documents, including RK4 integration and seeded random draws.
   for (const file of ['examples/sir.json', 'rust/stgraphx-engine/tests/fixtures/seeded-random.json', 'rust/stgraphx-engine/tests/fixtures/local-functions.json']) {

@@ -170,7 +170,7 @@
         if ((flags.has("parameter") && type === "state") || (flags.has("input") && type !== "algebraic") || (flags.has("global") && type !== "parameter")) fail("qualifier", location);
         const id = model.nodes.length + 1;
         const node = { id, name, type, output: flags.has("output"), input: flags.has("input"), global: flags.has("global"),
-          x: 80 + ((id - 1) % 4) * 200, y: 80 + Math.floor((id - 1) / 4) * 140, width: 120, height: 70, properties: [] };
+          x: 80 + ((id - 1) % 4) * 200, y: 80 + Math.floor((id - 1) / 4) * 140, width: 54, height: 54, properties: [] };
         if (type === "state") { node.initialState = parts[0]; node.stateTransition = parts[1]; }
         else node.valueExpression = parts[0];
         model.nodes.push(node);
@@ -268,7 +268,7 @@
       return model;
     }
 
-    function serialize(model) {
+    function serialize(model, { validate = true } = {}) {
       if ((model.modelProperties || []).length) fail("unsupported", {}, "modelProperties");
       const execution = model.execution || {};
       const lines = ["# STGraphX mathematical source v1", `t0 = ${execution.t0 ?? 0}`, `t1 = ${execution.t1 ?? 10}`, `dt = ${execution.dt ?? 1}`];
@@ -296,8 +296,9 @@
         if (String(node.unit || "").trim()) lines.push(`@unit ${node.name} = ${JSON.stringify(node.unit)}`);
       }
       const source = `${lines.join("\n")}\n`;
-      // Export must never silently omit an unsupported mathematical dependency.
-      parse(source);
+      // Regular export verifies the generated source. The editor can opt out
+      // to show an incomplete source together with its diagnostic.
+      if (validate) parse(source);
       return source;
     }
     return { parse, serialize };

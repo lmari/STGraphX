@@ -1,6 +1,6 @@
 # STGraphX: Readme
 
-versione 23 novembre 2026
+versione 24 novembre 2026
 
 Copyright (c) 2026 Luca Mari
 
@@ -49,7 +49,7 @@ Ha un'interfaccia utente responsive, che lo rende utilizzabile anche su tablet.
 * Editor per grafi orientati, con nodi di forme e colori diversi e tooltip, frecce spline, testi, gruppi di presentazione sovrapponibili con visibilità indipendente, gestione di ridimensionamento, spostamento, cancellazione dei nodi, anche per selezioni multiple, zoom, griglia, clipboard (anche condivisa tra instanze diverse dell'app), undo e redo, ...
 * Player per esecuzione di modelli in pagine HTML (**)
 * API JavaScript per esecuzione headless via script (**)
-* Gestione solo testuale di modelli attraverso un'estensione del linguaggio (**)
+* Gestione solo testuale ("sorgenti") della componente matematica dei modelli attraverso un'estensione del linguaggio (**)
 * Menu, menu contestuale e pannello di configurazione aggiornato dinamicamente, con tooltip
 * Interfaccia responsive a tab per più modelli, con gestione contestuale della relazione tra modelli e sottomodelli (*)
 * Gestione dei testi dell'interfaccia utente in italiano e inglese, con scelta via query string nella shell web (`?lang=it|en`) e via parametro `--lang=it|en` nella shell Electron
