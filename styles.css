@@ -2818,8 +2818,18 @@ input.inferred-unit[readonly] { color: #6d7782; background: #f4f6f8; }
   white-space: nowrap;
 }
 
-.option-check input {
+.option-check input[type="checkbox"] {
+  -webkit-appearance: checkbox;
+  appearance: auto;
+  display: inline-block;
+  box-sizing: border-box;
+  width: 15px;
+  min-width: 15px;
+  height: 15px;
+  min-height: 15px;
   margin: 0;
+  padding: 0;
+  accent-color: #2e6f9a;
 }
 
 .view-options-fields {
@@ -5476,7 +5486,8 @@ body.tablet-sidebar-layout .menu-bar {
 }
 
 body.tablet-sidebar-layout .menu-roots {
-  flex: 1 1 100%;
+  flex: 0 0 100%;
+  max-width: 100%;
   flex-wrap: nowrap;
   overflow-x: auto;
   overscroll-behavior-x: contain;
@@ -5559,7 +5570,9 @@ body.tablet-sidebar-layout .menu-submenu.open > .menu-submenu-panel {
 
 body.tablet-sidebar-layout .menu-run-toolbar {
   margin-left: 0;
-  width: 100%;
+  box-sizing: border-box;
+  flex: 0 0 100%;
+  width: auto;
   justify-content: space-between;
   order: 10;
 }
@@ -5570,7 +5583,10 @@ body.tablet-sidebar-layout .menu-run-btn {
   height: 40px;
 }
 
-@media (max-width: 1100px) {
+/* The desktop header needs more room than the canvas/sidebar layout. Keep
+ * those layouts unchanged: menus occupy the first row, while execution and
+ * status stay together on the second row. */
+@media (min-width: 1101px) and (max-width: 1450px) {
   .menu-bar {
     position: relative;
     z-index: 1200;
@@ -5580,7 +5596,8 @@ body.tablet-sidebar-layout .menu-run-btn {
   }
 
   .menu-roots {
-    flex: 1 1 100%;
+    flex: 0 0 100%;
+    max-width: 100%;
     flex-wrap: nowrap;
     overflow-x: auto;
     overscroll-behavior-x: contain;
@@ -5593,6 +5610,51 @@ body.tablet-sidebar-layout .menu-run-btn {
 
   .menu-roots .menu-root {
     flex: 0 0 auto;
+  }
+
+  .menu-run-toolbar {
+    flex: 0 0 auto;
+    margin-left: 0;
+    order: 1;
+  }
+
+  .menu-time,
+  .menu-file-status,
+  .menu-status {
+    order: 1;
+  }
+}
+
+@media (max-width: 1100px) {
+  .menu-bar {
+    position: relative;
+    z-index: 1200;
+    flex-wrap: wrap;
+    row-gap: 8px;
+    padding: 8px;
+  }
+
+  .menu-roots {
+    flex: 0 0 100%;
+    max-width: 100%;
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    overscroll-behavior-x: contain;
+    scrollbar-width: none;
+  }
+
+  .menu-roots::-webkit-scrollbar {
+    display: none;
+  }
+
+  .menu-roots .menu-root {
+    flex: 0 0 auto;
+  }
+
+  .menu-run-toolbar {
+    box-sizing: border-box;
+    flex: 0 0 100%;
+    width: auto;
   }
 
   .menu-status {
@@ -5831,7 +5893,9 @@ body.tablet-sidebar-layout .menu-run-btn {
 
   .menu-run-toolbar {
     margin-left: 0;
-    width: 100%;
+    box-sizing: border-box;
+    flex: 0 0 100%;
+    width: auto;
     justify-content: space-between;
     order: 10;
   }
